@@ -1,0 +1,75 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">User List</h1>
+</div>
+
+<div class="form-group pull-right">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search" name="search" [(ngModel)]="searchTitle"
+            (ngModelChange)="dataChanged($event)">
+        <div class="input-group-append">
+            <button class="input-group-text" (click)="fetchUsers()">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col" style="width:10%">
+                <a href="javascript:void(0)" (click)="sortByHeading('FirstName')">First Name
+                    <span *ngIf="sortBy == 'FirstName'" class="fa"
+                        [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                </a>
+            </th>
+            <th scope="col" style="width:10%">
+                <a href="javascript:void(0)" (click)="sortByHeading('LastName')">Last Name
+                    <span *ngIf="sortBy == 'LastName'" class="fa"
+                        [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                </a>
+            </th>
+            <th scope="col" style="width:20%">
+                <a href="javascript:void(0)" (click)="sortByHeading('Email')">Email
+                    <span *ngIf="sortBy == 'Email'" class="fa"
+                        [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                </a>
+            </th>
+            <th scope="col" style="width:10%">
+                <a href="javascript:void(0)" (click)="sortByHeading('UserName')">Username
+                    <span *ngIf="sortBy == 'UserName'" class="fa"
+                        [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                </a>
+            </th>
+            <th scope="col" style="width:10%">
+                Is Admin?
+            </th>
+            <th scope="col" style="width:20%">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let item of users | paginate : { itemsPerPage : tableSize,currentPage : page,totalItems : count };">
+            <td>{{item?.firstName}}</td>
+            <td>{{item?.lastName}}</td>
+            <td>{{item?.email}}</td>
+            <td>{{item?.userName}}</td>
+            <td>{{item?.isAdmin ? 'Yes' : 'No'}}</td>
+            <td>
+                <button type="button" class="btn btn-success" [routerLink]="['/app/user/edit',item.id]"><i
+                        class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-danger ml-1" (click)="deleteUser(item.id)"><i
+                        class="fa fa-trash"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="d-flex bd-highlight mb-3">
+    <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+    <div class="ml-auto p-2 bd-highlight">
+        <select (change)="onTableSizeChange($event)" class="custom-select">
+            <option *ngFor="let size of tableSizes" [ngValue]="size">
+                {{ size }}
+            </option>
+        </select>
+    </div>
+</div>

@@ -1,0 +1,576 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
+    <button class="btn btn-light ml-1" type="button" [disabled]="!courseForm.valid"
+        (click)="previewCourse()">Preview</button>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <form [formGroup]="courseForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" formControlName="title" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
+                <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
+                    <div *ngIf="f.title.errors.required">Title is required</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Title Image</label>
+                <br>
+                <input type="file" name="image" accept="image/*" (change)="fileProgress($event)" />
+            </div>
+            <div *ngIf="fileUploadProgress">
+                Upload progress: {{ fileUploadProgress }}
+            </div>
+            <div class="image-preview mb-3" *ngIf="uploadedFilePath">
+                <img [src]="uploadedFilePath" height="200" />
+            </div>
+
+            <div class="mb-3" *ngIf="uploadedFilePath">
+                {{uploadedFilePath}}
+            </div>
+
+            <div class="form-group">
+                <label>Canonical URL</label>
+                <input type="text" formControlName="canonicalUrl" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.canonicalUrl.errors }" />
+                <div *ngIf="submitted && f.canonicalUrl.errors" class="invalid-feedback">
+                    <div *ngIf="f.canonicalUrl.errors.required">Canonical Url is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Meta Description</label>
+                <input type="text" formControlName="metaDescription" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.metaDescription.errors }" />
+                <div *ngIf="submitted && f.metaDescription.errors" class="invalid-feedback">
+                    <div *ngIf="f.metaDescription.errors.required">Meta Description is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select formControlName="categoryId" class="form-control" id="sel1"
+                    [ngClass]="{ 'is-invalid': submitted && f.categoryId.errors }">
+                    <option value="">Select Category</option>
+                    <option *ngFor="let item of categories" [value]="item.id">{{item?.name}}</option>
+                </select>
+                <div *ngIf="submitted && f.categoryId.errors" class="invalid-feedback">
+                    <div *ngIf="f.categoryId.errors.required">Category is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="number" class="form-control" formControlName="amount" />
+                <div *ngIf="submitted && f.amount.errors" class="invalid">
+                    <div *ngIf="f.amount.errors.required">Amount is required</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    Location
+                    <button class="btn btn-success" type="button" (click)="locationMeta()"
+                        [disabled]="selectedItems.length === 0">Metadata</button>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <ng-multiselect-dropdown class="w-75" [placeholder]="'Select Location'"
+                            [settings]="dropdownSettings" [data]="locations" [(ngModel)]="selectedItems"
+                            [ngModelOptions]="{standalone: true}" (onSelect)="onItemSelect($event)"
+                            (onDeSelect)="onItemSelect($event)">
+                        </ng-multiselect-dropdown>
+                    </div>
+                </div>
+            </div>
+
+            <div id="accordion">
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse5"
+                            aria-expanded="true" aria-controls="collapse5">
+                            Course Title Summaries
+                            <span class="toggle_bt"></span>
+                        </button>  
+                    </div>
+                    <div id="collapse5" class="collapse custom_collapse" aria-labelledby="headingOne"> 
+                        <div class="card-body">
+                            <div formArrayName="courseSummaries">
+                                <div *ngFor="let item of courseSummariesArrayControls(); index as i" class="mb-3">
+                                    <div class="d-sm-flex align-items-center justify-content-between">
+                                        <h6>Summary Section {{i + 1}}</h6>
+                                        <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
+                                            (click)="removeCourseSummariesItems(i)">
+                                            <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div [formGroupName]="i" class="h-100">
+                                            <div class="form-group col-12">
+                                                <label>Summary</label>
+                                                <textarea class="form-control" formControlName="summary"
+                                                    rows="5"></textarea>
+                                                <div *ngIf="submitted && item.controls.summary.errors" class="invalid">
+                                                    <div *ngIf="item.controls.summary.errors?.required">Summary is
+                                                        required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-success ml-2 mb-2"
+                                    (click)="addCourseSummariesItems()">Add
+                                    Course
+                                    Summary</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3"
+                            aria-expanded="true" aria-controls="collapse3">
+                            Course About Information
+                            <span class="toggle_bt"></span>
+                        </button>
+                    </div>
+                    <div id="collapse3" class="custom_collapse collapse show" aria-labelledby="headingOne">
+                        <div class="card-body">
+                            <div formArrayName="courseInformation">
+                                <div *ngFor="let item of courseInformationArrayControls(); index as i" class="mb-3">
+                                    <div class="d-sm-flex align-items-center justify-content-between">
+                                        <h6>Information Section {{i + 1}}</h6>
+                                        <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
+                                            (click)="removeCourseInfoItems(i)">
+                                            <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div [formGroupName]="i" class="h-100">
+                                            <div class="form-group col-12">
+                                                <label>Title</label>
+                                                <input formControlName="title" class="form-control"
+                                                    [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }" />
+                                                <div *ngIf="submitted && item.controls.title.errors"
+                                                    class="invalid-feedback">
+                                                    <div *ngIf="item.controls.title.errors?.required">Title is
+                                                        required
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="form-group col-12">
+                                                <label>Summary</label>
+                                                <textarea class="form-control" formControlName="summary"
+                                                    rows="5"></textarea>
+                                                <div *ngIf="submitted && item.controls.summary.errors" class="invalid">
+                                                    <div *ngIf="item.controls.summary.errors?.required">Summary is
+                                                        required
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-success ml-2 mb-2"
+                                    (click)="addCourseInfoItems()">Add
+                                    Course Info
+                                    Section</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-2 ">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse7"
+                            aria-expanded="true" aria-controls="collapse7">
+                            Course Curriculum
+                            <span class="toggle_bt"></span>
+                        </button>
+                    </div>
+                    <div id="collapse7" class="custom_collapse collapse" aria-labelledby="headingOne">
+                        <div class="card-body">
+                            <div formArrayName="courseContents">
+                                <div *ngFor="let item of courseContentsArrayControls(); index as i" class="mb-3">
+                                    <div class="d-sm-flex align-items-center justify-content-between">
+                                        <h6>Contents Section {{i + 1}}</h6>
+                                        <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
+                                            (click)="removeCourseContentItems(i)">
+                                            <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
+                                    </div>
+
+                                    <div class="mt-2 mb-3 border" id="content">
+                                        <div [formGroupName]="i" class="col-12 h-100">
+                                            <div class="row no-gutters">
+                                                <div class="form-group col-3">
+                                                    <label>Icon Image</label>
+                                                      <app-icon-dropdown [iconList]="iconList" [modelValue]="item" (iconChange)="onIconSelect($event,i)"></app-icon-dropdown>  
+                                                </div>
+                                                <div class="form-group col-9">
+                                                    <label>Title</label>
+                                                    <input formControlName="title" placeholder="Title {{i + 1}}" class="form-control"
+                                                        [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }" />
+                                                    <div *ngIf="submitted && item.controls.title.errors"
+                                                        class="invalid-feedback">
+                                                        <div *ngIf="item.controls.title.errors?.required">Title is
+                                                            required
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div formArrayName="courseContentSubTypes" class="pl-3 mt-3 mb-2">
+                                                <div
+                                                    *ngFor="let item of CourseSubContent(i).controls; let j=index;last as isLast">
+                                                    <h6>Sub Contents {{j + 1}}</h6>
+                                                    <div [formGroupName]="j">
+                                                        <div class="row no-gutters">
+                                                            <div class="form-group col-3">
+                                                                <label>Sub Icon Image</label>
+                                                                <app-icon-dropdown [iconList]="iconList" [modelValue]="item" (iconChange)="onSubIconSelect($event,i,j)"></app-icon-dropdown>  
+                                                            </div>
+
+                                                            <div class="form-group col-9">
+                                                                <label>Sub Title</label>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control"
+                                                                        placeholder="Sub Title {{j + 1}}"
+                                                                        formControlName="title"
+                                                                        [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }">
+                                                                    <div class="input-group-append">
+                                                                        <button class="btn btn-outline-secondary"
+                                                                            type="button"
+                                                                            (click)="removeCourseSubContent(i,j)">Remove</button>
+                                                                        <button class="btn btn-outline-secondary"
+                                                                            *ngIf="isLast" type="button"
+                                                                            (click)="addCourseSubSubContent(i,j)">Add</button>
+                                                                    </div>
+                                                                    <div *ngIf="submitted && item.controls.title.errors"
+                                                                        class="invalid-feedback">
+                                                                        <div
+                                                                            *ngIf="item.controls.title.errors?.required">
+                                                                            Title
+                                                                            is
+                                                                            required
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div formArrayName="courseContentSubSubTypes"
+                                                            class="pl-3 mt-3 mb-2">
+                                                            <div
+                                                                *ngFor="let item of CourseSubSubContent(i,j).controls; let k=index;last as isLast">
+                                                                <h6>Child
+                                                                    Contents {{k+1}}
+                                                                </h6>
+                                                                <div [formGroupName]="k" class="mt-2 mb-2">
+                                                                    <div class="row no-gutters">
+                                                                        <div class="form-group col-3">
+                                                                            <label>Child Icon Image</label>
+                                                                            <app-icon-dropdown [iconList]="iconList" [modelValue]="item" (iconChange)="onChildIconSelect($event,i,j,k)"></app-icon-dropdown>  
+                                                                            
+                                                                        </div>
+
+                                                                        <div class="form-group col-9">
+                                                                            <label>Child Title</label>
+                                                                            <div class="input-group">
+                                                                                <input placeholder="Child Title {{k+1}}"
+                                                                                    formControlName="title" class="form-control"
+                                                                                    [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }">
+                                                                                <div class="input-group-append">
+                                                                                    <button class="btn btn-outline-secondary"
+                                                                                        type="button"
+                                                                                        (click)="removeCourseSubSubContent(i,j,k)">Remove</button>
+                                                                                    <button class="btn btn-outline-secondary"
+                                                                                        type="button" *ngIf="isLast"
+                                                                                        (click)="addCourseSubSubContent(i,j)">Add</button>
+                                                                                </div>
+                                                                                <div *ngIf="submitted && item.controls.title.errors"
+                                                                                    class="invalid-feedback">
+                                                                                    <div
+                                                                                        *ngIf="item.controls.title.errors?.required">
+                                                                                        Title is
+                                                                                        required
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- <button class="btn btn-primary mt-2 mb-2" type="button"
+                                                    *ngIf="CourseSubSubContent(i,j).controls.length === 0"
+                                                    (click)="addCourseSubSubContent(i,j)">Add Child
+                                                    Content</button> -->
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-primary mt-2 mb-2" type="button"
+                                                    (click)="addCourseSubContent(i)">Add Sub
+                                                    Content</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success ml-2 mb-2" type="button"
+                                    (click)="addCourseContentItems()">Add
+                                    Content
+                                    Section</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse1"
+                            aria-expanded="true" aria-controls="collapse1">
+                            Become Course
+                            <span class="toggle_bt"></span>
+                        </button>
+                    </div>
+                    <div id="collapse1" class="custom_collapse collapse" aria-labelledby="headingOne">
+                        <div class="card-body">
+                            <div formGroupName="becomeCourse">
+                                <div class="mb-3">
+                                    <div class="h-100">
+                                        <div class="form-group col-12">
+                                            <label>Title</label>
+                                            <input formControlName="title" class="form-control" />
+                                        </div>
+                                        <div class="form-group col-12">
+                                            <label>Description</label>
+                                            <textarea class="form-control" formControlName="description"
+                                                rows="5"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse2"
+                            aria-expanded="true" aria-controls="collapse2">
+                            Frequently Asked Questions
+                            <span class="toggle_bt"></span>
+                        </button>
+                    </div>
+                    <div id="collapse2" class="custom_collapse collapse" aria-labelledby="headingOne">
+                        <div class="card-body">
+                            <div formArrayName="frequentlyAskedQuestions">
+                                <div *ngFor="let item of frequentlyAskedQuestionsArrayControls(); index as i"
+                                    class="mb-3">
+                                    <div class="d-sm-flex align-items-center justify-content-between">
+                                        <h6>Faq Section {{i + 1}}</h6>
+                                        <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
+                                            (click)="removeFaqItems(i)">
+                                            <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div [formGroupName]="i" class="h-100">
+                                            <div class="form-group col-12">
+                                                <label>Question</label>
+                                                <input formControlName="question" class="form-control"
+                                                    [ngClass]="{ 'is-invalid': submitted && item.controls.question.errors }" />
+                                                <div *ngIf="submitted && item.controls.question.errors"
+                                                    class="invalid-feedback">
+                                                    <div *ngIf="item.controls.question.errors?.required">Question is
+                                                        required
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="form-group col-12">
+                                                <label>Answer</label>
+                                                <textarea class="form-control" formControlName="answer"
+                                                    rows="5"></textarea>
+                                                <div *ngIf="submitted && item.controls.answer.errors" class="invalid">
+                                                    <div *ngIf="item.controls.answer.errors?.required">Answer is
+                                                        required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-success ml-2 mb-2" (click)="addFaqItems()">Add Faq
+                                    Section</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse6"
+                            aria-expanded="true" aria-controls="collapse6">
+                            Course Trainers
+                            <span class="toggle_bt"></span>
+                        </button>
+                    </div>
+                    <div id="collapse6" class="custom_collapse collapse" aria-labelledby="headingOne">
+                        <div class="card-body">
+                            <div formArrayName="courseTeachers">
+                                <div *ngFor="let item of courseTeachersArrayControls(); index as i" class="mb-3">
+                                    <div class="d-sm-flex align-items-center justify-content-between">
+                                        <h6>Teacher Section {{i + 1}}</h6>
+                                        <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
+                                            (click)="removeCourseTeacherItems(i)">
+                                            <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div [formGroupName]="i" class="h-100">
+                                            <div class="form-group col-12">
+                                                <label>Name</label>
+                                                <input formControlName="name" class="form-control"
+                                                    [ngClass]="{ 'is-invalid': submitted && item.controls.name.errors }" />
+                                                <div *ngIf="submitted && item.controls.name.errors"
+                                                    class="invalid-feedback">
+                                                    <div *ngIf="item.controls.name.errors?.required">Name is
+                                                        required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-12">
+                                                <label>Description</label>
+                                                <textarea class="form-control" formControlName="description"
+                                                    rows="5"></textarea>
+                                                <div *ngIf="submitted && item.controls.description.errors"
+                                                    class="invalid">
+                                                    <div *ngIf="item.controls.description.errors?.required">Description
+                                                        is
+                                                        required
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-12">
+                                                <label>Teacher Image</label>
+                                                <br>
+                                                <input type="file" name="timage" accept="image/*"
+                                                    (change)="teacherFileProgress($event,i)" />
+                                            </div>
+                                            <div class="image-preview mb-3" *ngIf="item.controls.imageUrl?.value">
+                                                <img [src]="item.controls.imageUrl?.value" height="200" />
+                                            </div>
+
+                                            <div class="mb-3" *ngIf="item.controls.imageUrl?.value">
+                                                {{item.controls.imageUrl.value}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-success ml-2 mb-2"
+                                    (click)="addCourseTeacherItems()">Add
+                                    Course
+                                    Teacher</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-2 mb-2">
+                    <div class="card-header">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse4"
+                            aria-expanded="true" aria-controls="collapse4">
+                            Course Features
+                            <span class="toggle_bt"></span>
+                        </button>
+                    </div>
+                    <div id="collapse4" class="custom_collapse collapse" aria-labelledby="headingOne">
+                        <div class="card-body">
+                            <div formArrayName="courseFeatures">
+                                <div *ngFor="let item of courseFeaturesArrayControls(); index as i" class="mb-3">
+                                    <div class="d-sm-flex align-items-center justify-content-between">
+                                        <h6>Feature Section {{i + 1}}</h6>
+                                        <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
+                                            (click)="removeCourseFeatureItems(i)">
+                                            <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div [formGroupName]="i" class="h-100">
+                                            <div class="form-group col-12">
+                                                <label>Description</label>
+                                                <textarea class="form-control" formControlName="description"
+                                                    rows="5"></textarea>
+                                                <div *ngIf="submitted && item.controls.description.errors"
+                                                    class="invalid">
+                                                    <div *ngIf="item.controls.description.errors?.required">Description
+                                                        is
+                                                        required</div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-12" >
+                                                <label>Icon Image</label>
+                                                <ng-multiselect-dropdown class="w-75" [placeholder]="'Select Icon'"
+                                                    [settings]="dropdownIconSettings" [data]="iconList"
+                                                    (onSelect)="onFeatureIconSelect($event,i)"
+                                                    [(ngModel)]="selectedfeatureitems[i]"
+                                                    [ngModelOptions]="{standalone: true}">
+                                                    <ng-template #optionsTemplate let-item let-option="option"
+                                                        let-id="id" let-isSelected="isSelected">
+                                                        <div
+                                                            style="padding:1px 10px;margin-right:10px;right:2px;top:-2px">
+                                                            <img [src]="getItems[id].url"
+                                                                style="width: 18px; margin: 0 20px;" />
+                                                            <label style="color: #333;min-width: 130px;">
+                                                                {{getItems[id].name}}
+                                                            </label>
+                                                        </div>
+                                                    </ng-template>
+                                                    <ng-template #optionSelectedTemplate let-option="option"
+                                                        let-id="id">
+                                                        <div>
+                                                            <img [src]="getItems[id].url"
+                                                                style="width: 18px; margin-right: 2px;" />
+                                                            {{getItems[id].name}}
+                                                        </div>
+                                                    </ng-template>
+                                                </ng-multiselect-dropdown>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-success ml-2 mb-2"
+                                    (click)="addCourseFeatureItems()">Add
+                                    Course
+                                    Feature</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" *ngIf="isAdmin">
+                <div class="form-check">
+                    <input class="form-check-input" formControlName="showOnDashboard" type="checkbox" value=""
+                        id="invalidCheck">
+                    <label class="form-check-label" for="invalidCheck">
+                        Show On Dashboard?
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">{{btntext}}</button>
+                <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+

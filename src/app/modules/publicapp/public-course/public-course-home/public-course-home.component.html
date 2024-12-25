@@ -1,0 +1,36 @@
+<div style="min-height: 90vh;">
+  <div *ngFor="let item of items">
+    <div class="container" *ngIf="item?.categoryCourse && item?.categoryCourse?.length > 0">
+      <div class="d-flex mb-2 mt-3">
+        <h2 class="mb-0 mr-auto">{{item.categoryName}}</h2>
+        <a class="p-2" [routerLink]="['/category', item.categoryName]">See all</a>
+      </div>
+      <div class="position-relative">
+        <owl-carousel-o [options]="customOptions" (dragging)="isDragging = $event.dragging">
+          <ng-container *ngFor="let course of item.categoryCourse">
+            <ng-template carouselSlide>
+              <div class="slider">
+                <div class="blog-grid w-100">
+                  <a [href]="course?.canonicalUrl">
+                    <div class="blog-img">
+  
+                      <img class="card-img-top" [src]="course?.titleImageUrl" (error)="onImgError($event)" />
+  
+                    </div>
+                    <div class="blog-info card-limiter">
+                      <h5 class="truncate">{{course?.title}}</h5>
+                      <p class="price-tag"> Price: {{ course.amount | currency:"INR":"symbol" }} </p>
+                      <span class="text-ellipse">
+                        <p *ngFor="let feature of course?.courseFeatures">{{feature?.description}}</p>
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </ng-template>
+          </ng-container>
+        </owl-carousel-o>
+      </div>
+    </div>
+  </div>
+</div>

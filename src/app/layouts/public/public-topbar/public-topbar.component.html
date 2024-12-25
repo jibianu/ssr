@@ -1,0 +1,52 @@
+<header id="theme-header" class="theme-header inner-header course-page-header">
+  <div class="container">
+  <div class="d-flex justify-space-between custom-mobile-css">
+    <!-- <div class="logo">
+      <span><a title="Oil And Gas Club" href=""> <img
+            src="/wp-content/uploads/2017/10/logo.png" width="159" height="50"
+            alt="Oil And Gas Club" title="Oil And Gas Club"><strong>Oil And Gas Club </strong></a></span>
+    </div> -->
+
+    <div class="logo" routerLink="/"> 
+       <span >
+        <img src="assets/s3/oilandgas_club.svg" width="100" height="50" alt="">   
+      </span>  
+    </div>
+      <!-- <img src="assets/og.PNG" width="159" height="50" alt=""> -->
+      <!-- <span><a title="Oil And Gas Club" href=""> <img
+        src="assets/og.PNG" width="159" height="50"
+        alt="Oil And Gas Club" title="Oil And Gas Club"><strong>Oil And Gas Club </strong></a></span> -->
+        <nav class="w-100 hidemobile">
+          <div class="menu-header-menu-container">
+            <ul id="menu-header-menu" class="nav-menu m-0">
+              <li id="menu-item-5969" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5969">
+                <a href="/course/">Courses</a></li>
+              <li id="menu-item-5970" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5970"><a
+                  href="https://blog.oilandgasclub.com">Blog</a></li>
+              <li id="menu-item-5971" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5971"><a
+                  href="https://elearn.oilandgasclub.com/auth/login/">Login</a></li>
+            </ul>
+          </div>
+        </nav>
+        
+    <nav class="w-100"  *ngIf="isVisible">
+      <a href="#" class="close" (click)="toggleinVisibility()"></a>
+      <div class="menu-header-menu-container">
+        <ul id="menu-header-menu" class="nav-menu m-0">
+          <li id="menu-item-5969" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5969">
+            <a href="/course/">Courses</a></li>
+          <li id="menu-item-5970" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5970"><a
+              href="https://blog.oilandgasclub.com">Blog</a></li>
+          <li id="menu-item-5971" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5971"><a
+            href="https://elearn.oilandgasclub.com/auth/login/">Login</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <button class="mobile-nav" (click)="toggleVisibility()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</div>

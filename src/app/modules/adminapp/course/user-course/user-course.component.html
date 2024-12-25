@@ -1,0 +1,46 @@
+<div class="form-group pull-right">
+    <input type="text" class="search form-control" placeholder="Search" name="search" [(ngModel)]="term" >
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col" style="width:20%">Title</th>
+        <th scope="col" style="width:15%">Category</th>
+        <th scope="col" style="width:15%">Canonical Url</th>
+        <th scope="col" style="width:15%">Author</th>
+        <th scope="col" style="width:15%"> Created Date</th>
+        <th scope="col" *ngIf="(currentUser.canEdit || currentUser.canDelete ||  currentUser.isAdmin)"
+        style="width:20%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of userCourses |filter:term | paginate: config">
+        <td>{{item.title}}</td>
+        <td>{{item?.category?.name}}</td>
+        <td>{{item?.canonicalUrl}}</td>
+        <td>
+          {{item?.updatedByUser?.firstName }} {{item?.updatedByUser?.lastName}}
+        </td>
+        <td>
+          {{item?.createdOn | date: 'short'}}
+        </td>
+        <td *ngIf="(currentUser.canEdit || currentUser.canDelete ||  currentUser.isAdmin)">
+          <button type="button" *ngIf="(currentUser.canEdit || currentUser.isAdmin)" class="btn btn-success"
+            [routerLink]="['/app/course/edit',item.id]"><i class="fa fa-edit"></i></button>
+          <button type="button" *ngIf="(currentUser.canDelete || currentUser.isAdmin)" class="btn btn-danger ml-1"
+            (click)="deleteCourse(item.id)"><i class="fa fa-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="d-flex bd-highlight mb-3">
+    <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+    <div class="ml-auto p-2 bd-highlight">
+      <select (change)="onTableSizeChange($event)" class="custom-select">
+        <option *ngFor="let size of tableSizes" [ngValue]="size">
+          {{ size }}
+        </option>
+      </select>
+    </div>
+  </div>

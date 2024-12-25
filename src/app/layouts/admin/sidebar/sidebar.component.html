@@ -1,0 +1,7 @@
+<nav id="sidebar" class="navbar-dark bg-dark" [ngClass]="{'hidden': sideNavService.hideSideNav }">
+  <ul class="navbar-nav" *ngFor="let item of menuItem">
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="item.link" routerLinkActive="active">{{item?.label}}</a>
+    </li>
+  </ul>
+</nav>

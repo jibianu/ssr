@@ -1,0 +1,261 @@
+element.style {
+    background: url(https://www.oilandgasclub.com/wp-content/uploads/2016/08/become-instructor-banner.jpg)no-repeat;
+    position: relative;
+    display: inline-block;
+    height: 200px;
+    background-size: 100% 100%;
+}
+.banner-content {
+    height: 180px;
+    margin: 0px 50px;
+    color: white;
+}
+.background-cover {
+    // background: url(https://www.oilandgasclub.com/wp-content/uploads/2016/08/become-instructor-banner.jpg) no-repeat;
+    background: linear-gradient(90deg, #153E7C 0.26%, #147FA0 100%);
+    position: relative;
+    /* display: inline-block; */
+    height: 180px;
+    /* width: 100%; */
+    background-size: cover;
+    margin: 0 -119px;
+    // /* background-position-y: -85px;
+}
+.hour-dropdown {
+    width: 190px;
+}
+.selected-dropdown {
+    width: 100%;
+    text-align: left;
+}
+
+.be-a-train-head h1 {
+    font-size: 38px;
+    line-height: 46px;
+}
+
+.be-a-train-head {
+    float: left;
+    margin-top: 50px;
+    width: 50%;
+}
+
+.be-an-inst-head h1 {
+    color: #fff;
+}
+
+.be-an-inst-head {
+    text-align: left;
+    float: left;
+    width: 300px;
+    padding-left: 70px;
+    color: #fff;
+    margin-top: 25px;
+}
+.post-title {
+    margin-bottom: 0px;
+    font-size: 28px;
+}
+.container-instructor {
+    background: #f5f5f5;
+}
+
+.be-an-trainer {
+    // width: 950px;
+    // margin: 20px auto;
+    padding: 20px 0px;
+}
+
+// .inst-earning {
+    // height: 240px;
+    // padding: 0px 220px;
+    // margin: 20px 0px;
+    // margin: 0px 50px;
+// }
+
+// span.earn-img {
+//     display: inline-block;
+//     // margin-top: 60px;
+//     // float: left;
+//     background: url(https://www.oilandgasclub.com/wp-content/uploads/2017/08/ONGC-icons.png) no-repeat;
+//     background-position: -468px -140px;
+//     min-width: 130px;
+//     width: 130px;
+//     height: 128px;
+//     margin-right: 25px;
+// }
+
+.btn-group {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+.post-listing.post {
+    margin-bottom: 20px;
+}
+
+.entry {
+    line-height: 1.5;
+}
+
+#my-income {
+    font-size: 55px;
+    margin-bottom: 0px;
+    // padding-bottom: 0px;
+    // width: 200px;
+    // float: left;
+}
+.earning-calculator-content {
+    float: left;
+    margin-top: 50px;
+    margin-left: 20px;
+}
+// .earning-amount-container {
+//    // float: left;
+//     // margin-top: 35px;
+//     // margin-left: 500px;
+//     p {
+//         margin-bottom: 0px;
+//     }
+// }
+
+.earning-calculator-content p:first-child {
+    font-size: 30px;
+    color: #333333;
+    line-height: 1.2;
+    margin-bottom: 0;
+    padding-bottom: 0px;
+}
+
+.earning-calculator-content p:nth-child(2) {
+    font-size: 16px;
+    color: rgba(51, 51, 51, 0.65);
+    padding-left: 2px;
+    font-weight: 100;
+    padding-bottom: 10px;
+}
+
+.earning-amount-container p:nth-child(3) {
+    font-size: 18px;
+    // position: relative;
+    // top: -14px;
+    // left: 52px;
+    color: rgba(50,50,50,0.7);
+    // padding-bottom: 0px;
+}
+
+.earning-amount-container p:nth-child(4) {
+    font-size: 12px;
+    letter-spacing: 0.25px;
+    padding-bottom: 0px;
+}
+.reason-choose {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+.reason-choose-box {
+    // max-width: 950px;
+    // width: 950px;
+    // height: 260px;
+    // margin: 20px auto;
+}
+.reason {
+    // float: left;
+    width: 263px;
+    // margin-right: 80px;
+    // display: flex;
+    // flex-wrap: wrap;
+    // justify-content: space-between;
+}
+
+span.reason-icon-1 {
+    background-position: -387px -76px;
+}
+.reason span {
+    background: url(https://www.oilandgasclub.com/wp-content/uploads/2017/08/ONGC-icons.png) no-repeat;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 1px solid #BABBC0;
+    border-radius: 50%;
+    // padding: 9px 8px;
+}
+.reason:last-child {
+    margin-right: 0px;
+}
+
+.reason-text {
+    font-size: 14px;
+    color: #737477;
+    letter-spacing: 0.50px;
+}
+
+.reason-head h4 {
+    color: #303030;
+    font-size: 40px !important;
+    text-align: center;
+    margin-right: 50px;
+    margin-bottom: 30px !important;
+}
+
+.benefits-container h2 {
+    text-align: center;
+    padding: 30px 0px 50px 0px ;
+}
+
+.benefits-content {
+    width: 1053px;
+    margin: 0px auto;
+}
+
+.benefits-head {
+    padding: 40px 0px;
+    text-align: center;
+}
+
+.benefits-container ul li {
+    font-size: 14px;
+    color: black;
+}
+.benefits-container h6 {
+    color: #E6632F;
+    font-size: 20px !important;
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+.benefits-container img {
+    // background: url(https://www.oilandgasclub.com/wp-content/uploads/2017/08/ONGC-icons.png) no-repeat;
+    // display: inline-block;
+    // height: 70px;
+    width: 60px;
+    margin-right: 10px;
+}
+.benefits-content-card > div > div {
+    max-width: 240px;
+}
+.benefits-content-card {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.instrcutor-query-form {
+    // text-align: center;
+    padding-top: 20px;
+    max-width: 400px;
+    width: 100%;
+    // font-size: larger;
+    margin: 0px auto;
+}
+.instrcutor-query-form button {
+    width: 100px;
+}
+.instrcutor-query-form h4 {
+    text-align: center;
+}
+
+.customWidth{
+    max-width: 62.5rem!important;
+}

@@ -1,0 +1,47 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" formControlName="name" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.name.errors }" />
+                <div *ngIf="submitted && f.name.errors" class="invalid-feedback">
+                    <div *ngIf="f.name.errors.required">Name is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>App Name</label>
+                <input type="text" formControlName="appsName" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.appsName.errors }" />
+                <div *ngIf="submitted && f.appsName.errors" class="invalid-feedback">
+                    <div *ngIf="f.appsName.errors.required">App Name is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Sort Order</label>
+                <input type="number" formControlName="sortOrder" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.sortOrder.errors }" />
+                <div *ngIf="submitted && f.sortOrder.errors" class="invalid-feedback">
+                    <div *ngIf="f.sortOrder.errors.required">Sort Order is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" formControlName="showOnDashboard" type="checkbox" value=""
+                        id="invalidCheck">
+                    <label class="form-check-label" for="invalidCheck">
+                        Show On Dashboard?
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">{{btntext}}</button>
+                <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

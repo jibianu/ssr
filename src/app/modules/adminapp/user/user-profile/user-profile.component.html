@@ -1,0 +1,88 @@
+<div class="row">
+    <div class="col-12">
+        <h2 class="h3 mb-2 page-title">Profile</h2>
+        <div class="my-4">
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+                <div class="media align-items-center mt-2 mb-2">
+                    <img [src]="uploadedFilePath" alt="" (error) ="onImgError($event)" class="d-block ui-w-80">
+                    <div class="media-body ml-4">
+                      <label class="btn btn-outline-primary">
+                        Upload new photo
+                        <input type="file" accept="image/*" (change)="fileProgress($event)" class="account-settings-fileinput">
+                      </label> &nbsp;
+                      <div class="text-light small mt-1">Allowed JPG, GIF or PNG. Max size of 800K</div>
+                    </div>
+                  </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>First Name</label>
+                        <input type="text" formControlName="firstName" class="form-control"
+                            [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+                        <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                            <div *ngIf="f.firstName.errors.required">First Name is required</div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Last Name</label>
+                        <input type="text" formControlName="lastName" class="form-control"
+                            [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+                        <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                            <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" formControlName="email" class="form-control"
+                        [ngClass]="{ 'is-invalid': submitted && f.email.errors }" disabled />
+                    <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                        <div *ngIf="f.email.errors.required">Email is required</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" formControlName="userName" class="form-control"
+                        [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
+                    <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+                        <div *ngIf="f.userName.errors.required">Username is required</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+        </div>
+
+        <hr class="my-4" />
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <form [formGroup]="PasswordChangeForm" (ngSubmit)="changePassword()">
+                    <div class="form-group">
+                        <label for="inputPassword4">Old Password</label>
+                        <input type="password" formControlName="originalPassword"
+                            [ngClass]="{ 'is-invalid': submitted1 && p.originalPassword.errors }" class="form-control"
+                            />
+                        <div *ngIf="submitted1 && p.originalPassword.errors" class="invalid-feedback">
+                            <div *ngIf="p.originalPassword.errors.required">Old password is required</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword5">New Password</label>
+                        <input type="password" formControlName="newPassword" [ngClass]="{ 'is-invalid': submitted1 && p.newPassword.errors }" class="form-control" />
+                        <div *ngIf="submitted1 && p.newPassword.errors" class="invalid-feedback">
+                            <div *ngIf="p.newPassword.errors.required">New password is required</div>
+                            <div *ngIf="p.newPassword.errors.minlength">Password must be at least 6 characters</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword6">Confirm Password</label>
+                        <input type="password" formControlName="confirmPassword" [ngClass]="{ 'is-invalid': submitted1 && p.confirmPassword.errors }" class="form-control" />
+                        <div *ngIf="submitted1 && p.confirmPassword.errors" class="invalid-feedback">
+                            <div *ngIf="p.confirmPassword.errors.required">Confirm password is required</div>
+                            <div *ngIf="p.confirmPassword.errors.mustMatch">Passwords must match</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

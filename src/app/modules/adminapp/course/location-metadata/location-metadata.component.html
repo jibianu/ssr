@@ -1,0 +1,39 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Location Metadata</h1>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col" style="width:15%">Name</th>
+            <th scope="col" style="width:15%">Title</th>
+            <th scope="col" style="width:15%">Canonical Url</th>
+            <th scope="col" style="width:40%">Meta Description</th>
+            <th scope="col" style="width:10%">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let item of courseLocationData">
+            <td>
+                <input type="text" [(ngModel)]="item.name" disabled/>
+            </td>
+            <td>
+                <input type="text" [(ngModel)]="item.title" [disabled]="!item.isEditable" />
+            </td>
+            <td>
+                <input type="text" [(ngModel)]="item.canonicalUrl" [disabled]="!item.isEditable" />
+            </td>
+            <td>
+                <textarea class="w-100" [(ngModel)]="item.metaDescription" [disabled]="!item.isEditable" rows="3"></textarea>
+                <span style="color:red" *ngIf="item.metaDescription?.length > 160">
+                    160 max charachters
+              </span>
+            </td>
+            <td>
+                <button (click)="item.isEditable=!item.isEditable" class="btn btn-success" *ngIf="!item.isEditable"><i class="fa fa-edit"></i></button>
+                <button *ngIf="item.isEditable" class="btn btn-primary" (click)="item.isEditable=!item.isEditable"><i class="fa fa-save"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-outline-primary" (click)="goBack()">Go Back</button>

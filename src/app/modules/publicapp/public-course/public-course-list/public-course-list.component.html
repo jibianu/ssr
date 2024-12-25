@@ -1,0 +1,51 @@
+<div class="container">
+  <div class="row d-flex justify-content-center align-items-center">
+    <div class="col-md-12">
+      <!-- Blog Post -->
+      <div class="row">
+        <div class="col-md-6 mt-5 d-flex" *ngFor="let item of courses | paginate: config">
+          <div class="blog-grid w-100">
+            <div class="blog-img">
+              <!-- <div class="date"> <span>{{item?.createdOn | date: 'dd'}}</span>
+                            <label>{{item?.createdOn |
+                                date: 'MMM'}} {{item?.createdOn | date: 'yy'}}
+                            </label>
+                        </div> -->
+              <a [href]="item?.canonicalUrl">
+                <img class="card-img-top" [src]="item?.titleImageUrl" (error)="onImgError($event)" />
+              </a>
+            </div>
+            <div class="blog-info flex-fill">
+              <h5>
+                <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
+              </h5>
+              <p class="price-tag"> Price: {{ item.amount | currency:"INR":"symbol" }} </p>
+              <ul class="blog-toc__list p-2">
+                <li *ngFor="let it of item?.courseFeatures" class="mt-1">
+                  <div class="block-list-item">
+                    <img [src]="it?.iconUrl" height="20px" width="20px">
+                    <span class="ml-4">
+                      {{ it?.description }}
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <pagination-template #api="paginationApi" class="custom-page-controls" (pageChange)="pageChange($event)">
+        <ul class="pagination justify-content-center mt-5 mb-4">
+          <li class="page-item" [class.disabled]="api.isFirstPage()">
+            <a href="javascript:void(0)" (click)="api.previous()" class="page-link">&larr; Older</a>
+          </li>
+          <li class="page-item" [class.disabled]="api.isLastPage()">
+            <a href="javascript:void(0)" (click)="api.next()" class="page-link">Newer &rarr;</a>
+          </li>
+        </ul>
+      </pagination-template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+
+ul {
+  list-style: none; /* Remove HTML bullets */
+  padding: 15px;
+  margin: 0;
+  
+}
+
+li { 
+  padding-left: 20px; 
+  line-height: 26px;
+ margin-bottom: 10px;
+ padding-top: 10px;
+ display: list-item;
+    text-align: -webkit-match-parent;
+    unicode-bidi: isolate;
+    position: relative;
+}
+
+li::before {
+    content: "\f138";
+    font-family: FontAwesome;
+    color: #00a9ff;
+    font-weight: 900;
+    position: absolute;
+    left: -15px;
+
+}
+
+

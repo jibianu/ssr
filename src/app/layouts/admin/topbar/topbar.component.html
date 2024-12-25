@@ -1,0 +1,29 @@
+<nav class="navbar  navbar-dark bg-dark">
+  <button  type="button" class="navbar-toggler" (click)="sideNavService.toggleSideNav()">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <!-- <a class="navbar-brand">Blog</a> -->
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item" ngbDropdown display="dynamic">
+      <a class="nav-link" tabindex="0" ngbDropdownToggle id="navbarDropdown1" role="button">
+        {{userName}}
+      </a>
+      <div ngbDropdownMenu aria-labelledby="navbarDropdown1" class="dropdown-menu">
+        <a ngbDropdownItem [routerLink]="['/app/user/profile']">Profile</a>
+        <a ngbDropdownItem href="javascript:void(0)"  (click)="logout()">Logout</a>
+      </div>
+    </li>
+  </ul>
+  <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="true" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button> -->
+  <!-- <div class="navbar-collapse collapse" id="navbarCollapse">
+    <ul class="navbar-nav mr-auto">
+     
+    </ul>
+    <form class="form-inline mt-2 mt-md-0">
+      <a class="nav-link">Logout</a>
+      <button class="btn btn-outline-success my-2 my-sm-0">Logout</button>
+    </form>
+  </div> -->
+</nav>

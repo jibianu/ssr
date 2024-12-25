@@ -1,0 +1,169 @@
+.header-name {
+    min-height: 150px;
+    // width: 100%;
+    background: linear-gradient(90deg, #153E7C .26%, #147FA0 100%);
+    margin: 0px -119px;
+}
+.header-name h1 {
+    font-size: 56px;
+    letter-spacing: 0.5px;
+    line-height: 142px;
+    font-weight: 700;
+    color: white;
+    padding: 0px 210px;
+}
+@media only screen and (max-width: 600px) {
+    .header-name {
+        margin: 0px -30px !important;
+    }
+    .header-name h1 {
+        font-size: 25px !important;
+        line-height: 50px !important;
+        padding: 0px 50px !important;
+    }
+  }
+.paragraph-text p {
+    font-size: 16px;
+    width: 62.5rem;
+    color: #272c37;
+    line-height: 24px;
+    margin: 40px auto;
+}
+.enquiry h2 {
+    font-size: 32px;
+    line-height: 38px;
+    font-weight: 700;
+    color: #272c37;
+    letter-spacing: 1px;
+    margin-top: 0;
+    padding-bottom: 30px;
+}
+.register-office h2 {
+    font-size: 32px;
+    line-height: 38px;
+    font-weight: 700;
+    color: #272c37;
+    letter-spacing: 1px;
+    margin-top: 0;
+    padding: 30px 0px;
+}
+.enquiry-card {
+    background-color: #fff;
+    border: 1px solid #DDE6ED;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 34px 0px;
+    text-align: center;
+    // margin-left: 10px;
+    margin-bottom: 10px;
+}
+.enquiry-card>p {
+    margin-top: 26px;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 21px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    color: #272c37;
+}
+.enquiry-card>a {
+    margin-top: 40px;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 19px;
+    letter-spacing: 1px;
+    color: #1179ef;
+    text-align: center;
+    // position: absolute;
+    // bottom: 24px;
+    // right: 0;
+    // left: 0;
+}
+.logo {
+    background: url(https://www.simplilearn.com/ice9/assets/contact_sprite.svgz) no-repeat;
+    display: inline-block;
+    width: 77px;
+    height: 52px;
+    // background-position: -20px -95px;
+}
+
+.logo-1 {
+    background-position: -20px -20px;
+}
+.logo-2 {
+    background-position: -5px -94px;
+}
+.logo-3 {
+    background-position: -20px -164px;
+}
+.address-block {
+    background-color: #fff;
+    border: 1px solid #DDE6ED;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    width: 100%;
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 24px;
+    padding: 24px 15px 32px 20px;
+}
+
+.country-name {
+    font-size: 18px;
+    line-height: 21px;
+    letter-spacing: 1px;
+    color: #272c37;
+    font-weight: 700;
+}
+.company-name {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 19px;
+    color: #272c37;
+    margin-top: 32px;
+}
+.company-location {
+    font-size: 14px;
+    line-height: 24px;
+    color: #51565E;
+    margin-top: 14px;
+    min-height: 72px;
+}
+.contact-number {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    color: #51565E;
+    margin-top: 16px;
+}
+
+.contact-link span::before {
+    content: "";
+    display: inline-block;
+    background: url(https://www.simplilearn.com/ice9/assets/contact_sprite.svgz) no-repeat;
+    vertical-align: middle;
+    width: 20px;
+    height: 28px;
+    background-position: -20px -525px;
+    margin-right: 10px;
+}
+.contact-link span {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 19px;
+    color: #1179ef;
+    margin-top: 48px;
+}
+a {
+    color: #1179EF;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+
+
+.container{
+    max-width: 62.5rem!important;
+    padding: 0px 2px!important;
+}

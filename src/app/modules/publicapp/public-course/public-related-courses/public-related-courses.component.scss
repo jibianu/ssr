@@ -1,0 +1,28 @@
+.img-4by3-lg {
+    width: 6.5rem;
+    height: 8vh;
+    object-fit: cover;
+}
+.rounded {
+    border-radius: .25rem!important;
+}
+img, svg {
+    vertical-align: middle;
+}
+img {
+    border-style: none;
+}
+
+.text-inherit {
+    color: #18113c;
+}
+a, a:hover {
+    text-decoration: none;
+}
+
+.truncate{
+    width: 350px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

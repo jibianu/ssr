@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /auth/login
+Disallow: /search
+Disallow: /category/
+Disallow: /tag/
+Disallow: /page-not-found
+Allow: /
+Sitemap: https://oilandgasclub.com/sitemap.xml

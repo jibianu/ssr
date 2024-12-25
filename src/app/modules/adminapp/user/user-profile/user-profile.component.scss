@@ -1,0 +1,22 @@
+.ui-w-80 {
+    width: 80px !important;
+    height: auto;
+}
+
+.btn-outline-primary {
+    border-color: #26B4FF;
+    background: transparent;
+    color: #26B4FF;
+}
+
+.text-light {
+    color: #babbbc !important;
+}
+
+.account-settings-fileinput {
+    position: absolute;
+    visibility: hidden;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
