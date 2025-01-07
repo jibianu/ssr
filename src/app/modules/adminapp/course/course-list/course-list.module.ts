@@ -17,7 +17,7 @@ const routes: Routes = [
   ];
 
 @NgModule({
-  declarations: [CourseListComponent UserCourseComponent],
+  declarations: [CourseListComponent, UserCourseComponent],
   imports: [
     CommonModule,
     CourseRoutingModule,
