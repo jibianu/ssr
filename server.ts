@@ -60,6 +60,11 @@ export function app(): express.Express {
     res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
   });
 
+  app.get('/course/tekla-software-training/', (req, res) => {
+    res.redirect(301, '/tekla-software-training');
+  });
+  
+
   return server;
 }
 

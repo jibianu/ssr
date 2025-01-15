@@ -26,11 +26,11 @@ const routes: Routes = [
     path: 'location',
     loadChildren: () => import('./location-metadata/locationmetadata.module').then(m => m.LocationMetadataModule),
   },
-  // {
-  //   path: '',
-  //   redirectTo: 'list',
-  //   pathMatch: 'full'
-  // },
+  //  {
+  //    path: '',
+  //    redirectTo: 'list',
+  //    pathMatch: 'full'
+  //  },
 ];
 
 @NgModule({
