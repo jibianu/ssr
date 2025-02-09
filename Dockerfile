@@ -28,7 +28,7 @@ COPY --from=builder /app/package*.json ./
 RUN npm install --legacy-peer-deps
 
 # Expose port
-EXPOSE 4000
+EXPOSE 4005
 
 # Start the server
 CMD ["node", "dist/Course/server/main.js"]
