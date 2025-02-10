@@ -1,0 +1,201 @@
+.event-details-wrapper {
+    max-width: 1272px;
+    margin: 0 auto;
+}
+
+.banner-wrapper {
+    margin: 0 auto;
+    max-width: 1272px;
+    position: relative;
+    padding: 16px 8px;
+}
+
+.top-banner {
+    height: 380px;
+    position: relative;
+}
+
+.hero-image img {
+    border-radius: 20px;
+    height: 380px;
+    -o-object-fit: cover;
+    object-fit: cover;
+    width: 100%;
+}
+
+.banner-overlay {
+    background-image: linear-gradient(92deg, rgba(67, 66, 66, .99) 22.37%, hsla(0, 0%, 85%, 0) 63.83%);
+    border-radius: 20px;
+    height: 100%;
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.banner-content {
+    color: #fff;
+    left: 12px;
+    margin-left: 48px;
+    max-width: 500px;
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    width: 50%;
+}
+
+
+@media (max-width: 640px) {
+
+    .top-banner,
+    .hero-image img {
+        height: 440px;
+    }
+
+    .banner-content {
+        bottom: 0;
+        margin-bottom: 15%;
+        margin-left: 16px;
+        max-width: none;
+        top: auto;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+        width: 90%;
+    }
+
+    .header-desc {
+        max-height: 50px !important;
+    }
+
+    .header-p1 {
+        font-size: 30px !important;
+    }
+
+    .header-p2 {
+        font-size: 48px !important;
+    }
+
+    .event-card {
+        border: 1px solid #EBEAE9;
+        border-radius: 10px;
+    }
+
+    .event-title {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+}
+
+.header-p1 {
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: .5px;
+    line-height: 44px;
+    text-rendering: optimizelegibility;
+}
+
+.header-p2 {
+    font-size: 54px;
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 64px;
+    text-rendering: optimizelegibility;
+}
+
+.header-desc {
+    color: #fff;
+    max-height: 100px;
+    overflow-y: scroll;
+    text-wrap: pretty;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5rem;
+    margin-bottom: 16px;
+    margin-top: 16px;
+}
+
+.btn-radius {
+    border-radius: 20px;
+}
+
+.main-title {
+    color: #020710;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+}
+
+.sub-title {
+    color: #020710;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+}
+
+
+.filter-title {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.text-md {
+    font-size: .875rem;
+}
+
+.event-status {
+    font-style: italic;
+}
+
+.event-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 2rem;
+    // margin-bottom: 16px;
+    word-break: break-word;
+}
+
+.event-tags li {
+    font-size: .875rem;
+    font-weight: 500;
+    color: #6f7287;
+}
+
+.event-price {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.event-card:hover {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    border-radius: 10px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.offer-badge i {
+    font-size: 1rem;
+}
+
+::ng-deep .accordion-btn:hover,
+.accordion-btn:active,
+.accordion-btn:focus {
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+::ng-deep .accordion>.card>.card-header {
+    padding: 5px 0;
+}
+
+.accordion-title {
+    font-size: 1rem !important;
+}
