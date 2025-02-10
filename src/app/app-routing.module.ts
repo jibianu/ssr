@@ -8,14 +8,8 @@ import { PageNotFoundComponent } from './modules/publicapp/page-not-found/page-n
 const routerOptions: ExtraOptions = {
     scrollPositionRestoration: 'enabled',
     anchorScrolling: 'enabled',
-    scrollOffset: [0, 64],
-    relativeLinkResolution: 'legacy'
-// }{
-//     scrollPositionRestoration: 'enabled',
-//     anchorScrolling: 'enabled',
-//     scrollOffset: [0, 64],
-//     relativeLinkResolution: 'legacy'
- };
+    scrollOffset: [0, 64]
+};
 
 const routes: Routes = [
   {
