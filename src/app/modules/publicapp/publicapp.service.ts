@@ -43,5 +43,17 @@ export class PublicAppService {
     getCourseByCanonicalLocationURL(courseUrl, locationUrl){
         return this.http.get<any>(this.apiUrl + `page/course/course/` + courseUrl + '/location/' + locationUrl);
     }
+    getEvents(): Observable<any> {
+        return this.http.get(this.apiUrl + `page/event/dashboard`);
+    }
+    getUpcomingEvents(eventId: string): Observable<any> {
+        return this.http.get(this.apiUrl + `page/event/upcoming/${eventId}`);
+    }
+    getEventById(eventId: string): Observable<any> {
+        return this.http.get(this.apiUrl + `page/event/${eventId}`);
+    }
+    createEventUser(eventId:string,eventUser: any): Observable<any> {
+        return this.http.post(this.apiUrl + `page/event/users/${eventId}`, eventUser);
+    }
 }
 

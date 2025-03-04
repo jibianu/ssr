@@ -30,6 +30,10 @@ export class SidebarComponent implements OnInit {
           label: 'Category',
         },
         {
+          link: '/app/event/list',
+          label: 'Event',
+        },
+        {
           link: '/app/location/list',
           label: 'Location',
         },

@@ -29,6 +29,8 @@ const routes: Routes = [
 
   {path: "" , component:HomeComponent},
   {path: "course" , component:PublicCourseHomeComponent},
+  {path: 'events', loadChildren: () => import('../publicapp/public-event/public-event.module').then(m => m.PublicEventModule)},
+  // {path: 'events-details', loadChildren: () => import('../adminapp/events/event-details/event-details.module').then(m => m.EventDetailsModule)},
   {path: "contact-us",component:ContactUsComponent},
   {path: "about-us" ,component:AboutUsComponent},
   {path: "partner-us" ,component:PartnerUsComponent},

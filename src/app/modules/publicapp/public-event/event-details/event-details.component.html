@@ -1,0 +1,663 @@
+<div class="event-details-wrapper mb-5">
+    <div class="event-details">
+        <div class="event-hero-wrapper" data-testid="event-hero">
+            <div class="event-hero">
+                <div class="event-hero-background" [ngStyle]="{'background-image': 'url(' + bgImage + ')'}">
+                </div>
+                <div class="hero-image">
+                    <img alt="Banner Image" class="img-fluid" src="{{bgImage}}">
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="event-details-body d-flex mt-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-md-12">
+    
+                        <!-- <div class="left-section"> -->
+
+
+
+                            <div class="title-section">
+                                <!-- Badge -->
+                                <div>
+                                    <span class="badge badge-primary p-2 mb-2">{{event.badge}}</span>
+                                </div>
+                            
+                                <!-- Event Date and Status -->
+                                <div>
+                                    <span class="event-date">{{event.startDate | date:'EEEE, MMMM dd'}}</span>
+                                    <span class="event-status ml-2">Live</span>
+                                </div>
+                            
+                                <!-- Event Title -->
+                                <div class="mt-3 mb-4">
+                                    <h1 class="event-title">{{event.title}}</h1>
+                                </div>
+                            
+                                <!-- Tags and Price -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <ul class="event-tags pl-4 mb-4">
+                                            <li class="mb-3" *ngFor="let tag of getInfo('tags')">{{tag.tag}}</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <div class="event-price mr-5">
+                                            Price | ₹{{event.amount | number:'1.2-2'}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                             <!-- <div class="Workshop Start "> -->
+
+                               <div class="workshop-details p-4 mt-5">
+    <div class="workshop-grid">
+        <!-- Date Card -->
+        <div class="workshop-card date-card">
+            <div class="card-icon">
+                <i class="fa fa-calendar fa-2x" aria-hidden="true"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Date</h3>
+                <p class="card-text">{{event.startDate|date:'MMM, dd'}} - {{event.endDate|date:'MMM, dd yyyy'}}</p>
+            </div>
+        </div>
+
+        <!-- Time Card -->
+        <div class="workshop-card time-card">
+            <div class="card-icon">
+                <i class="fa fa-clock-o fa-2x" aria-hidden="true"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Time</h3>
+                <p class="card-text">{{event.timeing}}</p>
+            </div>
+        </div>
+
+        <!-- Live Card -->
+        <div class="workshop-card live-card">
+            <div class="card-icon">
+                <i class="fa fa-video-camera fa-2x" aria-hidden="true"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Live</h3>
+                <p class="card-text">{{event.duration}}</p>
+            </div>
+        </div>
+
+        <!-- Language Card -->
+        <div class="workshop-card language-card">
+            <div class="card-icon">
+                <i class="fa fa-language fa-2x" aria-hidden="true"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Language</h3>
+                <p class="card-text">{{event.language}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+                                <!-- <div class="Workshop End anu "> -->
+
+
+                            <div class="about-section text-left mt-4">
+                                <div class="know-title text-left mb-2">
+                                    About this event
+                                </div>
+                                <div class="text-md font-bold ml-2" style="font-weight: 600;">
+                                    <span style="color: #3762f3;"><i class="fa fa-clock-o mr-2" aria-hidden="true"></i></span>
+                                    <span>Event lasts 1 day 10 hours</span>
+                                </div>
+                                <p class="text-muted mt-2 ml-2">
+                                  {{event.aboutEvent}}
+                                </p>
+                            </div>
+
+                                   <!-- <div class="What you will learn "> -->
+
+                            <div class="course-highlights mt-4">
+                                <div class="course-highlights-title mb-2">What Will You Learn?</div>
+                                <div class="workshop-cards-wrapper">
+                                    <div class="d-flex justify-content-center flex-wrap">
+                                        <div class="card highlight-card" *ngFor="let e of getInfo('curriculum')">
+                                            <div class="card-body">
+                                                <div class="d-flex">
+                                                    <div class="high-icon">
+                                                        <i class="fa fa-check-circle" aria-hidden="true"></i>
+                                                    </div>
+                                                    <div class="high-points">
+                                                        <strong>{{e.title}}</strong>&nbsp;
+                                                        <span>{{e.description}}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bonuses-section mt-4">
+
+                                        <!-- <div class="Bonuses start "> -->
+
+
+<div class="bonuses-title mb-3 px-3">
+    <h2 class="text-center font-weight-bold" style="color: #34495e;">
+        Bonuses worth Rs. {{sumAmount('bonuse')|number:'1.2-2'}} 
+        for first {{getValue('bonuse-info','First Registrion Bonus Count','count')}} registrations 
+        (Slots remaining {{getValue('bonuse-info','Maximum Slot','count')}})
+    </h2>
+</div>
+<div class="bonuses-cards-wrapper">
+    <div class="d-flex justify-content-center flex-wrap">
+        <div class="card bonus-card m-2" *ngFor="let b of getInfo('bonuse'); let i = index">
+            <div class="card-body text-center p-3">
+                <div class="bonus-badge mb-2" style="color: #e74c3c; font-weight: 600;">
+                    {{b.tag}}
+                </div>
+                <div class="bonus-price h4 mb-2" style="color: #27ae60;">
+                    &#8377; {{b.amount | number:'1.2-2'}}
+                </div>
+                <div class="bonus-desc small" style="color: #7f8c8d;">
+                    {{b.description}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                 <!-- <div class="Bonuses End  "> -->
+
+                    <div (click)="openRegisterModal(longContent)" class="btn-grad m-auto" style="max-width: max-content;">
+                        Become A {{event.title}} Now At 
+                        <span class="strike">₹{{event.amount + event.discount | number: '1.2-2'}}</span>
+                        ₹{{event.amount | number: '1.2-2'}}
+                    </div>
+                    <div class="know-desc text-md m-auto pt-2" style="max-width: 30rem;">
+                        Register Before {{event.startDate | date: 'MMMM dd, yyyy'}} To Unlock All Bonuses
+                    </div>
+
+                    <!-- <div class="Time is running out start  "> -->
+
+
+                                
+
+                                    <div class="bonuses-alert text-center mb-3">
+                                    <div class="alert-text" style="font-size: 1.5rem; font-weight: 600; color: #FF9AA2;">Time is running out</div>
+                                    <div class="alert-text" style="font-size: 1.25rem; font-weight: 500; color: #B5EAD7;">Grab your spot fast</div>
+                                </div>
+                                
+                                <div class="text-sm mt-4 text-center" style="color: #7f8c8d;">
+                                    Grab the bonuses worth Rs. {{sumAmount('bonuse')|number:'1.2-2'}} inside the cohort!
+                                </div>
+                                
+                                <div class="time-card-wrap mt-4" *ngIf="getRemaining(event.startDate) let x">
+                                    <div class="d-flex justify-content-center">
+                                        <div class="card time-card">
+                                            <div class="card-body text-center">
+                                                <div class="time" style="font-size: 2rem; font-weight: 700; color: #2c3e50;">
+                                                    {{x.days}}
+                                                </div>
+                                                <div class="text-md" style="color: #7f8c8d;">
+                                                    Days
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card time-card">
+                                            <div class="card-body text-center">
+                                                <div class="time" style="font-size: 2rem; font-weight: 700; color: #2c3e50;">
+                                                    {{x.hours}}
+                                                </div>
+                                                <div class="text-md" style="color: #7f8c8d;">
+                                                    Hours
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="did-you-know-wrap mt-5" *ngIf="getInfo('slary').length">
+                                    <svg id="wave" style="transform:rotate(0deg); transition: 0.3s" viewBox="0 0 1440 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <linearGradient id="sw-gradient-0" x1="0" x2="0" y1="1" y2="0">
+                                                <stop stop-color="rgba(235, 241, 248, 1)" offset="0%"></stop>
+                                                <stop stop-color="rgba(235, 241, 248, 1)" offset="100%"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                        <path style="transform:translate(0, 0px); opacity:1" fill="url(#sw-gradient-0)" d="M0,40L26.7,41.7C53.3,43,107,47,160,43.3C213.3,40,267,30,320,35C373.3,40,427,60,480,70C533.3,80,587,80,640,75C693.3,70,747,60,800,56.7C853.3,53,907,57,960,53.3C1013.3,50,1067,40,1120,43.3C1173.3,47,1227,63,1280,66.7C1333.3,70,1387,60,1440,46.7C1493.3,33,1547,17,1600,8.3C1653.3,0,1707,0,1760,15C1813.3,30,1867,60,1920,68.3C1973.3,77,2027,63,2080,56.7C2133.3,50,2187,50,2240,55C2293.3,60,2347,70,2400,75C2453.3,80,2507,80,2560,71.7C2613.3,63,2667,47,2720,38.3C2773.3,30,2827,30,2880,36.7C2933.3,43,2987,57,3040,51.7C3093.3,47,3147,23,3200,16.7C3253.3,10,3307,20,3360,33.3C3413.3,47,3467,63,3520,70C3573.3,77,3627,73,3680,75C3733.3,77,3787,83,3813,86.7L3840,90L3840,100L3813.3,100C3786.7,100,3733,100,3680,100C3626.7,100,3573,100,3520,100C3466.7,100,3413,100,3360,100C3306.7,100,3253,100,3200,100C3146.7,100,3093,100,3040,100C2986.7,100,2933,100,2880,100C2826.7,100,2773,100,2720,100C2666.7,100,2613,100,2560,100C2506.7,100,2453,100,2400,100C2346.7,100,2293,100,2240,100C2186.7,100,2133,100,2080,100C2026.7,100,1973,100,1920,100C1866.7,100,1813,100,1760,100C1706.7,100,1653,100,1600,100C1546.7,100,1493,100,1440,100C1386.7,100,1333,100,1280,100C1226.7,100,1173,100,1120,100C1066.7,100,1013,100,960,100C906.7,100,853,100,800,100C746.7,100,693,100,640,100C586.7,100,533,100,480,100C426.7,100,373,100,320,100C266.7,100,213,100,160,100C106.7,100,53,100,27,100L0,100Z"></path>
+                                    </svg>
+                                    <div class="section-content text-center">
+                                        <div class="inside-wrap">
+                                            <div class="know-title pb-2 px-4" style="font-size: 1.75rem; font-weight: 700; color: #2c3e50;">Did You Know?</div>
+                                            <div class="know-desc text-md m-auto" style="max-width: 30rem; color: #7f8c8d;">
+                                                There is no one who loves pain itself, who seeks after it and wants to have it, simply because it is pain. Who seeks after it and wants to have it.
+                                            </div>
+                                            <div class="know-card-wrap mt-4 mb-3">
+                                                <div class="d-flex justify-content-center flex-wrap">
+                                                    <div class="card know-card m-3" *ngFor="let l of getInfo('slary')">
+                                                        <div class="card-body text-center">
+                                                            <div class="pay" style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">
+                                                                {{l.amount}} LPA
+                                                            </div>
+                                                            <div class="desc" style="font-size: 0.9rem; color: #7f8c8d;">
+                                                                {{l.description}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                    <svg id="wave" style="transform:rotate(180deg); transition: 0.3s" viewBox="0 0 1440 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <linearGradient id="sw-gradient-0" x1="0" x2="0" y1="1" y2="0">
+                                                <stop stop-color="rgba(235, 241, 248, 1)" offset="0%"></stop>
+                                                <stop stop-color="rgba(235, 241, 248, 1)" offset="100%"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                        <path style="transform:translate(0, 0px); opacity:1" fill="url(#sw-gradient-0)" d="M0,40L26.7,41.7C53.3,43,107,47,160,43.3C213.3,40,267,30,320,35C373.3,40,427,60,480,70C533.3,80,587,80,640,75C693.3,70,747,60,800,56.7C853.3,53,907,57,960,53.3C1013.3,50,1067,40,1120,43.3C1173.3,47,1227,63,1280,66.7C1333.3,70,1387,60,1440,46.7C1493.3,33,1547,17,1600,8.3C1653.3,0,1707,0,1760,15C1813.3,30,1867,60,1920,68.3C1973.3,77,2027,63,2080,56.7C2133.3,50,2187,50,2240,55C2293.3,60,2347,70,2400,75C2453.3,80,2507,80,2560,71.7C2613.3,63,2667,47,2720,38.3C2773.3,30,2827,30,2880,36.7C2933.3,43,2987,57,3040,51.7C3093.3,47,3147,23,3200,16.7C3253.3,10,3307,20,3360,33.3C3413.3,47,3467,63,3520,70C3573.3,77,3627,73,3680,75C3733.3,77,3787,83,3813,86.7L3840,90L3840,100L3813.3,100C3786.7,100,3733,100,3680,100C3626.7,100,3573,100,3520,100C3466.7,100,3413,100,3360,100C3306.7,100,3253,100,3200,100C3146.7,100,3093,100,3040,100C2986.7,100,2933,100,2880,100C2826.7,100,2773,100,2720,100C2666.7,100,2613,100,2560,100C2506.7,100,2453,100,2400,100C2346.7,100,2293,100,2240,100C2186.7,100,2133,100,2080,100C2026.7,100,1973,100,1920,100C1866.7,100,1813,100,1760,100C1706.7,100,1653,100,1600,100C1546.7,100,1493,100,1440,100C1386.7,100,1333,100,1280,100C1226.7,100,1173,100,1120,100C1066.7,100,1013,100,960,100C906.7,100,853,100,800,100C746.7,100,693,100,640,100C586.7,100,533,100,480,100C426.7,100,373,100,320,100C266.7,100,213,100,160,100C106.7,100,53,100,27,100L0,100Z"></path>
+                                    </svg>
+                                </div>
+
+                               
+
+                                <div class="know-title mb-4 px-4 text-center" style="font-size: 1.75rem; font-weight: 700; color: #2c3e50;">
+                                    Who is this program for?
+                                </div>
+                                <div class="d-flex flex-wrap justify-content-center">
+                                    <!-- Students -->
+                                    <div class="illustrator m-3">
+                                        <div class="image text-center p-3" style="background: #FF9AA2; border-radius: 15px;">
+                                            <img src="assets\img\icons8-students-80.png" alt="Students" style="width: 50px; height: 50px;">
+                                        </div>
+                                        <div class="know-desc text-center mt-2" style="font-size: 1rem; font-weight: 600; color: #2c3e50;">
+                                            Students
+                                        </div>
+                                    </div>
+                                
+                                    <!-- Professionals -->
+                                    <div class="illustrator m-3">
+                                        <div class="image text-center p-3" style="background: #B5EAD7; border-radius: 15px;">
+                                            <img src="assets\img\icons8-students-80.png" alt="Professionals" style="width: 50px; height: 50px;">
+                                        </div>
+                                        <div class="know-desc text-center mt-2" style="font-size: 1rem; font-weight: 600; color: #2c3e50;">
+                                            Professionals
+                                        </div>
+                                    </div>
+                                
+                                    <!-- Job Seekers -->
+                                    <div class="illustrator m-3">
+                                        <div class="image text-center p-3" style="background: #C7CEEA; border-radius: 15px;">
+                                            <img src="assets\img\icons8-students-80.png" alt="Job Seekers" style="width: 50px; height: 50px;">
+                                        </div>
+                                        <div class="know-desc text-center mt-2" style="font-size: 1rem; font-weight: 600; color: #2c3e50;">
+                                            Job Seekers
+                                        </div>
+                                    </div>
+                                </div>
+                                     <!-- <div class="Student profsionals End "> -->
+
+                                        <!-- <div class="Become A start"> -->
+
+                                 
+
+                            <div (click)="openRegisterModal(longContent)" class="btn-grad m-auto" style="max-width: max-content;">
+                                Become A {{event.title}} Now At 
+                                <span class="strike">₹{{event.amount + event.discount | number: '1.2-2'}}</span>
+                                ₹{{event.amount | number: '1.2-2'}}
+                            </div>
+                            <div class="know-desc text-md m-auto pt-2" style="max-width: 30rem;">
+                                Register Before {{event.startDate | date: 'MMMM dd, yyyy'}} To Unlock All Bonuses
+                            </div>
+
+                            <!-- <div class="Become A End "> -->
+
+                                <!-- <div class="orgniser start  "> -->
+                               
+                            </div>
+                            <div class="about-section text-left mt-4">
+                                <div class="know-title text-left mb-2">
+                                    Organized by
+                                </div>
+                                <div class="organizer-wrapper p-3">
+                                    <div class="organizer">
+                                        <div class="d-flex justify-content-between flex-wrap">
+                                            <div class="d-flex" *ngFor="let it of getInfo('organized')">
+                                                <div class="organizer-img mr-3">
+                                                    <img [src]="it.imageUrl" alt="Chirag Jhumkawala" class="rounded-circle">
+                                                </div>
+                                                <div class="organizer-details"  >
+                                                    <div class="know-title text-left">{{it.title}}</div>
+                                                    <div class="d-flex mt-2 align-items-center">
+                                                        <div class="badge badge-primary mr-2">{{it.tag}}</div>
+                                                        
+                                                        <div class="text-md">Information Designer</div>
+                                                    </div>
+                                                    <div class="d-flex mt-2 align-items-center social-icons">
+                                                        
+                                                        <a  [href]="iv.title" *ngFor="let iv of getInfo('organized_soc')">
+                                                            <i class="fa fa-linkedin mr-3" *ngIf="iv.tag=='LinkdIn'" aria-hidden="true"></i>
+                                                            <i class="fa fa-twitter mr-3" *ngIf="iv.tag=='Twitter'" aria-hidden="true"></i>
+                                                        </a>
+                                                        
+                                                    </div>
+                
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="organizer-info mt-4" *ngFor="let it of getInfo('organized')">
+                                        <p id="largeText" class="text-collapse text-md text-muted">
+                                            {{it.description}}
+                                          </p>
+                                    </div>
+                                    <button id="viewMoreBtn" class="btn btn-link p-0" (click)="onViewMoreInfo()">View More</button>
+                                </div>
+                                
+            
+                             </div>
+                            
+
+                              <!-- <div class="orgniser end  "> -->
+
+                                 <!-- <div class="Faq start  "> -->
+ 
+                            <div class="faq-section px-sm-3 py-3 mt-4 px-2">
+                                <div class="know-title mb-1">
+                                    Frequently Asked Questions (FAQs)
+                                </div>
+                                <div class="text-md m-auto text-center" style="max-width: 30rem; line-height: 1rem;">
+                                    It is a long established fact that a reader will be distracted by the readable
+                                    content of a page when looking at its layout.
+                                </div>
+                                <div class="text-bold mt-2 mb-3 text-center text-uppercase"
+                                    style="font-size: 1rem; font-weight: 600;">
+                                    See You Inside the Cohort
+                                </div>
+                            
+                                <div (click)="openRegisterModal(longContent)" class="btn-grad m-auto" style="max-width: max-content;">Become A {{event.title}} Now At <span class="strike">
+                                    ₹{{event.amount+event.discount | number :'1.2-2'}}</span>
+                                     ₹{{event.amount |number :'1.2-2'}}</div>
+            
+                                <div class="faqs mt-4">
+                                    <div id="courseAccordion">
+                                        <div id="contents" class="card mb-2 rounded-0" *ngFor="let qa of getInfo('qa')">
+                                          <div class="card-header-custom" id="headingOne">
+                                            <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none active collapsed "
+                                              data-toggle="collapse" href="#x{{qa.id}}" aria-expanded="false"
+                                              aria-controls="x{{qa.id}}" id='card-header'>
+                                              <div class="mr-auto">
+                                                <img src="https://ongc-course.s3-ap-south-1.amazonaws.com/Icon-image/topic-checked-637631536949613235-.svg" height="20px" width="20px">
+                                                <span class="ml-2">
+                                                    {{qa.title}}
+                                                </span>
+                                              </div>
+                                            </a>
+                                          </div>
+                              
+                                          <div id="x{{qa.id}}" class="collapse" data-parent="#courseAccordion">
+                                            <div class="card-body" id="content">
+                                                {{qa.description}}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+            
+                                    
+                                </div>
+                            </div>
+                           
+                      
+                    </div>
+                    <div class="col-lg-4 col-md-12 right-col">
+                        
+                            <div id="sticky-right-bar" class="sticky-div position-relative w-100" #stickySection>
+                                <div class="sticky-sec">
+                                    <div class="card reg-card ml-2">
+                                        
+                                        <div class="card-footer">
+                                            <ng-container *ngTemplateOutlet="ticketDetails"></ng-container>
+                                            <ng-container *ngTemplateOutlet="totalTemplate; context: {fromSide: true}"></ng-container>
+                                        </div>
+                                    </div>
+                             
+                                </div>
+                                 
+                            </div>
+                       
+                    </div>
+                </div>
+                   
+                
+                <!-- <div class="Faq End  "> -->
+
+
+                      <!-- <div class=" Related Events start  "> -->
+
+<div class="row">
+    <div class="col-sm-12 col-12">
+        <div class="similar-section mt-3" id="related-courses-section">
+            <div class="text-bold mt-2 mb-3 text-left" style="font-size: 1.25rem; font-weight: 600; color: #2c3e50;">
+                Events you might be interested in
+            </div>
+            <div class="container">
+                <div class="position-relative">
+                    <owl-carousel-o [options]="customOptions">
+                        <ng-template carouselSlide *ngFor="let i of events">
+                            <div class="slider">
+                                <div class="card course-card w-100 mr-4">
+                                    <!-- Card Image -->
+                                    <div class="card-image position-relative">
+                                        <img *ngIf="getEventDt(i,'image',0) let x" class="card-img" [src]="x.imageUrl" alt="Event Image">
+                                        <img *ngIf="!getEventDt(i,'image',0)" class="card-img" src="https://cdn-media.domestika.org/c_fill,dpr_2.0,f_auto,h_157,pg_1,t_base_params,w_280/v1620832638/course-covers/000/002/409/2409-original.jpg?1620832638" alt="Default Event Image">
+                                        <div class="card-img-overlay d-flex justify-content-left">
+                                            <div class="sale-badge">
+                                                Best Seller
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <h4 class="card-title" style="font-size: 1.25rem; font-weight: 700; color: #2c3e50;">{{i.title}}</h4>
+                                        <h6 class="card-subtitle mb-2 text-muted" *ngIf="getEventDt(i,'organized',0) let x" style="font-size: 0.9rem; color: #7f8c8d;">A Event by {{x.title}}</h6>
+                                        <p class="card-text" style="font-size: 0.9rem; color: #7f8c8d; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                                            {{i.aboutEvent}}
+                                        </p>
+                                        <!-- Price and Register Button -->
+                                        <div class="buy">
+                                            <div class="price text-success" style="font-size: 1.25rem; font-weight: 700;">
+                                                ₹{{i.amount | number:'1.2-2'}}
+                                            </div>
+                                            <a href="events/{{i.canonicalUrl}}" class="btn btn-register mt-3 form-control">
+                                                <i class="fa fa-shopping-cart"></i> Register
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </owl-carousel-o>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+  <!-- <div class="Related event end  "> -->
+
+  <!-- <div class="Regester  form start  "> -->
+
+
+<ng-template #longContent let-modal>
+
+    
+    <div class="modal-header">
+        <div class="d-block">
+            <h4 class="reg-title">Register Now</h4>
+            <h6 class="reg-subtitle">{{event.title}}</h6>
+            <h6 class="reg-subtitle-muted mb-2"><span>Please share the attendee details</span>
+                
+            </h6>
+        </div>
+
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="attendee-wrapper">
+            <div class="attendee-title">Enter details for <strong>Attendee 1</strong></div>
+            <ng-container *ngTemplateOutlet="registrationsection"></ng-container>
+        </div>
+        <div class="reg-modal-ticket p-3 ticket-details-wrapper">
+            <ng-container *ngTemplateOutlet="ticketDetails"></ng-container>
+        </div>
+    </div>
+    <div class="modal-footer reg-modal-footer ticket-details-wrapper d-block w-100">
+        <ng-container *ngTemplateOutlet="totalTemplate; context: {fromSide: false}"></ng-container>
+     
+    </div>
+</ng-template>
+
+
+
+             
+
+<!-- 
+<ng-template #registrationsection>
+    <form class="form-wrapper" [formGroup]="eventUserForm">
+        <div class="row">
+            <div class="col-sm-12 col-12">
+                <div class="form-group">
+                    <label for="reg-name">Name
+                        <span class="red-dark">*</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="name"  placeholder="Enter Name" id="reg-name">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Work Email ID
+                        <span class="red-dark">*</span>
+                    </label>
+                    <input type="email" class="form-control"  formControlName="email" placeholder="Enter Email" id="reg-email">
+                </div>
+                <div class="form-group">
+                    <label for="reg-mobile">Mobile Number
+                        <span class="red-dark">*</span>
+                    </label>
+                    <input type="text" class="form-control"  formControlName="mobile" placeholder="Enter Mobile Number" id="reg-mobile">
+                </div>
+                <div class="form-group">
+                    <label for="reg-company">Company Name
+                        <span class="red-dark">*</span>
+                    </label>
+                    <input type="text" class="form-control"  formControlName="companyName" placeholder="Enter Company Name" id="reg-company">
+                </div>
+                <div class="form-group">
+                    <label for="reg-designation">Designation
+                        <span class="red-dark">*</span>
+                    </label>
+                    <input type="text" class="form-control"  formControlName="designation" placeholder="Enter Designation" id="reg-company">
+                    
+                </div>
+                <div class="form-group">
+                    <label for="reg-department">Department
+                        <span class="red-dark">*</span>
+                    </label>
+                    <input type="text" class="form-control" formControlName="department" placeholder="Enter Department" id="reg-company">
+                    
+                </div>
+            </div>
+        </div>
+    </form>
+</ng-template> -->
+
+<ng-template #registrationsection>
+    <form class="form-wrapper" [formGroup]="eventUserForm">
+        <!-- Name Field -->
+        <div class="form-group">
+            <label for="reg-name">Name <span class="required">*</span></label>
+            <input type="text" id="reg-name" formControlName="name" class="form-control" placeholder="Enter Name">
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+            <label for="reg-email">Work Email ID <span class="required">*</span></label>
+            <input type="email" id="reg-email" formControlName="email" class="form-control" placeholder="Enter Email">
+        </div>
+
+        <!-- Mobile Number Field -->
+        <div class="form-group">
+            <label for="reg-mobile">Mobile Number <span class="required">*</span></label>
+            <input type="text" id="reg-mobile" formControlName="mobile" class="form-control" placeholder="Enter Mobile Number">
+        </div>
+
+        <!-- Company Name Field -->
+        <div class="form-group">
+            <label for="reg-company">Company Name <span class="required">*</span></label>
+            <input type="text" id="reg-company" formControlName="companyName" class="form-control" placeholder="Enter Company Name">
+        </div>
+
+        <!-- Designation Field -->
+        <div class="form-group">
+            <label for="reg-designation">Designation <span class="required">*</span></label>
+            <input type="text" id="reg-designation" formControlName="designation" class="form-control" placeholder="Enter Designation">
+        </div>
+
+        <!-- Department Field -->
+        <div class="form-group">
+            <label for="reg-department">Department <span class="required">*</span></label>
+            <input type="text" id="reg-department" formControlName="department" class="form-control" placeholder="Enter Department">
+        </div>
+    </form>
+</ng-template>
+
+
+<ng-template #ticketDetails>
+    <div class="ticket-details-wrapper">
+        <h5>
+            Ticket Details
+        </h5>
+        <div class="ticket-subtext mb-2">
+            <span><i class="fa fa-map-marker" aria-hidden="true"></i></span>
+            <span>{{event.location}}</span>
+        </div>
+       
+        <div class="ticket-subtext">
+            <span><i class="fa fa-calendar-o" aria-hidden="true"></i></span>
+            <span>{{event.startDate |date:'dd MMMM, yyyy'}} Onwards</span>
+        </div>
+        <hr>
+        <div class="ticket-subtext d-flex justify-content-between align-items-center">
+            <div>No. of Attendees</div>
+            <div><strong>1</strong></div>
+        </div>
+        
+        <hr>
+    </div>
+</ng-template>
+
+<ng-template #totalTemplate let-fromSide="fromSide">
+    <div class="ticket-details-wrapper">
+        <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+            <div>Gross Amount</div>
+            <div class="ticket-subtext">&#8377;{{event.amount+event.discount | number:'1.2-2'}}</div>
+        </div>
+        <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+            <div>Discount</div>
+            <div class="ticket-subtext">- &#8377;{{event.discount | number:'1.2-2'}}</div>
+        </div>
+        <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+            <div>Total Amount</div>
+            <div class="total-val"> &#8377;{{event.amount | number:'1.2-2'}}</div>
+        </div>
+        <button *ngIf="!fromSide" type="button" class="btn btn-light form-control mt-3" (click)="paymentProcess()" >Proceed to Payment</button>
+        <button *ngIf="fromSide && event.isEnded!=true" type="button" class="btn btn-light form-control mt-3" (click)="openRegisterModal(longContent)">Register Now</button>
+    </div>
+</ng-template>
+
+<!-- <div class="Regester  form start  "> -->

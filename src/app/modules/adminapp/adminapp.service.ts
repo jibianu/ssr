@@ -149,5 +149,32 @@ export class AdminAppService {
         data.append('file', file);
         return this.http.post(this.apiUrl + `page/icon/upload`, data);
     }
+    getEvents(): Observable<any> {
+        return this.http.get(this.apiUrl + `page/event`);
+    }
+    getEventById(eventId: string): Observable<any> {
+        return this.http.get(this.apiUrl + `page/event/${eventId}`);
+    }
+    createEvent(event: any): Observable<any> {
+        return this.http.post(this.apiUrl + `page/event`, event);
+    }
+    updateEvent(id :string,event: any): Observable<any> {
+        return this.http.put(this.apiUrl + `page/event/${id}`, event);
+    }
+    deleteEvent(eventId: string): Observable<any> {
+        return this.http.delete(this.apiUrl + `page/event/${eventId}`);
+    }
+    eventUploadTitleImage(file): Observable<any> {
+        const data: FormData = new FormData();
+        data.append('file', file);
+        return this.http.post(this.apiUrl + `page/event/TitleImage`, data);
+    }
+    getEventByCanonicalURL(url) {
+        return this.http.get<any>(this.apiUrl + `page/event/event/` + url);
+    }
+    getEventUsers(eventId: string): Observable<any> {
+        return this.http.get(this.apiUrl + `page/event/users/${eventId}`);
+    }
 }
+
 
