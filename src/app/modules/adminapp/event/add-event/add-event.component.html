@@ -458,23 +458,10 @@
                 </div>
                 <div id="collapse3_organized" class="custom_collapse collapse " aria-labelledby="headingOne">
                     <div class="card-body">
-                        <!-- <div formArrayName="eventDetails">
-                            <div class="row">
-                                <div class="form-group col-6" *ngFor="let item of eventCurriculumArrayControls('organized'); index as i"
-                                 [formGroupName]="getIndexOfCurriculum('organized',i)">
-                                    <label>{{getValueOfCurriculum('organized',i,'title')}}</label>
-                                <input type="number" class="form-control" formControlName="count" />
-                                </div>
-                        </div>
-                        </div> -->
+                       
                         <div formArrayName="eventDetails">
                             <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix" class="mb-3">
-                                <!-- <div class="d-sm-flex align-items-center justify-content-between">
-                                    <h6>Information Section {{i + 1}}</h6>
-                                    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
-                                        (click)="removeCurriculum(i,'organized')">
-                                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
-                                </div> -->
+                                
 
                                 <div class="mb-3">
                                     <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="h-100">
@@ -485,9 +472,7 @@
                                                     <br>
                                                     <input type="file" name="image" accept="image/*" (change)="fileProgressIx($event,'organized',ix)" />
                                                 </div>
-                                                <!-- <div *ngIf="fileUploadProgress">
-                                                    Upload progress: {{ fileUploadProgress }}
-                                                </div> -->
+                                              
                                                 <div class="image-preview mb-3" *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')">
                                                     <img [src]="getValueOfCurriculum('organized',ix,'imageUrl')" height="200" />
                                                 </div>
@@ -501,20 +486,12 @@
                                                     <div class="form-group col-8">
                                                         <label>Name</label>
                                                         <input class="form-control" formControlName="title" type="text"/>
-                                                        <!-- <div *ngIf="submitted && item.controls.title.errors" class="invalid">
-                                                            <div *ngIf="item.controls.title.errors?.required">Summary is
-                                                                required
-                                                            </div>
-                                                        </div> -->
+                                                        
                                                 </div>
                                                 <div class="form-group col-4">
                                                     <label>Tags</label>
                                                     <input class="form-control" formControlName="tag" type="text"/>
-                                                    <!-- <div *ngIf="submitted && item.controls.tag.errors" class="invalid">
-                                                        <div *ngIf="item.controls.tag.errors?.required">Summary is
-                                                            required
-                                                        </div>
-                                                    </div> -->
+                                                   
                                             </div>
 
                                                 </div>
@@ -524,11 +501,7 @@
                                                 <label>Description</label>
                                                 <textarea class="form-control" formControlName="description"
                                                     rows="5"></textarea>
-                                                <!-- <div *ngIf="submitted && item.controls.description.errors" class="invalid">
-                                                    <div *ngIf="item.controls.description.errors?.required">description is
-                                                        required
-                                                    </div>
-                                                </div> -->
+                                               
                                             </div>
                                           </div>
  
@@ -566,10 +539,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- <button type="button" class="btn btn-success ml-2 mb-2"
-                                (click)="addCurriculumItem('bonuse')">Add
-                                Bonuse Info
-                                Section</button> -->
+                            
                         </div>
                        
                     </div>

@@ -68,6 +68,8 @@ export class AddEventComponent implements OnInit, OnDestroy {
             title: ['', Validators.required],
             eventInfo: ['', Validators.required],
             canonicalUrl:['', Validators.required],
+            titleImageUrl: '',
+            metaDescription: ['', [Validators.required]],
             amount: ['0',Validators.required],
             location:['', Validators.required],
             discount:['0'],
