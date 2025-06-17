@@ -66,7 +66,7 @@
 .nav-lb-tab .nav-item .nav-link:hover {
   background-color: transparent;
   border-bottom: 2px solid #0069D9;
-  color: #0069D9;
+  color: #0069D9;              
 }
 
 @media (min-width: 992px) {
@@ -318,4 +318,498 @@ ul {
   height: 60px;
   line-height: 60px; /* Vertically center the text there */
   z-index: 1;
+}
+
+
+/*---------------------------------- About course start------------------------------------------ */
+/* Card styling */
+.card {
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Accordion header styling */
+.card-header-about {
+  cursor: pointer !important; /* Force pointer */
+  transition: background-color 0.3s ease;
+}
+
+.card-header-about:hover {
+  background-color: #f8f9fa;
+}
+
+/* Chevron arrow animation */
+.collapsed .chevron-arrow i {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.chevron-arrow i {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+
+/* ----------------------Top Companies Trust Us start -------------------------------*/
+
+/* General Styles */
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+p {
+  font-size: 1rem;
+  color: #7f8c8d;
+}
+
+/* Company Logo Styles */
+.company-logo {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.company-logo:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.company-logo img {
+  max-width: 100%;
+  height: auto;
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.company-logo:hover img {
+  filter: grayscale(0%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .company-logo {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    font-size: 0.8rem;
+  }
+
+  .company-logo {
+    padding: 10px;
+  }
+}
+
+
+/* ---------------------Description  start ------------------------- */
+
+/* General Styles */
+.description-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #00c6ff;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.description-container {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.description-container:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.description-content {
+  font-size: 1rem;
+  color: #4a4a4a;
+  line-height: 1.6;
+}
+
+.description-heading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.description-text {
+  font-size: 1rem;
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+}
+
+/* Read More Component Styles */
+.read-more-button {
+  color: #00c6ff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.read-more-button:hover {
+  color: #0099cc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .description-title {
+    font-size: 1.5rem;
+  }
+
+  .description-heading {
+    font-size: 1.1rem;
+  }
+
+  .description-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .description-title {
+    font-size: 1.25rem;
+  }
+
+  .description-heading {
+    font-size: 1rem;
+  }
+
+  .description-text {
+    font-size: 0.8rem;
+  }
+}
+
+
+/*---------------- Course Curriculum  start ------------------ */
+// /* General Styles */
+// .margin-top-3 {
+//   margin-top: 1.5rem;
+// }
+
+// .post-sub-title {
+//   font-size: 1.75rem;
+//   font-weight: 700;
+//   color: #2c3e50;
+//   margin-bottom: 1.5rem;
+//   border-bottom: 2px solid #00c6ff;
+//   padding-bottom: 0.5rem;
+//   display: inline-block;
+// }
+
+// /* Card Header */
+// .card-header-custom {
+//   background-color: #f9f9f9;
+//   border-bottom: 1px solid #e0e0e0;
+//   padding: 1rem;
+//   cursor: pointer;
+// }
+
+// .card-header-custom a {
+//   color: #2c3e50;
+//   text-decoration: none;
+//   transition: color 0.3s ease;
+// }
+
+// .card-header-custom a:hover {
+//   color: #00c6ff;
+// }
+
+// .card-header-custom img {
+//   margin-right: 0.5rem;
+// }
+
+// /* Card Body */
+// .card-body {
+//   padding: 1rem;
+//   background-color: #fff;
+// }
+
+// .card-body ul {
+//   list-style: none;
+//   padding-left: 0;
+// }
+
+// .card-body ul li {
+//   padding: 0.5rem 0;
+//   border-bottom: 1px solid #e0e0e0;
+// }
+
+// .card-body ul li:last-child {
+//   border-bottom: none;
+// }
+
+// .card-body ul li img {
+//   margin-right: 0.5rem;
+// }
+
+// /* Collapse Animation */
+// .collapse {
+//   transition: all 0.3s ease;
+// }
+
+// /* Responsive Design */
+// @media (max-width: 768px) {
+//   .post-sub-title {
+//     font-size: 1.5rem;
+//   }
+
+//   .card-header-custom {
+//     padding: 0.75rem;
+//   }
+
+//   .card-body {
+//     padding: 0.75rem;
+//   }
+// }
+
+// @media (max-width: 480px) {
+//   .post-sub-title {
+//     font-size: 1.25rem;
+//   }
+
+//   .card-header-custom {
+//     padding: 0.5rem;
+//   }
+
+//   .card-body {
+//     padding: 0.5rem;
+//   }
+// }
+
+/* --------------------FAQ start ------------- */
+
+/* General Styles */
+.margin-top-3 {
+  margin-top: 1.5rem;
+}
+
+.post-sub-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #00c6ff;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+/* FAQ Card Header */
+.card-header-about {
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.card-header-about a {
+  color: #2c3e50;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.card-header-about a:hover {
+  color: #00c6ff;
+}
+
+.card-header-about .chevron-arrow {
+  transition: transform 0.3s ease;
+}
+
+.card-header-about a.collapsed .chevron-arrow {
+  transform: rotate(0deg);
+}
+
+.card-header-about a:not(.collapsed) .chevron-arrow {
+  transform: rotate(180deg);
+}
+
+/* FAQ Card Body */
+.card-body {
+  padding: 1rem;
+  background-color: #fff;
+}
+
+.card-body .ml-5 {
+  margin-left: 1.5rem;
+}
+
+/* Read More Component Styles */
+.read-more-button {
+  color: #00c6ff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.read-more-button:hover {
+  color: #0099cc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .post-sub-title {
+    font-size: 1.5rem;
+  }
+
+  .card-header-about {
+    padding: 0.75rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-sub-title {
+    font-size: 1.25rem;
+  }
+
+  .card-header-about {
+    padding: 0.5rem;
+  }
+
+  .card-body {
+    padding: 0.5rem;
+  }
+}
+
+
+/* -------------------about traineer ----------------- */
+
+/* General Styles */
+.margin-top-3 {
+  margin-top: 1.5rem;
+}
+
+.post-sub-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #00c6ff;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+/* Trainer Card Body */
+.card-body {
+  padding: 1rem;
+  background-color: #fff;
+}
+
+/* Trainer Image */
+.rounded-circle.avatar-lg {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+/* Trainer Name */
+h4.mb-0 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+/* Read More Component Styles */
+.read-more-button {
+  color: #00c6ff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.read-more-button:hover {
+  color: #0099cc;
+}
+
+/* Show More/Less Button */
+.text-primary {
+  color: #00c6ff;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.text-primary:hover {
+  color: #0099cc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .post-sub-title {
+    font-size: 1.5rem;
+  }
+
+  .rounded-circle.avatar-lg {
+    width: 60px;
+    height: 60px;
+  }
+
+  h4.mb-0 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-sub-title {
+    font-size: 1.25rem;
+  }
+
+  .rounded-circle.avatar-lg {
+    width: 50px;
+    height: 50px;
+  }
+
+  h4.mb-0 {
+    font-size: 1rem;
+  }
 }

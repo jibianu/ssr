@@ -1,4 +1,4 @@
-<div style="min-height: 90vh;">
+<!-- <div style="min-height: 90vh;">
   <div *ngFor="let item of items">
     <div class="container" *ngIf="item?.categoryCourse && item?.categoryCourse?.length > 0">
       <div class="d-flex mb-2 mt-3">
@@ -26,6 +26,108 @@
                     </div>
                   </a>
                 </div>
+              </div>
+            </ng-template>
+          </ng-container>
+        </owl-carousel-o>
+      </div>
+    </div>
+  </div>
+</div> 222222222222222 below-->
+
+
+<!-- 
+<div style="min-height: 90vh;">
+  <div *ngFor="let item of items">
+    <div class="container" *ngIf="item?.categoryCourse && item?.categoryCourse?.length > 0">
+      
+      <div class="d-flex align-items-center mb-3 mt-4">
+        <h2 class="mb-0 flex-grow-1">{{item.categoryName}}</h2>
+        <a class="btn btn-outline-primary btn-sm" [routerLink]="['/category', item.categoryName]">See all</a>
+      </div>
+
+     
+      <div class="position-relative">
+        <owl-carousel-o [options]="customOptions" (dragging)="isDragging = $event.dragging">
+          <ng-container *ngFor="let course of item.categoryCourse">
+            <ng-template carouselSlide>
+             
+              <div class="carousel-course-related h-100">
+                <a [href]="course?.canonicalUrl" class="no-underline">
+                  <div class="list-course-item">
+                    
+                    <div class="card-image">
+                      <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{course?.title}}"
+                        class="card-img" />
+                      <div class="sale-badge" *ngIf="course?.isBestSeller">Best Seller</div>
+                    </div>
+
+                   
+                    <div class="carousel-course-related h-100">
+                    <div class="card-body">
+                      <h6>{{course?.title}}</h6>
+                       <ul>
+                        <li *ngFor="let feature of course?.courseFeatures">{{feature?.description}}</li>
+                      </ul>
+                      <div class="buy">
+                        <div class="price">{{ course.amount | currency:"INR":"symbol" }}</div>
+                        <a [href]="course?.canonicalUrl" class="btn btn-register">
+                          <i class="fa fa-shopping-cart"></i> Enroll Now
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                </a>
+              </div>
+              
+            </ng-template>
+          </ng-container>
+        </owl-carousel-o>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div style="min-height: 90vh;">
+  <div *ngFor="let item of items">
+    <div class="container" *ngIf="item?.categoryCourse?.length > 0">
+      <!-- Category Header -->
+      <div class="d-flex align-items-center mb-3 mt-4">
+        <h2 class="mb-0 flex-grow-1">{{ item.categoryName }}</h2>
+        <a class="btn btn-outline-primary btn-sm" [routerLink]="['/category', item.categoryName]">See all</a>
+      </div>
+
+      <!-- Carousel for Courses -->
+      <div class="position-relative">
+        <owl-carousel-o [options]="customOptions" (dragging)="isDragging = $event.dragging">
+          <ng-container *ngFor="let course of item.categoryCourse">
+            <ng-template carouselSlide>
+              <!-- Course Card -->
+              <div class="carousel-course-related h-100">
+                <a [href]="course?.canonicalUrl" class="no-underline">
+                  <div class="list-course-item">
+                    <!-- Course Image -->
+                    <div class="card-image">
+                      <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{ course?.title }}" class="card-img" />
+                      <div class="sale-badge" *ngIf="course?.isBestSeller">Best Seller</div>
+                    </div>
+
+                    <!-- Course Body -->
+                    <div class="card-body">
+                      <h6>{{ course?.title }}</h6>
+                      <ul>
+                        <li *ngFor="let feature of course?.courseFeatures">{{ feature?.description }}</li>
+                      </ul>
+                      <div class="buy">
+                        <div class="price">{{ course.amount | currency:'INR':'symbol' }}</div>
+                        <a [href]="course?.canonicalUrl" class="btn btn-register">
+                          <i class="fa fa-shopping-cart"></i> Enroll Now
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </a>
               </div>
             </ng-template>
           </ng-container>

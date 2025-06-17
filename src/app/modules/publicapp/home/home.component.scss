@@ -343,7 +343,8 @@
     border-radius: 20px;
     text-decoration: none;
     font-size: 0.9rem;
-    transition: background-color 0.3s ease;
+    cursor: pointer;
+    transition: background 0.3s ease;
   }
   
   .btn-register:hover {
@@ -363,6 +364,8 @@
     }
   }
 
+
+  
 
 
 /* ---------------------------------------  course css End  ---------------------------------------------------------- */
@@ -518,7 +521,135 @@
   /* -------  Event start ------------------ */
 
 
-  /* General Styles */
+//   /* General Styles */
+// .main {
+//   padding: 20px;
+//   background-color: #f9f9f9;
+// }
+
+// .sub-div-new {
+//   max-width: 1200px;
+//   margin: 0 auto;
+// }
+
+// .course-column {
+//   display: grid;
+//   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+//   gap: 20px;
+// }
+
+// .carousel-course-related {
+//   background: #fff;
+//   border-radius: 10px;
+//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+//   transition: transform 0.3s ease, box-shadow 0.3s ease;
+//   overflow: hidden;
+// }
+
+// .carousel-course-related:hover {
+//   transform: translateY(-5px);
+//   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+// }
+
+// .list-course-item {
+//   padding: 15px;
+// }
+
+// .card-image {
+//   position: relative;
+//   overflow: hidden;
+//   border-radius: 10px 10px 0 0;
+//   width: 100%;
+//   height: 150px;
+// }
+
+// .card-img {
+//   width: 100%;
+//   height: 100%;
+//   object-fit: cover;
+// }
+
+// .sale-badge {
+//   position: absolute;
+//   top: 10px;
+//   left: 10px;
+//   background-color: #ff4757;
+//   color: #fff;
+//   padding: 5px 10px;
+//   border-radius: 5px;
+//   font-size: 12px;
+//   font-weight: bold;
+// }
+
+// .card-body {
+//   padding: 10px;
+// }
+
+// .card-title {
+//   font-size: 1.25rem;
+//   font-weight: 700;
+//   color: #2c3e50;
+//   margin-bottom: 8px;
+// }
+
+// .card-subtitle {
+//   font-size: 0.9rem;
+//   color: #eb1527;
+//   margin-bottom: 8px;
+// }
+
+// .card-text {
+//   font-size: 0.9rem;
+//   color: #7f8c8d;
+//   line-height: 1.6;
+//   margin-bottom: 15px;
+// }
+
+// .buy {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+// }
+
+// .price {
+//   font-size: 1rem;
+//   font-weight: 700;
+//   color: #27ae60;
+// }
+
+// .btn-register {
+//   background-color: #00c6ff;
+//   color: white;
+//   padding: 8px 16px;
+//   border-radius: 20px;
+//   text-decoration: none;
+//   font-size: 0.9rem;
+//   transition: background-color 0.3s ease;
+// }
+
+// .btn-register:hover {
+//   background-color: #0099cc;
+// }
+
+// .no-underline {
+//   text-decoration: none;
+// }
+
+// /* Responsive Design */
+// @media (max-width: 768px) {
+//   .course-column {
+//     grid-template-columns: repeat(2, 1fr);
+//   }
+// }
+
+// @media (max-width: 480px) {
+//   .course-column {
+//     grid-template-columns: 1fr;
+//   }
+// }
+
+
+/* General Styles */
 .main {
   padding: 20px;
   background-color: #f9f9f9;
@@ -642,6 +773,14 @@
 @media (max-width: 480px) {
   .course-column {
     grid-template-columns: 1fr;
+  }
+
+  .carousel-course-related {
+    margin-bottom: 20px; /* Add some space between cards */
+  }
+
+  .carousel-course-related:not(:first-child) {
+    display: none; /* Hide all cards except the first one */
   }
 }
 

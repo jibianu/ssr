@@ -1,21 +1,161 @@
-.card-img-top {
-    width: 100%;
-    height: 40vh;
-    object-fit: cover;
-    }
+// .card-img-top {
+//     width: 100%;
+//     height: 40vh;
+//     object-fit: cover;
+//     }
 
-    .avatar.avatar-ex-sm {
-        height: 36px;
-        width: 36px;
-    }
+//     .avatar.avatar-ex-sm {
+//         height: 36px;
+//         width: 36px;
+//     }
 
-    .header-text{
-        font-size: 33px;
-    font-weight: 600;
+//     .header-text{
+//         font-size: 33px;
+//     font-weight: 600;
+//     color: #fff;
+//     margin-bottom: 8px;
+//     }
+
+// .bg-black{
+//     background-color: #333;
+// }
+
+/* Header Section */
+.bg-black {
+    background-color: #000;
+  }
+  
+  .header-text {
+    font-size: 2.5rem;
+    font-weight: 700;
     color: #fff;
-    margin-bottom: 8px;
+  }
+  
+  /* Blog Grid */
+  .blog-grid {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-
-.bg-black{
-    background-color: #333;
-}
+  }
+  
+  /* Blog Image */
+  .blog-img {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+  
+    .card-img-top {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  /* Blog Info */
+  .blog-info {
+    padding: 16px;
+  
+    h5 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 8px;
+  
+      a {
+        color: inherit;
+        text-decoration: none;
+  
+        &:hover {
+          color: #007bff;
+        }
+      }
+    }
+  
+    .price-tag {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #27ae60;
+      margin-bottom: 12px;
+    }
+  
+    .text-ellipse {
+      display: block;
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      margin-bottom: 12px;
+  
+      p {
+        margin-bottom: 4px;
+      }
+    }
+  }
+  
+  /* Buttons and Teacher Info */
+  .d-sm-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .btn-bar {
+    display: flex;
+    align-items: center;
+  
+    .px-btn-arrow {
+      background: #007bff;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.3s ease;
+  
+      &:hover {
+        background: #0056b3;
+      }
+    }
+  
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+  
+    small {
+      font-size: 0.9rem;
+      color: #333;
+    }
+  }
+  
+  /* Pagination */
+  .pagination {
+    .page-item {
+      margin: 0 4px;
+  
+      .page-link {
+        color: #007bff;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+  
+        &:hover {
+          background: #007bff;
+          color: #fff;
+        }
+      }
+  
+      &.disabled .page-link {
+        color: #6c757d;
+        border-color: #6c757d;
+        pointer-events: none;
+      }
+    }
+  }

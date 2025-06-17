@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
- apiUrl : 'https://localhost:52045/',
-  //apiUrl : 'https://course.oilandgasclub.in/',
+ //apiUrl : 'https://localhost:52045/',
+  apiUrl : 'https://course.oilandgasclub.in/',
 
 //  apiUrl : 'https://backend.oilandgasclub.com/',
   // seoUrl: 'https://course.serverlessblog.tk/',
