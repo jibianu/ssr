@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
- apiUrl : 'https://course.oilandgasclub.in/',
+ apiUrl : 'https://coursebackend.oilandgasclub.com/',
  //apiUrl : 'https://backend.oilandgasclub.com/',
   // seoUrl: 'https://course.serverlessblog.tk/',
   seoUrl: 'https://oilandgasclub.com/',
