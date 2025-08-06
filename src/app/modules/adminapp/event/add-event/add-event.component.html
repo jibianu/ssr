@@ -1,4 +1,4 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
 </div>
 
@@ -64,7 +64,7 @@
                         <select class="form-control" formControlName="language">
                             <option value="English">English</option>
                           </select>
-                        <!-- <input class="form-control" formControlName="language" type="text"/> -->
+                       
                         <div *ngIf="submitted && f.language.errors" class="invalid">
                             <div *ngIf="f.language.errors?.required">Summary is
                                 required
@@ -155,7 +155,7 @@
             </div>
         </div>
 
-            <!-- event_tags -->
+            
             <div class="card mt-2">
                 <div class="card-header">
                     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_tags"
@@ -260,7 +260,7 @@
                 </div>
             </div>
 
-            <!-- bonuse -->
+            
 
             <div class="card mt-2">
                 <div class="card-header">
@@ -337,7 +337,6 @@
                 </div>
             </div>
 
-            <!-- slary -->
             <div class="card mt-2">
                 <div class="card-header">
                     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_slary"
@@ -391,7 +390,7 @@
                     </div>
                 </div>
             </div>
-<!-- qa -->
+
             <div class="card mt-2">
                 <div class="card-header">
                     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_qa"
@@ -446,7 +445,7 @@
                 </div>
             </div>
 
-            <!-- OrganizedBy -->
+           
 
             <div class="card mt-2">
                 <div class="card-header">
@@ -564,11 +563,580 @@
                     </label>
                 </div>
             </div>
-            <!-- registrationCompelted -->
+           
             <div class="form-group">
                 <button class="btn btn-primary" type="submit">{{btntext}}</button>
                 <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
             </div>
         </form>
+    </div>
+</div> -->
+
+
+<div class="event-form-container">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-primary">{{pageTitle}}</h1>
+        <button type="button" class="btn btn-outline-secondary" (click)="goBack()">
+            <i class="fas fa-arrow-left mr-2"></i>Back
+        </button>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h5 class="section-title">Basic Information</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="form-label">Title*</label>
+                                <input type="text" formControlName="title" class="form-control"
+                                    [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
+                                <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
+                                    Title is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Badge</label>
+                                <input class="form-control" formControlName="badge" type="text"/>
+                                <div *ngIf="submitted && f.badge.errors" class="invalid-feedback">
+                                    Badge is required
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Canonical URL*</label>
+                                <input type="text" formControlName="canonicalUrl" class="form-control"
+                                    [ngClass]="{ 'is-invalid': submitted && f.canonicalUrl.errors }" />
+                                <div *ngIf="submitted && f.canonicalUrl.errors" class="invalid-feedback">
+                                    Canonical URL is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Language</label>
+                                <select class="form-control" formControlName="language">
+                                    <option value="English">English</option>
+                                </select>
+                                <div *ngIf="submitted && f.language.errors" class="invalid-feedback">
+                                    Language is required
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Title Image*</label>
+                        <div class="image-upload-container">
+                            <div class="upload-area" (click)="fileInput.click()">
+                                <input #fileInput type="file" name="image" accept="image/*" (change)="fileProgress($event)" style="display: none;" />
+                                <div *ngIf="!uploadedFilePath" class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                    <p>Click to upload or drag and drop</p>
+                                    <small class="text-muted">Recommended size: 1200x630px</small>
+                                </div>
+                                <div *ngIf="uploadedFilePath" class="image-preview">
+                                    <img [src]="uploadedFilePath" alt="Preview" />
+                                    <div class="overlay">
+                                        <button type="button" class="btn btn-sm btn-light" (click)="fileInput.click()">
+                                            <i class="fas fa-edit"></i> Change
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="fileUploadProgress" class="progress mt-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                    [style.width]="fileUploadProgress"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">About Event*</label>
+                        <textarea class="form-control" formControlName="aboutEvent" rows="5"></textarea>
+                        <div *ngIf="submitted && f.aboutEvent.errors" class="invalid-feedback">
+                            About event is required
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Offer Info</label>
+                        <input class="form-control" formControlName="eventInfo"/>
+                        <div *ngIf="submitted && f.eventInfo.errors" class="invalid-feedback">
+                            Offer info is required
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Timing Section -->
+                <div class="form-section">
+                    <h5 class="section-title">Event Timing</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">Start Date*</label>
+                                <input class="form-control" formControlName="startDate" type="date"/>
+                                <div *ngIf="submitted && f.startDate.errors" class="invalid-feedback">
+                                    Start date is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">End Date*</label>
+                                <input class="form-control" formControlName="endDate" type="date"/>
+                                <div *ngIf="submitted && f.endDate.errors" class="invalid-feedback">
+                                    End date is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">Duration</label>
+                                <input class="form-control" formControlName="duration" type="text"/>
+                                <div *ngIf="submitted && f.duration.errors" class="invalid-feedback">
+                                    Duration is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">Timing</label>
+                                <input class="form-control" formControlName="timeing" type="text"/>
+                                <div *ngIf="submitted && f.timeing.errors" class="invalid-feedback">
+                                    Timing is required
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="form-section">
+                    <h5 class="section-title">Pricing Information</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Amount*</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" class="form-control" formControlName="amount" />
+                                </div>
+                                <div *ngIf="submitted && f.amount.errors" class="invalid-feedback">
+                                    Amount is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Discount</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <input type="number" class="form-control" formControlName="discount" />
+                                </div>
+                                <div *ngIf="submitted && f.discount.errors" class="invalid-feedback">
+                                    Discount is required
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Location*</label>
+                                <input type="text" class="form-control" formControlName="location" />
+                                <div *ngIf="submitted && f.location.errors" class="invalid-feedback">
+                                    Location is required
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags Section -->
+                <div class="form-section">
+                    <div class="section-header" data-toggle="collapse" data-target="#tagsSection">
+                        <h5 class="section-title">Event Tags</h5>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div id="tagsSection" class="collapse show">
+                        <div formArrayName="eventDetails">
+                            <div *ngFor="let item of eventCurriculumArrayControls('tags'); index as i" class="tag-item">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="item-title">Tag Section {{i + 1}}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        (click)="removeCurriculum(i,'tags')">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                                <div [formGroupName]="getIndexOfCurriculum('tags',i)" class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Tag*</label>
+                                            <input formControlName="tag" class="form-control"
+                                                [ngClass]="{ 'is-invalid': submitted && item.controls.tag.errors }" />
+                                            <div *ngIf="submitted && item.controls.tag.errors"
+                                                class="invalid-feedback">
+                                                Tag is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-2"
+                                (click)="addCurriculumItem('tags')">
+                                <i class="fas fa-plus"></i> Add Tag
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Curriculum Section -->
+                <div class="form-section">
+                    <div class="section-header" data-toggle="collapse" data-target="#curriculumSection">
+                        <h5 class="section-title">Event Curriculum Information</h5>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div id="curriculumSection" class="collapse">
+                        <div formArrayName="eventDetails">
+                            <div *ngFor="let item of eventCurriculumArrayControls('curriculum'); index as i" class="curriculum-item">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="item-title">Information Section {{i + 1}}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        (click)="removeCurriculum(i,'curriculum')">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                                <div [formGroupName]="getIndexOfCurriculum('curriculum',i)" class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Title*</label>
+                                            <input formControlName="title" class="form-control"
+                                                [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }" />
+                                            <div *ngIf="submitted && item.controls.title.errors"
+                                                class="invalid-feedback">
+                                                Title is required
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Description*</label>
+                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
+                                                Description is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-2"
+                                (click)="addCurriculumItem('curriculum')">
+                                <i class="fas fa-plus"></i> Add Curriculum Section
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bonuses Section -->
+                <div class="form-section">
+                    <div class="section-header" data-toggle="collapse" data-target="#bonusesSection">
+                        <h5 class="section-title">Event Bonuses</h5>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div id="bonusesSection" class="collapse">
+                        <div formArrayName="eventDetails">
+                            <div class="row">
+                                <div class="form-group col-md-6" *ngFor="let item of eventCurriculumArrayControls('bonuse-info'); index as i"
+                                    [formGroupName]="getIndexOfCurriculum('bonuse-info',i)">
+                                    <label class="form-label">{{getValueOfCurriculum('bonuse-info',i,'title')}}</label>
+                                    <input type="number" class="form-control" formControlName="count" />
+                                </div>
+                            </div>
+                            
+                            <div *ngFor="let item of eventCurriculumArrayControls('bonuse'); index as i" class="bonus-item">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="item-title">Bonus Section {{i + 1}}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        (click)="removeCurriculum(i,'bonuse')">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                                <div [formGroupName]="getIndexOfCurriculum('bonuse',i)" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Tag*</label>
+                                            <input class="form-control" formControlName="tag" type="text"/>
+                                            <div *ngIf="submitted && item.controls.tag.errors" class="invalid-feedback">
+                                                Tag is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Amount*</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                                <input class="form-control" formControlName="amount" type="number"/>
+                                            </div>
+                                            <div *ngIf="submitted && item.controls.amount.errors" class="invalid-feedback">
+                                                Amount is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Description*</label>
+                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
+                                                Description is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-2"
+                                (click)="addCurriculumItem('bonuse')">
+                                <i class="fas fa-plus"></i> Add Bonus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Section -->
+                <div class="form-section">
+                    <div class="section-header" data-toggle="collapse" data-target="#salarySection">
+                        <h5 class="section-title">Salary Information</h5>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div id="salarySection" class="collapse">
+                        <div formArrayName="eventDetails">
+                            <div *ngFor="let item of eventCurriculumArrayControls('slary'); index as i" class="salary-item">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="item-title">Salary Section {{i + 1}}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        (click)="removeCurriculum(i,'slary')">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                                <div [formGroupName]="getIndexOfCurriculum('slary',i)" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Salary*</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                                <input class="form-control" formControlName="amount" type="number"/>
+                                            </div>
+                                            <div *ngIf="submitted && item.controls.amount.errors" class="invalid-feedback">
+                                                Salary is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Description*</label>
+                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
+                                                Description is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-2"
+                                (click)="addCurriculumItem('slary')">
+                                <i class="fas fa-plus"></i> Add Salary Information
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q&A Section -->
+                <div class="form-section">
+                    <div class="section-header" data-toggle="collapse" data-target="#qaSection">
+                        <h5 class="section-title">Questions & Answers</h5>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div id="qaSection" class="collapse">
+                        <div formArrayName="eventDetails">
+                            <div *ngFor="let item of eventCurriculumArrayControls('qa'); index as i" class="qa-item">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="item-title">Q&A Section {{i + 1}}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        (click)="removeCurriculum(i,'qa')">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                                <div [formGroupName]="getIndexOfCurriculum('qa',i)" class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Question*</label>
+                                            <input class="form-control" formControlName="title" type="text"/>
+                                            <div *ngIf="submitted && item.controls.title.errors" class="invalid-feedback">
+                                                Question is required
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Answer*</label>
+                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
+                                                Answer is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-2"
+                                (click)="addCurriculumItem('qa')">
+                                <i class="fas fa-plus"></i> Add Q&A
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organized By Section -->
+                <div class="form-section">
+                    <div class="section-header" data-toggle="collapse" data-target="#organizedSection">
+                        <h5 class="section-title">Organized By</h5>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div id="organizedSection" class="collapse">
+                        <div formArrayName="eventDetails">
+                            <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix" class="organized-item">
+                                <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label">Avatar</label>
+                                            <div class="image-upload-container">
+                                                <div class="upload-area" (click)="orgFileInput.click()">
+                                                    <input #orgFileInput type="file" name="image" accept="image/*" 
+                                                        (change)="fileProgressIx($event,'organized',ix)" style="display: none;" />
+                                                    <div *ngIf="!getValueOfCurriculum('organized',ix,'imageUrl')" class="upload-placeholder">
+                                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                                        <p>Click to upload</p>
+                                                    </div>
+                                                    <div *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')" class="image-preview">
+                                                        <img [src]="getValueOfCurriculum('organized',ix,'imageUrl')" alt="Preview" />
+                                                        <div class="overlay">
+                                                            <button type="button" class="btn btn-sm btn-light" 
+                                                                (click)="orgFileInput.click()">
+                                                                <i class="fas fa-edit"></i> Change
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="row">
+                                            <div class="form-group col-md-8">
+                                                <label class="form-label">Name*</label>
+                                                <input class="form-control" formControlName="title" type="text"/>
+                                                <div *ngIf="submitted && item.controls.title.errors" class="invalid-feedback">
+                                                    Name is required
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="form-label">Tags</label>
+                                                <input class="form-control" formControlName="tag" type="text"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Description</label>
+                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6" *ngFor="let item of eventCurriculumArrayControls('organized_list'); index as i"
+                                        [formGroupName]="getIndexOfCurriculum('organized_list',i)">
+                                        <div class="form-group">
+                                            <label class="form-label">{{getValueOfCurriculum('organized_list',i,'title')}}</label>
+                                            <input type="text" class="form-control" formControlName="description" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="social-links-section">
+                                    <h6 class="section-subtitle">Social Links</h6>
+                                    <div class="row">
+                                        <div class="col-md-12" *ngFor="let item1 of eventCurriculumArrayControls('organized_soc'); index as i">
+                                            <div class="row" [formGroupName]="getIndexOfCurriculum('organized_soc',i)">
+                                                <div class="form-group col-md-3">
+                                                    <select class="form-control" formControlName="tag">
+                                                        <option *ngFor="let si of socailMedias" [value]="si">{{si}}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group col-md-9">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="fas fa-link"></i></span>
+                                                        </div>
+                                                        <input type="text" class="form-control" formControlName="title" placeholder="https://..." />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mt-2"
+                                        (click)="addCurriculumItem('organized_soc')">
+                                        <i class="fas fa-plus"></i> Add Social Link
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options Section -->
+                <div class="form-section">
+                    <h5 class="section-title">Options</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="registrationCompleted" 
+                                    formControlName="registrationCompleted">
+                                <label class="form-check-label" for="registrationCompleted">
+                                    Registration is completed?
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="showOnDashboard" 
+                                    formControlName="showOnDashboard">
+                                <label class="form-check-label" for="showOnDashboard">
+                                    Show On Dashboard?
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions mt-4">
+                    <button class="btn btn-primary btn-lg" type="submit">
+                        <i class="fas fa-save mr-2"></i>{{btntext}}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-lg ml-2" (click)="goBack()">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

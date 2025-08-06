@@ -21,7 +21,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
   isBrowser = false;
   categoryName = '';
   courseId = '';
-  createdBy='e0986ef4-e84c-43cb-8a7a-f300a515ef4f'
+  createdBy='f48824b8-f021-70f5-0cb8-a5cee2516932'
   isLoaded=false;
 
   constructor(

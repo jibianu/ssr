@@ -58,7 +58,7 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
   }
 
   onUserImgError(event) {
-    event.target.src = 'assets/img/user-profile.png';
+    event.target.src = 'assets/img/user-profile.PNG';
   }
 
   ngOnDestroy() {
