@@ -11,8 +11,8 @@
 import { Component } from "@angular/core";
 
 @Component({
-  selector: 'app-payment-error',
-  template: `
+    selector: 'app-payment-error',
+    template: `
     <div class="payment-error-container">
       <h1>Payment Failed</h1>
       <p>Oops! Something went wrong with your payment. Please try again.</p>
@@ -20,8 +20,8 @@ import { Component } from "@angular/core";
       <a routerLink="/contact">Contact Support</a>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
     .payment-error-container {
       text-align: center;
       margin-top: 50px;
@@ -48,7 +48,8 @@ import { Component } from "@angular/core";
       text-decoration: underline;
     }
     `
-  ]
+    ],
+    standalone: false
 })
 export class PaymentErrorComponent {
   retryPayment() {

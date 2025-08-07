@@ -6,9 +6,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 
 @Component({
-  selector: 'app-location-list',
-  templateUrl: './location-list.component.html',
-  styleUrls: ['./location-list.component.scss']
+    selector: 'app-location-list',
+    templateUrl: './location-list.component.html',
+    styleUrls: ['./location-list.component.scss'],
+    standalone: false
 })
 export class LocationListComponent implements OnInit, OnDestroy {
 

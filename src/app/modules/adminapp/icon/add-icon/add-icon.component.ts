@@ -7,9 +7,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 
 @Component({
-  selector: 'app-add-icon',
-  templateUrl: './add-icon.component.html',
-  styleUrls: ['./add-icon.component.scss']
+    selector: 'app-add-icon',
+    templateUrl: './add-icon.component.html',
+    styleUrls: ['./add-icon.component.scss'],
+    standalone: false
 })
 export class AddIconComponent implements OnInit,OnDestroy {
 

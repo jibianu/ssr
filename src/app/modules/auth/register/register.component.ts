@@ -6,9 +6,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AuthenticationService } from '../auth.service';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrls: ['./register.component.scss'],
+    standalone: false
 })
 export class RegisterComponent implements OnInit {
 

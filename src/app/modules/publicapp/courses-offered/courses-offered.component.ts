@@ -21,9 +21,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-courses-offered',
-  templateUrl: './courses-offered.component.html',
-  styleUrls: ['./courses-offered.component.scss']
+    selector: 'app-courses-offered',
+    templateUrl: './courses-offered.component.html',
+    styleUrls: ['./courses-offered.component.scss'],
+    standalone: false
 })
 export class CoursesOfferedComponent implements OnInit {
 

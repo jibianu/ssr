@@ -3,9 +3,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-why-oilandgasclub',
-  templateUrl: './why-oilandgasclub.component.html',
-  styleUrls: ['./why-oilandgasclub.component.scss']
+    selector: 'app-why-oilandgasclub',
+    templateUrl: './why-oilandgasclub.component.html',
+    styleUrls: ['./why-oilandgasclub.component.scss'],
+    standalone: false
 })
 export class WhyOilandgasclubComponent implements OnInit {
 

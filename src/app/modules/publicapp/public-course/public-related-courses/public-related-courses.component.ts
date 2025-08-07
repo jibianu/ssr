@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, Input, OnChanges } from '@angular/core';
 
 @Component({
-  selector: 'app-public-related-courses',
-  templateUrl: './public-related-courses.component.html',
-  styleUrls: ['./public-related-courses.component.scss']
+    selector: 'app-public-related-courses',
+    templateUrl: './public-related-courses.component.html',
+    styleUrls: ['./public-related-courses.component.scss'],
+    standalone: false
 })
 export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestroy {
 

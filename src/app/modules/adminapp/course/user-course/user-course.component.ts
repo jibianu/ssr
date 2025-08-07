@@ -7,9 +7,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 
 @Component({
-  selector: 'app-user-course',
-  templateUrl: './user-course.component.html',
-  styleUrls: ['./user-course.component.scss']
+    selector: 'app-user-course',
+    templateUrl: './user-course.component.html',
+    styleUrls: ['./user-course.component.scss'],
+    standalone: false
 })
 export class UserCourseComponent implements OnInit, OnDestroy {
 

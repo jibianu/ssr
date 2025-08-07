@@ -11,8 +11,8 @@
 import { Component, OnInit } from "@angular/core";
 
 @Component({
-  selector: "app-payment-success",
-  template: `
+    selector: "app-payment-success",
+    template: `
     <div class="container">
       <div class="card">
         <h1>{{message}}!</h1>
@@ -24,8 +24,8 @@ import { Component, OnInit } from "@angular/core";
       </div>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       .container {
         display: flex;
         justify-content: center;
@@ -59,7 +59,8 @@ import { Component, OnInit } from "@angular/core";
         background: #0056b3;
       }
     `,
-  ],
+    ],
+    standalone: false
 })
 export class PaymentSuccessComponent implements OnInit {
   ngOnInit(): void {

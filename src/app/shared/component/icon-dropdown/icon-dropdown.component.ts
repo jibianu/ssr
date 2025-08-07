@@ -2,9 +2,10 @@ import { UntypedFormControl } from '@angular/forms';
 import { Component, Input, OnInit, Output, EventEmitter, OnChanges } from '@angular/core';
 
 @Component({
-  selector: 'app-icon-dropdown',
-  templateUrl: './icon-dropdown.component.html',
-  styleUrls: ['./icon-dropdown.component.scss']
+    selector: 'app-icon-dropdown',
+    templateUrl: './icon-dropdown.component.html',
+    styleUrls: ['./icon-dropdown.component.scss'],
+    standalone: false
 })
 export class IconDropdownComponent implements OnInit, OnChanges {
 

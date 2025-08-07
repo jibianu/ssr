@@ -7,9 +7,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 
 @Component({
-  selector: 'app-event-list',
-  templateUrl: './event-list.component.html',
-  styleUrls: ['./event-list.component.scss']
+    selector: 'app-event-list',
+    templateUrl: './event-list.component.html',
+    styleUrls: ['./event-list.component.scss'],
+    standalone: false
 })
 export class EventListComponent implements OnInit {
 

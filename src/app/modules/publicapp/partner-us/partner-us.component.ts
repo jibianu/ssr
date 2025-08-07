@@ -3,9 +3,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-partner-us',
-  templateUrl: './partner-us.component.html',
-  styleUrls: ['./partner-us.component.scss']
+    selector: 'app-partner-us',
+    templateUrl: './partner-us.component.html',
+    styleUrls: ['./partner-us.component.scss'],
+    standalone: false
 })
 export class PartnerUsComponent implements OnInit {
 

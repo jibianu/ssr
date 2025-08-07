@@ -5,9 +5,10 @@ import { Router } from '@angular/router';
 import { CookieService } from 'src/app/core/services/cookie.service';
 
 @Component({
-  selector: 'app-topbar',
-  templateUrl: './topbar.component.html',
-  styleUrls: ['./topbar.component.scss']
+    selector: 'app-topbar',
+    templateUrl: './topbar.component.html',
+    styleUrls: ['./topbar.component.scss'],
+    standalone: false
 })
 export class TopbarComponent implements OnInit {
   userId: string;

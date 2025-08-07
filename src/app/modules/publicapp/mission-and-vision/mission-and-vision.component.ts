@@ -3,9 +3,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-mission-and-vision',
-  templateUrl: './mission-and-vision.component.html',
-  styleUrls: ['./mission-and-vision.component.scss']
+    selector: 'app-mission-and-vision',
+    templateUrl: './mission-and-vision.component.html',
+    styleUrls: ['./mission-and-vision.component.scss'],
+    standalone: false
 })
 export class MissionAndVisionComponent implements OnInit {
 

@@ -3,9 +3,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-policies',
-  templateUrl: './policies.component.html',
-  styleUrls: ['./policies.component.scss']
+    selector: 'app-policies',
+    templateUrl: './policies.component.html',
+    styleUrls: ['./policies.component.scss'],
+    standalone: false
 })
 export class PoliciesComponent implements OnInit {
 

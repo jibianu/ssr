@@ -2,9 +2,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-terms-and-condition',
-  templateUrl: './terms-and-condition.component.html',
-  styleUrls: ['./terms-and-condition.component.scss']
+    selector: 'app-terms-and-condition',
+    templateUrl: './terms-and-condition.component.html',
+    styleUrls: ['./terms-and-condition.component.scss'],
+    standalone: false
 })
 export class TermsAndConditionComponent implements OnInit {
 

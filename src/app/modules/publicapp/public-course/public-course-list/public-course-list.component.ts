@@ -4,9 +4,10 @@ import { Subscription } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 
 @Component({
-  selector: 'app-public-course-list',
-  templateUrl: './public-course-list.component.html',
-  styleUrls: ['./public-course-list.component.scss']
+    selector: 'app-public-course-list',
+    templateUrl: './public-course-list.component.html',
+    styleUrls: ['./public-course-list.component.scss'],
+    standalone: false
 })
 export class PublicCourseListComponent implements OnInit, OnDestroy {
 

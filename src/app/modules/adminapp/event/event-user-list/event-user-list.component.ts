@@ -8,9 +8,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-event-user-list',
-  templateUrl: './event-user-list.component.html',
-  styleUrls: ['./event-user-list.component.scss']
+    selector: 'app-event-user-list',
+    templateUrl: './event-user-list.component.html',
+    styleUrls: ['./event-user-list.component.scss'],
+    standalone: false
 })
 export class EventUserListComponent implements OnInit {
 

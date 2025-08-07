@@ -5,10 +5,11 @@ import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-build-your-portfolio',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './build-your-portfolio.component.html',
-  styleUrls: ['./build-your-portfolio.component.scss']
+    selector: 'app-build-your-portfolio',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './build-your-portfolio.component.html',
+    styleUrls: ['./build-your-portfolio.component.scss'],
+    standalone: false
 })
 export class BuildYourPortfolioComponent implements OnInit {
 

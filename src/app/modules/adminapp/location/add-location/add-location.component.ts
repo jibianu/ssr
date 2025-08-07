@@ -7,9 +7,10 @@ import { AdminAppService } from '../../adminapp.service';
 import { Location } from '@angular/common';
 
 @Component({
-  selector: 'app-add-location',
-  templateUrl: './add-location.component.html',
-  styleUrls: ['./add-location.component.scss']
+    selector: 'app-add-location',
+    templateUrl: './add-location.component.html',
+    styleUrls: ['./add-location.component.scss'],
+    standalone: false
 })
 export class AddLocationComponent implements OnInit {
 

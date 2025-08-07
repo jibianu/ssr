@@ -7,9 +7,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 
 @Component({
-  selector: 'app-add-category',
-  templateUrl: './add-category.component.html',
-  styleUrls: ['./add-category.component.scss']
+    selector: 'app-add-category',
+    templateUrl: './add-category.component.html',
+    styleUrls: ['./add-category.component.scss'],
+    standalone: false
 })
 export class AddCategoryComponent implements OnInit, OnDestroy {
 

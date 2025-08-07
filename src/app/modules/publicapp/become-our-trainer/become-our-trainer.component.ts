@@ -3,9 +3,10 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 @Component({
-  selector: 'app-become-our-trainer',
-  templateUrl: './become-our-trainer.component.html',
-  styleUrls: ['./become-our-trainer.component.scss']
+    selector: 'app-become-our-trainer',
+    templateUrl: './become-our-trainer.component.html',
+    styleUrls: ['./become-our-trainer.component.scss'],
+    standalone: false
 })
 export class BecomeOurTrainerComponent implements OnInit {
   

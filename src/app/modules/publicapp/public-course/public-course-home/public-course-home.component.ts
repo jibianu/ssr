@@ -5,9 +5,10 @@ import { Subscription } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 
 @Component({
-  selector: 'app-public-course-home',
-  templateUrl: './public-course-home.component.html',
-  styleUrls: ['./public-course-home.component.scss']
+    selector: 'app-public-course-home',
+    templateUrl: './public-course-home.component.html',
+    styleUrls: ['./public-course-home.component.scss'],
+    standalone: false
 })
 export class PublicCourseHomeComponent implements OnInit, OnDestroy {
   items = [];

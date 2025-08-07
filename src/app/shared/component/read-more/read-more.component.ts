@@ -1,9 +1,10 @@
 import { Component, OnInit, Input, EventEmitter } from '@angular/core';
 
 @Component({
-  selector: 'app-read-more',
-  templateUrl: './read-more.component.html',
-  styleUrls: ['./read-more.component.scss']
+    selector: 'app-read-more',
+    templateUrl: './read-more.component.html',
+    styleUrls: ['./read-more.component.scss'],
+    standalone: false
 })
 export class ReadMoreComponent implements OnInit {
 

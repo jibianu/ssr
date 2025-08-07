@@ -3,9 +3,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-refund-cancellation-policy',
-  templateUrl: './refund-cancellation-policy.component.html',
-  styleUrls: ['./refund-cancellation-policy.component.scss']
+    selector: 'app-refund-cancellation-policy',
+    templateUrl: './refund-cancellation-policy.component.html',
+    styleUrls: ['./refund-cancellation-policy.component.scss'],
+    standalone: false
 })
 export class RefundCancellationPolicyComponent implements OnInit {
 

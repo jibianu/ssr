@@ -7,9 +7,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 
 @Component({
-  selector: 'app-add-user',
-  templateUrl: './add-user.component.html',
-  styleUrls: ['./add-user.component.scss']
+    selector: 'app-add-user',
+    templateUrl: './add-user.component.html',
+    styleUrls: ['./add-user.component.scss'],
+    standalone: false
 })
 export class AddUserComponent implements OnInit, OnDestroy {
 

@@ -11,7 +11,8 @@ import { AdminAppService } from '../../adminapp.service';
 @Component({
     selector: 'app-add-event',
     templateUrl: './add-event.component.html',
-    styleUrls: ['./add-event.component.scss']
+    styleUrls: ['./add-event.component.scss'],
+    standalone: false
 })
 export class AddEventComponent implements OnInit, OnDestroy {
 

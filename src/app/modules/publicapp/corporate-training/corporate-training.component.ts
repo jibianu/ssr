@@ -49,9 +49,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
 @Component({
-  selector: 'app-corporate-training',
-  templateUrl: './corporate-training.component.html',
-  styleUrls: ['./corporate-training.component.scss']
+    selector: 'app-corporate-training',
+    templateUrl: './corporate-training.component.html',
+    styleUrls: ['./corporate-training.component.scss'],
+    standalone: false
 })
 export class CorporateTrainingComponent implements OnInit {
 

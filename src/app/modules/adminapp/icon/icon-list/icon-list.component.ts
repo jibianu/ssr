@@ -6,9 +6,10 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 
 @Component({
-  selector: 'app-icon-list',
-  templateUrl: './icon-list.component.html',
-  styleUrls: ['./icon-list.component.scss']
+    selector: 'app-icon-list',
+    templateUrl: './icon-list.component.html',
+    styleUrls: ['./icon-list.component.scss'],
+    standalone: false
 })
 export class IconListComponent implements OnInit,OnDestroy {
 

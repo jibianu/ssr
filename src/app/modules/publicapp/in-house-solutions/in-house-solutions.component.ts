@@ -3,9 +3,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-in-house-solutions',
-  templateUrl: './in-house-solutions.component.html',
-  styleUrls: ['./in-house-solutions.component.scss']
+    selector: 'app-in-house-solutions',
+    templateUrl: './in-house-solutions.component.html',
+    styleUrls: ['./in-house-solutions.component.scss'],
+    standalone: false
 })
 export class InHouseSolutionsComponent implements OnInit {
 

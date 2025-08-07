@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-location-metadata',
-  templateUrl: './location-metadata.component.html',
-  styleUrls: ['./location-metadata.component.scss']
+    selector: 'app-location-metadata',
+    templateUrl: './location-metadata.component.html',
+    styleUrls: ['./location-metadata.component.scss'],
+    standalone: false
 })
 export class LocationMetadataComponent implements OnInit {
 

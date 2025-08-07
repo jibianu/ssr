@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-public-topbar',
-  templateUrl: './public-topbar.component.html',
-  styleUrls: ['./public-topbar.component.scss']
+    selector: 'app-public-topbar',
+    templateUrl: './public-topbar.component.html',
+    styleUrls: ['./public-topbar.component.scss'],
+    standalone: false
 })
 export class PublicTopbarComponent implements OnInit {
 

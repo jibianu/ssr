@@ -4,9 +4,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-membership',
-  templateUrl: './membership.component.html',
-  styleUrls: ['./membership.component.scss']
+    selector: 'app-membership',
+    templateUrl: './membership.component.html',
+    styleUrls: ['./membership.component.scss'],
+    standalone: false
 })
 export class MembershipComponent implements OnInit {
 

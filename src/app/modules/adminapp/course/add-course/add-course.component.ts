@@ -11,10 +11,11 @@ import { Location } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MyUploadAdapter } from './UploadAdapter';
 @Component({
-  selector: 'app-add-course',
-  templateUrl: './add-course.component.html',
-  styleUrls: ['./add-course.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-add-course',
+    templateUrl: './add-course.component.html',
+    styleUrls: ['./add-course.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class AddCourseComponent implements OnInit, OnDestroy {
 

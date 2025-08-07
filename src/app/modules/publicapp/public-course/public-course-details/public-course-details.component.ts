@@ -7,9 +7,10 @@ import { MetadataService } from 'src/app/shared/service/meta.service';
 import { PublicAppService } from '../../publicapp.service';
 
 @Component({
-  selector: 'app-public-course-details',
-  templateUrl: './public-course-details.component.html',
-  styleUrls: ['./public-course-details.component.scss']
+    selector: 'app-public-course-details',
+    templateUrl: './public-course-details.component.html',
+    styleUrls: ['./public-course-details.component.scss'],
+    standalone: false
 })
 export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
 

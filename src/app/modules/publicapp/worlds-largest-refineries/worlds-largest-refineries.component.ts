@@ -4,9 +4,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-worlds-largest-refineries',
-  templateUrl: './worlds-largest-refineries.component.html',
-  styleUrls: ['./worlds-largest-refineries.component.scss']
+    selector: 'app-worlds-largest-refineries',
+    templateUrl: './worlds-largest-refineries.component.html',
+    styleUrls: ['./worlds-largest-refineries.component.scss'],
+    standalone: false
 })
 export class WorldsLargestRefineriesComponent implements OnInit {
 

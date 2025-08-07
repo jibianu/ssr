@@ -4,9 +4,10 @@ import { Subscription } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 
 @Component({
-  selector: 'app-public-category',
-  templateUrl: './public-category.component.html',
-  styleUrls: ['./public-category.component.scss']
+    selector: 'app-public-category',
+    templateUrl: './public-category.component.html',
+    styleUrls: ['./public-category.component.scss'],
+    standalone: false
 })
 export class PublicCategoryComponent implements OnInit,OnDestroy {
 

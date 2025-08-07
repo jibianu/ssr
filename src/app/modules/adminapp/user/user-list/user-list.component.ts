@@ -6,9 +6,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 
 @Component({
-  selector: 'app-user-list',
-  templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss']
+    selector: 'app-user-list',
+    templateUrl: './user-list.component.html',
+    styleUrls: ['./user-list.component.scss'],
+    standalone: false
 })
 export class UserListComponent implements OnInit {
 

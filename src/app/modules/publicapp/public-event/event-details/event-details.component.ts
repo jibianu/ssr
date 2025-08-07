@@ -9,9 +9,10 @@ import { PublicAppService } from '../../publicapp.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 
 @Component({
-  selector: 'app-event-details',
-  templateUrl: './event-details.component.html',
-  styleUrls: ['./event-details.component.scss']
+    selector: 'app-event-details',
+    templateUrl: './event-details.component.html',
+    styleUrls: ['./event-details.component.scss'],
+    standalone: false
 })
 export class EventDetailsComponent implements OnInit {
 

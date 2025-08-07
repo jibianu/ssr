@@ -20,9 +20,10 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
-  selector: 'app-guest-blogging',
-  templateUrl: './guest-blogging.component.html',
-  styleUrls: ['./guest-blogging.component.scss']
+    selector: 'app-guest-blogging',
+    templateUrl: './guest-blogging.component.html',
+    styleUrls: ['./guest-blogging.component.scss'],
+    standalone: false
 })
 export class GuestBloggingComponent implements OnInit {
 
