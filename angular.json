@@ -80,10 +80,10 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "Course:build:production"
+              "buildTarget": "Course:build:production"
             },
             "development": {
-              "browserTarget": "Course:build:development"
+              "buildTarget": "Course:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -91,7 +91,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "Course:build"
+            "buildTarget": "Course:build"
           }
         },
         "test": {
@@ -156,7 +156,7 @@
           "defaultConfiguration": "production"
         },
         "serve-ssr": {
-          "builder": "@nguniversal/builders:ssr-dev-server",
+          "builder": "@angular-devkit/build-angular:ssr-dev-server",
           "options": {
           },
           "configurations": {
@@ -172,7 +172,7 @@
           "defaultConfiguration": "development"
         },
         "prerender": {
-          "builder": "@nguniversal/builders:prerender",
+          "builder": "@angular-devkit/build-angular:prerender",
           "options": {
             "browserTarget": "Course:build:production",
             "serverTarget": "Course:server:production",
