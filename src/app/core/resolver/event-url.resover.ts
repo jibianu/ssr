@@ -1,17 +1,11 @@
 import { Injectable } from '@angular/core';
-import {
-    ActivatedRouteSnapshot,
-    Resolve,
-    Router,
-    RouterStateSnapshot,
-    UrlTree
-} from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AdminAppService } from '../../modules/adminapp/adminapp.service';
 
 @Injectable({ providedIn: 'root' })
-export class EventResolverService implements Resolve<any> {
+export class EventResolverService  {
     private readonly notFoundRoute = ['page-not-found'];
 
     constructor(

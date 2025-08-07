@@ -1,11 +1,6 @@
 import { PublicAppService } from '../../modules/publicapp/publicapp.service';
 import { Injectable } from '@angular/core';
-import { 
-    ActivatedRouteSnapshot, 
-    CanActivate, 
-    Router, 
-    RouterStateSnapshot 
-} from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { 
     catchError, 
@@ -14,7 +9,7 @@ import {
 } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
-export class CourseLocationGuard implements CanActivate {
+export class CourseLocationGuard  {
     private readonly notFoundRoute = ['error/page-not-found'];
 
     constructor(

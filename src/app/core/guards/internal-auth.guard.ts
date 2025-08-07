@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
-import { 
-    Router, 
-    CanActivate, 
-    ActivatedRouteSnapshot, 
-    RouterStateSnapshot 
-} from '@angular/router';
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { CookieService } from '../services/cookie.service';
 
 @Injectable({ providedIn: 'root' })
-export class InternalAuthGuard implements CanActivate {
+export class InternalAuthGuard  {
     private readonly adminRestrictedRoutes = [
         'user',
         'category',
