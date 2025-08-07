@@ -1,24 +1,47 @@
-import { Injectable } from "@angular/core";
-import { ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot } from "@angular/router";
-import { of } from "rxjs";
-import { catchError } from "rxjs/operators";
-import { AdminAppService } from "src/app/modules/adminapp/adminapp.service";
+import { Injectable } from '@angular/core';
+import {
+    ActivatedRouteSnapshot,
+    Resolve,
+    Router,
+    RouterStateSnapshot,
+    UrlTree
+} from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AdminAppService } from '../../modules/adminapp/adminapp.service';
 
-@Injectable({
-    providedIn: 'root'
-  })
-export class EventResoverService implements Resolve<any>{
-    constructor(private adminService: AdminAppService,private router: Router) {}
-    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-        // throw new Error("Method not implemented.");
-        // console.log(route.params.url);
-       return this.adminService.getEventByCanonicalURL(route.params.url)
-       .pipe(
-        catchError(er=>{
-            this.router.navigate(['page-not-found'])
-            return of("no data");
-        })
-       )
+@Injectable({ providedIn: 'root' })
+export class EventResolverService implements Resolve<any> {
+    private readonly notFoundRoute = ['page-not-found'];
+
+    constructor(
+        private adminService: AdminAppService,
+        private router: Router
+    ) {}
+
+    resolve(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<any> {
+        const eventUrl = route.params.url;
+
+        if (!eventUrl) {
+            this.redirectToNotFound();
+            return of(null);
+        }
+
+        return this.adminService.getEventByCanonicalURL(eventUrl).pipe(
+            catchError(error => {
+                console.error('Error resolving event:', error);
+                this.redirectToNotFound();
+                return of(null);
+            })
+        );
     }
 
+    private redirectToNotFound(): void {
+        this.router.navigate(this.notFoundRoute, {
+            state: { attemptedUrl: this.router.url }
+        });
+    }
 }

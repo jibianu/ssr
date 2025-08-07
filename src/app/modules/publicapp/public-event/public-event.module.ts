@@ -7,7 +7,7 @@ import { NgbAccordionModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstra
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { EventResoverService } from 'src/app/core/resolver/event-url.resover';
+import { EventResolverService } from 'src/app/core/resolver/event-url.resover';
 import { PaymentSuccessComponent } from './payments/sucess.component';
 import { PaymentErrorComponent } from './payments/error.component';
 
@@ -19,7 +19,7 @@ const routes : Routes=[
   {
     path: ':url',
     component:EventDetailsComponent,
-    resolve:{event:EventResoverService},
+    resolve:{event:EventResolverService},
   },
   {
     path:'payment/success',

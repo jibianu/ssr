@@ -15,12 +15,12 @@
 <div class="container">
   <div class="row">
     <div class="col-lg-8 col-md-12 col-12 mt-n8 mb-4 mb-lg-0">
-     
+
       <div class="card rounded-lg">
-        
+
         <div class="card-header  border-bottom-0 p-0">
           <div>
-          
+
             <ul class="nav nav-lb-tab" id="tab" role="tablist">
               <li class="nav-item">
                 <a class="nav-link active" id="description-tab" data-toggle="pill" role="tab" [routerLink]="'.'"
@@ -41,18 +41,19 @@
             </ul>
           </div>
         </div>
-      
+
       </div>
 
       <div *ngIf="(courseDetails?.courseInformation && courseDetails?.courseInformation.length > 0)">
         <h3 class="margin-top-3 post-sub-title">About {{ courseDetails?.title }}</h3>
         <div id="about">
           <div class="accordion" id="courseabout">
-            <div class="card mb-2 shadow-sm rounded-lg" *ngFor="let item of courseDetails?.courseInformation; let i = index">
+            <div class="card mb-2 shadow-sm rounded-lg"
+              *ngFor="let item of courseDetails?.courseInformation; let i = index">
               <div class="card-header-about bg-white border-0" id="headingOne">
                 <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none py-3"
-                   data-toggle="collapse" href="#courseabout{{ i }}" aria-expanded="false"
-                   aria-controls="courseabout{{ i }}" role="button">
+                  data-toggle="collapse" href="#courseabout{{ i }}" aria-expanded="false"
+                  aria-controls="courseabout{{ i }}" role="button">
                   <div class="mr-auto font-weight-bold text-dark">{{ item?.title }}</div>
                   <span class="chevron-arrow ml-4 transition-transform">
                     <i class="fa fa-chevron-down font-size-md text-primary"></i>
@@ -70,7 +71,7 @@
           </div>
         </div>
       </div>
-     
+
       <div class="card w-100 mt-5 mb-5">
         <div class="p-3">
           <h3 class="text-center mb-3">Top Companies Trust Us</h3>
@@ -110,70 +111,70 @@
         </div>
       </div>
 
-   <!-- Top Companies Trust Us  end -->
+      <!-- Top Companies Trust Us  end -->
 
 
 
- <div *ngIf="courseDetails?.courseContents?.length > 0">
-  <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} Curriculum</h3>
-  <div id="courseAccordion">
-    <div class="card mb-2 rounded-0" *ngFor="let item of courseDetails?.courseContents; let i = index">
-      <!-- Card Header -->
-      <div class="card-header-custom" id="headingOne">
-        <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none collapsed"
-          data-toggle="collapse" href="#courseContent{{ i }}" aria-expanded="false"
-          aria-controls="courseContent{{ i }}" id="card-header">
-          <div class="mr-auto">
-            <img [src]="item?.iconUrl" height="20px" width="20px" alt="{{ item?.title }}">
-            <span class="ml-2">{{ item?.title }}</span>
-          </div>
-        </a>
-      </div>
-
-      <!-- Card Body -->
-      <div id="courseContent{{ i }}" class="collapse" data-parent="#courseAccordion">
-        <div class="card-body" id="content">
-          <div class="ml-5" *ngFor="let subItem of item?.courseContentSubTypes; let j = index">
-            <!-- Sub Content with Nested Items -->
-            <div *ngIf="subItem?.courseContentSubSubTypes?.length > 0; else subContent">
-              <a class="mb-3 d-flex justify-content-between align-items-center text-inherit text-decoration-none"
-                data-toggle="collapse" href="#subContentCollapse{{ j }}" aria-expanded="false"
-                aria-controls="subContentCollapse{{ j }}" id="sub-card-header">
+      <div *ngIf="courseDetails?.courseContents?.length > 0">
+        <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} Curriculum</h3>
+        <div id="courseAccordion">
+          <div class="card mb-2 rounded-0" *ngFor="let item of courseDetails?.courseContents; let i = index">
+            <!-- Card Header -->
+            <div class="card-header-custom" id="headingOne">
+              <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none collapsed"
+                data-toggle="collapse" href="#courseContent{{ i }}" aria-expanded="false"
+                aria-controls="courseContent{{ i }}" id="card-header">
                 <div class="mr-auto">
-                  <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subItem?.title }}">
-                  <span class="ml-2">{{ subItem?.title }}</span>
+                  <img [src]="item?.iconUrl" height="20px" width="20px" alt="{{ item?.title }}">
+                  <span class="ml-2">{{ item?.title }}</span>
                 </div>
               </a>
-              <div class="collapse show" id="subContentCollapse{{ j }}" data-parent="#subContentCollapse{{ j }}">
-                <ul>
-                  <li *ngFor="let subSubItem of subItem?.courseContentSubSubTypes">
-                    <div class="mr-auto">
-                      <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subSubItem?.title }}">
-                      <span class="ml-2">{{ subSubItem?.title }}</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
             </div>
 
-            <!-- Sub Content without Nested Items -->
-            <ng-template #subContent>
-              <a class="mb-2 d-flex justify-content-between align-items-center text-inherit text-decoration-none">
-                <div class="mr-auto">
-                  <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subItem?.title }}">
-                  <span class="ml-2">{{ subItem?.title }}</span>
+            <!-- Card Body -->
+            <div id="courseContent{{ i }}" class="collapse" data-parent="#courseAccordion">
+              <div class="card-body" id="content">
+                <div class="ml-5" *ngFor="let subItem of item?.courseContentSubTypes; let j = index">
+                  <!-- Sub Content with Nested Items -->
+                  <div *ngIf="subItem?.courseContentSubSubTypes?.length > 0; else subContent">
+                    <a class="mb-3 d-flex justify-content-between align-items-center text-inherit text-decoration-none"
+                      data-toggle="collapse" href="#subContentCollapse{{ j }}" aria-expanded="false"
+                      aria-controls="subContentCollapse{{ j }}" id="sub-card-header">
+                      <div class="mr-auto">
+                        <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subItem?.title }}">
+                        <span class="ml-2">{{ subItem?.title }}</span>
+                      </div>
+                    </a>
+                    <div class="collapse show" id="subContentCollapse{{ j }}" data-parent="#subContentCollapse{{ j }}">
+                      <ul>
+                        <li *ngFor="let subSubItem of subItem?.courseContentSubSubTypes">
+                          <div class="mr-auto">
+                            <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subSubItem?.title }}">
+                            <span class="ml-2">{{ subSubItem?.title }}</span>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Sub Content without Nested Items -->
+                  <ng-template #subContent>
+                    <a class="mb-2 d-flex justify-content-between align-items-center text-inherit text-decoration-none">
+                      <div class="mr-auto">
+                        <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subItem?.title }}">
+                        <span class="ml-2">{{ subItem?.title }}</span>
+                      </div>
+                    </a>
+                  </ng-template>
                 </div>
-              </a>
-            </ng-template>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-       <!------------------------------ Course Curriculum  end  ------------- -->
+      <!------------------------------ Course Curriculum  end  ------------- -->
 
-    
+
 
 
       <div *ngIf="(courseDetails?.becomeCourse?.title && courseDetails?.becomeCourse?.description)">
@@ -181,50 +182,48 @@
         <div class="description-container" id="trainer">
           <div class="description-content">
             <strong class="description-heading">{{courseDetails?.becomeCourse?.title}}</strong>
-            <app-read-more 
-              [content]="courseDetails?.becomeCourse?.description" 
-              [limit]="200" 
-              [completeWords]="true"
+            <app-read-more [content]="courseDetails?.becomeCourse?.description" [limit]="200" [completeWords]="true"
               class="description-text">
             </app-read-more>
           </div>
         </div>
       </div>
 
-       <!--    Description  end  -->
-             
-       <!--  Course FAQ start -->
+      <!--    Description  end  -->
+
+      <!--  Course FAQ start -->
 
 
       <div *ngIf="courseDetails?.frequentlyAskedQuestions?.length > 0">
-  <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} FAQ</h3>
-  <div id="faq">
-    <div class="accordion" id="coursefaq">
-      <div class="card mb-2 rounded-0" *ngFor="let item of courseDetails?.frequentlyAskedQuestions; let i = index">
-        <!-- FAQ Header -->
-        <div class="card-header-about" id="headingOne">
-          <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none collapsed"
-            data-toggle="collapse" href="#coursefaq{{ i }}" aria-expanded="false"
-            aria-controls="coursefaq{{ i }}">
-            <div class="mr-auto">{{ item?.question }}</div>
-            <span class="chevron-arrow ml-4">
-              <i class="fa fa-chevron-down font-size-md text-primary"></i>
-            </span>
-          </a>
-        </div>
+        <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} FAQ</h3>
+        <div id="faq">
+          <div class="accordion" id="coursefaq">
+            <div class="card mb-2 rounded-0"
+              *ngFor="let item of courseDetails?.frequentlyAskedQuestions; let i = index">
+              <!-- FAQ Header -->
+              <div class="card-header-about" id="headingOne">
+                <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none collapsed"
+                  data-toggle="collapse" href="#coursefaq{{ i }}" aria-expanded="false"
+                  aria-controls="coursefaq{{ i }}">
+                  <div class="mr-auto">{{ item?.question }}</div>
+                  <span class="chevron-arrow ml-4">
+                    <i class="fa fa-chevron-down font-size-md text-primary"></i>
+                  </span>
+                </a>
+              </div>
 
-        <!-- FAQ Body -->
-        <div class="collapse" id="coursefaq{{ i }}" data-parent="#coursefaq">
-          <div class="card-body bg-white">
-            <div class="ml-5 pb-2">
-              <app-read-more [content]="item?.answer" [limit]="500" [completeWords]="true"></app-read-more>
+              <!-- FAQ Body -->
+              <div class="collapse" id="coursefaq{{ i }}" data-parent="#coursefaq">
+                <div class="card-body bg-white">
+                  <div class="ml-5 pb-2">
+                    <app-read-more [content]="item?.answer" [limit]="500" [completeWords]="true"></app-read-more>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
       <!--  Course FAQ end -->
       <div *ngIf="courseDetails?.courseTeachers?.length > 0">
@@ -241,15 +240,16 @@
                       <img [src]="item?.imageUrl" (error)="onImgError($event)" alt="{{ item?.name }}"
                         class="rounded-circle avatar-lg">
                     </div>
-      
+
                     <!-- Trainer Name and Description -->
                     <div class="col-sm-10 col-md-10">
                       <h4 class="mb-0">{{ item?.name }}</h4>
-                      <app-read-more class="d-inline" [content]="item?.description" [limit]="200" [completeWords]="true">
+                      <app-read-more class="d-inline" [content]="item?.description" [limit]="200"
+                        [completeWords]="true">
                       </app-read-more>
                     </div>
                   </div>
-      
+
                   <!-- Show More/Less Button -->
                   <br>
                   <a class="text-primary" *ngIf="isLast && i > 2" (click)="more = !more">
@@ -271,15 +271,27 @@
       <div class="sticky-top" style="top: 50px" class="d-none d-sm-block">
         <div class="card box-shadow mb-3 mb-4 fixedContainer">
           <div class="p-0 ">
-            
-            <img [src]="courseDetails?.titleImageUrl" class="img-top rounded-top d-none d-sm-block " (error)="onImgError($event)">
-            <div class="card-body">
-             
-              <a href="#!" class="btn btn-primary btn-block" *ngIf="createdBy!=courseDetails.createdByUser.id">More info +91 9840287919</a>
-              <a *ngIf="createdBy==courseDetails.createdByUser.id" href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}" 
-              class="btn btn-primary btn-block">Price :{{courseDetails.amount | currency:"INR":"symbol"}} </a>
 
-              <div *ngIf="(courseDetails?.courseFeatures && courseDetails?.courseFeatures.length > 0)" class="d-none d-sm-block">
+            <img [src]="courseDetails?.titleImageUrl" class="img-top rounded-top d-none d-sm-block "
+              (error)="onImgError($event)">
+            <div class="card-body">
+              <button class="buy-now mb-3"> Price : {{courseDetails.amount | currency:'INR':'symbol'}}</button>
+              <!-- mb-3 adds margin-bottom -->
+              <a href="#!" class="btn btn-primary btn-block"
+                *ngIf="!createdByList.includes(courseDetails.createdByUser.id)">
+                More info +91 9840287919
+              </a>
+              <a *ngIf="createdByList.includes(courseDetails.createdByUser.id)"
+                href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
+                class="btn btn-primary btn-block">
+                Buy Now
+              </a>
+              <div class="guarantee">
+                <p>30-Day Risk-Free Trial</p>
+                <p>Learn at Your Own Pace – Access Forever</p>
+              </div>
+              <div *ngIf="(courseDetails?.courseFeatures && courseDetails?.courseFeatures.length > 0)"
+                class="d-none d-sm-block">
                 <h4 class="mt-3 mb-2 blog-table-heading">Key Features</h4>
                 <ul class="blog-toc__list p-2">
                   <li *ngFor="let item of courseDetails?.courseFeatures" class="mt-1">
@@ -296,9 +308,9 @@
           </div>
         </div>
       </div>
-
       <div class="d-block d-sm-none footer">
-        <a href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}" class="btn btn-primary btn-block">More info</a>
+        <a href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
+          class="btn btn-primary btn-block">More info</a>
       </div>
     </div>
   </div>

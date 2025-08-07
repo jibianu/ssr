@@ -49,7 +49,7 @@ export class AuthenticationService {
                 if (token.token) {
                     this.token = token.token;
                     // store user details and jwt in cookie
-                    this.cookieService.setCookie('token', JSON.stringify(token.token), 1);
+                    this.cookieService.setCookie('token', JSON.stringify(token.token));
                 }
                 return token.token;
             }));
@@ -63,7 +63,7 @@ export class AuthenticationService {
         return this.http.get(this.apiUrl + `page/account/getinfo`).pipe(map(user => {
             if (user) {
                 this.user = user;
-                this.cookieService.setCookie('currentUser', JSON.stringify(user), 1);
+                this.cookieService.setCookie('currentUser', JSON.stringify(user), );
             }
             return user;
         }));

@@ -2,10 +2,11 @@
 
 
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, OnInit, Renderer2 } from '@angular/core';
  import { Meta, Title } from '@angular/platform-browser';
  @Component({
   selector: 'app-build-your-portfolio',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './build-your-portfolio.component.html',
   styleUrls: ['./build-your-portfolio.component.scss']
 })

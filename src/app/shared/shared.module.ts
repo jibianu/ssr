@@ -1,3 +1,4 @@
+
 import { NgbModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -13,10 +14,15 @@ import { ReadMoreComponent } from './component/read-more/read-more.component';
 import { IconDropdownComponent } from './component/icon-dropdown/icon-dropdown.component';
 import { PageNotFoundComponent } from '../modules/publicapp/page-not-found/page-not-found.component';
 
-const ErrorPages=[PageNotFoundComponent]
+const errorPages = [PageNotFoundComponent];
 
 @NgModule({
-    declarations: [ToasterComponent, ConfirmationModalComponent, ReadMoreComponent, IconDropdownComponent, ErrorPages
+    declarations: [
+        ToasterComponent, 
+        ConfirmationModalComponent, 
+        ReadMoreComponent, 
+        IconDropdownComponent, 
+        ...errorPages
     ],
     imports: [
         CommonModule,
@@ -26,9 +32,10 @@ const ErrorPages=[PageNotFoundComponent]
         Ng2SearchPipeModule,
         NgxPaginationModule,
         NgxSpinnerModule,
-        NgMultiSelectDropDownModule,
+        NgMultiSelectDropDownModule.forRoot(),
         CarouselModule,
-    ], exports: [
+    ], 
+    exports: [
         ToasterComponent,
         ReadMoreComponent,
         FormsModule,
@@ -39,7 +46,7 @@ const ErrorPages=[PageNotFoundComponent]
         NgMultiSelectDropDownModule,
         CarouselModule,
         IconDropdownComponent,
-        ErrorPages
+        ...errorPages
     ],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA

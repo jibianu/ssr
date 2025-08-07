@@ -65,8 +65,8 @@
 .nav-lb-tab .nav-item .nav-link.active,
 .nav-lb-tab .nav-item .nav-link:hover {
   background-color: transparent;
-  border-bottom: 2px solid #0069D9;
-  color: #0069D9;              
+  border-bottom: 2px solid #bd2300;
+  color: #bd2300;            
 }
 
 @media (min-width: 992px) {
@@ -216,37 +216,6 @@
   background: #ebf1f8;
 }
 
-// #module [id^="collapseteacher"].collapse:not(.show) {
-//   height: 30px !important;
-//   overflow: hidden;
-//   display: -webkit-box;
-//   -webkit-line-clamp: 2;
-//   -webkit-box-orient: vertical;  
-// }
-
-// #module [id^="collapseteacher"].collapsing {
-//   min-height: 30px !important;
-// }
-
-// #module a.collapsed::after {
-//   content: 'Show More';
-// }
-
-// #module a:not(.collapsed)::after {
-//   content: 'Show Less';
-// }
-
-// #module [id^="collapseDesc"].collapse:not(.show) {
-//   height: 30px !important;
-//   overflow: hidden;
-//   display: -webkit-box;
-//   -webkit-line-clamp: 10;
-//   -webkit-box-orient: vertical;  
-// }
-
-// #module [id^="collapseDesc"].collapsing {
-//   min-height: 30px !important;
-// }
 
 
 .post-title {
@@ -443,7 +412,7 @@ p {
   font-weight: 700;
   color: #2c3e50;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #00c6ff;
+  border-bottom: 2px solid #bd2300;
   padding-bottom: 0.5rem;
   display: inline-block;
 }
@@ -482,7 +451,7 @@ p {
 
 /* Read More Component Styles */
 .read-more-button {
-  color: #00c6ff;
+  color: #bd2300;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -490,7 +459,7 @@ p {
 }
 
 .read-more-button:hover {
-  color: #0099cc;
+  color: #bd2300;
 }
 
 /* Responsive Design */
@@ -523,102 +492,6 @@ p {
 }
 
 
-/*---------------- Course Curriculum  start ------------------ */
-// /* General Styles */
-// .margin-top-3 {
-//   margin-top: 1.5rem;
-// }
-
-// .post-sub-title {
-//   font-size: 1.75rem;
-//   font-weight: 700;
-//   color: #2c3e50;
-//   margin-bottom: 1.5rem;
-//   border-bottom: 2px solid #00c6ff;
-//   padding-bottom: 0.5rem;
-//   display: inline-block;
-// }
-
-// /* Card Header */
-// .card-header-custom {
-//   background-color: #f9f9f9;
-//   border-bottom: 1px solid #e0e0e0;
-//   padding: 1rem;
-//   cursor: pointer;
-// }
-
-// .card-header-custom a {
-//   color: #2c3e50;
-//   text-decoration: none;
-//   transition: color 0.3s ease;
-// }
-
-// .card-header-custom a:hover {
-//   color: #00c6ff;
-// }
-
-// .card-header-custom img {
-//   margin-right: 0.5rem;
-// }
-
-// /* Card Body */
-// .card-body {
-//   padding: 1rem;
-//   background-color: #fff;
-// }
-
-// .card-body ul {
-//   list-style: none;
-//   padding-left: 0;
-// }
-
-// .card-body ul li {
-//   padding: 0.5rem 0;
-//   border-bottom: 1px solid #e0e0e0;
-// }
-
-// .card-body ul li:last-child {
-//   border-bottom: none;
-// }
-
-// .card-body ul li img {
-//   margin-right: 0.5rem;
-// }
-
-// /* Collapse Animation */
-// .collapse {
-//   transition: all 0.3s ease;
-// }
-
-// /* Responsive Design */
-// @media (max-width: 768px) {
-//   .post-sub-title {
-//     font-size: 1.5rem;
-//   }
-
-//   .card-header-custom {
-//     padding: 0.75rem;
-//   }
-
-//   .card-body {
-//     padding: 0.75rem;
-//   }
-// }
-
-// @media (max-width: 480px) {
-//   .post-sub-title {
-//     font-size: 1.25rem;
-//   }
-
-//   .card-header-custom {
-//     padding: 0.5rem;
-//   }
-
-//   .card-body {
-//     padding: 0.5rem;
-//   }
-// }
-
 /* --------------------FAQ start ------------- */
 
 /* General Styles */
@@ -631,7 +504,7 @@ p {
   font-weight: 700;
   color: #2c3e50;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #00c6ff;
+  border-bottom: 2px solid #bd2300;
   padding-bottom: 0.5rem;
   display: inline-block;
 }
@@ -651,7 +524,7 @@ p {
 }
 
 .card-header-about a:hover {
-  color: #00c6ff;
+  color: #bd2300;
 }
 
 .card-header-about .chevron-arrow {
@@ -678,7 +551,7 @@ p {
 
 /* Read More Component Styles */
 .read-more-button {
-  color: #00c6ff;
+  color: #bd2300;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -686,7 +559,7 @@ p {
 }
 
 .read-more-button:hover {
-  color: #0099cc;
+  color: #bd2300;
 }
 
 /* Responsive Design */
@@ -731,7 +604,7 @@ p {
   font-weight: 700;
   color: #2c3e50;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #00c6ff;
+  border-bottom: 2px solid #bd2300;
   padding-bottom: 0.5rem;
   display: inline-block;
 }
@@ -759,7 +632,7 @@ h4.mb-0 {
 
 /* Read More Component Styles */
 .read-more-button {
-  color: #00c6ff;
+  color: #bd2300;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -767,12 +640,12 @@ h4.mb-0 {
 }
 
 .read-more-button:hover {
-  color: #0099cc;
+  color:#bd2300;
 }
 
 /* Show More/Less Button */
 .text-primary {
-  color: #00c6ff;
+  color: #bd2300;
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
@@ -780,7 +653,7 @@ h4.mb-0 {
 }
 
 .text-primary:hover {
-  color: #0099cc;
+  color: #bd2300;
 }
 
 /* Responsive Design */
@@ -812,4 +685,58 @@ h4.mb-0 {
   h4.mb-0 {
     font-size: 1rem;
   }
+}
+
+.guarantee {
+  text-align: center;
+  color: #333;
+  margin-top: 10px;
+  font-size: 25px;
+  font-weight: 600; /* Bold weight */
+}
+
+.buy-now {
+  width: 100%;
+  background-color: white;
+  color:#f02c00 0%, #f02c00 100%;
+  font-weight: bold;
+  border: 2px solid #bd2300;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 100px; /* Add this line to create space below the Price button */
+}
+
+.btn {
+  display: inline-block;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 2px solid transparent;
+  padding: 12px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color:  #ca2600; /* Purple shade */
+  color: #fff;
+  border-color: #bd2300;
+}
+
+.btn-primary:hover {
+  background-color:  #ca2600;
+  border-color: #bd2300;
+  color: #fff;
 }
