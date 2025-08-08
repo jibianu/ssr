@@ -33,3 +33,5 @@ EXPOSE 4005
 # Start the server
 CMD ["node", "dist/Course/server/main.js"]
 
+
+
