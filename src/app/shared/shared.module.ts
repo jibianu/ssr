@@ -29,17 +29,17 @@ const errorPages = [PageNotFoundComponent];
         NgbToastModule,
         NgbModule,
         FormsModule,
-        Ng2SearchPipeModule,
+     
         NgxPaginationModule,
         NgxSpinnerModule,
-        NgMultiSelectDropDownModule.forRoot(),
+        NgMultiSelectDropDownModule,
         CarouselModule,
     ], 
     exports: [
         ToasterComponent,
         ReadMoreComponent,
         FormsModule,
-        Ng2SearchPipeModule,
+      
         NgxPaginationModule,
         NgxSpinnerModule,
         NgbModule,
@@ -56,3 +56,4 @@ const errorPages = [PageNotFoundComponent];
     ]
 })
 export class SharedModule { }
+

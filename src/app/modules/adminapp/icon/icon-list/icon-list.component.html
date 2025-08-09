@@ -1,4 +1,4 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Icon List</h1>
     <a class="d-none d-sm-inline-block btn btn-primary shadow-sm" [routerLink]="['/app/icon/add']"><i
         class="fa fa-plus fa-sm text-white-50"></i> Add Icon</a>
@@ -38,4 +38,50 @@
         </option>
       </select>
     </div>
+  </div> -->
+
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Icon List</h1>
+    <a class="btn btn-primary shadow-sm" [routerLink]="['/app/icon/add']">
+      <i class="fa fa-plus fa-sm text-white-50"></i> Add Icon
+    </a>
   </div>
+  
+  <div class="form-group">
+    <input type="text" class="form-control" placeholder="Search" [(ngModel)]="term">
+  </div>
+  
+  <table class="table table-bordered table-hover mt-3">
+    <thead>
+      <tr>
+        <th style="width:30%">Name <i (click)="onSortClick($event, 'name')" class="fa fa-caret-up"></i></th>
+        <th style="width:30%">URL <i (click)="onSortClick($event, 'url')" class="fa fa-caret-up"></i></th>
+        <th style="width:30%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of icons  | paginate: config">
+        <td>{{ item?.name }}</td>
+        <td>{{ item?.url }}</td>
+        <td>
+          <button class="btn btn-success" [routerLink]="['/app/icon/edit', item.id]">
+            <i class="fa fa-edit"></i>
+          </button>
+          <button class="btn btn-danger ml-1" (click)="deleteIcon(item.id)">
+            <i class="fa fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+    
+    <div>
+      <select (change)="onTableSizeChange($event)" class="custom-select">
+        <option *ngFor="let size of tableSizes" [ngValue]="size">{{ size }}</option>
+      </select>
+    </div>
+  </div>
+  

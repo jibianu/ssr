@@ -34,7 +34,7 @@ export class CourseGuard implements CanActivate {
                 }
                 return !!post;
             }),
-            catchError(() => {
+            catchError((err: unknown) => {
                 this.redirectToNotFound();
                 return of(false);
             })

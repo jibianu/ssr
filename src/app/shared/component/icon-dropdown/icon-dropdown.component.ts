@@ -1,5 +1,6 @@
 import { UntypedFormControl } from '@angular/forms';
 import { Component, Input, OnInit, Output, EventEmitter, OnChanges } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-icon-dropdown',

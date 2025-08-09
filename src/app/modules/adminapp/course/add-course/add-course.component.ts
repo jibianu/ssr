@@ -3,20 +3,27 @@ import { CoursePreviewComponent } from './../course-preview/course-preview.compo
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { AdminAppService } from './../../adminapp.service';
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormsModule, ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MyUploadAdapter } from './UploadAdapter';
+import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+
 @Component({
     selector: 'app-add-course',
     templateUrl: './add-course.component.html',
     styleUrls: ['./add-course.component.scss'],
     encapsulation: ViewEncapsulation.None,
-    standalone: false
-})
+    standalone: true,
+    imports: [
+      CommonModule,
+    
+      NgMultiSelectDropDownModule
+    ]
+  })
 export class AddCourseComponent implements OnInit, OnDestroy {
 
   pageTitle: string;
@@ -41,13 +48,15 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   iconList = [];
   selectedfeatureitems = [];
   guid = '00000000-0000-0000-0000-000000000000'
+  formBuilder: any;
+  activatedRoute: any;
+  router: any;
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
+   
     private appService: AdminAppService,
     private toasterService: ToasterService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
+   
     private location: Location,
     private modalService: NgbModal,
     private cookieService: CookieService

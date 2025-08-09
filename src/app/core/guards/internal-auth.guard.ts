@@ -17,25 +17,27 @@ export class InternalAuthGuard  {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         try {
-            const currentUser = this.getCurrentUser();
-            
-            if (!currentUser) {
-                this.redirectToLogin();
-                return false;
-            }
-
-            if (!this.isAdminUser(currentUser) && this.isRestrictedRoute(state.url)) {
-                this.redirectToDefault();
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.error('AuthGuard error:', error);
+          const currentUser = this.getCurrentUser();
+          
+          if (!currentUser) {
             this.redirectToLogin();
             return false;
+          }
+      
+          if (!this.isAdminUser(currentUser) && this.isRestrictedRoute(state.url)) {
+            this.redirectToDefault();
+            return false;
+          }
+      
+          return true;
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          console.error('AuthGuard error:', message);
+          this.redirectToLogin();
+          return false;
         }
-    }
+      }
+      
 
     private getCurrentUser(): any {
         const userCookie = this.cookieService.getCookie('currentUser');

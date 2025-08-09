@@ -9,10 +9,10 @@
     "esModuleInterop": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
     "importHelpers": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "ES2022",
-    "module": "es2020",
     "lib": [
       "es2018",
       "dom"

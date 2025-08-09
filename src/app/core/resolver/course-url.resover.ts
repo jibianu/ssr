@@ -22,11 +22,12 @@ export class CourseUrlResoverService  {
         }
 
         return this.adminService.getBlogByCanonicalURL(courseUrl).pipe(
-            catchError(error => {
-                console.error('Error resolving course:', error);
+            catchError((error: unknown) => {
+                const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+                console.error('Error resolving course:', errorMessage);
                 this.redirectToNotFound();
                 return of(null);
-            })
+              })
         );
     }
 

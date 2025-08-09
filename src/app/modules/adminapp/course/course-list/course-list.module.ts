@@ -16,15 +16,18 @@ const routes: Routes = [
     }
   ];
 
-@NgModule({
-  declarations: [CourseListComponent, UserCourseComponent],
-  imports: [
-    CommonModule,
-    CourseRoutingModule,
-    RouterModule.forChild(routes),
-    NgxPaginationModule,
-    ReactiveFormsModule,
-    SharedModule
-  ]
-})
+  @NgModule({
+    declarations: [
+      CourseListComponent 
+    ],
+    imports: [
+      CommonModule,
+      CourseRoutingModule,
+      RouterModule,
+      NgxPaginationModule,
+      ReactiveFormsModule,
+      SharedModule,
+      UserCourseComponent
+    ]
+  })
 export class CourseListModule { }

@@ -9,6 +9,7 @@ import { InternalAuthGuard } from 'src/app/core/guards/internal-auth.guard';
 import { EventListComponent } from './event-list/event-list.component';
 import { EventUserListComponent } from './event-user-list/event-user-list.component';
 
+
 const routes:Routes=[
   {
     path: 'list',
@@ -39,14 +40,11 @@ const routes:Routes=[
 
 @NgModule({
   declarations: [
-    AddEventComponent,EventListComponent,EventUserListComponent
+    
   ],
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    NgxPaginationModule,
-    SharedModule,
-    RouterModule.forChild(routes)
-  ]
+
+
+  ],
 })
 export class EventModule { }

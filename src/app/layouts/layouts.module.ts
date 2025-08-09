@@ -11,7 +11,7 @@ import { PublicTopbarComponent } from './public/public-topbar/public-topbar.comp
 import { PublicFooterComponent } from './public/public-footer/public-footer.component';
 
 @NgModule({
-  declarations: [AdminLayoutComponent, SidebarComponent, TopbarComponent, FooterComponent, PublicLayoutComponent, PublicTopbarComponent, PublicFooterComponent],
+  declarations: [AdminLayoutComponent, SidebarComponent, TopbarComponent, FooterComponent, PublicLayoutComponent,  PublicFooterComponent],
   imports: [
     CommonModule,
     RouterModule,

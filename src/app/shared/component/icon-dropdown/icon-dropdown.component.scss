@@ -1,0 +1,32 @@
+.dropdown-option {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+  
+  .option-icon {
+    width: 18px;
+    margin: 0 1rem;
+  }
+  
+  .option-label {
+    color: #333;
+    min-width: 130px;
+  }
+  
+  .selected-option {
+    display: flex;
+    align-items: center;
+  }
+  
+  .selected-icon {
+    width: 18px;
+    margin-right: 0.5rem;
+  }
+  
+  .selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }

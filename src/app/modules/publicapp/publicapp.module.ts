@@ -23,6 +23,7 @@ import { TermsAndConditionComponent } from './terms-and-condition/terms-and-cond
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { PublicTopbarComponent } from 'src/app/layouts/public/public-topbar/public-topbar.component';
 
 
 
@@ -32,7 +33,8 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
     WorldsLargestRefineriesComponent,
     TermsAndConditionComponent,
     PrivacyPolicyComponent,
-    RefundCancellationPolicyComponent
+    RefundCancellationPolicyComponent,
+  
   ],
   imports: [
     CommonModule,

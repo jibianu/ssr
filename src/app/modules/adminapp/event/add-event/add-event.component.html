@@ -583,7 +583,7 @@
 
     <div class="card shadow">
         <div class="card-body">
-            <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+            <form  (ngSubmit)="onSubmit()">
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h5 class="section-title">Basic Information</h5>
@@ -592,7 +592,7 @@
                             <div class="form-group">
                                 <label class="form-label">Title*</label>
                                 <input type="text" formControlName="title" class="form-control"
-                                    [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
+                                   />
                                 <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
                                     Title is required
                                 </div>
@@ -614,7 +614,7 @@
                             <div class="form-group">
                                 <label class="form-label">Canonical URL*</label>
                                 <input type="text" formControlName="canonicalUrl" class="form-control"
-                                    [ngClass]="{ 'is-invalid': submitted && f.canonicalUrl.errors }" />
+                                     />
                                 <div *ngIf="submitted && f.canonicalUrl.errors" class="invalid-feedback">
                                     Canonical URL is required
                                 </div>

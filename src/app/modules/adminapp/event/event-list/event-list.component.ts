@@ -1,17 +1,29 @@
 import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
-// import { Category } from './../category.model';
 import { AdminAppService } from './../../adminapp.service';
 import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { NgxPaginationModule } from 'ngx-pagination';
+ 
+
+
+
 
 @Component({
-    selector: 'app-event-list',
-    templateUrl: './event-list.component.html',
-    styleUrls: ['./event-list.component.scss'],
-    standalone: false
+  selector: 'app-event-list',
+  templateUrl: './event-list.component.html',
+  styleUrls: ['./event-list.component.scss'],
+  imports: [        
+    CommonModule,          
+    NgxPaginationModule
+  ]
 })
+    
+
 export class EventListComponent implements OnInit {
 
   config: any;
@@ -20,6 +32,7 @@ export class EventListComponent implements OnInit {
   categories = new Array<any>();
   term = '';
   sortDir = 1;
+filteredCategories: any;
   constructor(
     private appService: AdminAppService,
     private toasterService: ToasterService,

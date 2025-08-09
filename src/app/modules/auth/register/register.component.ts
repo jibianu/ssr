@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AuthenticationService } from '../auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-register',
@@ -12,6 +13,7 @@ import { AuthenticationService } from '../auth.service';
     standalone: false
 })
 export class RegisterComponent implements OnInit {
+  [x: string]: any;
 
   registerForm: UntypedFormGroup;
   loading = false;
@@ -20,9 +22,8 @@ export class RegisterComponent implements OnInit {
   error = '';
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
+
+ 
     private authenticationService: AuthenticationService,
     private toasterService: ToasterService
   ) { }

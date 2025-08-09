@@ -1,10 +1,14 @@
-import { enableProdMode } from '@angular/core';
+// main.server.ts
 
-import { environment } from './environments/environment';
+import { AppComponent } from './app/app.component';
+import { provideServerRendering, renderApplication } from '@angular/platform-server';
+import { appConfig } from './main'; // where providers like routing/http are defined
 
-if (environment.production) {
-  enableProdMode();
-}
-
-export { AppServerModule } from './app/app.server.module';
-export { renderModuleFactory } from '@angular/platform-server';
+export default () =>
+  renderApplication(AppComponent, {
+    ...appConfig,
+    providers: [
+      provideServerRendering(),
+      ...(appConfig.providers || [])
+    ]
+  });

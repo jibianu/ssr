@@ -9,20 +9,34 @@ import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CoreModule } from './core/core.module';
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
+import { NgxSpinnerModule } from 'ngx-spinner';
+
+
 
 
 @NgModule({ declarations: [
-        AppComponent
+    
+       
     ],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA
     ],
-    bootstrap: [AppComponent], imports: [BrowserModule.withServerTransition({ appId: 'Course' }),
-        NgbModule,
-        CommonModule,
-        AppRoutingModule,
-        LayoutsModule,
+    bootstrap: [],
+    
+    imports: [
+        BrowserModule,
         BrowserAnimationsModule,
+        FormsModule,
+        AppRoutingModule,
+        SharedModule,
+        LayoutsModule,
         CoreModule,
-        SharedModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
+        NgbModule,
+        NgxSpinnerModule
+    ], 
+        
+        
+        providers: [provideHttpClient(withInterceptorsFromDi())] })
+        
 export class AppModule { }

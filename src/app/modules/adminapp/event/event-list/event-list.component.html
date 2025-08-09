@@ -1,11 +1,16 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <h1 class="h3 mb-0 text-gray-800">Event List</h1>
   <a class="d-none d-sm-inline-block btn btn-primary shadow-sm" [routerLink]="['/app/event/add']"><i
       class="fa fa-plus fa-sm text-white-50"></i> Add Event</a>
 </div>
 
 <div class="form-group pull-right">
-  <input type="text" class="search form-control" placeholder="Search" name="search" [(ngModel)]="term">
+  <input
+    type="text"
+    class="search form-control"
+    placeholder="Search"
+    name="search"
+    [(ngModel)]="term">
 </div>
 <table class="table">
   <thead>
@@ -16,7 +21,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let item of categories |filter:term | paginate: config">
+    <tr *ngFor="let item of filteredCategories | paginate: config">
       <td>{{item.title}}</td>
       <td>{{item.startDate | date:'dd-MM-yy'}} - {{item.endDate | date:'dd-MM-yy'}}</td>
       <td>
@@ -37,6 +42,78 @@
   <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
   <div class="ml-auto p-2 bd-highlight">
     <select (change)="onTableSizeChange($event)" class="custom-select">
+      <option *ngFor="let size of tableSizes" [ngValue]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+</div> -->
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0 text-gray-800">Event List</h1>
+  <a class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+    <i class="fa fa-plus fa-sm text-white-50"></i> Add Event
+  </a>
+</div>
+
+<div class="form-group pull-right mb-3">
+  <input
+    type="text"
+    class="search form-control"
+    placeholder="Search"
+    name="search"
+     />
+</div>
+
+<table class="table table-bordered table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th style="width: 30%">
+        Title 
+        <i class="fa fa-caret-up ml-1" (click)="onSortClick($event, 'title')"></i>
+      </th>
+      <th style="width: 30%">Event Date</th>
+      <th style="width: 30%">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of filteredCategories | paginate: config">
+      <td>{{ item.title }}</td>
+      <td>{{ item.startDate | date:'dd-MM-yy' }} - {{ item.endDate | date:'dd-MM-yy' }}</td>
+      <td>
+        <button type="button" class="btn btn-success mr-1" [routerLink]="['/app/event/edit', item.id]">
+          <i class="fa fa-edit"></i>
+        </button>
+
+        <button type="button" class="btn btn-danger mr-1" (click)="deleteEvent(item.id)">
+          <i class="fa fa-trash"></i>
+        </button>
+
+        <button type="button" class="btn btn-primary mr-1" [routerLink]="['/app/event/users', item.id]">
+          <i class="fa fa-user"></i>
+        </button>
+
+        <button
+          *ngIf="item.registrationCompleted"
+          type="button"
+          class="btn btn-dark"
+          [routerLink]="['/app/event/edit', item.id, 'new']">
+          <i class="fa fa-refresh"></i>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="d-flex align-items-center justify-content-between mt-4">
+  <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+
+  <div>
+    <label for="tableSize" class="mr-2">Page Size:</label>
+    <select
+      id="tableSize"
+      (change)="onTableSizeChange($event)"
+      class="custom-select w-auto">
       <option *ngFor="let size of tableSizes" [ngValue]="size">
         {{ size }}
       </option>

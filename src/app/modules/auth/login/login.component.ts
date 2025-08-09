@@ -18,11 +18,13 @@ export class LoginComponent implements OnInit {
   submitted = false;
   returnUrl: string;
   error = '';
+  formBuilder: any;
+  route: any;
+  router: any;
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
+    
+
     private authenticationService: AuthenticationService,
     private toasterService: ToasterService
   ) { }

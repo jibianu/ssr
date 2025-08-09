@@ -1,11 +1,8 @@
-<div class="d-sm-flex align-items-center justify-content-between ">
+<!-- <div class="d-sm-flex align-items-center justify-content-between ">
   <h1 class="h3 mb-0 text-gray-800">Event User List</h1>
-  <!-- <a class="d-none d-sm-inline-block btn btn-primary shadow-sm" [routerLink]="['/app/event/add']"><i
-    class="fa fa-plus fa-sm text-white-50"></i> Add Event</a> -->
+  
   </div>
-  <!-- <div class="mb-4">
-    <p class="text-muted">asd</p>
-  </div> -->
+  
 
 <div class="form-group pull-right">
   <input type="text" class="search form-control" placeholder="Search" name="search" [(ngModel)]="term">
@@ -18,7 +15,7 @@
       <th scope="col" style="width:30%"> Mobile</th>
       <th scope="col" style="width:30%"> CompanyName</th>
       <th scope="col" style="width:30%"> PaymentRefNo</th>
-      <!-- <th scope="col" style="width:30%">Action</th> -->
+      
     </tr>
   </thead>
   <tbody>
@@ -28,17 +25,6 @@
       <td>{{item.mobile}}</td>
       <td>{{item.companyName}}</td>
       <td>{{item.paymentRefNo}}</td>
-      <!-- <td>
-        
-        <button type="button" class="btn btn-success" [routerLink]="['/app/event/edit',item.id]"><i
-            class="fa fa-edit"></i></button>
-        <button type="button" class="btn btn-danger ml-1" (click)="deleteEvent(item.id)"><i
-            class="fa fa-trash"></i></button>
-        <button type="button" class="btn btn-primary ml-1" (click)="deleteEvent(item.id)"><i
-          class="fa fa-user"></i></button>
-        <button type="button" class="btn btn-dark ml-1" [routerLink]="['/app/event/edit',item.id,'new']"><i
-          class="fa fa-refresh"></i></button>
-      </td> -->
     </tr>
   </tbody>
 </table>
@@ -48,6 +34,64 @@
   <div class="ml-auto p-2 bd-highlight">
     <select (change)="onTableSizeChange($event)" class="custom-select">
       <option *ngFor="let size of tableSizes" [ngValue]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+</div> -->
+
+<div class="d-sm-flex align-items-center justify-content-between mb-3">
+  <h1 class="h3 text-gray-800">Event User List</h1>
+</div>
+
+<div class="form-group mb-3">
+  <input 
+    type="text" 
+    class="form-control" 
+    placeholder="Search" 
+    name="search" 
+    [(ngModel)]="term"
+  >
+</div>
+
+<table class="table table-bordered table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col" style="width: 20%">
+        Name 
+        <i 
+          class="fa fa-caret-up ml-1 cursor-pointer"
+          (click)="onSortClick($event, 'name')"
+        ></i>
+      </th>
+      <th scope="col" style="width: 20%">Email</th>
+      <th scope="col" style="width: 15%">Mobile</th>
+      <th scope="col" style="width: 25%">Company Name</th>
+      <th scope="col" style="width: 20%">Payment Ref No</th>
+      <!-- <th scope="col" style="width:10%">Action</th> -->
+    </tr>
+  </thead>
+  <tbody>
+      <tr *ngFor="let item of filteredCategories | paginate: config">
+
+      <td>{{ item.name }}</td>
+      <td>{{ item.email }}</td>
+      <td>{{ item.mobile }}</td>
+      <td>{{ item.companyName }}</td>
+      <td>{{ item.paymentRefNo }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+  
+  <div class="form-inline">
+    <label class="mr-2">Rows per page:</label>
+    <select 
+      class="custom-select" 
+      (change)="onTableSizeChange($event)">
+      <option *ngFor="let size of tableSizes" [value]="size">
         {{ size }}
       </option>
     </select>

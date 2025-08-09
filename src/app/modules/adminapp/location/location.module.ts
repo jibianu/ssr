@@ -7,16 +7,21 @@ import { AddLocationComponent } from './add-location/add-location.component';
 import { LocationListComponent } from './location-list/location-list.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
 
 
 @NgModule({
-  declarations: [AddLocationComponent, LocationListComponent],
+  declarations: [AddLocationComponent],
   imports: [
     CommonModule,
     LocationRoutingModule,
     ReactiveFormsModule,
     NgxPaginationModule,
-    SharedModule
+    SharedModule,
+    RouterModule,
+    FormsModule
   ]
 })
 export class LocationModule { }

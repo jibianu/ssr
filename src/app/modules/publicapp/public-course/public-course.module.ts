@@ -8,13 +8,16 @@ import { PublicCourseListComponent } from './public-course-list/public-course-li
 import { PublicCourseDetailsComponent } from './public-course-details/public-course-details.component';
 import { PublicCategoryComponent } from './public-category/public-category.component';
 import { PublicRelatedCoursesComponent } from './public-related-courses/public-related-courses.component';
+import { NgxPaginationModule } from "ngx-pagination";
 
 @NgModule({
-  declarations: [PublicCourseHomeComponent, PublicCourseListComponent, PublicCourseDetailsComponent,PublicCategoryComponent, PublicRelatedCoursesComponent],
+  declarations: [PublicCourseHomeComponent,  PublicCourseDetailsComponent,PublicCategoryComponent, PublicRelatedCoursesComponent],
   imports: [
     CommonModule,
     PublicCourseRoutingModule,
-    SharedModule
-  ]
+    SharedModule,
+    NgxPaginationModule
+]
 })
 export class PublicCourseModule { }
+

@@ -6,6 +6,8 @@ import { IconRoutingModule } from './icon-routing.module';
 import { IconListComponent } from './icon-list/icon-list.component';
 import { AddIconComponent } from './add-icon/add-icon.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { NgxPaginationModule } from "ngx-pagination";
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -14,7 +16,9 @@ import { ReactiveFormsModule } from '@angular/forms';
     CommonModule,
     IconRoutingModule,
     ReactiveFormsModule,
-    SharedModule
-  ]
+    SharedModule,
+    NgxPaginationModule,
+    FormsModule
+]
 })
 export class IconModule { }

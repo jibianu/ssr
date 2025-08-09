@@ -15,20 +15,22 @@ export class CanonicalService {
   setCanonicalURL(url?: string): void {
     try {
       const canonicalUrl = url ?? this.document.URL;
-      
+  
       // Remove existing canonical link if it exists
       this.removeExistingCanonicalLink();
-      
+  
       // Create new canonical link
       const link: HTMLLinkElement = this.document.createElement('link');
       link.setAttribute('rel', 'canonical');
       link.setAttribute('href', canonicalUrl);
-      
+  
       this.document.head.appendChild(link);
-    } catch (error) {
-      console.error('Error setting canonical URL:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Error setting canonical URL:', message);
     }
   }
+  
 
   /**
    * Gets the current document URL

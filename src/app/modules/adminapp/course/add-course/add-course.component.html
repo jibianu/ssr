@@ -6,7 +6,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        <form [formGroup]="courseForm" (ngSubmit)="onSubmit()">
+        <form  (ngSubmit)="onSubmit()">
             <div class="form-group">
                 <label>Title</label>
                 <input type="text" formControlName="title" class="form-control"
@@ -75,8 +75,7 @@
                 <div class="card-body">
                     <div class="form-group">
                         <ng-multiselect-dropdown class="w-75" [placeholder]="'Select Location'"
-                            [settings]="dropdownSettings" [data]="locations" [(ngModel)]="selectedItems"
-                            [ngModelOptions]="{standalone: true}" (onSelect)="onItemSelect($event)"
+                            [settings]="dropdownSettings" [data]="locations" (onSelect)="onItemSelect($event)"
                             (onDeSelect)="onItemSelect($event)">
                         </ng-multiselect-dropdown>
                     </div>

@@ -12,7 +12,7 @@ const routerOptions: ExtraOptions = {
     scrollOffset: [0, 64]
 };
 
-const routes: Routes = [
+export const routes: Routes = [
     {
         path: 'auth',
         loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)

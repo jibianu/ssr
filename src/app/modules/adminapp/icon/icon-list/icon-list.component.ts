@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from '../../adminapp.service';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 @Component({
     selector: 'app-icon-list',

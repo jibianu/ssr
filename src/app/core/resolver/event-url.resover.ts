@@ -25,11 +25,12 @@ export class EventResolverService  {
         }
 
         return this.adminService.getEventByCanonicalURL(eventUrl).pipe(
-            catchError(error => {
-                console.error('Error resolving event:', error);
+            catchError((err: unknown) => {
+                const message = err instanceof Error ? err.message : JSON.stringify(err);
+                console.error('Error resolving event:', message);
                 this.redirectToNotFound();
                 return of(null);
-            })
+              })
         );
     }
 

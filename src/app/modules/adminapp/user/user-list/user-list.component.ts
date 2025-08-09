@@ -1,114 +1,234 @@
-import { AdminAppService } from './../../adminapp.service';
-import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
-import { Component, OnInit } from '@angular/core';
+// import { AdminAppService } from './../../adminapp.service';
+// import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
+// import { Component, OnInit } from '@angular/core';
+// import { Subscription } from 'rxjs';
+// import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+// import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+
+// @Component({
+//     selector: 'app-user-list',
+//     templateUrl: './user-list.component.html',
+//     styleUrls: ['./user-list.component.scss'],
+//     standalone: false
+// })
+// export class UserListComponent implements OnInit {
+
+//   users = [];
+//   config: any;
+//   page = 1;
+//   count: number;
+//   tableSize = 5;
+//   searchTitle = '';
+//   tableSizes = [5, 10, 25, 50];
+//   subscription: Subscription = new Subscription();
+//   sortBy = 'FirstName';
+//   isAsc = true;
+//   constructor(
+//     private appService: AdminAppService,
+//     private modalService: NgbModal,
+//     private toasterService: ToasterService
+//   ) { }
+
+//   ngOnInit(): void {
+//     this.fetchUsers();
+//   }
+
+//   fetchUsers(): void {
+//     let obj = {
+//       'Filters.FirstName': this.searchTitle,
+//       'Sort.PropertyName': this.sortBy,
+//       'Sort.IsAscending': this.isAsc,
+//       pageSize: this.tableSize,
+//       pageNumber: this.page,
+//     }
+//     this.subscription.add(this.appService.getUsers(obj)
+//       .subscribe(
+//         response => {
+//           this.users = response.results;
+//           this.count = response.totalNumberOfRecords;
+//         },
+//         error => {
+//           console.log(error);
+//         }));
+//   }
+
+//   pageChanged(event) {
+//     this.page = event;
+//     this.fetchUsers();
+//   }
+
+//   onTableSizeChange(event): void {
+//     this.tableSize = event.target.value;
+//     this.page = 1;
+//     this.fetchUsers();
+//   }
+
+//   deleteUser(id) {
+//     this.open(id);
+//   }
+
+//   open(id) {
+//     const modalRef = this.modalService.open(ConfirmationModalComponent);
+//     modalRef.componentInstance.title = 'User Deletion';
+//     modalRef.componentInstance.descText = 'Are you sure you want to delete?'
+//     modalRef.result.then((result) => {
+//       if (result === 'ok') {
+//         this.subscription.add(this.appService.deleteUserById(id)
+//           .subscribe(
+//             response => {
+//               this.toasterService.showSuccess('User deleted successfully');
+//               this.page = 1;
+//               this.fetchUsers();
+//             },
+//             error => {
+//               console.log(error);
+//               this.toasterService.showError('Something went wrong');
+//             }));
+//       }
+//     }, (reason) => {
+
+//     });
+//   }
+
+//   dataChanged(word: string): void {
+//     if (word == '') {
+//       this.fetchUsers()
+//     }
+//   }
+
+//   sortByHeading(value: string) {
+//       this.sortBy = value;
+//       if (this.isAsc) {
+//         this.isAsc = false;
+//       } else {
+//         this.isAsc = true;
+//       }
+//       this.fetchUsers();
+//   }
+
+//   ngOnDestroy() {
+//     if (this.subscription) {
+//       this.subscription.unsubscribe();
+//     }
+//   }
+// }
+
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { AdminAppService } from './../../adminapp.service';
+import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 
 @Component({
-    selector: 'app-user-list',
-    templateUrl: './user-list.component.html',
-    styleUrls: ['./user-list.component.scss'],
-    standalone: false
+  selector: 'app-user-list',
+  templateUrl: './user-list.component.html',
+  styleUrls: ['./user-list.component.scss'],
+  standalone: false
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, OnDestroy {
+  
+  users: any[] = [];
+  page: number = 1;
+  count: number = 0;
+  tableSize: number = 5;
+  searchTitle: string = '';
+  tableSizes: number[] = [5, 10, 25, 50];
+  sortBy: string = 'FirstName';
+  isAsc: boolean = true;
 
-  users = [];
-  config: any;
-  page = 1;
-  count: number;
-  tableSize = 5;
-  searchTitle = '';
-  tableSizes = [5, 10, 25, 50];
-  subscription: Subscription = new Subscription();
-  sortBy = 'FirstName';
-  isAsc = true;
+  private subscription: Subscription = new Subscription();
+
   constructor(
     private appService: AdminAppService,
     private modalService: NgbModal,
     private toasterService: ToasterService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.fetchUsers();
   }
 
   fetchUsers(): void {
-    let obj = {
+    const filters = {
       'Filters.FirstName': this.searchTitle,
       'Sort.PropertyName': this.sortBy,
       'Sort.IsAscending': this.isAsc,
       pageSize: this.tableSize,
       pageNumber: this.page,
-    }
-    this.subscription.add(this.appService.getUsers(obj)
-      .subscribe(
-        response => {
-          this.users = response.results;
-          this.count = response.totalNumberOfRecords;
+    };
+
+    this.subscription.add(
+      this.appService.getUsers(filters).subscribe({
+        next: (response) => {
+          this.users = response.results || [];
+          this.count = response.totalNumberOfRecords || 0;
         },
-        error => {
-          console.log(error);
-        }));
+        error: (error) => {
+          console.error('Error fetching users:', error);
+        }
+      })
+    );
   }
 
-  pageChanged(event) {
+  pageChanged(event: number): void {
     this.page = event;
     this.fetchUsers();
   }
 
-  onTableSizeChange(event): void {
-    this.tableSize = event.target.value;
+  onTableSizeChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.tableSize = Number(selectElement.value);
     this.page = 1;
     this.fetchUsers();
   }
 
-  deleteUser(id) {
-    this.open(id);
+  deleteUser(id: string): void {
+    this.openConfirmationModal(id);
   }
 
-  open(id) {
+  private openConfirmationModal(userId: string): void {
     const modalRef = this.modalService.open(ConfirmationModalComponent);
     modalRef.componentInstance.title = 'User Deletion';
-    modalRef.componentInstance.descText = 'Are you sure you want to delete?'
-    modalRef.result.then((result) => {
+    modalRef.componentInstance.descText = 'Are you sure you want to delete?';
+
+    modalRef.result.then((result: string) => {
       if (result === 'ok') {
-        this.subscription.add(this.appService.deleteUserById(id)
-          .subscribe(
-            response => {
+        this.subscription.add(
+          this.appService.deleteUserById(userId).subscribe({
+            next: () => {
               this.toasterService.showSuccess('User deleted successfully');
               this.page = 1;
               this.fetchUsers();
             },
-            error => {
-              console.log(error);
+            error: (err) => {
+              console.error('Delete error:', err);
               this.toasterService.showError('Something went wrong');
-            }));
+            }
+          })
+        );
       }
-    }, (reason) => {
-
-    });
+    }).catch((e: unknown) => {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn('Modal dismissed:', msg);
+    })
   }
 
-  dataChanged(word: string): void {
-    if (word == '') {
-      this.fetchUsers()
-    }
-  }
-
-  sortByHeading(value: string) {
-      this.sortBy = value;
-      if (this.isAsc) {
-        this.isAsc = false;
-      } else {
-        this.isAsc = true;
-      }
+  dataChanged(searchValue: string): void {
+    if (!searchValue.trim()) {
       this.fetchUsers();
+    }
   }
 
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+  sortByHeading(column: string): void {
+    this.sortBy = column;
+    this.isAsc = !this.isAsc;
+    this.fetchUsers();
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

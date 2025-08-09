@@ -4,11 +4,11 @@
 
 <div class="row">
     <div class="col-md-12">
-        <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <form  (ngSubmit)="onSubmit()">
             <div class="form-group">
                 <label>Name</label>
                 <input type="text" formControlName="name" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.name.errors }" />
+                     />
                 <div *ngIf="submitted && f.name.errors" class="invalid-feedback">
                     <div *ngIf="f.name.errors.required">Name is required</div>
                 </div>
@@ -16,7 +16,7 @@
             <div class="form-group">
                 <label>App Name</label>
                 <input type="text" formControlName="appsName" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.appsName.errors }" />
+                     />
                 <div *ngIf="submitted && f.appsName.errors" class="invalid-feedback">
                     <div *ngIf="f.appsName.errors.required">App Name is required</div>
                 </div>
@@ -24,7 +24,7 @@
             <div class="form-group">
                 <label>Sort Order</label>
                 <input type="number" formControlName="sortOrder" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.sortOrder.errors }" />
+                     />
                 <div *ngIf="submitted && f.sortOrder.errors" class="invalid-feedback">
                     <div *ngIf="f.sortOrder.errors.required">Sort Order is required</div>
                 </div>

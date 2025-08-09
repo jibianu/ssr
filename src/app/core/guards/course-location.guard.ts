@@ -29,7 +29,7 @@ export class CourseLocationGuard  {
                     this.redirectToNotFound();
                 }
             }),
-            catchError(() => {
+            catchError((err: unknown) => {
                 this.redirectToNotFound();
                 return of(false);
             })

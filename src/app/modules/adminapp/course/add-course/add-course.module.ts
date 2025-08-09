@@ -16,14 +16,9 @@ const routes: Routes = [
   ];
 
 @NgModule({
-  declarations: [AddCourseComponent],
+  declarations: [],
   imports: [
-    CommonModule,
-    CourseRoutingModule,
-    RouterModule.forChild(routes),
-    NgxPaginationModule,
-    ReactiveFormsModule,
-    SharedModule
+    
   ]
 })
 export class AddCourseModule { }
