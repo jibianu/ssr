@@ -11,11 +11,12 @@ import { PublicTopbarComponent } from './public/public-topbar/public-topbar.comp
 import { PublicFooterComponent } from './public/public-footer/public-footer.component';
 
 @NgModule({
-  declarations: [AdminLayoutComponent, SidebarComponent, TopbarComponent, FooterComponent, PublicLayoutComponent,  PublicFooterComponent],
+  declarations: [FooterComponent],
   imports: [
     CommonModule,
     RouterModule,
-    NgbModule
+    NgbModule,
+    AdminLayoutComponent, SidebarComponent, TopbarComponent, PublicLayoutComponent,  PublicFooterComponent
   ], schemas: [
     CUSTOM_ELEMENTS_SCHEMA
   ]

@@ -24,6 +24,7 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { PublicTopbarComponent } from 'src/app/layouts/public/public-topbar/public-topbar.component';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 
 
 
@@ -41,6 +42,7 @@ import { PublicTopbarComponent } from 'src/app/layouts/public/public-topbar/publ
     PublicappRoutingModule,
     SharedModule
   ],
+  providers: [ provideHttpClient(withFetch())],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA
   ],

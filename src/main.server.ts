@@ -1,14 +1,8 @@
-// main.server.ts
-
+import '@angular/localize/init';
+import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { provideServerRendering, renderApplication } from '@angular/platform-server';
-import { appConfig } from './main'; // where providers like routing/http are defined
+import { config } from './app/app.config.server';
 
-export default () =>
-  renderApplication(AppComponent, {
-    ...appConfig,
-    providers: [
-      provideServerRendering(),
-      ...(appConfig.providers || [])
-    ]
-  });
+const bootstrap = () => bootstrapApplication(AppComponent, config);
+
+export default bootstrap;

@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
     selector: 'app-public-footer',
     templateUrl: './public-footer.component.html',
     styleUrls: ['./public-footer.component.scss'],
-    standalone: false
+    standalone: true
 })
 export class PublicFooterComponent implements OnInit {
 

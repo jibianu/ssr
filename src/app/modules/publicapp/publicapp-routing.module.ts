@@ -23,43 +23,36 @@ import { TermsAndConditionComponent } from './terms-and-condition/terms-and-cond
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 
-
-
 const routes: Routes = [
-
-  {path: "" , component:HomeComponent},
-  {path: "course" , component:PublicCourseHomeComponent},
-  {path: 'events', loadChildren: () => import('../publicapp/public-event/public-event.module').then(m => m.PublicEventModule)},
-  // {path: 'events-details', loadChildren: () => import('../adminapp/events/event-details/event-details.module').then(m => m.EventDetailsModule)},
-  {path: "contact-us",component:ContactUsComponent},
-  {path: "about-us" ,component:AboutUsComponent},
-  {path: "partner-us" ,component:PartnerUsComponent},
-  {path: "career"  ,component:CareerComponent},
-  {path: "in-house-solutions" ,component:InHouseSolutionsComponent},
-  {path: "membership" ,component:MembershipComponent},
-  {path: "policies" ,component:PoliciesComponent},
-  {path: "mission-and-vision" ,component:MissionAndVisionComponent},
-  {path: "affiliate-program" ,component:AffiliateProgramComponent},
-  {path: "guest-blogging" ,component:GuestBloggingComponent},
-  {path: "become-our-trainer" ,component:BecomeOurTrainerComponent},
-  {path: "corporate-training" ,component:CorporateTrainingComponent},
-  {path: "courses-offered" ,component:CoursesOfferedComponent},
-  {path: "why-oilandgasclub" ,component:WhyOilandgasclubComponent},
-  {path: "build-your-portfolio" ,component:BuildYourPortfolioComponent},
-  {path: "worlds-largest-refineries" ,component: WorldsLargestRefineriesComponent},
-  {path: "terms-and-conditions" ,component: TermsAndConditionComponent},
-  {path: "refund-cancellation-policy" ,component:RefundCancellationPolicyComponent},
-  {path: "privacy-policy" ,component:PrivacyPolicyComponent},
-  {path: "page-not-found" ,component:PageNotFoundComponent},
+  { path: '', component: HomeComponent },
+  { path: 'course', component: PublicCourseHomeComponent },
+  { path: 'events', loadChildren: () => import('../publicapp/public-event/public-event.module').then(m => m.PublicEventModule) },
+  { path: 'contact-us', component: ContactUsComponent },
+  { path: 'about-us', component: AboutUsComponent },
+  { path: 'partner-us', component: PartnerUsComponent },
+  { path: 'career', component: CareerComponent },
+  { path: 'in-house-solutions', component: InHouseSolutionsComponent },
+  { path: 'membership', component: MembershipComponent },
+  { path: 'policies', component: PoliciesComponent },
+  { path: 'mission-and-vision', component: MissionAndVisionComponent },
+  { path: 'affiliate-program', component: AffiliateProgramComponent },
+  { path: 'guest-blogging', component: GuestBloggingComponent },
+  { path: 'become-our-trainer', component: BecomeOurTrainerComponent },
+  { path: 'corporate-training', component: CorporateTrainingComponent },
+  { path: 'courses-offered', component: CoursesOfferedComponent },
+  { path: 'why-oilandgasclub', component: WhyOilandgasclubComponent },
+  { path: 'build-your-portfolio', component: BuildYourPortfolioComponent },
+  { path: 'worlds-largest-refineries', component: WorldsLargestRefineriesComponent },
+  { path: 'terms-and-conditions', component: TermsAndConditionComponent },
+  { path: 'refund-cancellation-policy', component: RefundCancellationPolicyComponent },
+  { path: 'privacy-policy', component: PrivacyPolicyComponent },
+  { path: 'page-not-found', component: PageNotFoundComponent },
   { path: '', loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule) },
+  { path: '**', redirectTo: 'page-not-found' }
 ];
 
-
-  
-
-
 @NgModule({
-  imports: [],
-  exports: []
+  imports: [RouterModule.forChild(routes)], // ✅ This was missing
+  exports: [RouterModule] // ✅ Needed so other modules can use the routing
 })
-export class PublicappRoutingModule { }
+export class PublicappRoutingModule {}

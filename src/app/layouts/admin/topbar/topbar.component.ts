@@ -1,14 +1,15 @@
 import { AuthenticationService } from './../../../modules/auth/auth.service';
 import { SideNavService } from './../sidebar.service';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CookieService } from 'src/app/core/services/cookie.service';
 
 @Component({
     selector: 'app-topbar',
     templateUrl: './topbar.component.html',
     styleUrls: ['./topbar.component.scss'],
-    standalone: false
+    imports: [RouterModule],
+    standalone: true
 })
 export class TopbarComponent implements OnInit {
   userId: string;
