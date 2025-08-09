@@ -25,12 +25,12 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
 
 # Install dependencies for server
-RUN npm install --legacy-peer-deps
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Expose port
 EXPOSE 4005
 
 # Start the server
-CMD ["node", "dist/Course/server.mjs""]
+CMD ["node", "dist/Course/server.mjs"]
 
 
