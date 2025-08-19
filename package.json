@@ -10,7 +10,7 @@
     "e2e": "ng e2e",
     "dev:ssr": "ng run Course:serve-ssr",
     "build:ssr": "ng build && ng run Course:server",
-    "serve:ssr": "node dist/Course/server.mjs",
+    "serve:ssr": "node dist/Course/server/main.js",
     "prerender": "ng run Course:prerender"
   },
 

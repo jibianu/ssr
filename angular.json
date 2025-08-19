@@ -79,29 +79,39 @@
           },
           "defaultConfiguration": "production"
         },
-  "server": {
-  "builder": "@angular-devkit/build-angular:server",
-  "options": {
-    "outputPath": "dist/Course/server",
-    "main": "src/main.server.ts",
-    "tsConfig": "tsconfig.server.json"
-  },
-  "configurations": {
-    "production": {
-      "optimization": true,
-      "sourceMap": false,
-      "extractLicenses": true
-    },
-    "development": {
-      "optimization": false,
-      "sourceMap": true,
-      "extractLicenses": false
-    }
-  },
-  "defaultConfiguration": "production"
-},
-
-
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "Course:build:production"
+            },
+            "development": {
+              "buildTarget": "Course:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/Course/server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json"
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false
+            }
+          },
+          "defaultConfiguration": "production"
+        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
@@ -153,3 +163,4 @@
     "analytics": "20e04c50-8337-4af5-ba66-52b3670215e9"
   }
 }
+
