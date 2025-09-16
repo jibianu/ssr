@@ -63,6 +63,21 @@ export class AuthenticationService {
         return this.http.get(this.apiUrl + `page/Account/getinfo`).pipe(map(user => {
             if (user) {
                 this.user = user;
+                console.log(user, 'usedetails')
+                // hardcoded data
+                user ={
+                    "id": "f48824b8-f021-70f5-0cb8-a5cee2516932",
+                    "firstName": "Anush",
+                    "lastName": "R",
+                    "userName": "Anush R",
+                    "email": "anushrajrr@gmail.com",
+                    "isActive": true,
+                    "isAdmin": true,
+                    "canAdd": true,
+                    "canEdit": true,
+                    "canDelete": true,
+                    "profilePictureUrl": ""
+                }
                 this.cookieService.setCookie('currentUser', JSON.stringify(user), );
             }
             return user;

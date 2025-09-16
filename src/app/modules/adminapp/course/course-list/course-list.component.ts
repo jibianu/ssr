@@ -33,6 +33,7 @@ export class CourseListComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    console.log('course list component init')
     window.sessionStorage.clear();
     this.currentUser = JSON.parse(this.cookieService.getCookie('currentUser'));
     if (this.currentUser.isAdmin) {

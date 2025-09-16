@@ -11,6 +11,8 @@ import { CoreModule } from './core/core.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { AuthModule } from './modules/auth/auth.module';
+import { AdminappModule } from './modules/adminapp/adminapp.module';
 
 
 
@@ -30,10 +32,11 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
         AppRoutingModule,
         SharedModule,
         LayoutsModule,
-        CoreModule,
+        // CoreModule,
         NgbModule,
         NgxSpinnerModule,
-    
+        AuthModule,
+        AdminappModule
     ], 
         
         

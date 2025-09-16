@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { SideNavService } from './../sidebar.service';
 import { Component, OnInit } from '@angular/core';
 import { CookieService } from 'src/app/core/services/cookie.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
     selector: 'app-sidebar',
     templateUrl: './sidebar.component.html',
     styleUrls: ['./sidebar.component.scss'],
-    imports: [CommonModule],
+    imports: [CommonModule, RouterModule],
     standalone: true
 })
 export class SidebarComponent implements OnInit {

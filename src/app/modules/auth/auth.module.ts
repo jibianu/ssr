@@ -10,8 +10,8 @@ import { RouterModule } from '@angular/router';
 
 
 @NgModule({
-  declarations: [],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, LoginComponent, AuthRoutingModule
+  declarations: [LoginComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule,AuthRoutingModule
   ]
 })
 export class AuthModule { }

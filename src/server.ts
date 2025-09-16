@@ -33,10 +33,7 @@ app.get('*', (req, res, next) => {
         next();
       }
     })
-    .catch((err) => {
-      console.error('SSR Error:', err);
-      next(err instanceof Error ? err : new Error(String(err)));
-    });
+    
 });
 
 // 3️⃣ Start server

@@ -13,9 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": {
-              "base": "dist/Course/browser"
-            },
+            "outputPath": "dist/Course/browser",
             "index": "src/index.html",
             "polyfills": [
               "src/polyfills.ts"
@@ -43,11 +41,7 @@
             "optimization": false,
             "namedChunks": true,
             "browser": "src/main.ts",
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "server": "src/main.server.ts"
           },
           "configurations": {
             "production": {
@@ -95,7 +89,7 @@
           "builder": "@angular-devkit/build-angular:server",
           "options": {
             "outputPath": "dist/Course/server",
-            "main": "src/main.server.ts",
+            "main": "server.ts",
             "tsConfig": "tsconfig.server.json"
           },
           "configurations": {
@@ -163,4 +157,3 @@
     "analytics": "20e04c50-8337-4af5-ba66-52b3670215e9"
   }
 }
-

@@ -10,9 +10,14 @@ import { NgxPaginationModule } from 'ngx-pagination';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [AddCategoryComponent, CategoryListComponent],
   imports: [
-
+    CommonModule,
+    SharedModule,
+    CategoryRoutingModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgxPaginationModule
     ]
 })
 export class CategoryModule { }

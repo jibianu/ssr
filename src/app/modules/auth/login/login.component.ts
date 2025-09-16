@@ -8,8 +8,7 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 
 @Component({
   selector: 'app-login',
-  standalone : true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  standalone : false,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })

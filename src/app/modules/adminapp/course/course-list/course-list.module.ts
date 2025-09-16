@@ -22,11 +22,11 @@ const routes: Routes = [
     ],
     imports: [
       CommonModule,
-      CourseRoutingModule,
       RouterModule,
       NgxPaginationModule,
       ReactiveFormsModule,
       SharedModule,
+      RouterModule.forChild(routes),
       UserCourseComponent
     ]
   })

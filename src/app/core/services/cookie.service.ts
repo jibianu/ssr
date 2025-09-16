@@ -21,7 +21,7 @@ export class CookieService {
     for (const cookie of cookies) {
       const trimmedCookie = cookie.trim();
       if (trimmedCookie.startsWith(cookiePrefix)) {
-        return trimmedCookie.substring(cookiePrefix.length);
+        return decodeURIComponent(trimmedCookie.substring(cookiePrefix.length));
       }
     }
     return null;

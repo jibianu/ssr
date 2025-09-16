@@ -5,14 +5,12 @@ import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
-import { NgxPaginationModule } from 'ngx-pagination';
 
 @Component({
     selector: 'app-category-list',
     templateUrl: './category-list.component.html',
     styleUrls: ['./category-list.component.scss'],
-    standalone: true,
-    imports: [NgxPaginationModule]
+    standalone: false,
 })
 export class CategoryListComponent implements OnInit {
 

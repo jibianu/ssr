@@ -5,6 +5,7 @@ import { AdminappRoutingModule } from './adminapp-routing.module';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LocationListComponent } from './location/location-list/location-list.component';
+import { CourseModule } from './course/course.module';
 
 
 
@@ -17,7 +18,8 @@ import { LocationListComponent } from './location/location-list/location-list.co
     AdminappRoutingModule,
     RouterModule,
     LocationListComponent,
-    FormsModule
+    FormsModule,
+    CourseModule
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA
