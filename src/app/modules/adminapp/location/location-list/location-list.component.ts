@@ -108,9 +108,7 @@ import { FormsModule } from '@angular/forms';
 
   imports: [
     NgxPaginationModule,
-    CommonModule,
-  
-  
+    CommonModule
   ]
 })
 export class LocationListComponent implements OnInit, OnDestroy {

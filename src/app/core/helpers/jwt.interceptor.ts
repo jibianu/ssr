@@ -19,6 +19,7 @@ export class JwtInterceptor implements HttpInterceptor {
     ) { }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        console.log('intercepting...')
         if (this.shouldShowSpinner(request.url)) {
             this.spinner.show();
         }

@@ -14,7 +14,10 @@ import { LocationListComponent } from './location/location-list/location-list.co
 
   ],
   imports: [
-   
+    AdminappRoutingModule,
+    RouterModule,
+    LocationListComponent,
+    FormsModule
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

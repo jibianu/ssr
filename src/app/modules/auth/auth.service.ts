@@ -60,7 +60,7 @@ export class AuthenticationService {
     }
 
     getUserInfo() {
-        return this.http.get(this.apiUrl + `page/account/getinfo`).pipe(map(user => {
+        return this.http.get(this.apiUrl + `page/Account/getinfo`).pipe(map(user => {
             if (user) {
                 this.user = user;
                 this.cookieService.setCookie('currentUser', JSON.stringify(user), );

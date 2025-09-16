@@ -2,14 +2,15 @@
 import { PublicLayoutComponent } from './layouts/public/public-layout.component';
 import { AdminLayoutComponent } from './layouts/admin/admin-layout.component';
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule, ExtraOptions } from '@angular/router';
+import { Routes, RouterModule, ExtraOptions, withDisabledInitialNavigation } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { PageNotFoundComponent } from './modules/publicapp/page-not-found/page-not-found.component';
 
 const routerOptions: ExtraOptions = {
     scrollPositionRestoration: 'enabled',
     anchorScrolling: 'enabled',
-    scrollOffset: [0, 64]
+    scrollOffset: [0, 64],
+    initialNavigation: 'enabledBlocking'
 };
 
 export const routes: Routes = [

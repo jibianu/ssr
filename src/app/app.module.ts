@@ -4,19 +4,18 @@ import { AppRoutingModule } from './app-routing.module';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CoreModule } from './core/core.module';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
 import { NgxSpinnerModule } from 'ngx-spinner';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
 
 
 @NgModule({ declarations: [
-    
        
     ],
     schemas: [
@@ -33,10 +32,11 @@ import { NgxSpinnerModule } from 'ngx-spinner';
         LayoutsModule,
         CoreModule,
         NgbModule,
-        NgxSpinnerModule
+        NgxSpinnerModule,
+    
     ], 
         
         
-        providers: [provideHttpClient(withInterceptorsFromDi())] })
+        providers: [] })
         
 export class AppModule { }

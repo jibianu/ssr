@@ -1,143 +1,28 @@
-<!-- 
-   <div class="py-4 py-lg-6 bg-black">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-md-12 col-12">
-          <div>
-            <h1 class="text-white mb-1 header-text">{{categoryName}} Courses</h1>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="container">
-    <div class="row d-flex justify-content-center align-items-center">
-      <div class="col-md-12">
-       
-        <div class="row">
-          <div class="col-md-6 mt-5 d-flex" *ngFor="let item of courses | paginate: config">
-            <div class="blog-grid w-100">
-              
-              <div class="blog-img">
-                <a [href]="item?.canonicalUrl">
-                  <img class="card-img-top" [src]="item?.titleImageUrl" (error)="onImgError($event)" alt="{{item?.title}}" />
-                </a>
-              </div>
-  
-              
-              <div class="blog-info flex-fill">
-                <h5>
-                  <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
-                </h5>
-                <p class="price-tag">Price: {{ item.amount | currency:"INR":"symbol" }}</p>
-  
-                
-                <span class="text-ellipse">
-                  <p *ngFor="let feature of item?.courseFeatures">{{feature?.description}}</p>
-                </span>
-  
-               
-                <div class="d-sm-flex align-items-center justify-content-between">
-                  <div class="btn-bar">
-                    <a class="px-btn-arrow" [href]="item?.canonicalUrl">
-                      <span>Read More</span>
-                      <i class="arrow"></i>
-                    </a>
-                  </div>
-                  <div class="btn-bar" *ngIf="item?.courseTeachers && item?.courseTeachers.length > 0">
-                    <img [src]="item?.courseTeachers[0]?.imageUrl" (error)="onImgError($event)"
-                      class="img-fluid avatar avatar-ex-sm rounded-pill mr-2 shadow" alt="" />
-                    <small><strong>{{item?.courseTeachers[0]?.name}}</strong></small>
-                  </div>
-                </div>
-              </div>
+<div class="container-fluid mt-5">
+  <div class="row course-column">
+    <div class="col-lg-3 d-flex mb-4" *ngFor="let item of courses | paginate: config">
+      <div class="carousel-course-related w-100">
+        <a [href]="item?.canonicalUrl" class="no-underline">
+          <div class="list-course-item h-100 d-flex flex-column">
+            <div class="card-image position-relative">
+              <img [src]="item?.titleImageUrl" alt="{{ item?.title }}" class="card-img" />
+              <div class="sale-badge" *ngIf="item?.isBestSeller">Best Seller</div>
+            </div>
+            <div class="card-body">
+              <h6>{{ item?.title }}</h6>
+              <ul>
+                <li *ngFor="let feature of item?.courseFeatures">{{ feature?.description }}</li>
+              </ul>
+            </div>
+            <div class="buy">
+              <div class="price">{{ item.amount | currency: 'INR':'symbol' }}</div>
+              <a [href]="item?.canonicalUrl" class="btn btn-register">
+                <i class="fa fa-shopping-cart"></i> Enroll Now
+              </a>
             </div>
           </div>
-        </div>
-  
-       
-        <pagination-template #api="paginationApi" class="custom-page-controls" (pageChange)="pageChange($event)">
-          <ul class="pagination justify-content-center mt-5 mb-4">
-            <li class="page-item" [class.disabled]="api.isFirstPage()">
-              <a href="javascript:void(0)" (click)="api.previous()" class="page-link">&larr; Older</a>
-            </li>
-            <li class="page-item" [class.disabled]="api.isLastPage()">
-              <a href="javascript:void(0)" (click)="api.next()" class="page-link">Newer &rarr;</a>
-            </li>
-          </ul>
-        </pagination-template>
-      </div>
-    </div>
-  </div> -->
-
-  <div class="py-4 py-lg-6 bg-black">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-md-12 col-12">
-          <div>
-            <h1 class="text-white mb-1 header-text">{{categoryName}} Courses</h1>
-          </div>
-        </div>
+        </a>
       </div>
     </div>
   </div>
-  
-  <div class="container">
-    <div class="row d-flex justify-content-center align-items-center">
-      <div class="col-md-12">
-        <!-- Blog Post -->
-        <div class="row">
-          <div class="col-md-6 mt-5 d-flex" *ngFor="let item of courses | paginate: config">
-            <div class="blog-grid w-40 p-3">
-              <!-- Blog Image -->
-              <div class="blog-img">
-                <a [href]="item?.canonicalUrl">
-                  <img class="card-img-top" [src]="item?.titleImageUrl" (error)="onImgError($event)" alt="{{item?.title}}" />
-                </a>
-              </div>
-  
-              <!-- Blog Info -->
-              <div class="blog-info flex-fill">
-                <h5>
-                  <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
-                </h5>
-                <p class="price-tag">Price: {{ item.amount | currency:"INR":"symbol" }}</p>
-  
-                <!-- Course Features -->
-                <span class="text-ellipse">
-                  <p *ngFor="let feature of item?.courseFeatures">{{feature?.description}}</p>
-                </span>
-  
-                <!-- Buttons and Teacher Info -->
-                <div class="d-sm-flex align-items-center justify-content-between">
-                  <div class="btn-bar">
-                    <a class="px-btn-arrow" [href]="item?.canonicalUrl">
-                      <span>Read More</span>
-                      <i class="arrow"></i>
-                    </a>
-                  </div>
-                  <div class="btn-bar" *ngIf="item?.courseTeachers?.length">
-                    <img [src]="item?.courseTeachers[0]?.imageUrl" (error)="onImgError($event)"
-                      class="img-fluid avatar avatar-ex-sm rounded-pill mr-2 shadow" alt="" />
-                    <small><strong>{{item?.courseTeachers[0]?.name}}</strong></small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-  
-        <!-- ✅ Correct Pagination Controls -->
-        <div class="custom-page-controls">
-          <pagination-controls
-            (pageChange)="pageChange($event)"
-            previousLabel="&larr; Older"
-            nextLabel="Newer &rarr;"
-            class="justify-content-center mt-5 mb-4"
-          ></pagination-controls>
-        </div>
-      </div>
-    </div>
-  </div>
-  
+</div>

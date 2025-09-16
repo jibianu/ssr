@@ -124,10 +124,13 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     event.target.src = 'assets/img/user-profile.png';
   }
 
-  onImgError(event){
-    event.target.src = 'https://via.placeholder.com/468x300?text=oilandgasclub.com';
-  }
+  // onImgError(event){
+  //   event.target.src = '"https://via.placeholder.com/468x300?text=OilandGasClub"';
+  // }
 
+  onImgError(event: any) {
+    (event.target as HTMLImageElement).src = 'assets/img/oilandgasclub.jpg';
+  }
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
