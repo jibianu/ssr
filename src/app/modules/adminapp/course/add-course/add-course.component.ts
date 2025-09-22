@@ -3,7 +3,7 @@ import { CoursePreviewComponent } from './../course-preview/course-preview.compo
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { AdminAppService } from './../../adminapp.service';
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { AbstractControl, FormsModule, ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,8 +20,9 @@ import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
     standalone: true,
     imports: [
       CommonModule,
-    
-      NgMultiSelectDropDownModule
+      NgMultiSelectDropDownModule,
+      ReactiveFormsModule,
+      FormsModule
     ]
   })
 export class AddCourseComponent implements OnInit, OnDestroy {
@@ -48,8 +49,8 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   iconList = [];
   selectedfeatureitems = [];
   guid = '00000000-0000-0000-0000-000000000000'
-  formBuilder: any;
-  activatedRoute: any;
+  //formBuilder: any;
+  //activatedRoute: any;
   router: any;
 
   constructor(
@@ -59,7 +60,9 @@ export class AddCourseComponent implements OnInit, OnDestroy {
    
     private location: Location,
     private modalService: NgbModal,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private formBuilder: FormBuilder,
+    private activatedRoute: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
@@ -263,7 +266,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
 
   setvalue(res) {
     this.courseForm.patchValue({
-      title: res.title ? res.title : '',
+      title: res?.title ?? '',
       titleImageUrl: res.titleImageUrl ? res.titleImageUrl : environment.imgUrl,
       canonicalUrl: res.canonicalUrl ? res.canonicalUrl : '',
       amount: res.amount ? res.amount : 0,
@@ -460,6 +463,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
 
   getCategories() {
     this.subscription.add(this.appService.getCategories().subscribe((res: any) => {
+      console.log(res);
       if (res) {
         this.categories = res;
       }

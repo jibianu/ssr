@@ -36,7 +36,10 @@ import { AdminappModule } from './modules/adminapp/adminapp.module';
         NgbModule,
         NgxSpinnerModule,
         AuthModule,
-        AdminappModule
+        AdminappModule,
+        ReactiveFormsModule,
+        FormsModule,
+        CommonModule
     ], 
         
         

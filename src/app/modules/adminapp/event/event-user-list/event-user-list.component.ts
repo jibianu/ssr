@@ -1,30 +1,17 @@
 import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
+// import { Category } from './../category.model';
 import { AdminAppService } from './../../adminapp.service';
 import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { ActivatedRoute } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgxPaginationModule } from 'ngx-pagination';
-
-
 
 @Component({
   selector: 'app-event-user-list',
   templateUrl: './event-user-list.component.html',
   styleUrls: ['./event-user-list.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NgxPaginationModule,
-    NgxPaginationModule
-  ]
-
- 
-    
+  standalone: false
 })
 export class EventUserListComponent implements OnInit {
 
@@ -35,7 +22,6 @@ export class EventUserListComponent implements OnInit {
   term = '';
   sortDir = 1;
   eventId:string;
-filteredCategories: any;
   constructor(
     private appService: AdminAppService,
     private toasterService: ToasterService,

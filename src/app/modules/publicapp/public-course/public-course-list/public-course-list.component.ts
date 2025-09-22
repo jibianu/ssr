@@ -4,19 +4,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 import { NgxPaginationModule } from "ngx-pagination";
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-public-course-list',
   templateUrl: './public-course-list.component.html',
   styleUrls: ['./public-course-list.component.scss'],
-  imports: [NgxPaginationModule]
+  imports: [NgxPaginationModule, CommonModule]
   
 })
 export class PublicCourseListComponent implements OnInit, OnDestroy {
 
   config = {
     currentPage: 1,
-    itemsPerPage: 6,
+    itemsPerPage: 16,
     totalItems: 0
   };
 

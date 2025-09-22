@@ -15,6 +15,7 @@ import { CourseModule } from './course/course.module';
 
   ],
   imports: [
+        CommonModule,
     AdminappRoutingModule,
     RouterModule,
     LocationListComponent,

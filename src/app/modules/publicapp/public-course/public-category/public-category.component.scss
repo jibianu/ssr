@@ -23,178 +23,178 @@
   min-height: 90vh;
 }
 
-// /* Header Styles */
-// .bg-black {
-//   background-color: #cabcbc;
-// }
+/* Header Styles */
+.bg-black {
+  background-color: #cabcbc;
+}
 
-// .header-text {
-//   font-size: 2.5rem;
-//   font-weight: 700;
-//   color: #fff;
-// }
+.header-text {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fff;
+}
 
-// /* Main Container and Grid */
-// .main {
-//   padding: 20px 0;
-//   background-color: #f9f9f9;
-//   min-height: 90vh;
-// }
-/////////////////////
-// .course-column {
-//   display: flex;
-//   flex-wrap: wrap;
-//   justify-content: center;
-//   gap: 20px;
+/* Main Container and Grid */
+.main {
+  padding: 20px 0;
+  background-color: #f9f9f9;
+  min-height: 90vh;
+}
+///////////////////
+.course-column {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
   
-// }
+}
 
-// /* Course Card Container */
-// .carousel-course-related {
-//   background: #fff;
-//   border-radius: 10px;
-//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-//   transition: transform 0.3s ease, box-shadow 0.3s ease;
-//   overflow: hidden;
-//   display: flex; /* For h-100 to work */
-//   flex-direction: column;
-// }
+/* Course Card Container */
+.carousel-course-related {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  display: flex; /* For h-100 to work */
+  flex-direction: column;
+}
 
-// .carousel-course-related:hover {
-//   transform: translateY(-5px);
-//   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-// }
+.carousel-course-related:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
 
-// .list-course-item {
-//   display: flex;
-//   flex-direction: column;
-//   flex-grow: 1;
-//   justify-content: space-between;
-//   padding: 15px;
-// }
+.list-course-item {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  padding: 15px;
+}
 
-// /* Card Image */
-// .card-image {
-//   position: relative;
-//   overflow: hidden;
-//   border-radius: 10px 10px 0 0;
-//   width: 100%;
-//   height: 150px; /* Fixed height for image */
-// }
+/* Card Image */
+.card-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px 10px 0 0;
+  width: 100%;
+  height: 150px; /* Fixed height for image */
+}
 
-// .card-img {
-//   width: 100%;
-//   height: 100%;
-//   object-fit: cover;
-// }
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-// .sale-badge {
-//   position: absolute;
-//   top: 10px;
-//   left: 10px;
-//   background-color: #ff4757;
-//   color: #fff;
-//   padding: 5px 10px;
-//   border-radius: 5px;
-//   font-size: 12px;
-//   font-weight: bold;
-// }
+.sale-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #ff4757;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
 
-// /* Card Body */
-// .card-body {
-//   padding: 10px 15px;
-// }
+/* Card Body */
+.card-body {
+  padding: 10px 15px;
+}
 
-// h6 {
-//   font-size: 1rem;
-//   font-weight: 700;
-//   color: #2c3e50;
-//   margin-bottom: 8px;
-// }
+h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
 
-// ul {
-//   list-style: none;
-//   padding: 0;
-//   margin: 0 0 10px;
-// }
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
 
-// ul li {
-//   font-size: 0.8rem;
-//   color: #7f8c8d;
-//   margin-bottom: 4px;
-// }
+ul li {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-bottom: 4px;
+}
 
-// /* Price and Enroll Button */
-// .buy {
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-// }
+/* Price and Enroll Button */
+.buy {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-// .price {
-//   font-size: 1rem;
-//   font-weight: 700;
-//   color: #27ae60;
-// }
+.price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #27ae60;
+}
 
-// .btn-register {
-//   background: #007bff;
-//   color: #fff;
-//   border: none;
-//   padding: 8px 16px;
-//   border-radius: 4px;
-//   font-size: 14px;
-//   cursor: pointer;
-//   transition: background 0.3s ease;
-// }
+.btn-register {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
 
-// .btn-register:hover {
-//   background: #0056b3;
-// }
+.btn-register:hover {
+  background: #0056b3;
+}
 
-// /* Other Styles */
-// .no-underline {
-//   text-decoration: none;
-//   color: inherit;
-// }
+/* Other Styles */
+.no-underline {
+  text-decoration: none;
+  color: inherit;
+}
 
-// /* Pagination Styles */
-// .custom-page-controls .pagination {
-//   display: flex;
-//   justify-content: center;
-//   padding-left: 0;
-//   list-style: none;
-// }
+/* Pagination Styles */
+.custom-page-controls .pagination {
+  display: flex;
+  justify-content: center;
+  padding-left: 0;
+  list-style: none;
+}
 
-// .custom-page-controls .page-item {
-//   margin: 0 4px;
-// }
+.custom-page-controls .page-item {
+  margin: 0 4px;
+}
 
-// .custom-page-controls .page-link {
-//   color: #007bff;
-//   border: 1px solid #007bff;
-//   border-radius: 4px;
-//   padding: 8px 16px;
-//   transition: all 0.3s ease;
-// }
+.custom-page-controls .page-link {
+  color: #007bff;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
 
-// .custom-page-controls .page-link:hover {
-//   background: #007bff;
-//   color: #fff;
-// }
+.custom-page-controls .page-link:hover {
+  background: #007bff;
+  color: #fff;
+}
 
-// .custom-page-controls .page-item.active .page-link {
-//   background-color: #007bff;
-//   color: #fff;
-// }
+.custom-page-controls .page-item.active .page-link {
+  background-color: #007bff;
+  color: #fff;
+}
 
-// .custom-page-controls .page-item.disabled .page-link {
-//   color: #6c757d;
-//   border-color: #6c757d;
-//   pointer-events: none;
-//   background-color: transparent;
-// }
-/////////////////
+.custom-page-controls .page-item.disabled .page-link {
+  color: #6c757d;
+  border-color: #6c757d;
+  pointer-events: none;
+  background-color: transparent;
+}
+///////////////
 
 
 .course-column {

@@ -1,13 +1,10 @@
 import { Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, FormArray, FormControl, UntypedFormArray, AbstractControl, FormsModule } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, FormArray, FormControl, UntypedFormArray, AbstractControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from '../../adminapp.service';
-import { ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-
 
 
 
@@ -15,8 +12,7 @@ import { CommonModule } from '@angular/common';
     selector: 'app-add-event',
     templateUrl: './add-event.component.html',
     styleUrls: ['./add-event.component.scss'],
-    standalone: true,
-
+    standalone: false
 })
 export class AddEventComponent implements OnInit, OnDestroy {
 
@@ -33,14 +29,12 @@ export class AddEventComponent implements OnInit, OnDestroy {
   socailMedias=[
    
   ]
-    formBuilder: any;
-    activatedRoute: any;
 
     constructor(
-        
+        private formBuilder: UntypedFormBuilder,
         private appService: AdminAppService,
         private toasterService: ToasterService,
-
+        private activatedRoute: ActivatedRoute,
         private location: Location,
     ) { }
 
@@ -123,14 +117,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 this.eventForm.patchValue(res);
                 try {
                     this.eventForm.patchValue({
-                      startDate: new Date(res.startDate).toISOString().split('T')[0],
-                      endDate: new Date(res.endDate).toISOString().split('T')[0]
+                        startDate: new Date(res.startDate).toISOString().split('T')[0],
+                        endDate: new Date(res.endDate).toISOString().split('T')[0]
                     });
-                  } catch (e: unknown) {
-                    const msg = e instanceof Error ? e.message : String(e);
-                    console.error('Error while parsing dates:', msg);
-                  }
-                  
+                }
+                catch (e) {
+                    console.log(e);
+                }
                 if (res.eventDetails && res.eventDetails.length > 0) {
                     this.eventForm.setControl('eventDetails', this.formBuilder.array(
                         res.eventDetails.map((item) => {
@@ -294,5 +287,3 @@ export class AddEventComponent implements OnInit, OnDestroy {
         }
     }
 }
-
-
