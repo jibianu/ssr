@@ -1,89 +1,153 @@
 <!-- 
-   <div class="container">
-     <div class="row d-flex justify-content-center align-items-center">
-       <div class="col-md-12">
-     
-      <div class="row">
-        <div class="col-md-6 mt-5 d-flex" *ngFor="let item of courses | paginate: config">
-          <div class="blog-grid w-100">
-            <div class="blog-img">
-              
-              <a [href]="item?.canonicalUrl">
-                <img class="card-img-top" [src]="item?.titleImageUrl" (error)="onImgError($event)" />
-              </a>
-            </div>
-            <div class="blog-info flex-fill">
-              <h5>
-                <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
-              </h5>
-              <p class="price-tag"> Price: {{ item.amount | currency:"INR":"symbol" }} </p>
-              <ul class="blog-toc__list p-2">
-                <li *ngFor="let it of item?.courseFeatures" class="mt-1">
-                  <div class="block-list-item">
-                    <img [src]="it?.iconUrl" height="20px" width="20px">
-                    <span class="ml-4">
-                      {{ it?.description }}
-                    </span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div> -->
 
-      <div class="container">
-  <div class="row d-flex justify-content-center align-items-center">
-    <div class="col-md-12">
-      <!-- Blog Post -->
-      <div class="row">
-        <div class="col-md-6 mt-5 d-flex" *ngFor="let item of courses | paginate: config">
-          <div class="blog-grid w-100">
-            <div class="blog-img">
-              <a [href]="item?.canonicalUrl">
-                <img class="card-img-top" [src]="item?.titleImageUrl" (error)="onImgError($event)" />
-            
-              </a>
-            </div>
-            <div class="blog-info flex-fill">
-              <h5>
-                <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
-              </h5>
-              <h6 class="card-subtitle">Designed by oilandgasclub’s expert instructors</h6>
-            
-              <ul class="blog-toc__list p-2">
-                <li *ngFor="let it of item?.courseFeatures" class="mt-1">
-                  <div class="block-list-item">
-                    <img [src]="it?.iconUrl" height="20px" width="20px">
-                    <span class="ml-4">
-                      {{ it?.description }}
-                    </span>
-                  </div>
-                </li>
-              </ul>
-              <div class="buy">
-                <div class="price">Price: {{ item.amount | currency:"INR":"symbol" }}</div>
-                <a [href]="item?.canonicalUrl" class="btn btn-enroll no-underline">
-                  <i class="fa fa-shopping-cart"></i> Enroll Now
-                </a>
+     <div class="container">
+  <div class="row">
+    <div 
+      class="col-lg-3 col-md-6 col-12 mt-4 d-flex" 
+      *ngFor="let item of courses | paginate: config"
+    >
+      <div class="blog-grid d-flex flex-column h-100 w-100 shadow rounded">
+        
+        <div class="blog-img">
+          <a [href]="item?.canonicalUrl">
+            <img 
+              class="card-img-top img-fluid"
+              [src]="item?.titleImageUrl" 
+              (error)="onImgError($event)" 
+              alt="{{ item?.title }}" 
+            />
+          </a>
+        </div>
+
+      
+        <div class="blog-info flex-fill d-flex flex-column p-3">
+          <h5 class="mb-2">
+            <a [href]="item?.canonicalUrl" class="text-dark">{{ item?.title }}</a>
+          </h5>
+          <h6 class="card-subtitle mb-3 text-muted">
+            Designed by oilandgasclub’s expert instructors
+          </h6>
+
+          <ul class="blog-toc__list p-0 flex-grow-1">
+            <li 
+              *ngFor="let it of item?.courseFeatures" 
+              class="mt-1 list-unstyled"
+            >
+              <div class="block-list-item d-flex align-items-center">
+                <img [src]="it?.iconUrl" height="20" width="20">
+                <span class="ml-2">{{ it?.description }}</span>
               </div>
+            </li>
+          </ul>
+
+        
+          <div class="buy mt-auto pt-3">
+            <div class="price font-weight-bold text-success mb-2">
+              Price: {{ item.amount | currency:"INR":"symbol" }}
             </div>
+            <a 
+              [href]="item?.canonicalUrl" 
+              class="btn btn-enroll btn-primary w-100"
+            >
+              <i class="fa fa-shopping-cart"></i> Enroll Now
+            </a>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-      <!-- Pagination -->
-      <pagination-template #api="paginationApi" class="custom-page-controls" (pageChange)="pageChange($event)">
-        <ul class="pagination justify-content-center mt-5 mb-4">
-          <li class="page-item" [class.disabled]="api.isFirstPage()">
-            <a href="javascript:void(0)" (click)="api.previous()" class="page-link">&larr; Older</a>
-          </li>
-          <li class="page-item" [class.disabled]="api.isLastPage()">
-            <a href="javascript:void(0)" (click)="api.next()" class="page-link">Newer &rarr;</a>
+  
+  <pagination-template 
+    #api="paginationApi" 
+    class="custom-page-controls" 
+    (pageChange)="pageChange($event)"
+  >
+    <ul class="pagination justify-content-center mt-5 mb-4">
+      <li class="page-item" [class.disabled]="api.isFirstPage()">
+        <a href="javascript:void(0)" (click)="api.previous()" class="page-link">
+          &larr; Older
+        </a>
+      </li>
+      <li class="page-item" [class.disabled]="api.isLastPage()">
+        <a href="javascript:void(0)" (click)="api.next()" class="page-link">
+          Newer &rarr;
+        </a>
+      </li>
+    </ul>
+  </pagination-template>
+
+  <pagination-controls 
+    (pageChange)="pageChange($event)" 
+    class="pagination justify-content-center mt-5 mb-4"
+  >
+  </pagination-controls>
+</div> -->
+
+
+<div class="courses-container">
+  <div class="courses-grid">
+    <!-- Course Card -->
+    <div class="course-card" *ngFor="let item of courses | paginate: config">
+      <div class="card-image">
+        <a [href]="item?.canonicalUrl" class="image-link">
+          <img 
+            [src]="item?.titleImageUrl" 
+            (error)="onImgError($event)" 
+            [alt]="item?.title"
+            class="card-img"
+          />
+        </a>
+      </div>
+      
+      <div class="card-content">
+        <h3 class="card-title">
+          <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
+        </h3>
+        
+        <p class="card-subtitle">
+          Designed by oilandgasclub's expert instructors
+        </p>
+        
+        <ul class="features-list">
+          <li *ngFor="let it of item?.courseFeatures" class="feature-item">
+            <div class="feature-content">
+              <img [src]="it?.iconUrl" alt="Feature icon" class="feature-icon">
+              <span>{{ it?.description }}</span>
+            </div>
           </li>
         </ul>
-      </pagination-template>
-    
+        
+        <div class="card-footer">
+          <div class="price">{{ item.amount | currency:"INR":"symbol" }}</div>
+          <a [href]="item?.canonicalUrl" class="enroll-btn">
+            <i class="fa fa-shopping-cart"></i> Enroll Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <pagination-template #api="paginationApi" (pageChange)="pageChange($event)">
+      <div class="pagination-controls">
+        <button 
+          class="pagination-btn prev-btn" 
+          (click)="api.previous()" 
+          [disabled]="api.isFirstPage()"
+        >
+          &larr; Older
+        </button>
+        
+        <button 
+          class="pagination-btn next-btn" 
+          (click)="api.next()" 
+          [disabled]="api.isLastPage()"
+        >
+          Newer &rarr;
+        </button>
+      </div>
+    </pagination-template>
+  </div>
+</div>

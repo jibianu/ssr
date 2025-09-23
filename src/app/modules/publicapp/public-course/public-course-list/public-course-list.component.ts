@@ -17,7 +17,7 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
 
   config = {
     currentPage: 1,
-    itemsPerPage: 16,
+    itemsPerPage: 18,
     totalItems: 0
   };
 
