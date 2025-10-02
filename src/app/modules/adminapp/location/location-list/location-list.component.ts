@@ -88,17 +88,15 @@
 
 
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Subscription } from 'rxjs';
 
-import { AdminAppService } from '../../adminapp.service';
-import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
-import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
-import { NgxPaginationModule } from "ngx-pagination";
-import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { NgxPaginationModule } from "ngx-pagination";
+import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
+import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { AdminAppService } from '../../adminapp.service';
 
 @Component({
   selector: 'app-location-list',

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 
 import { ToasterService } from '../../shared/component/toaster/toaster.service';
 import { AuthenticationService } from '../../modules/auth/auth.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -15,6 +16,8 @@ export class ErrorInterceptor implements HttpInterceptor {
         private toasterService: ToasterService
     ) {}
 
+    private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID)); 
+
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
@@ -23,7 +26,8 @@ export class ErrorInterceptor implements HttpInterceptor {
                 }
 
                 const errorMessage = this.getErrorMessage(error);
-                this.toasterService.showError(errorMessage);
+                if (this.isBrowser)
+                    this.toasterService.showError(errorMessage);
 
                 // ✅ SSR-friendly: throw an Error object, not a string
                 return throwError(() => new Error(errorMessage));

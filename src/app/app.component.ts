@@ -1,8 +1,8 @@
  import { Component } from '@angular/core';
-import { AuthRoutingModule } from "./modules/auth/auth-routing.module";
+import { RouterModule } from '@angular/router';
 import { NgxSpinnerModule } from "ngx-spinner";
+import { AuthModule } from './modules/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
-import { ToasterComponent } from './shared/component/toaster/toaster.component';
 
  @Component({
     selector: 'app-root' ,
@@ -10,7 +10,8 @@ import { ToasterComponent } from './shared/component/toaster/toaster.component';
     styleUrls: ['./app.component.scss'],
     standalone: true,
     imports: [
-      AuthRoutingModule,
+      AuthModule,
+      RouterModule,
       NgxSpinnerModule,
       SharedModule // ✅ This includes ToasterComponent, if properly exported
     ]

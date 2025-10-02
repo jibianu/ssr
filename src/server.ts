@@ -33,6 +33,10 @@ app.get('*', (req, res, next) => {
         next();
       }
     })
+    .catch(err => {
+      console.error(err);
+      next(err);
+    })
     
 });
 

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, inject, INJECTOR, OnInit, PLATFORM_ID, Renderer2, ViewChild } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { OwlOptions } from 'ngx-owl-carousel-o';
@@ -7,6 +7,7 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { Subscription } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
     selector: 'app-event-details',
@@ -30,6 +31,9 @@ export class EventDetailsComponent implements OnInit {
       // console.log(this.bgImage)
         });
   }
+
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   @ViewChild('stickySection', {static: false}) public stickySection!: ElementRef;
   stickyTop = 0;
 
@@ -82,6 +86,9 @@ export class EventDetailsComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    if (!this.isBrowser)
+      return;
+
     if (window.innerWidth > 935) {
       const stickyDiv = this.stickySection.nativeElement;
       const stickySec = stickyDiv?.querySelector('.sticky-sec');

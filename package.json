@@ -8,10 +8,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "dev:ssr": "ng run Course:serve-ssr",
-    "build:ssr": "ng build && ng run Course:server",
-    "serve:ssr": "node dist/Course/server/main.js",
-    "prerender": "ng run Course:prerender"
+    "dev:ssr": "ng serve",
+    "build:ssr": "ng build --configuration=production",
+    "serve:ssr": "node dist/course/server/server.mjs"
   },
 
   "private": true,

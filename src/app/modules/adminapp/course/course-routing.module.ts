@@ -1,9 +1,5 @@
-import { LocationMetadataComponent } from './location-metadata/location-metadata.component';
-import { CoursePreviewComponent } from './course-preview/course-preview.component';
-import { AddCourseComponent } from './add-course/add-course.component';
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { CourseListComponent } from './course-list/course-list.component';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
