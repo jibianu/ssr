@@ -30,9 +30,9 @@ COPY --from=builder /app/package*.json ./
 RUN npm install --only=production
 
 # Expose port
-EXPOSE 4008
+EXPOSE 4000
 
 # Start the server
-CMD ["node", "dist/course/server/server.mjs"]
+CMD ["node", "dist/Course/server/server.mjs"]
 
 
