@@ -13,7 +13,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Build the Angular application
-RUN npm run build:ssr
+RUN npm run dev:ssr
 
 # Stage 2: Set up Node.js server for SSR
 FROM node:20-alpine
