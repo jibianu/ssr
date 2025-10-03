@@ -9,7 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "dev:ssr": "ng serve",
-    "build:ssr": "ng build --configuration=production",
+     "build:ssr": "ng build --configuration production && ng run Course:server:production",
     "serve:ssr": "node dist/course/server/server.mjs"
   },
 
