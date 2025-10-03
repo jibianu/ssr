@@ -12,22 +12,21 @@
     "build:ssr": "ng build --configuration production",
     "serve:ssr": "node dist/Course/server/server.mjs"
   },
-
   "private": true,
   "dependencies": {
-    "@angular/animations": "^20.1.6",
-    "@angular/cdk": "^20.1.5",
-    "@angular/common": "^20.1.6",
-    "@angular/compiler": "^20.1.6",
-    "@angular/core": "^20.1.6",
-    "@angular/forms": "^20.1.6",
-    "@angular/localize": "^20.1.6",
-    "@angular/material": "^20.1.5",
-    "@angular/platform-browser": "^20.1.6",
-    "@angular/platform-browser-dynamic": "^20.1.6",
-    "@angular/platform-server": "^20.1.6",
-    "@angular/router": "^20.1.6",
-    "@angular/ssr": "^20.1.5",
+    "@angular/animations": "20.1.6",
+    "@angular/cdk": "20.1.5",
+    "@angular/common": "20.1.6",
+    "@angular/compiler": "20.1.6",
+    "@angular/core": "20.1.6",
+    "@angular/forms": "20.1.6",
+    "@angular/localize": "20.1.6",
+    "@angular/material": "20.1.5",
+    "@angular/platform-browser": "20.1.6",
+    "@angular/platform-browser-dynamic": "20.1.6",
+    "@angular/platform-server": "20.1.6",
+    "@angular/router": "20.1.6",
+    "@angular/ssr": "20.1.5",
     "@ckeditor/ckeditor5-angular": "^2.0.1",
     "@ng-bootstrap/ng-bootstrap": "^13.1.1",
     "@nguniversal/builders": "^16.2.0",
@@ -51,9 +50,10 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^20.1.5",
-    "@angular/cli": "^20.1.5",
-    "@angular/compiler-cli": "^20.1.6",
+    "@angular-devkit/build-angular": "20.1.5",
+    "@angular/build": "20.1.5",
+    "@angular/cli": "20.1.5",
+    "@angular/compiler-cli": "20.1.6",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
@@ -70,9 +70,10 @@
     "protractor": "~7.0.0",
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
-    "typescript": "^5.8.3"
+    "typescript": "5.8.3"
   },
   "resolutions": {
     "webpack": "^5.0.0"
-  }
+  },
+  "packageManager": "pnpm@10.18.0+sha512.e804f889f1cecc40d572db084eec3e4881739f8dec69c0ff10d2d1beff9a4e309383ba27b5b750059d7f4c149535b6cd0d2cb1ed3aeb739239a4284a68f40cfa"
 }
