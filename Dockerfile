@@ -5,15 +5,18 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
-COPY package*.json ./
-RUN rm -rf node_modules package-lock.json
-RUN npm install --legacy-peer-deps
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+
+RUN corepack enable pnpm
+RUN pnpm install --dangerously-allow-all-builds
 
 # Copy application files
 COPY . .
 
 # Build the Angular application
-RUN npm run build:ssr
+RUN pnpm run build:ssr
 
 # Stage 2: Set up Node.js server for SSR
 FROM node:20-alpine
@@ -23,11 +26,12 @@ WORKDIR /app
 
 # Copy built application from Stage 1
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
 
 # Install dependencies for server
-#RUN npm install --omit=dev --legacy-peer-deps
-RUN npm install --only=production
+# NOT NEEDED FOR ANGULAR
+# because angular is already compiled to JS
+# RUN pnpm install --omit=dev --legacy-peer-deps
+# RUN pnpm install --only=production
 
 # Expose port
 EXPOSE 4000
