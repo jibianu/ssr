@@ -10,7 +10,7 @@ COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 
 RUN corepack enable pnpm
-RUN pnpm install --dangerously-allow-all-builds
+RUN pnpm install
 
 # Copy application files
 COPY . .
