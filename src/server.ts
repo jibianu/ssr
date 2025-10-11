@@ -1,3 +1,4 @@
+import '@angular/localize/init';
 import {
   AngularNodeAppEngine,
   createNodeRequestHandler,
