@@ -97,6 +97,7 @@ import { NgxPaginationModule } from "ngx-pagination";
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from '../../adminapp.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-location-list',
@@ -106,7 +107,8 @@ import { AdminAppService } from '../../adminapp.service';
 
   imports: [
     NgxPaginationModule,
-    CommonModule
+    CommonModule,
+    RouterModule
   ]
 })
 export class LocationListComponent implements OnInit, OnDestroy {

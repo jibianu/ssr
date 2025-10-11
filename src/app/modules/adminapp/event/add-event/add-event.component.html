@@ -583,7 +583,7 @@
 
     <div class="card shadow">
         <div class="card-body">
-            <form  (ngSubmit)="onSubmit()">
+            <form [formGroup]="eventForm"  (ngSubmit)="onSubmit()">
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h5 class="section-title">Basic Information</h5>

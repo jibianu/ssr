@@ -53,10 +53,10 @@
                             </div>
 
                              <!-- <div class="Workshop Start "> -->
-
+<!-- 
                                <div class="workshop-details p-4 mt-5">
     <div class="workshop-grid">
-        <!-- Date Card -->
+       
         <div class="workshop-card date-card">
             <div class="card-icon">
                 <i class="fa fa-calendar fa-2x" aria-hidden="true"></i>
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <!-- Time Card -->
+    
         <div class="workshop-card time-card">
             <div class="card-icon">
                 <i class="fa fa-clock-o fa-2x" aria-hidden="true"></i>
@@ -78,7 +78,6 @@
             </div>
         </div>
 
-        <!-- Live Card -->
         <div class="workshop-card live-card">
             <div class="card-icon">
                 <i class="fa fa-video-camera fa-2x" aria-hidden="true"></i>
@@ -89,7 +88,7 @@
             </div>
         </div>
 
-        <!-- Language Card -->
+     
         <div class="workshop-card language-card">
             <div class="card-icon">
                 <i class="fa fa-language fa-2x" aria-hidden="true"></i>
@@ -100,6 +99,54 @@
             </div>
         </div>
     </div>
+</div> -->
+
+<div class="workshop-details p-4 mt-5">
+  <div class="workshop-grid">
+    <!-- Date Card -->
+    <div class="workshop-card">
+      <div class="card-icon">
+        <i class="fa fa-calendar"></i>
+      </div>
+      <div class="card-content">
+        <h3 class="card-title">Date</h3>
+        <p class="card-text">{{event.startDate|date:'MMM, dd'}} - {{event.endDate|date:'MMM, dd yyyy'}}</p>
+      </div>
+    </div>
+
+    <!-- Time Card -->
+    <div class="workshop-card">
+      <div class="card-icon">
+        <i class="fa fa-clock-o"></i>
+      </div>
+      <div class="card-content">
+        <h3 class="card-title">Time</h3>
+        <p class="card-text">{{event.timeing}}</p>
+      </div>
+    </div>
+
+    <!-- Live Card -->
+    <div class="workshop-card">
+      <div class="card-icon">
+        <i class="fa fa-video-camera"></i>
+      </div>
+      <div class="card-content">
+        <h3 class="card-title">Live</h3>
+        <p class="card-text">{{event.duration}}</p>
+      </div>
+    </div>
+
+    <!-- Language Card -->
+    <div class="workshop-card">
+      <div class="card-icon">
+        <i class="fa fa-language"></i>
+      </div>
+      <div class="card-content">
+        <h3 class="card-title">Language</h3>
+        <p class="card-text">{{event.language}}</p>
+      </div>
+    </div>
+  </div>
 </div>
 
                                 <!-- <div class="Workshop End anu "> -->
@@ -364,6 +411,8 @@
 
                               <!-- <div class="orgniser end  "> -->
 
+                                    
+
                                  <!-- <div class="Faq start  "> -->
  
                             <div class="faq-section px-sm-3 py-3 mt-4 px-2">
@@ -435,6 +484,74 @@
                 
                 <!-- <div class="Faq End  "> -->
 
+
+                    <!-- <div class="Review start  "> -->
+                                        
+                                <section class="testimonials-section">
+  <h2 class="section-title">Here's what our students say about oilandgasclub</h2>
+
+  <div class="cards-wrapper">
+    <!-- Card 1 -->
+    <article class="testimonial-card">
+      <div class="card-header">
+        <div class="person-info">
+          <img class="avatar" src="assets/avatars/ekta.jpg" alt="Ekta avatar" />
+          <div>
+            <div class="name">Ekta</div>
+            <div class="role">Placement At IBM</div>
+          </div>
+        </div>
+        <div class="company-logo">
+          <img src="assets/logos/ibm.svg" alt="IBM logo" />
+        </div>
+      </div>
+      <p class="quote">
+        “I was really impressed with the hands-on training at oilandgasclub. The instructors were knowledgeable and enabled me to grasp complex DevOps concepts. The labs sessions were also a huge plus!”
+      </p>
+    </article>
+
+    <!-- Card 2 -->
+    <article class="testimonial-card">
+      <div class="card-header">
+        <div class="person-info">
+          <img class="avatar" src="assets/avatars/rupall.jpg" alt="Rupall avatar" />
+          <div>
+            <div class="name">Rupall</div>
+            <div class="role">Placement At Cognizant</div>
+          </div>
+        </div>
+        <div class="company-logo">
+          <img src="assets/logos/cognizant.svg" alt="Cognizant logo" />
+        </div>
+      </div>
+      <p class="quote">
+        “The trainers at oilandgasclub are very knowledgeable and experienced. They explained everything clearly and were always willing to answer my questions. I feel more confident for my career now.”
+      </p>
+    </article>
+
+    <!-- Card 3 -->
+    <article class="testimonial-card">
+      <div class="card-header">
+        <div class="person-info">
+          <img class="avatar" src="assets/avatars/nishant.jpg" alt="Nishant avatar" />
+          <div>
+            <div class="name">Nishant</div>
+            <div class="role">Placement At TCS</div>
+          </div>
+        </div>
+        <div class="company-logo">
+          <img src="assets/logos/tcs.svg" alt="TCS logo" />
+        </div>
+      </div>
+      <p class="quote">
+        “oilandgasclub provided excellent support with resume building and mock interviews. This helped me feel confident when I started applying for jobs. I’m grateful for their assistance in launching my IT career.”
+      </p>
+    </article>
+  </div>
+</section>
+<!-- <div class="testimonials-sec start  "> -->
+
+        <!-- <div class="Review end  "> -->
 
                       <!-- <div class=" Related Events start  "> -->
 
@@ -611,4 +728,17 @@
     </div>
 </ng-template>
 
-<!-- <div class="Regester  form start  "> -->
+<!-- <div class="Regester  form end  "> -->
+
+<!-- <div class="certificate-sec start  "> -->
+    <div class="certificate-container">
+  <div class="certificate-text">
+    <h2>Earn A Career Certificate</h2>
+    <p>Add this credential to your LinkedIn profile, resume, or CV</p>
+    <p>Share it on social media and in your performance review</p>
+  </div>
+  <div class="certificate-image">
+    <img src="assets/images/certificate.jpg" alt="Certificate" />
+  </div>
+</div>
+<!-- <div class="certificate-sec End  "> -->

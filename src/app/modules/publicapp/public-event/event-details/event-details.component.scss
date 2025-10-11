@@ -161,6 +161,8 @@
     color: #4364af;
 }
 
+//----------------Ticket start----  /////////////
+
 .red-dark {
     color: darkred;
     // margin-left: 3px;
@@ -183,10 +185,12 @@
     color: #6f7287;
 }
 
+
+
 .reg-card {
 
     .card-footer {
-        background-color: #3762f3;
+        background-color: #8093d1;
         color: white;
     }
 
@@ -195,63 +199,132 @@
     }
 }
 
+
+//----------------Ticket end----  /////////////
+
+
+// .workshop-details {
+//     background: rgb(12, 38, 73);
+//     background: linear-gradient(90deg, rgba(12, 38, 73, 1) 0%, rgba(10, 31, 59, 1) 50%, rgba(3, 13, 25, 1) 100%);
+// }
+
+// .workshop-title,
+// .course-highlights-title,
+// .bonuses-title,
+// .bonuses-alert {
+//     color: #9cf6f9;
+//     font-size: 1.5rem;
+//     line-height: 2rem;
+//     font-weight: 700;
+//     text-align: center;
+// }
+
+// .info-card {
+//     min-width: 300px;
+//     min-height: 150px;
+//     margin: 10px;
+//     text-align: center;
+//     border-radius: 15px;
+//     border-left: 3px solid green;
+
+//     .info-icon {
+//         width: 4rem;
+//         height: 4rem;
+//         border-radius: 50%;
+//         background-color: #007bff;
+//         display: flex;
+//         align-items: center;
+//         justify-content: center;
+//         margin: 10px;
+
+//         i {
+//             font-size: 2rem;
+//             color: white;
+//         }
+//     }
+
+//     .card-body {
+//         display: flex;
+//         flex-direction: column;
+//         justify-content: center;
+//         align-items: center;
+//     }
+
+//     .info-title {
+//         font-weight: 600;
+//         font-size: .875rem;
+//     }
+
+//     .info-val {
+//         font-weight: 600;
+//         font-size: 1rem;
+//     }
+// }
+
+
+
+//------------Workshop start anu----  /////////////
+
 .workshop-details {
-    background: rgb(12, 38, 73);
-    background: linear-gradient(90deg, rgba(12, 38, 73, 1) 0%, rgba(10, 31, 59, 1) 50%, rgba(3, 13, 25, 1) 100%);
+  background: linear-gradient(90deg, rgba(12, 38, 73, 1) 0%, rgba(10, 31, 59, 1) 50%, rgba(3, 13, 25, 1) 100%);
+  padding: 2rem;
+  border-radius: 12px;
 }
 
-.workshop-title,
-.course-highlights-title,
-.bonuses-title,
-.bonuses-alert {
-    color: #9cf6f9;
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 700;
-    text-align: center;
+.workshop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
 }
 
-.info-card {
-    min-width: 300px;
-    min-height: 150px;
-    margin: 10px;
-    text-align: center;
-    border-radius: 15px;
-    border-left: 3px solid green;
-
-    .info-icon {
-        width: 4rem;
-        height: 4rem;
-        border-radius: 50%;
-        background-color: #007bff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 10px;
-
-        i {
-            font-size: 2rem;
-            color: white;
-        }
-    }
-
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .info-title {
-        font-weight: 600;
-        font-size: .875rem;
-    }
-
-    .info-val {
-        font-weight: 600;
-        font-size: 1rem;
-    }
+.workshop-card {
+  background: #112c4a;
+  color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;   /* equal height */
+  text-align: center;
+  transition: all 0.3s ease;
 }
+
+.workshop-card:hover {
+  transform: translateY(-5px);
+  background: #163a5c;
+}
+
+.card-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #007bff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.card-icon i {
+  font-size: 2rem;
+  color: #fff;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.card-text {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+//------------Workshop End anu----  /////////////
+
 
 .course-highlights-title {
     color: #3659e3;
@@ -289,12 +362,12 @@
     min-height: 150px;
     margin: 10px;
     border-radius: 15px;
-    // border: 1px solid gray;
+    
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 
     .high-icon i {
         font-size: 1.5rem;
-        color: green;
+        color: rgb(141, 4, 4);
     }
 
     .high-points {
@@ -302,6 +375,10 @@
         margin-left: 5px;
     }
 }
+
+
+//----------------Bonuses start----  /////////////
+
 
 .bonuses-title,
 .bonuses-alert {
@@ -344,6 +421,31 @@
         color: white;
     }
 }
+
+
+//----------------Bonuses end----  /////////////
+
+
+    /* Register Button  start */
+
+
+    .btn-register {
+        background: linear-gradient(135deg, #FF9AA2, #FFB7B2);
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+//----------------Register Button end----  /////////////
 
 .reg-modal-footer,
 .reg-modal-ticket {
@@ -1065,23 +1167,6 @@ h4 {
         color: #7f8c8d;
     }
 
-    /* Register Button */
-    .btn-register {
-        background: linear-gradient(135deg, #FF9AA2, #FFB7B2);
-        color: #ffffff;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-weight: 600;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .btn-register:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-
 
     
     /* Title Section */
@@ -1094,7 +1179,7 @@ h4 {
 
     /* Badge */
     .badge-primary {
-        background: #FF6F61;
+        background: #6164ff;
         color: #ffffff;
         font-size: 0.9rem;
         font-weight: 600;
@@ -1296,3 +1381,176 @@ h4 {
 }
 
 /*-----------form header  ----*/ 
+/* Section container */
+.testimonials-section {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: Arial, sans-serif;
+  color: #0f172a;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+/* Grid wrapper */
+.cards-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+/* Card */
+.testimonial-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(12, 20, 30, 0.06);
+  padding: 18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(12, 20, 30, 0.1);
+}
+
+/* Card header: name + avatar left, logo right */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* Person info */
+.person-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid rgba(15, 23, 42, 0.06);
+}
+
+.name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.role {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Logo */
+.company-logo img {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* Quote text */
+.quote {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #334155;
+  margin: 0;
+}
+
+/* Responsive behavior */
+@media (max-width: 980px) {
+  .cards-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .section-title {
+    text-align: center;
+  }
+  .cards-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+.certificate-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 30px;
+  margin: 20px auto;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-width: 1000px;
+}
+
+.certificate-text {
+  flex: 1;
+  padding-right: 20px;
+}
+
+.certificate-text h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.certificate-text p {
+  font-size: 15px;
+  color: #555;
+  margin: 5px 0;
+}
+
+.certificate-image {
+  flex: 0 0 auto;
+  width: 320px;
+}
+
+.certificate-image img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .certificate-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .certificate-text {
+    padding-right: 0;
+    margin-bottom: 20px;
+  }
+
+  .certificate-image {
+    width: 80%;
+  }
+}
+.event-header {
+    background-color: #f8f7fa;
+    padding: 16px 0 32px 0;
+    text-align: center;
+    background-image: url('/assets/images/event-header-bg.png');
+    background-size: cover;
+    background-position: top;
+    background-repeat: no-repeat;
+    padding-top: 32px
+}

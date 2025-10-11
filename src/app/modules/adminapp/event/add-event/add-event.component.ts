@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, FormArray, FormControl, UntypedFormArray, AbstractControl } from '@angular/forms';
+import {FormGroup,FormBuilder, Validators, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -19,7 +19,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
     pageTitle: string;
     btntext: string;
     eventId: string;
-    eventForm: UntypedFormGroup;
+    eventForm: FormGroup;
     submitted = false;
     subscription: Subscription = new Subscription();
     fileUploadProgress: string = null;
@@ -31,7 +31,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
   ]
 
     constructor(
-        private formBuilder: UntypedFormBuilder,
+        private formBuilder: FormBuilder,
         private appService: AdminAppService,
         private toasterService: ToasterService,
         private activatedRoute: ActivatedRoute,
@@ -72,7 +72,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
             eventInfo: ['', Validators.required],
             canonicalUrl:['', Validators.required],
             titleImageUrl: '',
-            metaDescription: ['', [Validators.required]],
+            metaDescription: [''],
             amount: ['0',Validators.required],
             location:['', Validators.required],
             discount:['0'],
@@ -85,7 +85,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
             aboutEvent: [''],
             registrationCompleted:false,
             showOnDashboard: false,
-            eventDetails: new UntypedFormArray([
+            eventDetails: new FormArray([
             ])
         });
         
@@ -174,7 +174,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
         this.location.back();
     }
     eventCurriculumArrayControls(section: string) {
-        // var x = (<UntypedFormArray>this.eventForm.get('eventDetails')).controls;
+        // var x = (<FormArray>this.eventForm.get('eventDetails')).controls;
         // var ix = 0;
         // var arr: AbstractControl[] = [];
         // var dt = [];
@@ -187,11 +187,11 @@ export class AddEventComponent implements OnInit, OnDestroy {
         // }
         // // console.log(dt);
         // return dt;
-        return (<UntypedFormArray>this.eventForm.get('eventDetails')).
+        return (<FormArray>this.eventForm.get('eventDetails')).
             controls.filter((control: AbstractControl) => control.get('section').value === section);
     }
     getIndexOfCurriculum(section: string, index: number): number {
-        var x = (<UntypedFormArray>this.eventForm.get('eventDetails')).controls;
+        var x = (<FormArray>this.eventForm.get('eventDetails')).controls;
         var ix = 0;
         for (let i = 0; i < x.length; i++) {
             if (x[i].value.section === section) {
@@ -207,13 +207,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
     
     removeCurriculum(index: number, section: string) {
         var ix=this.getIndexOfCurriculum(section, index);
-        (<UntypedFormArray>this.eventForm.get('eventDetails')).removeAt(ix);
+        (<FormArray>this.eventForm.get('eventDetails')).removeAt(ix);
     }
     addCurriculumItem(section: string,isOnlyOne:boolean=false) {
         if(isOnlyOne &&  this.getIndexOfCurriculum(section, 0) !== -1){
             return;
         }
-        (<UntypedFormArray>this.eventForm.get('eventDetails')).push(
+        (<FormArray>this.eventForm.get('eventDetails')).push(
             this.formBuilder.group({
                 id:'',
                 section: section,
@@ -228,13 +228,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
         );
     }
     addCurriculumItemTitle(section: string,title: string) {
-        var x = (<UntypedFormArray>this.eventForm.get('eventDetails'))
+        var x = (<FormArray>this.eventForm.get('eventDetails'))
             .controls.filter((control: AbstractControl) => control.get('section').value === section)
             .filter((control: AbstractControl) => control.get('title').value === title);
         if (x.length > 0) {
             return;
         }
-        (<UntypedFormArray>this.eventForm.get('eventDetails')).push(
+        (<FormArray>this.eventForm.get('eventDetails')).push(
             this.formBuilder.group({
                 id: '',
                 section: section,
@@ -251,7 +251,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
     getValueOfCurriculum(section: string, index: number, key: string): any {
         var ix = this.getIndexOfCurriculum(section, index);
         if (ix !== -1) {
-            return (<UntypedFormArray>this.eventForm.get('eventDetails')).controls[ix].get(key).value;
+            return (<FormArray>this.eventForm.get('eventDetails')).controls[ix].get(key).value;
         }
         return '';
     }
@@ -261,7 +261,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
           this.uploadedFilePath = res.url;
           var x= this.getIndexOfCurriculum('image', 0);
           if (x !== -1) {
-              (<UntypedFormArray>this.eventForm.get('eventDetails')).controls[x].patchValue({
+              (<FormArray>this.eventForm.get('eventDetails')).controls[x].patchValue({
                   imageUrl: this.uploadedFilePath
               });
           }
@@ -274,7 +274,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
           this.uploadedFilePath = res.url;
           var x= this.getIndexOfCurriculum(section, ix);
           if (x !== -1) {
-              (<UntypedFormArray>this.eventForm.get('eventDetails')).controls[x].patchValue({
+              (<FormArray>this.eventForm.get('eventDetails')).controls[x].patchValue({
                   imageUrl: this.uploadedFilePath
               });
           }

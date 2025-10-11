@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -17,12 +17,12 @@ export class AddCategoryComponent implements OnInit, OnDestroy {
   pageTitle: string;
   btntext: string;
   categoryId: string;
-  categoryForm: UntypedFormGroup;
+  categoryForm: FormGroup;
   submitted = false;
   subscription: Subscription = new Subscription();
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private appService: AdminAppService,
     private toasterService: ToasterService,
     private activatedRoute: ActivatedRoute,
