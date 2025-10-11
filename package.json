@@ -10,7 +10,9 @@
     "e2e": "ng e2e",
     "dev:ssr": "ng serve",
     "build:ssr": "ng build --configuration production",
-    "serve:ssr": "node dist/Course/server/server.mjs"
+    "serve:ssr": "node dist/Course/server/server.mjs",
+    "docker:test:build": "docker build -t course-frontend-test .",
+    "docker:run:build": "docker run -d --restart unless-stopped -p 4008:4000 coursefrontendtest"
   },
   "private": true,
   "dependencies": {
