@@ -21,6 +21,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
+                 console.log(request)
                 console.error('error during http request', error);
                 if (error.status === 401) {
                     this.handleUnauthorizedError();
