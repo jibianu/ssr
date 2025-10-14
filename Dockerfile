@@ -10,7 +10,7 @@ COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 
 RUN corepack enable pnpm
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Copy application files
 COPY . .
@@ -25,7 +25,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy built application from Stage 1
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/dist/Course ./
 
 # Install dependencies for server
 # NOT NEEDED FOR ANGULAR
@@ -37,6 +37,6 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 4000
 
 # Start the server
-CMD ["node", "dist/Course/server/server.mjs"]
+CMD ["node", "server/server.mjs"]
 
 
