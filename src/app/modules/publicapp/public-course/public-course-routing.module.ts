@@ -1,13 +1,10 @@
-import { CourseLocationGuard } from './../../../core/guards/course-location.guard';
-// import { CourseGuard } from './../../../core/guards/course.guard';
-
-import { PublicCourseListComponent } from './public-course-list/public-course-list.component';
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { PublicCourseDetailsComponent } from './public-course-details/public-course-details.component';
-import { PublicCourseHomeComponent } from './public-course-home/public-course-home.component';
+import { RouterModule, Routes } from '@angular/router';
 import { PublicCategoryComponent } from './public-category/public-category.component';
-import { CourseUrlResoverService } from 'src/app/core/resolver/course-url.resover';
+import { PublicCourseDetailsComponent } from './public-course-details/public-course-details.component';
+import { publicCourseDetailsResolver } from './public-course-details/public-course-details.resolver';
+import { PublicCourseHomeComponent } from './public-course-home/public-course-home.component';
+import { PublicCourseListComponent } from './public-course-list/public-course-list.component';
 
 const routes: Routes = [
 
@@ -25,16 +22,18 @@ const routes: Routes = [
     path: '',
     component: PublicCourseHomeComponent,
   },
-
-   {
-    path: ':url',
-    // canActivate: [CourseGuard],
-    resolve:{course:CourseUrlResoverService},
+  {
+    path: ':url/:location',
+    resolve:{
+      courseDetails:publicCourseDetailsResolver
+    },
     component: PublicCourseDetailsComponent,
   },
   {
-    path: ':url/:location',
-    canActivate: [CourseLocationGuard],
+    path: ':url',
+    resolve:{
+      courseDetails: publicCourseDetailsResolver
+    },
     component: PublicCourseDetailsComponent,
   },
 ];

@@ -277,15 +277,17 @@
             <div class="card-body">
               <button class="buy-now mb-3"> Price : {{courseDetails.amount | currency:'INR':'symbol'}}</button>
               <!-- mb-3 adds margin-bottom -->
-              <a href="#!" class="btn btn-primary btn-block"
-                *ngIf="!createdByList.includes(courseDetails.createdByUser.id)">
-                More info +91 9840287919
-              </a>
-              <a *ngIf="createdByList.includes(courseDetails.createdByUser.id)"
-                href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
-                class="btn btn-primary btn-block">
-                Buy Now
-              </a>
+               @if(isSelfLearning$()) {
+                  <a href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
+                    class="btn btn-primary btn-block">
+                    Buy Now
+                  </a>
+               }
+               @else { 
+                  <a href="#!" class="btn btn-primary btn-block">
+                    More info +91 9840287919
+                  </a>  
+               }
               <div class="guarantee">
                 <p>30-Day Risk-Free Trial</p>
                 <p>Learn at Your Own Pace – Access Forever</p>
