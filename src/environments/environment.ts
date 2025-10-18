@@ -2,8 +2,8 @@
 
 export const environment = {
   production: false,
- //apiUrl : 'https://localhost:52045/',
-  apiUrl : 'https://coursebackend.oilandgasclub.com/',
+ apiUrl : 'https://localhost:52045/',
+ // apiUrl : 'https://coursebackend.oilandgasclub.com/',
 
 //  apiUrl : 'https://backend.oilandgasclub.com/',
   // seoUrl: 'https://course.serverlessblog.tk/',

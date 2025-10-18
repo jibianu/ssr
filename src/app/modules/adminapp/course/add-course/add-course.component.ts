@@ -130,7 +130,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
         this.formBuilder.group({
           title: '',
           summary: '',
-          iconId: '',
+          iconId: '7D53EA73-A46D-45C0-A78E-85C83371A8F4',
           sortOrder: 0,
           id: this.guid,
           courseContentSubTypes: new UntypedFormArray([])
@@ -648,7 +648,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     let group = {};
     group['summary'] = new UntypedFormControl('');
     group['title'] = new UntypedFormControl('');
-    group['iconId'] = new UntypedFormControl('');
+    group['iconId'] = new UntypedFormControl('7D53EA73-A46D-45C0-A78E-85C83371A8F4');
     group['sortOrder'] = new UntypedFormControl(this.courseContentsArray.length);
     group['id'] = new UntypedFormControl(this.guid);
     group['courseContentSubTypes'] = new UntypedFormArray([]);
@@ -691,7 +691,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     let group = {};
     group['title'] = new UntypedFormControl('');
     group['summary'] = new UntypedFormControl('');
-    group['iconId'] = new UntypedFormControl('');
+    group['iconId'] = new UntypedFormControl('7D53EA73-A46D-45C0-A78E-85C83371A8F4');
     group['sortOrder'] = new UntypedFormControl(0);
     group['courseContentSubSubTypes'] = this.formBuilder.array([]);
     group['id'] = new UntypedFormControl(this.guid);
@@ -703,7 +703,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     group['title'] = new UntypedFormControl('');
     group['summary'] = new UntypedFormControl('');
     group['sortOrder'] = new UntypedFormControl(0);
-    group['iconId'] = new UntypedFormControl('');
+    group['iconId'] = new UntypedFormControl('7D53EA73-A46D-45C0-A78E-85C83371A8F4');
     group['id'] = new UntypedFormControl(this.guid);
     return this.formBuilder.group(group);
   }
