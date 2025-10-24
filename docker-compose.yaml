@@ -1,9 +1,17 @@
-version: '3.8'
-
 name: oil-and-gas-club
 
 services:
-  angular:
+  course-backend:
+    image: course-backend
+    container_name: course-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      - ASPNETCORE_HTTP_PORTS=8080
+
+  course-frontend:
     image: course-frontend-test
     container_name: course-frontend-test
     restart: unless-stopped
