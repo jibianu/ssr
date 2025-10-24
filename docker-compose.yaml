@@ -1,0 +1,11 @@
+version: '3.8'
+
+name: oil-and-gas-club
+
+services:
+  angular:
+    image: course-frontend-test
+    container_name: course-frontend-test
+    restart: unless-stopped
+    ports:
+      - "4008:4000"
