@@ -62,36 +62,45 @@
             </div>
             <div class="col-sm-8 col-12" >
                 <div class="events-list">
-                    <div class="event-card p-3 cursor-pointer mb-3" routerLink="/events/{{event.canonicalUrl}}" *ngFor="let event of events">
-                        <div class="title-section">
-                            <div><span class="badge badge-primary">{{event.badge}}</span></div>
-                            <div><span class="event-date">
-                                {{event.startDate|date :'dd MMM'}} - {{event.endDate|date :'dd MMM, yyyy'}}
-                            </span><span
-                                    class="event-status ml-2">Live</span>
-                            </div>
-                            <div>
-                                <h1 class="event-title">
-                                    {{event.title}}
-                                </h1>
-                            </div>
-                            <div>
-                                <ul class="event-tags pl-4 mb-2">
-                                    <li *ngFor="let tag of event.tags">{{tag}}</li>
-                                </ul>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="event-price mr-3">
-                                    From ₹{{event.amount}}
+                    <!-- ✅ SSR OPTIMIZATION: Use async pipe for non-blocking rendering -->
+                    <ng-container *ngIf="events$ | async as eventsList; else loadingTemplate">
+                        <div *ngIf="eventsList.length === 0" class="text-center p-4">
+                            <p>No events available at the moment.</p>
+                        </div>
+                        <div class="event-card p-3 cursor-pointer mb-3" 
+                             routerLink="/events/{{event.canonicalUrl}}" 
+                             *ngFor="let event of eventsList; trackBy: trackByEventId">
+                            <div class="title-section">
+                                <div><span class="badge badge-primary">{{event.badge}}</span></div>
+                                <div><span class="event-date">
+                                    {{event.startDate|date :'dd MMM'}} - {{event.endDate|date :'dd MMM, yyyy'}}
+                                </span><span class="event-status ml-2">Live</span>
                                 </div>
-                                <div class="badge badge-warning py-2 offer-badge">
-                                    <span style="color: darkorange;"><i class="fa fa-tag mr-1"
-                                            aria-hidden="true"></i></span>
-                                    <span>{{event.eventInfo}}</span>
+                                <div>
+                                    <h1 class="event-title">
+                                        {{event.title}}
+                                    </h1>
+                                </div>
+                                <div>
+                                    <ul class="event-tags pl-4 mb-2">
+                                        <li *ngFor="let tag of event.tags; trackBy: trackByTagIndex">{{tag}}</li>
+                                    </ul>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="event-price mr-3">
+                                        From ₹{{event.amount}}
+                                    </div>
+                                    <div class="badge badge-warning py-2 offer-badge">
+                                        <span style="color: darkorange;"><i class="fa fa-tag mr-1" aria-hidden="true"></i></span>
+                                        <span>{{event.eventInfo}}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </ng-container>
+                    <ng-template #loadingTemplate>
+                        <div class="text-center p-4">Loading events...</div>
+                    </ng-template>
                     <!-- <div class="event-card p-3 cursor-pointer mb-3" routerLink="../event-details">
                         <div class="title-section">
                             <div><span class="badge badge-primary">Ticket sales end soon</span></div>

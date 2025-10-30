@@ -11,6 +11,8 @@ import { CommonModule, Location } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MyUploadAdapter } from './UploadAdapter';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+import { StorageUtil } from 'src/app/core/utils/storage.util';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @Component({
     selector: 'app-add-course',
@@ -22,7 +24,8 @@ import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
       CommonModule,
       NgMultiSelectDropDownModule,
       ReactiveFormsModule,
-      FormsModule
+      FormsModule,
+      SharedModule
     ]
   })
 export class AddCourseComponent implements OnInit, OnDestroy {
@@ -69,9 +72,21 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     this.getIcons();
     this.getCategories();
     this.fetchLocations();
-    const currentUser = JSON.parse(this.cookieService.getCookie('currentUser'));
-    this.courseData = JSON.parse(window.sessionStorage.getItem('courseData'));
-    this.isAdmin = currentUser.isAdmin ? currentUser.isAdmin : false;
+    
+    // IMPROVED: Use utility for safe storage access
+    try {
+      const currentUserCookie = this.cookieService.getCookie('currentUser');
+      if (currentUserCookie) {
+        const currentUser = JSON.parse(currentUserCookie);
+        this.isAdmin = currentUser?.isAdmin ?? false;
+      }
+    } catch (error) {
+      console.error('Error parsing currentUser cookie:', error);
+      this.isAdmin = false;
+    }
+    
+    // Use StorageUtil for safe sessionStorage access
+    this.courseData = StorageUtil.getItemFromSession<any>('courseData', null);
     this.formInit();
     this.dropdownSettings = {
       singleSelection: false,
@@ -203,32 +218,35 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     return this.courseForm.get('courseLocations') as UntypedFormArray;
   }
 
-  frequentlyAskedQuestionsArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('frequentlyAskedQuestions')).controls;
+  // ✅ TYPE SAFETY: Return FormGroup[] for proper template access
+  frequentlyAskedQuestionsArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('frequentlyAskedQuestions')).controls as UntypedFormGroup[];
   }
 
-  courseFeaturesArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('courseFeatures')).controls;
+  courseFeaturesArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('courseFeatures')).controls as UntypedFormGroup[];
   }
 
-  courseInformationArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('courseInformation')).controls;
+  // ✅ TYPE SAFETY: Return FormGroup[] instead of AbstractControl[] for proper template access
+  courseInformationArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('courseInformation')).controls as UntypedFormGroup[];
   }
 
-  courseSummariesArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('courseSummaries')).controls;
+  courseSummariesArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('courseSummaries')).controls as UntypedFormGroup[];
   }
 
-  courseContentsArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('courseContents')).controls;
+  courseContentsArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('courseContents')).controls as UntypedFormGroup[];
   }
 
-  courseTeachersArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('courseTeachers')).controls;
+  // ✅ TYPE SAFETY: Return FormGroup[] for proper template access
+  courseTeachersArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('courseTeachers')).controls as UntypedFormGroup[];
   }
 
-  courseLocationsArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.courseForm.get('courseLocations')).controls;
+  courseLocationsArrayControls(): UntypedFormGroup[] {
+    return (<UntypedFormArray>this.courseForm.get('courseLocations')).controls as UntypedFormGroup[];
   }
 
   getCourseById(id) {
@@ -244,13 +262,14 @@ export class AddCourseComponent implements OnInit, OnDestroy {
       if (res) {
         this.iconList = res
       }
-      this.activatedRoute
-        .params
-        .subscribe(params => {
-          if (params.id) {
-            this.courseId = params.id;
+      // FIXED: Add route.params subscription to cleanup on destroy
+      this.subscription.add(
+        this.activatedRoute.params.subscribe(params => {
+          if (params['id']) {
+            this.courseId = params['id'];
           }
-        });
+        })
+      );
       if (this.courseId) {
         this.pageTitle = 'Update Course';
         this.btntext = 'Update';
@@ -457,8 +476,9 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   }
 
   locationMeta() {
-    window.sessionStorage.setItem('courseData', JSON.stringify(this.courseForm.value))
-    this.router.navigateByUrl('/app/course/location')
+    // IMPROVED: Use StorageUtil for safe storage access
+    StorageUtil.setItemToSession('courseData', this.courseForm.value);
+    this.router.navigateByUrl('/app/course/location');
   }
 
   getCategories() {
@@ -508,7 +528,8 @@ export class AddCourseComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.location.back();
-    window.sessionStorage.clear();
+    // IMPROVED: Use StorageUtil for safe storage access
+    StorageUtil.clearSession();
   }
 
   previewCourse() {
@@ -518,22 +539,28 @@ export class AddCourseComponent implements OnInit, OnDestroy {
 
   fileProgress(fileInput: any) {
     this.fileData = <File>fileInput.target.files[0];
-    this.appService.uploadTitleImage(this.fileData).subscribe(res => {
-      this.uploadedFilePath = res.url;
-      this.courseForm.patchValue({
-        titleImageUrl: this.uploadedFilePath
+    // FIXED: Add subscription to cleanup on destroy
+    this.subscription.add(
+      this.appService.uploadTitleImage(this.fileData).subscribe(res => {
+        this.uploadedFilePath = res.url;
+        this.courseForm.patchValue({
+          titleImageUrl: this.uploadedFilePath
+        })
       })
-    })
+    );
   }
 
   teacherFileProgress(fileInput: any, i) {
     let fileData = <File>fileInput.target.files[0];
-    this.appService.uploadTeacherImage(fileData).subscribe(res => {
-      let uploadedFilePath = res.url;
-      this.courseTeachersArray.at(i).patchValue({
-        imageUrl: uploadedFilePath
+    // FIXED: Add subscription to cleanup on destroy
+    this.subscription.add(
+      this.appService.uploadTeacherImage(fileData).subscribe(res => {
+        let uploadedFilePath = res.url;
+        this.courseTeachersArray.at(i).patchValue({
+          imageUrl: uploadedFilePath
+        })
       })
-    })
+    );
   }
 
   preview() {
@@ -595,11 +622,12 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     this.selectedfeatureitems.push(val);
   }
 
-  removeCourseFeatureItems(index) {
+  removeCourseFeatureItems(index: number): void {
+    // FIXED: Remove from form array first
     this.courseFeaturesArray.removeAt(index);
-    const ind = this.selectedfeatureitems.indexOf(index, 0);
-    if (index > -1) {
-      this.selectedfeatureitems.splice(ind, 1);
+    // FIXED: Fix logic - remove item at index from selectedfeatureitems array
+    if (index >= 0 && index < this.selectedfeatureitems.length) {
+      this.selectedfeatureitems.splice(index, 1);
     }
   }
 
@@ -667,8 +695,18 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     return (this.courseForm.get('courseContents') as UntypedFormArray).controls[aIndex].get('courseContentSubTypes') as UntypedFormArray
   }
 
+  // ✅ TYPE SAFETY: Helper method to get FormGroup[] for CourseSubContent
+  CourseSubContentControls(aIndex: number): UntypedFormGroup[] {
+    return this.CourseSubContent(aIndex).controls as UntypedFormGroup[];
+  }
+
   CourseSubSubContent(aIndex, bIndex): UntypedFormArray {
     return ((this.courseForm.get('courseContents') as UntypedFormArray).controls[aIndex].get('courseContentSubTypes') as UntypedFormArray).controls[bIndex].get('courseContentSubSubTypes') as UntypedFormArray
+  }
+
+  // ✅ TYPE SAFETY: Helper method to get FormGroup[] for CourseSubSubContent
+  CourseSubSubContentControls(aIndex: number, bIndex: number): UntypedFormGroup[] {
+    return this.CourseSubSubContent(aIndex, bIndex).controls as UntypedFormGroup[];
   }
 
   addCourseSubContent(index: number) {

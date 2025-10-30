@@ -1,7 +1,7 @@
 import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
 // import { Category } from './../category.model';
 import { AdminAppService } from './../../adminapp.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -10,20 +10,23 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
   selector: 'app-event-list',
   templateUrl: './event-list.component.html',
   styleUrls: ['./event-list.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
-export class EventListComponent implements OnInit {
+export class EventListComponent implements OnInit, OnDestroy {
 
   config: any;
   tableSizes = [5, 10, 25, 50];
   subscription: Subscription = new Subscription();
   categories = new Array<any>();
+  filteredCategories = new Array<any>(); // ✅ FIX: Add filtered array to replace filterBy pipe
   term = '';
   sortDir = 1;
   constructor(
     private appService: AdminAppService,
     private toasterService: ToasterService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
   ) { }
 
   ngOnInit(): void {
@@ -43,11 +46,35 @@ export class EventListComponent implements OnInit {
       .subscribe(
         response => {
           this.categories = response;
+          this.applyFilter(); // ✅ FIX: Apply filter after fetching data
           this.sortArr('name');
+          this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
         }));
+  }
+
+  // ✅ FIX: Replace filterBy pipe with component method to avoid ng2-search-filter compatibility issue
+  applyFilter(): void {
+    if (!this.term || this.term.trim() === '') {
+      this.filteredCategories = this.categories;
+    } else {
+      const searchTerm = this.term.toLowerCase();
+      const fieldsToSearch = ['title', 'startDate', 'endDate'];
+      this.filteredCategories = this.categories.filter(item => {
+        return fieldsToSearch.some(field => {
+          const value = item[field];
+          return value && value.toString().toLowerCase().includes(searchTerm);
+        });
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  // ✅ FIX: Update term and apply filter when search changes
+  onSearchChange(): void {
+    this.applyFilter();
   }
 
   pageChanged(event) {
@@ -98,7 +125,7 @@ export class EventListComponent implements OnInit {
   }
 
   sortArr(colName: any) {
-    this.categories.sort((a, b) => {
+    this.filteredCategories.sort((a, b) => {
       a = a[colName].toLowerCase();
       b = b[colName].toLowerCase();
       if (a < b) {
@@ -111,6 +138,16 @@ export class EventListComponent implements OnInit {
         return 0;
       }
     });
+    this.cdr.markForCheck();
+  }
+
+  // ✅ PERFORMANCE: Add trackBy function for ngFor optimization
+  trackByEventId(index: number, event: any): string {
+    return event?.id || index.toString();
+  }
+
+  trackByTableSize(index: number, size: number): number {
+    return size;
   }
 
   ngOnDestroy() {

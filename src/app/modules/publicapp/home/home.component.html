@@ -1,37 +1,7 @@
 <div class="container">
   <div class="header-name">
-<!-- <html>
-<head>
+  <!-- ✅ SEO: Meta tags are managed via MetadataService in component TypeScript (SSR-compatible) -->
   
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="twitter:card" content="summary_large_image">
-   <meta name="title" content="Oilandgasclub - Self-Learning Courses for Oil & Gas Industry Professionals">
-  <meta name="description" content="Oilandgasclub.com – Empowering careers in the oil and gas industry with self-paced online courses 🚀 Advance your skills with expert-designed training programs, certification prep, and career-focused resources. Start learning today! 🌟"> 
-  <meta name="author" content="Anush, Founder of Oilandgasclub">
-  <meta property="og:site_name" content="Oilandgasclub - Oil and Gas Training & Certifications">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Oilandgasclub | Online Courses for Oil & Gas Certifications">
-  <meta property="og:description" content="Oilandgasclub.com—Your go-to platform for self-paced learning in the oil and gas industry. Explore expert-led courses . Advance your career with top certifications and training programs today!">
-  <meta property="og:author" content="Oilandgasclub Team">
-  <meta property="og:image:width" content="600">
-  <meta property="og:image:height" content="500">
-  <meta property="og:url" content="https://www.oilandgasclub.com">
-  <meta property="article:published_time" content="2021-09-01T06:18:55.5419129">
-  <meta property="article:modified_time" content="2023-07-08T06:43:07.881401">
-  <meta property="article:tag" content="Oilandgasclub - Self-Learning Courses for Oil & Gas Industry Professionals">
-  <meta property="article:publisher" content="https://www.oilandgasclub.com">
-  <meta name="twitter:title" content="Oilandgasclub - Empowering Your Career in Oil & Gas ">
-  <meta name="twitter:description" content="Oilandgasclub offers comprehensive online courses and certifications to help you advance in your career in the oil and gas industry. Learn anytime, anywhere">
-  <meta name="twitter:label1" content="Course Information">
-  <meta name="twitter:data1" content="Explore our wide range of certification courses and training programs in the oil and gas sector.">
-  <meta name="twitter:label2" content="Learn More">
-  <meta name="twitter:data2" content="Visit Oilandgasclub.com to start your learning journey today!">
-  <meta name="twitter:site" content="@oilandgasclub">
-  <meta name="twitter:creator" content="@Oilandgasclub">
-  <meta name="twitter:url" content="https://www.oilandgasclub.com">
-  </head>
-  </html> -->
-
   <!-- Networks  start -->
 
 
@@ -49,16 +19,10 @@
           <a href="https://elearn.oilandgasclub.com/auth/register" class="btn-explore">Start my free trial</a>
         </div>
         <div class="col-md-12 col-centered inner-cour">
-          <span><a href="/Intools-Training/" target="_blank">Smart Plant Instrumentation Design</a></span>
-          <span><a href="/Aspen-HYSYS-Training" target="_blank">Process Simulation</a></span>
-          <span><a href="/PDMS-Training/" target="_blank">Plant Design Management System</a></span>
-          <span><a href="/SP3D-Training/" target="_blank">Smart Plant 3D</a></span>
-          <span><a href="/E3d-Training" target="_blank">E3D</a></span>
-          <span><a href="/HTRI-Software/" target="_blank">Heat Exchanger Design</a></span>
-          <span><a href="/pipenet-training/" target="_blank">Fluid Flow Analysis</a></span>
-          <span><a href="/Primavera-Training/" target="_blank">Primavera P6</a></span>
-          <span><a href="/Tekla-Software-Training/" target="_blank">Structures Modelling</a></span>
-          <span><a href="/Piping-Stress-Analysis-Course/" target="_blank">Stress Analysis</a></span>
+          <!-- ✅ ROUTING: Use routerLink for internal navigation (prevents full-page reloads) -->
+          @for (link of quickLinks; track link.url) {
+            <span><a [routerLink]="link.url" target="_blank">{{ link.title }}</a></span>
+          }
         </div>
       </div>
     </div>
@@ -77,7 +41,7 @@
           <!-- Welding -->
           <div class="icon-card">
             <div class="icon-container">
-              <img src="assets/welding-oilandgasclub.svg" alt="Welding">
+              <img src="assets/welding-oilandgasclub.svg" alt="Welding" loading="eager" width="64" height="64">
             </div>
             <h4>Welding</h4>
           </div>
@@ -85,7 +49,7 @@
           <!-- Process -->
           <div class="icon-card">
             <div class="icon-container">
-              <img src="assets/process-oilandgasclub.svg" alt="Process">
+              <img src="assets/process-oilandgasclub.svg" alt="Process" loading="eager" width="64" height="64">
             </div>
             <h4>Process</h4>
           </div>
@@ -93,7 +57,7 @@
           <!-- Piping -->
           <div class="icon-card">
             <div class="icon-container">
-              <img src="assets/piping-oilandgasclub.svg" alt="Piping">
+              <img src="assets/piping-oilandgasclub.svg" alt="Piping" loading="eager" width="64" height="64">
             </div>
             <h4>Piping</h4>
           </div>
@@ -101,7 +65,7 @@
           <!-- Instrumentation -->
           <div class="icon-card">
             <div class="icon-container">
-              <img src="assets/instrumentation-oilandgasclub.svg" alt="Instrumentation">
+              <img src="assets/instrumentation-oilandgasclub.svg" alt="Instrumentation" loading="eager" width="64" height="64">
             </div>
             <h4>Instrumentation</h4>
           </div>
@@ -109,7 +73,7 @@
           <!-- Structural -->
           <div class="icon-card">
             <div class="icon-container">
-              <img src="assets/structural-oilandgasclub.svg" alt="Structural">
+              <img src="assets/structural-oilandgasclub.svg" alt="Structural" loading="eager" width="64" height="64">
             </div>
             <h4>Structural</h4>
           </div>
@@ -144,233 +108,36 @@
       <div class="main-img">
         <div class="course-column">
           <div class="course">
-            <!-- Course Card 1 -->
-            <div class="carousel-course-related h-100">
-              <a href="/mastering-pipenet-self-learning-training-materials-for-piping-design-and-simulation">
+            <!-- ✅ HYDRATION: Use @for loop for course cards (Angular 20 syntax, prevents SSR mismatches) -->
+            @for (course of topCourses; track course.url) {
+              <div class="carousel-course-related h-100">
                 <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/cd.jpeg" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>PIPENET training materials, Self Learning</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
+                    <div class="card-image">
+                      <img [src]="course.image" [alt]="course.alt" class="card-img">
+                      @if (course.badge) {
+                        <div class="sale-badge">{{ course.badge }}</div>
+                      }
                     </div>
-                    <ul>
-                      <li>steady-state flow analysis </li>
-                      <li>PIPENET self-learning for simulation</li>
-                      <li>Transient dynamic flow analysis</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹3,999.00</div>
-                      <a href="/mastering-pipenet-self-learning-training-materials-for-piping-design-and-simulation" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
+                    <div class="card-body">
+                      <h6>{{ course.title }}</h6>
+                      <div class="star-rating-update">
+                        <span class="star-rating-icon">A Course by Oilandgasclub</span>
+                      </div>
+                      <ul>
+                        @for (feature of course.features; track feature) {
+                          <li>{{ feature }}</li>
+                        }
+                      </ul>
+                      <div class="buy">
+                        <div class="price">{{ course.price }}</div>
+                        <a [routerLink]="course.url" class="btn btn-register">
+                          <i class="fa fa-shopping-cart"></i> Enroll Now
+                        </a>
+                      </div>
                     </div>
-                  </div>
                 </div>
-              </a>
-            </div>
-  
-            <!-- Course Card 2 -->
-            <div class="carousel-course-related h-100">
-              <a href="/api-570-closed-book-mock-exam-comprehensive-preparation">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/Api_570.jpeg" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>API 570 Closed-Book Mock Exam Q&A Practice</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li>API 570 Mock Exam Preparation</li>
-                      <li>Real-time Q&A practice session</li>
-                      <li>Structured Q&A for better learning</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹99.00.00</div>
-                      <a href="/api-570-closed-book-mock-exam-comprehensive-preparation" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-            <!-- Course Card 3 -->
-            <div class="carousel-course-related h-100">
-              <a href="/cswip-three-point-one-question-paper-part-two">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/Cswip_3.1_Exam.png" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>CSWIP 3.1 Exam Preparation with Q&A Practice</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li>CSWIP 3.1 Q&A Practice</li>
-                      <li>CSWIP 3.1 Mock Test</li>
-                      <li>CSWIP 3.1 Practice Course</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹198.00</div>
-                      <a href="/cswip-three-point-one-question-paper-part-two" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-             <!-- Course Card 4 -->
-             <div class="carousel-course-related h-100">
-              <a href="/welding-and-ndt-service">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/Welding_NDT.png" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>Welding & NDT Self-Paced Training for Professionals</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li>Learn from real exam questions</li>
-                      <li>Crack your exam with confidence</li>
-                      <li>Master inspection skills easily</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹79.00</div>
-                      <a href="/welding-and-ndt-service" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-             <!-- Course Card 5 -->
-             <div class="carousel-course-related h-100">
-              <a href="/coating-and-painting-techniques-cbt-part-one-training-for-excellence">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/coating-and-painting.jpeg" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>Coating & Painting Exam Preparation Course</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li>Practice with real-time Q&A</li>
-                      <li> Crack the exam with confidence</li>
-                      <li>Master Coating Painting Techniques</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹198.00</div>
-                      <a href="/coating-and-painting-techniques-cbt-part-one-training-for-excellence" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-             <!-- Course Card 6 -->
-             <div class="carousel-course-related h-100">
-              <a href="/bgas-painting-questions">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/bgas-painting.jpeg" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>BGAS Painting Inspector Q&A Practice Course</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li>Practice with real exam questions</li>
-                      <li>BGAS Painting Mock Exam Practice</li>
-                      <li>Secure your certification fast</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹199.00</div>
-                      <a href="/bgas-painting-questions " class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-             <!-- Course Card 7-->
-             <div class="carousel-course-related h-100">
-              <a href="/cswip-three-point-one-question-paper-part-two">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/CSWIP_3.1_QA.jpeg" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>CSWIP 3.1 Q&A Self-Practice Course</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li> Get hands-on practice with Q&A</li>
-                      <li>CSWIP 3.1 Q&A Practice</li>
-                      <li>Practice with real exam questions</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹198.00</div>
-                      <a href="/cswip-three-point-one-question-paper-part-two" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-            <!-- Course Card 8 -->
-            <div class="carousel-course-related h-100">
-              <a href="/bgas-question-and-answers">
-                <div class="list-course-item">
-                  <div class="card-image">
-                    <img src="assets/home_courseimage/BAGS_Certification.jpeg" alt="Stress Analysis Course" class="card-img">
-                    <div class="sale-badge">Best Seller</div>
-                  </div>
-                  <div class="card-body">
-                    <h6>BGAS Certification Q&A Practice Course</h6>
-                    <div class="star-rating-update">
-                      <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                    </div>
-                    <ul>
-                      <li>Prepare for BGAS Certification</li>
-                      <li>Learn through Q&A practice</li>
-                      <li>Pass the exam easily</li>
-                    </ul>
-                    <div class="buy">
-                      <div class="price">₹299.00</div>
-                      <a href="/bgas-question-and-answers" class="btn btn-register">
-                        <i class="fa fa-shopping-cart"></i> Enroll Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-            <!-- Add more course cards here -->
-             
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -433,55 +200,21 @@
 <div class="clearfix"></div>
 <div class="new-top-cour col-centered">
   <div class="container">
-    <div class="cour-feature-datas">
-      <div class="cour-feature-card">
-        <!-- Card 1 -->
-        <div class="cour-item1">
-          <a href="/category/Process" target="blank" class="cour-box">
-            <div class="cour-overlay1">
-              <h3>Specialized Process Design Courses</h3>
-              <p>Over 11 + course</p>
+      <div class="cour-feature-datas">
+        <div class="cour-feature-card">
+          <!-- ✅ HYDRATION: Use @for loop for category cards (Angular 20 syntax) -->
+          @for (category of categoryLinks; track category.url) {
+            <div [ngClass]="category.class">
+              <a [routerLink]="category.url" target="blank" class="cour-box">
+                <div [ngClass]="category.class === 'cour-item1' ? 'cour-overlay1' : 'cour-overlay'">
+                  <h3>{{ category.title }}</h3>
+                  <p>{{ category.description }}</p>
+                </div>
+              </a>
             </div>
-          </a>
-        </div>
-        <!-- Card 2 -->
-        <div class="cour-item2">
-          <a href="/category/Piping" target="blank" class="cour-box">
-            <div class="cour-overlay">
-              <h3>Software-Based Piping Design Courses</h3>
-              <p>Over 15+ course</p>
-            </div>
-          </a>
-        </div>
-        <!-- Card 3 -->
-        <div class="cour-item3">
-          <a href="/category/NDT" target="blank" class="cour-box">
-            <div class="cour-overlay">
-              <h3>NDT Method-Specific Courses</h3>
-              <p>Over 20+ course</p>
-            </div>
-          </a>
-        </div>
-        <!-- Card 4 -->
-        <div class="cour-item4">
-          <a href="/category/Instrumentation" target="blank" class="cour-box">
-            <div class="cour-overlay">
-              <h3>Industry-Specific Instrumentation Courses</h3>
-              <p>Over 20+ course</p>
-            </div>
-          </a>
-        </div>
-        <!-- Card 5 -->
-        <div class="cour-item5">
-          <a href="/category/API%20Self%20Learning%20Courses" target="blank" class="cour-box">
-            <div class="cour-overlay">
-              <h3>API Self Learning Courses</h3>
-              <p>Over 20+ course</p>
-            </div>
-          </a>
+          }
         </div>
       </div>
-    </div>
   </div>
 </div>
 <div class="clearfix"></div>
@@ -508,121 +241,52 @@
     <div class="main-img">
       <div class="course-column">
         <div class="course">
-          <!-- Course Card 1 -->
-          <div class="carousel-course-related h-100">
-            <a href="" class="no-underline">
-              <!-- <a href="/events/pipenet-transient-module-for-fire-protection-systems" class="no-underline"></a> -->
-              <div class="list-course-item">
-                <div class="card-image">
-                  <img src="assets/home_courseimage/Pipenet_Event.jpeg" alt="Stress Analysis Course" class="card-img">
-                  <div class="sale-badge">Best Seller</div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-title">PIPENET Transient Module for Fire Protection Systems</h4>
-                  <h6 class="card-subtitle">A Event by Anush</h6>
-                  <p class="card-text">
-                    Online Workshop<br>
-                    Oilandgasclub Team, India<br>
-                    Streaming Virtually Through Microsoft Teams
-                  </p>
-                  <div class="buy">
-                    <div class="price">₹797.00</div>
-                    <a href="" class="btn btn-register no-underline">
-                      <!-- <a href="/piping-stress-analysis-course/" class="btn btn-register no-underline"></a> -->
-                      <i class="fa fa-shopping-cart"></i> Register Now
-                    </a>
+          <!-- ✅ HYDRATION: Use @for loop for event cards (Angular 20 syntax, prevents SSR mismatches) -->
+          @for (event of topEvents; track event.image) {
+            <div class="carousel-course-related h-100">
+              @if (event.url) {
+                <a [routerLink]="event.url" class="no-underline">
+                  <div class="list-course-item">
+                    <div class="card-image">
+                      <img [src]="event.image" [alt]="event.alt" class="card-img">
+                      <div class="sale-badge">Best Seller</div>
+                    </div>
+                    <div class="card-body">
+                      <h4 class="card-title">{{ event.title }}</h4>
+                      <h6 class="card-subtitle">{{ event.subtitle }}</h6>
+                      <p class="card-text" [innerHTML]="event.description"></p>
+                      <div class="buy">
+                        <div class="price">{{ event.price }}</div>
+                        <a [routerLink]="event.url" class="btn btn-register no-underline">
+                          <i class="fa fa-shopping-cart"></i> Register Now
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <!-- Course Card 2 -->
-          <div class="carousel-course-related h-100">
-            <a href="" class="no-underline">
-              <!-- <a href="/events/static-equipment-design-pressure-vessels-heat-exchangers-and-tall-towers" class="no-underline"></a> -->
-              <div class="list-course-item">
-                <div class="card-image">
-                  <img src="assets/home_courseimage/Static_equipment.png" alt="Static Equipment Design" class="card-img">
-                  <div class="sale-badge">Best Seller</div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-title">Static Equipment Design: Mastering Pressure Vessels, Heat Exchangers, and Tall Towers</h4>
-                  <h6 class="card-subtitle">A Event by Anush</h6>
-                  <p class="card-text">
-                    Online Workshop<br>
-                    Oilandgasclub Team, India<br>
-                    Streaming Virtually Through Microsoft Teams
-                  </p>
-                  <div class="buy">
-                    <div class="price">₹899.00</div>
-                    <a href="" class="btn btn-register no-underline">
-                      <!-- <a href="/piping-stress-analysis-course/" class="btn btn-register no-underline"></a> -->
-                      <i class="fa fa-shopping-cart"></i> Register Now
-                    </a>
+                </a>
+              } @else {
+                <a class="no-underline">
+                  <div class="list-course-item">
+                    <div class="card-image">
+                      <img [src]="event.image" [alt]="event.alt" class="card-img">
+                      <div class="sale-badge">Best Seller</div>
+                    </div>
+                    <div class="card-body">
+                      <h4 class="card-title">{{ event.title }}</h4>
+                      <h6 class="card-subtitle">{{ event.subtitle }}</h6>
+                      <p class="card-text" [innerHTML]="event.description"></p>
+                      <div class="buy">
+                        <div class="price">{{ event.price }}</div>
+                        <a class="btn btn-register no-underline">
+                          <i class="fa fa-shopping-cart"></i> Register Now
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <!-- Course Card 3 -->
-          <div class="carousel-course-related h-100">
-            <a href="" class="no-underline">
-              <!-- <a href="/events/pressure-vessel-design-asme-Codes-pvelite-training" class="no-underline"></a> -->
-              <div class="list-course-item">
-                <div class="card-image">
-                  <img src="assets/home_courseimage/Pv.png" alt="Pressure Vessel Design" class="card-img">
-                  <div class="sale-badge">Best Seller</div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-title">Masterclass on Pressure Vessel Design – ASME Codes & PVElite Training</h4>
-                  <h6 class="card-subtitle">A Event by Anush</h6>
-                  <p class="card-text">
-                    Online Workshop<br>
-                    Oilandgasclub Team, India<br>
-                    Streaming Virtually Through Microsoft Teams
-                  </p>
-                  <div class="buy">
-                    <div class="price">₹799.00</div>
-                    <a href="" class="btn btn-register no-underline">
-                      <!-- <a href="/piping-stress-analysis-course/" class="btn btn-register no-underline"></a> -->
-                      <i class="fa fa-shopping-cart"></i> Register Now
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <!-- Course Card 4 -->
-          <div class="carousel-course-related h-100">
-            <a href="" class="no-underline">
-              <!-- <a href="/events/mastering-heat-exchangers-with-htri-software" class="no-underline"></a> -->
-              <div class="list-course-item">
-                <div class="card-image">
-                  <img src="assets/home_courseimage/Heat_Exchanger.png" alt="Mastering Heat Exchangers" class="card-img">
-                  <div class="sale-badge">Best Seller</div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-title">Mastering Heat Exchangers with HTRI Software</h4>
-                  <h6 class="card-subtitle">A Event by Anush</h6>
-                  <p class="card-text">
-                    Online Workshop<br>
-                    Oilandgasclub Team, India<br>
-                    Streaming Virtually Through Microsoft Teams
-                  </p>
-                  <div class="buy">
-                    <div class="price">₹899.00</div>
-                    <a href="" class="btn btn-register no-underline">
-                      <!-- <a href="/piping-stress-analysis-course/" class="btn btn-register no-underline"></a> -->
-                      <i class="fa fa-shopping-cart"></i> Register Now
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
+                </a>
+              }
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -648,7 +312,8 @@
       <div class="highlight-box">
         <h3>Looking to upgrade your profile?</h3>
         <div class="trial-submit">
-          <a href="/list" class="btn btn-primary">View all Courses</a>
+          <!-- ✅ ROUTING: Use routerLink for internal navigation (property binding for consistency) -->
+          <a [routerLink]="'/list'" class="btn btn-primary">View all Courses</a>
         </div>
         <p>Learn from experts with live and self-paced training</p>
       </div>

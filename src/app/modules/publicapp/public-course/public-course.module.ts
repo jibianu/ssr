@@ -1,6 +1,7 @@
 import { SharedModule } from './../../../shared/shared.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 import { PublicCourseRoutingModule } from './public-course-routing.module';
 import { PublicCourseHomeComponent } from './public-course-home/public-course-home.component';
@@ -14,6 +15,7 @@ import { NgxPaginationModule } from "ngx-pagination";
   declarations: [PublicCourseHomeComponent,  PublicCourseDetailsComponent,PublicCategoryComponent, PublicRelatedCoursesComponent],
   imports: [
     CommonModule,
+    RouterModule,
     PublicCourseRoutingModule,
     SharedModule,
     NgxPaginationModule

@@ -1,3 +1,7 @@
+// ✅ FIX: Load $localize for i18n support during SSR
+// This is required when components use i18n attributes in templates
+import '@angular/localize/init';
+
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { config } from './app/app.config.server';

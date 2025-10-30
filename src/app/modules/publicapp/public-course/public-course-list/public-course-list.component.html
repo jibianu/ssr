@@ -88,9 +88,9 @@
 <div class="courses-container">
   <div class="courses-grid">
     <!-- Course Card -->
-    <div class="course-card" *ngFor="let item of courses | paginate: config">
+    <div class="course-card" *ngFor="let item of courses | paginate: config; trackBy: trackByCourseId">
       <div class="card-image">
-        <a [href]="item?.canonicalUrl" class="image-link">
+        <a [routerLink]="item?.canonicalUrl" class="image-link">
           <img 
             [src]="item?.titleImageUrl" 
             (error)="onImgError($event)" 
@@ -102,7 +102,7 @@
       
       <div class="card-content">
         <h3 class="card-title">
-          <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
+          <a [routerLink]="item?.canonicalUrl">{{ item?.title }}</a>
         </h3>
         
         <p class="card-subtitle">
@@ -110,7 +110,7 @@
         </p>
         
         <ul class="features-list">
-          <li *ngFor="let it of item?.courseFeatures" class="feature-item">
+          <li *ngFor="let it of item?.courseFeatures; trackBy: trackByFeatureId" class="feature-item">
             <div class="feature-content">
               <img [src]="it?.iconUrl" alt="Feature icon" class="feature-icon">
               <span>{{ it?.description }}</span>
@@ -120,7 +120,7 @@
         
         <div class="card-footer">
           <div class="price">{{ item.amount | currency:"INR":"symbol" }}</div>
-          <a [href]="item?.canonicalUrl" class="enroll-btn">
+          <a [routerLink]="item?.canonicalUrl" class="enroll-btn">
             <i class="fa fa-shopping-cart"></i> Enroll Now
           </a>
         </div>

@@ -22,8 +22,7 @@ import { WorldsLargestRefineriesComponent } from './worlds-largest-refineries/wo
 import { TermsAndConditionComponent } from './terms-and-condition/terms-and-condition.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
-import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
-import { PublicTopbarComponent } from 'src/app/layouts/public/public-topbar/public-topbar.component';
+// ✅ MODULE: PageNotFoundComponent is imported via SharedModule (no need to import here)
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
 
@@ -31,11 +30,28 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 
 @NgModule({
   declarations: [
+    // ✅ MODULE: Add all components to declarations array (required for non-standalone components)
+    HomeComponent,
+    ContactUsComponent,
+    AboutUsComponent,
+    PartnerUsComponent,
+    CareerComponent,
+    MembershipComponent,
+    PoliciesComponent,
+    InHouseSolutionsComponent,
+    MissionAndVisionComponent,
+    AffiliateProgramComponent,
+    GuestBloggingComponent,
+    BecomeOurTrainerComponent,
+    CorporateTrainingComponent,
+    CoursesOfferedComponent,
+    WhyOilandgasclubComponent,
+    BuildYourPortfolioComponent,
     WorldsLargestRefineriesComponent,
     TermsAndConditionComponent,
     PrivacyPolicyComponent,
-    RefundCancellationPolicyComponent,
-  
+    RefundCancellationPolicyComponent
+    // ✅ MODULE: PageNotFoundComponent is declared in SharedModule (imported), so don't redeclare here
   ],
   imports: [
     CommonModule,

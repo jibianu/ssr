@@ -8,13 +8,14 @@ import { AdminAppService } from '../../adminapp.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NgxPaginationModule } from "ngx-pagination";
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-user-course',
   templateUrl: './user-course.component.html',
   styleUrls: ['./user-course.component.scss'],
   standalone: true,
-  imports: [CommonModule, NgxPaginationModule]
+  imports: [CommonModule, NgxPaginationModule, RouterModule, FormsModule]
 })
 export class UserCourseComponent implements OnInit, OnDestroy {
 
@@ -32,7 +33,16 @@ export class UserCourseComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.currentUser = JSON.parse(this.cookieService.getCookie('currentUser'));
+    // FIXED: Add error handling for cookie parsing
+    try {
+      const userCookie = this.cookieService.getCookie('currentUser');
+      if (userCookie) {
+        this.currentUser = JSON.parse(userCookie);
+      }
+    } catch (error) {
+      console.error('Error parsing currentUser cookie:', error);
+      this.currentUser = null;
+    }
     this.config = {
       itemsPerPage: 5,
       currentPage: 1,

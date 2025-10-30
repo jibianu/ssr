@@ -1,16 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from '../../adminapp.service';
+import { StorageUtil } from 'src/app/core/utils/storage.util';
 
 @Component({
     selector: 'app-course-list',
     templateUrl: './course-list.component.html',
     styleUrls: ['./course-list.component.scss'],
-    standalone: false
+    standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
 export class CourseListComponent implements OnInit, OnDestroy {
 
@@ -25,19 +28,37 @@ export class CourseListComponent implements OnInit, OnDestroy {
   sortBy = 'Title';
   isAsc = true;
   currentUser: any;
+  private readonly isBrowser: boolean;
+
   constructor(
     private appService: AdminAppService,
     private modalService: NgbModal,
     private toasterService: ToasterService,
     private cookieService: CookieService,
-  ) { }
+    private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: For manual change detection trigger
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     console.log('course list component init')
-    window.sessionStorage.clear();
-    this.currentUser = JSON.parse(this.cookieService.getCookie('currentUser'));
-    if (this.currentUser.isAdmin) {
-      this.fetchCourses();
+    // ✅ SSR: Safe sessionStorage access with platform check
+    if (this.isBrowser) {
+      StorageUtil.clearSession();
+    }
+    // FIXED: Add error handling for cookie parsing
+    try {
+      const userCookie = this.cookieService.getCookie('currentUser');
+      if (userCookie) {
+        this.currentUser = JSON.parse(userCookie);
+        if (this.currentUser?.isAdmin) {
+          this.fetchCourses();
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing currentUser cookie:', error);
+      this.currentUser = null;
     }
   }
 
@@ -54,6 +75,7 @@ export class CourseListComponent implements OnInit, OnDestroy {
         response => {
           this.course = response.results;
           this.count = response.totalNumberOfRecords;
+          this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
@@ -112,6 +134,15 @@ export class CourseListComponent implements OnInit, OnDestroy {
       this.isAsc = true;
     }
     this.fetchCourses();
+  }
+
+  // ✅ PERFORMANCE: Add trackBy function for ngFor optimization
+  trackByCourseId(index: number, course: any): string {
+    return course?.id || index.toString();
+  }
+
+  trackByTableSize(index: number, size: number): number {
+    return size;
   }
 
   ngOnDestroy() {

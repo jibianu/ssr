@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { isPlatformServer } from '@angular/common';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AdminAppService } from '../../modules/adminapp/adminapp.service';
@@ -21,6 +22,8 @@ export class CourseUrlResoverService  {
             return of(null);
         }
 
+        // Resolver runs on server - just fetch the data
+        // TransferState will be handled by HTTP transfer cache
         return this.adminService.getBlogByCanonicalURL(courseUrl).pipe(
             catchError((error: unknown) => {
                 const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);

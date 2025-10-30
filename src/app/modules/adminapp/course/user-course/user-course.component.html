@@ -25,8 +25,9 @@
           {{item?.createdOn | date: 'short'}}
         </td>
         <td *ngIf="(currentUser.canEdit || currentUser.canDelete ||  currentUser.isAdmin)">
-          <button type="button" *ngIf="(currentUser.canEdit || currentUser.isAdmin)" class="btn btn-success"
-            [routerLink]="['/app/course/edit',item.id]"><i class="fa fa-edit"></i></button>
+          <!-- ✅ FIX: Use anchor tag with routerLink instead of button, or use Router service -->
+          <a *ngIf="(currentUser.canEdit || currentUser.isAdmin)" class="btn btn-success"
+            [routerLink]="['/app/course/edit',item.id]"><i class="fa fa-edit"></i></a>
           <button type="button" *ngIf="(currentUser.canDelete || currentUser.isAdmin)" class="btn btn-danger ml-1"
             (click)="deleteCourse(item.id)"><i class="fa fa-trash"></i></button>
         </td>

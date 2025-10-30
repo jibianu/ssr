@@ -1,93 +1,115 @@
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
+import { combineLatest } from 'rxjs';
+import { map, switchMap, shareReplay, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 
 @Component({
   selector: 'app-public-category',
   templateUrl: './public-category.component.html',
   styleUrls: ['./public-category.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
 export class PublicCategoryComponent implements OnInit, OnDestroy {
 
-  config = {
-    currentPage: 1,
-    itemsPerPage: 12,
-    totalItems: 0
-  };
+  readonly itemsPerPage = 12; // Used in template
 
-  courses: any[] = [];
-  categoryName: string = '';
-
-  subscription: Subscription = new Subscription();
+  // ✅ SSR OPTIMIZATION: Parallel fetching with combineLatest - no blocking
+  coursesData$: Observable<{
+    courses: any[];
+    totalItems: number;
+    currentPage: number;
+    categoryName: string;
+  }>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private publicAppService: PublicAppService
-  ) {}
+  ) {
+    // ✅ SSR OPTIMIZATION: Combine route params and query params in parallel
+    // Executes asynchronously - doesn't block SSR rendering
+    this.coursesData$ = combineLatest([
+      this.route.params,
+      this.route.queryParams
+    ]).pipe(
+      switchMap(([params, queryParams]) => {
+        const categoryName = params['name'] || '';
+        const currentPage = +queryParams['page'] || 1;
+        
+        const requestObj = {
+          pageSize: this.itemsPerPage,
+          pageNumber: currentPage,
+          'Filter.Category': categoryName
+        };
+
+        return this.publicAppService.getCourses(requestObj).pipe(
+          map(response => ({
+            courses: response?.results || [],
+            totalItems: response?.totalNumberOfRecords || 0,
+            currentPage,
+            categoryName
+          })),
+          catchError(error => {
+            console.error('Error fetching courses:', error);
+            return of({
+              courses: [],
+              totalItems: 0,
+              currentPage,
+              categoryName
+            });
+          })
+        );
+      }),
+      shareReplay(1) // ✅ Cache for multiple subscriptions
+    );
+  }
 
   ngOnInit(): void {
-    // Combine query and route params
-    this.subscription.add(
-      this.route.params.subscribe(params => {
-        this.categoryName = params['name'] || '';
-        this.loadQueryParams();
-      })
-    );
+    // ✅ SSR OPTIMIZATION: No blocking operations
+    // Observable is already set up in constructor - template uses async pipe
   }
 
-  // Handles query params
-  private loadQueryParams(): void {
-    this.subscription.add(
-      this.route.queryParams.subscribe((queryParams: Params) => {
-        this.config.currentPage = +queryParams['page'] || 1;
-        this.fetchCourses();
-      })
-    );
-  }
-
-  // API call
-  private fetchCourses(): void {
-    const requestObj = {
-      pageSize: this.config.itemsPerPage,
-      pageNumber: this.config.currentPage,
-      'Filter.Category': this.categoryName
-    };
-
-    this.subscription.add(
-      this.publicAppService.getCourses(requestObj).subscribe({
-        next: response => {
-          this.courses = response?.results || [];
-          this.config.totalItems = response?.totalNumberOfRecords || 0;
-        },
-        error: error => console.error('Error fetching courses:', error)
-      })
-    );
-  }
-
-  // Pagination handler
+  // Pagination handler - uses route snapshot for navigation
   pageChange(newPage: number): void {
+    const categoryName = this.route.snapshot.params['name'] || '';
     this.router.navigate(
-      ['category', this.categoryName],
+      ['category', categoryName],
       { queryParams: { page: newPage } }
     );
   }
+  
 
   // Fallback image for course image
-  
-  onImgError(event: any) {
-    (event.target as HTMLImageElement).src = 'assets/img/oilandgasclub.jpg';
+  onImgError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'assets/img/oilandgasclub.jpg';
+    }
   }
 
   // Fallback image for user image
-  onUserImgError(event: any): void {
-    event.target.src = 'assets/img/user-profile.png';
+  onUserImgError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'assets/img/user-profile.png';
+    }
+  }
+
+  // ✅ PERFORMANCE: Add trackBy functions for ngFor optimization
+  trackByCourseId(index: number, course: any): string {
+    return course?.id || index.toString();
+  }
+
+  trackByFeatureId(index: number, feature: any): string {
+    return feature?.id || index.toString();
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    // ✅ No subscriptions to clean up - async pipe handles unsubscribe automatically
   }
 }

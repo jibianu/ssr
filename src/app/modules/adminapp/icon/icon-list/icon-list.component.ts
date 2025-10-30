@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
@@ -10,7 +10,8 @@ import { NgxPaginationModule } from 'ngx-pagination';
     selector: 'app-icon-list',
     templateUrl: './icon-list.component.html',
     styleUrls: ['./icon-list.component.scss'],
-    standalone: false
+    standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
 export class IconListComponent implements OnInit,OnDestroy {
 
@@ -23,7 +24,8 @@ export class IconListComponent implements OnInit,OnDestroy {
   constructor(
     private appService: AdminAppService,
     private toasterService: ToasterService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
   ) { }
 
   ngOnInit(): void {
@@ -44,6 +46,7 @@ export class IconListComponent implements OnInit,OnDestroy {
         response => {
           this.icons = response;
           this.sortArr('name');
+          this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
@@ -111,6 +114,15 @@ export class IconListComponent implements OnInit,OnDestroy {
         return 0;
       }
     });
+  }
+
+  // ✅ PERFORMANCE: Add trackBy function for ngFor optimization
+  trackByIconId(index: number, icon: any): string {
+    return icon?.id || index.toString();
+  }
+
+  trackByTableSize(index: number, size: number): number {
+    return size;
   }
 
   ngOnDestroy() {

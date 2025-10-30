@@ -1,5 +1,6 @@
+<!-- ✅ PERFORMANCE: trackBy prevents unnecessary DOM recreation on change detection -->
 <nav id="sidebar" class="navbar-dark bg-dark" [ngClass]="{'hidden': sideNavService.hideSideNav }">
-  <ul class="navbar-nav" *ngFor="let item of menuItem">
+  <ul class="navbar-nav" *ngFor="let item of menuItem; trackBy: trackByMenuItemLink">
     <li class="nav-item">
       <a class="nav-link" [routerLink]="item.link" routerLinkActive="active">{{item?.label}}</a>
     </li>

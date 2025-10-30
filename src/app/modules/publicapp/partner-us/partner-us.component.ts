@@ -10,6 +10,7 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 })
 export class PartnerUsComponent implements OnInit {
 
+  submitted = false;
   constructor(
     private titleService: Title,
     private metaService: Meta,
@@ -37,6 +38,19 @@ export class PartnerUsComponent implements OnInit {
       link.setAttribute('rel', 'canonical');
       link.setAttribute('href', url);
       this.renderer.appendChild(this.document.head, link);
+    }
+  }
+
+  onFormSubmit(): void {
+    this.submitted = true;
+  }
+
+  onIframeLoad(): void {
+    if (this.submitted) {
+      const confirmed = confirm('Thank you for completing this form!');
+      if (confirmed) {
+        window.location.href = '/';
+      }
     }
   }
 }

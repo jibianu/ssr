@@ -1,28 +1,36 @@
 <div class="container-fluid mt-5">
-  <div class="row course-column">
-    <div class="col-lg-3 d-flex mb-4" *ngFor="let item of courses | paginate: config">
-      <div class="carousel-course-related w-100">
-        <a [href]="item?.canonicalUrl" class="no-underline">
-          <div class="list-course-item h-100 d-flex flex-column">
-            <div class="card-image position-relative">
-              <img [src]="item?.titleImageUrl" alt="{{ item?.title }}" class="card-img" />
-              <div class="sale-badge" *ngIf="item?.isBestSeller">Best Seller</div>
+  <!-- ✅ SSR OPTIMIZATION: Use async pipe - no blocking, automatic unsubscribe -->
+  <ng-container *ngIf="coursesData$ | async as data">
+    <div class="row course-column">
+      <div class="col-lg-3 d-flex mb-4" *ngFor="let item of data.courses | paginate: { itemsPerPage: itemsPerPage, currentPage: data.currentPage, totalItems: data.totalItems }; trackBy: trackByCourseId">
+        <div class="carousel-course-related w-100">
+          <a [href]="item?.canonicalUrl" class="no-underline">
+            <div class="list-course-item h-100 d-flex flex-column">
+              <div class="card-image position-relative">
+                <img [src]="item?.titleImageUrl" alt="{{ item?.title }}" class="card-img" />
+                <div class="sale-badge" *ngIf="item?.isBestSeller">Best Seller</div>
+              </div>
+              <div class="card-body">
+                <h6>{{ item?.title }}</h6>
+                <ul>
+                  <li *ngFor="let feature of item?.courseFeatures; trackBy: trackByFeatureId">{{ feature?.description }}</li>
+                </ul>
+              </div>
+              <div class="buy">
+                <div class="price">{{ item.amount | currency: 'INR':'symbol' }}</div>
+                <a [href]="item?.canonicalUrl" class="btn btn-register">
+                  <i class="fa fa-shopping-cart"></i> Enroll Now
+                </a>
+              </div>
             </div>
-            <div class="card-body">
-              <h6>{{ item?.title }}</h6>
-              <ul>
-                <li *ngFor="let feature of item?.courseFeatures">{{ feature?.description }}</li>
-              </ul>
-            </div>
-            <div class="buy">
-              <div class="price">{{ item.amount | currency: 'INR':'symbol' }}</div>
-              <a [href]="item?.canonicalUrl" class="btn btn-register">
-                <i class="fa fa-shopping-cart"></i> Enroll Now
-              </a>
-            </div>
-          </div>
-        </a>
+          </a>
+        </div>
       </div>
     </div>
-  </div>
+    
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+      <pagination-controls (pageChange)="pageChange($event)"></pagination-controls>
+    </div>
+  </ng-container>
 </div>

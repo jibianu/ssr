@@ -1,7 +1,7 @@
 import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
 import { Category } from './../category.model';
 import { AdminAppService } from './../../adminapp.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -11,8 +11,9 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
     templateUrl: './category-list.component.html',
     styleUrls: ['./category-list.component.scss'],
     standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
-export class CategoryListComponent implements OnInit {
+export class CategoryListComponent implements OnInit, OnDestroy {
 
   config: any;
   tableSizes = [5, 10, 25, 50];
@@ -23,7 +24,8 @@ export class CategoryListComponent implements OnInit {
   constructor(
     private appService: AdminAppService,
     private toasterService: ToasterService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
   ) { }
 
   ngOnInit(): void {
@@ -44,6 +46,7 @@ export class CategoryListComponent implements OnInit {
         response => {
           this.categories = response;
           this.sortArr('name');
+          this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
@@ -111,6 +114,15 @@ export class CategoryListComponent implements OnInit {
         return 0;
       }
     });
+  }
+
+  // ✅ PERFORMANCE: Add trackBy function for ngFor optimization
+  trackByCategoryId(index: number, category: any): string {
+    return category?.id || index.toString();
+  }
+
+  trackByTableSize(index: number, size: number): number {
+    return size;
   }
 
   ngOnDestroy() {

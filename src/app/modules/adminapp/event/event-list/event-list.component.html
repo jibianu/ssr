@@ -6,7 +6,9 @@
 </div>
 
 <div class="form-group pull-right">
-  <input type="text" class="search form-control" placeholder="Search" name="search" [(ngModel)]="term">
+  <!-- ✅ FIX: Add (ngModelChange) to trigger filtering without filterBy pipe -->
+  <input type="text" class="search form-control" placeholder="Search" name="search" 
+         [(ngModel)]="term" (ngModelChange)="onSearchChange()">
 </div>
 
 <table class="table">
@@ -21,8 +23,8 @@
     </tr>
   </thead>
   <tbody>
-    <!-- ✅ use filterBy instead of filter -->
-    <tr *ngFor="let item of categories | filterBy: term : ['title','startDate','endDate'] | paginate: config">
+    <!-- ✅ FIX: Use filteredCategories instead of filterBy pipe to avoid package compatibility issue -->
+    <tr *ngFor="let item of filteredCategories | paginate: config; trackBy: trackByEventId">
       <td>{{item.title}}</td>
       <td>{{item.startDate | date:'dd-MM-yy'}} - {{item.endDate | date:'dd-MM-yy'}}</td>
       <td>
@@ -49,7 +51,7 @@
   <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
   <div class="ml-auto p-2 bd-highlight">
     <select (change)="onTableSizeChange($event)" class="custom-select">
-      <option *ngFor="let size of tableSizes" [ngValue]="size">
+      <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">
         {{ size }}
       </option>
     </select>

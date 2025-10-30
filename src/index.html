@@ -8,8 +8,19 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <meta name="robots" content="index, follow">
   <link rel="prerender" href="/">
-  <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
+  <!-- ✅ OPTIMIZATION: Removed blocking cache-control headers - use server-side headers instead -->
+  
+  <!-- ✅ PERFORMANCE: Resource hints for faster loading -->
+  <!-- DNS Prefetch for external domains -->
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+  <link rel="dns-prefetch" href="https://coursebackend.oilandgasclub.com">
+  <link rel="dns-prefetch" href="https://stackpath.bootstrapcdn.com">
+  
+  <!-- Preconnect to critical origins -->
+  <link rel="preconnect" href="https://stackpath.bootstrapcdn.com" crossorigin>
+  <link rel="preconnect" href="https://coursebackend.oilandgasclub.com" crossorigin>
+  
+  <!-- Removed resource prefetch for routes to avoid 404 during dev serve -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
   <!-- Google Tag Manager -->

@@ -132,7 +132,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of users | paginate : { itemsPerPage: tableSize, currentPage: page, totalItems: count }">
+      <tr *ngFor="let item of users | paginate : { itemsPerPage: tableSize, currentPage: page, totalItems: count }; trackBy: trackByUserId">
         <td>{{ item?.firstName }}</td>
         <td>{{ item?.lastName }}</td>
         <td>{{ item?.email }}</td>
@@ -154,7 +154,7 @@
     <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
     <div class="ml-auto p-2 bd-highlight">
       <select (change)="onTableSizeChange($event)" class="custom-select">
-        <option *ngFor="let size of tableSizes" [ngValue]="size">{{ size }}</option>
+        <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">{{ size }}</option>
       </select>
     </div>
   </div>

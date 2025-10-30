@@ -33,15 +33,28 @@
               "./node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.min.css",
               "./node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.theme.default.min.css"
             ],
-            "scripts": [
-              "./node_modules/jquery/dist/jquery.min.js",
-              "./node_modules/bootstrap/dist/js/bootstrap.js",
-              "./node_modules/popper.js/dist/umd/popper.min.js"
-            ],
+            "scripts": [],
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true,
+            "budgets": [
+                {
+                    "type": "initial",
+                    "maximumWarning": "1mb",
+                    "maximumError": "2mb"
+                },
+                {
+                    "type": "anyComponentStyle",
+                    "maximumWarning": "22kb",
+                    "maximumError": "30kb"
+                },
+                {
+                    "type": "bundle",
+                    "maximumWarning": "500kb",
+                    "maximumError": "1mb"
+                }
+            ],
             "browser": "src/main.ts",
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -57,7 +70,11 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "optimization": true,
+              "optimization": {
+                "scripts": true,
+                "styles": true,
+                "fonts": true
+              },
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
@@ -65,17 +82,26 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "4mb",
-                  "maximumError": "7mb"
+                  "maximumWarning": "800kb",
+                  "maximumError": "1.5mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "25kb",
-                  "maximumError": "35kb"
+                  "maximumWarning": "15kb",
+                  "maximumError": "25kb"
+                },
+                {
+                  "type": "bundle",
+                  "maximumWarning": "400kb",
+                  "maximumError": "800kb"
                 }
               ]
             },
-            "development": {}
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false
+            }
           },
           "defaultConfiguration": "production"
         },
@@ -92,17 +118,37 @@
           "defaultConfiguration": "development"
         },
         "server": {
-          "builder": "@angular-devkit/build-angular:server",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": "dist/Course/server",
-            "main": "server.ts",
-            "tsConfig": "tsconfig.server.json"
+            "server": "src/server.ts",
+            "tsConfig": "tsconfig.server.json",
+            "outputMode": "server",
+            "externalDependencies": [
+              "bootstrap",
+              "@popperjs/core",
+              "ngx-owl-carousel-o",
+              "ngx-spinner",
+              "ngx-pagination"
+            ]
           },
           "configurations": {
             "production": {
-              "optimization": true,
+              "optimization": {
+                "scripts": true,
+                "styles": true
+              },
+              "outputHashing": "all",
               "sourceMap": false,
-              "extractLicenses": true
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "bundle",
+                  "name": "server",
+                  "maximumWarning": "2mb",
+                  "maximumError": "3mb"
+                }
+              ]
             },
             "development": {
               "optimization": false,
@@ -155,7 +201,6 @@
   },
   "schematics": {
     "@schematics/angular:component": {
-      "styleext": "scss",
       "style": "scss"
     }
   },

@@ -1,6 +1,19 @@
 
 <div style="min-height: 90vh;">
-  <div *ngFor="let item of items">
+  <!-- ✅ SSR OPTIMIZATION: Use async pipe - no blocking, automatic unsubscribe -->
+  <!-- ✅ ERROR HANDLING: Handle loading, error, and success states -->
+  <ng-container *ngIf="items$ | async as items; else loadingTemplate">
+    <div *ngIf="error" class="alert alert-danger text-center mt-4">
+      <h5>Unable to Load Categories</h5>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary btn-sm" (click)="reload()">Retry</button>
+    </div>
+    
+    <div *ngIf="items.length === 0 && !error" class="text-center mt-4">
+      <p>No categories available at the moment.</p>
+    </div>
+    
+    <div *ngFor="let item of items; trackBy: trackByItemIndex">
     <div class="container" *ngIf="item?.categoryCourse?.length > 0">
       <!-- Category Header -->
       <div class="d-flex align-items-center mb-3 mt-4">
@@ -8,41 +21,48 @@
         <a class="btn btn-outline-primary btn-sm" [routerLink]="['/category', item.categoryName]">See all</a>
       </div>
 
-      <!-- Carousel for Courses -->
+      <!-- ✅ REMOVED @defer to fix HMR compatibility - carousel loads normally -->
       <div class="position-relative">
-        <owl-carousel-o [options]="customOptions" (dragging)="isDragging = $event.dragging">
-          <ng-container *ngFor="let course of item.categoryCourse">
-            <ng-template carouselSlide>
-              <!-- Course Card -->
-              <div class="carousel-course-related h-100">
-                <a [href]="course?.canonicalUrl" class="no-underline">
-                  <div class="list-course-item">
-                    <!-- Course Image -->
-                    <div class="card-image">
-                      <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{ course?.title }}" class="card-img" />
-                      <div class="sale-badge" *ngIf="course?.isBestSeller">Best Seller</div>
-                    </div>
+        <owl-carousel-o [options]="item.carouselOptions" (dragging)="isDragging = $event.dragging">
+            <ng-container *ngFor="let course of item.categoryCourse; trackBy: trackByCourseId">
+              <ng-template carouselSlide>
+                <!-- Course Card -->
+                <div class="carousel-course-related h-100">
+                  <a [routerLink]="course?.canonicalUrl" class="no-underline">
+                    <div class="list-course-item">
+                      <!-- Course Image -->
+                      <div class="card-image">
+                        <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{ course?.title }}" class="card-img" />
+                        <div class="sale-badge" *ngIf="course?.isBestSeller">Best Seller</div>
+                      </div>
 
-                    <!-- Course Body -->
-                    <div class="card-body">
-                      <h6>{{ course?.title }}</h6>
-                      <ul>
-                        <li *ngFor="let feature of course?.courseFeatures">{{ feature?.description }}</li>
-                      </ul>
-                      <div class="buy">
-                        <div class="price">{{ course.amount | currency:'INR':'symbol' }}</div>
-                        <a [href]="course?.canonicalUrl" class="btn btn-register">
-                          <i class="fa fa-shopping-cart"></i> Enroll Now
-                        </a>
+                      <!-- Course Body -->
+                      <div class="card-body">
+                        <h6>{{ course?.title }}</h6>
+                        <ul>
+                          <li *ngFor="let feature of course?.courseFeatures; trackBy: trackByFeatureId">{{ feature?.description }}</li>
+                        </ul>
+                        <div class="buy">
+                          <div class="price">{{ course.amount | currency:'INR':'symbol' }}</div>
+                          <a [routerLink]="course?.canonicalUrl" class="btn btn-register">
+                            <i class="fa fa-shopping-cart"></i> Enroll Now
+                          </a>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </a>
-              </div>
-            </ng-template>
-          </ng-container>
-        </owl-carousel-o>
+                  </a>
+                </div>
+              </ng-template>
+            </ng-container>
+          </owl-carousel-o>
       </div>
     </div>
-  </div>
+    </div>
+  </ng-container>
+  
+  <ng-template #loadingTemplate>
+    <div class="alert alert-warning text-center mt-4">
+      <p>Loading categories...</p>
+    </div>
+  </ng-template>
 </div>

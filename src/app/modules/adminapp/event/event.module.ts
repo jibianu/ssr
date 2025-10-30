@@ -5,6 +5,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { FilterPipeModule } from 'ngx-filter-pipe';
 import { SharedModule } from 'src/app/shared/shared.module';
+// ✅ REMOVED: Ng2SearchPipeModule import no longer needed
+// Replaced filterBy pipe with component-based filtering to avoid Angular 20 compatibility issue
 import { RouterModule, Routes } from '@angular/router';
 import { InternalAuthGuard } from 'src/app/core/guards/internal-auth.guard';
 import { EventListComponent } from './event-list/event-list.component';
@@ -49,6 +51,7 @@ const routes:Routes=[
     NgxPaginationModule,
       FilterPipeModule,
     SharedModule,
+    // ✅ REMOVED: Ng2SearchPipeModule - replaced filterBy pipe with component-based filtering
     RouterModule.forChild(routes)
   ],
 })

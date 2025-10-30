@@ -398,11 +398,15 @@
                                         </div>
                                     </div>
                                     <div class="organizer-info mt-4" *ngFor="let it of getInfo('organized')">
-                                        <p id="largeText" class="text-collapse text-md text-muted">
+                                        <!-- ✅ HYDRATION: Use signal for class binding (consistent SSR/Client) -->
+                                        <p [class.text-collapse]="!isExpanded()" class="text-md text-muted" #largeText>
                                             {{it.description}}
                                           </p>
                                     </div>
-                                    <button id="viewMoreBtn" class="btn btn-link p-0" (click)="onViewMoreInfo()">View More</button>
+                                    <!-- ✅ HYDRATION: Use signal for button text -->
+                                    <button #viewMoreBtn class="btn btn-link p-0" (click)="onViewMoreInfo()">
+                                      {{ isExpanded() ? 'View Less' : 'View More' }}
+                                    </button>
                                 </div>
                                 
             
@@ -438,7 +442,7 @@
                                           <div class="card-header-custom" id="headingOne">
                                             <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none active collapsed "
                                               data-toggle="collapse" href="#x{{qa.id}}" aria-expanded="false"
-                                              aria-controls="x{{qa.id}}" id='card-header'>
+                                              [attr.aria-controls]="'x' + qa.id" id='card-header'>
                                               <div class="mr-auto">
                                                 <img src="assets/icon-image/correct-icon.svg" height="20px" width="20px">
                                                 <span class="ml-2">
@@ -555,54 +559,88 @@
 
                       <!-- <div class=" Related Events start  "> -->
 
-<div class="row">
+<!-- 🆕 HYDRATION OPTIMIZATION: Defer related events section (below the fold content) -->
+@defer (on viewport) {
+  <div class="row">
     <div class="col-sm-12 col-12">
-        <div class="similar-section mt-3" id="related-courses-section">
-            <div class="text-bold mt-2 mb-3 text-left" style="font-size: 1.25rem; font-weight: 600; color: #2c3e50;">
-                Events you might be interested in
-            </div>
-            <div class="container">
-                <div class="position-relative">
-                    <!-- <owl-carousel-o [options]="customOptions"> -->
-                        <ng-template carouselSlide *ngFor="let i of events">
-                            <div class="slider">
-                                <div class="card course-card w-100 mr-4">
-                                    <!-- Card Image -->
-                                    <div class="card-image position-relative">
-                                        <img *ngIf="getEventDt(i,'image',0) let x" class="card-img" [src]="x.imageUrl" alt="Event Image">
-                                        <img *ngIf="!getEventDt(i,'image',0)" class="card-img" src="https://cdn-media.domestika.org/c_fill,dpr_2.0,f_auto,h_157,pg_1,t_base_params,w_280/v1620832638/course-covers/000/002/409/2409-original.jpg?1620832638" alt="Default Event Image">
-                                        <div class="card-img-overlay d-flex justify-content-left">
-                                            <div class="sale-badge">
-                                                Best Seller
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Card Body -->
-                                    <div class="card-body">
-                                        <h4 class="card-title" style="font-size: 1.25rem; font-weight: 700; color: #2c3e50;">{{i.title}}</h4>
-                                        <h6 class="card-subtitle mb-2 text-muted" *ngIf="getEventDt(i,'organized',0) let x" style="font-size: 0.9rem; color: #7f8c8d;">A Event by {{x.title}}</h6>
-                                        <p class="card-text" style="font-size: 0.9rem; color: #7f8c8d; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
-                                            {{i.aboutEvent}}
-                                        </p>
-                                        <!-- Price and Register Button -->
-                                        <div class="buy">
-                                            <div class="price text-success" style="font-size: 1.25rem; font-weight: 700;">
-                                                ₹{{i.amount | number:'1.2-2'}}
-                                            </div>
-                                            <a href="events/{{i.canonicalUrl}}" class="btn btn-register mt-3 form-control">
-                                                <i class="fa fa-shopping-cart"></i> Register
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </ng-template>
-                    <!-- </owl-carousel-o> -->
-                </div>
-            </div>
+      <!-- ✅ HYDRATION: Use template reference instead of ID -->
+      <div class="similar-section mt-3" #coursesSection>
+        <div class="text-bold mt-2 mb-3 text-left" style="font-size: 1.25rem; font-weight: 600; color: #2c3e50;">
+          Events you might be interested in
         </div>
+        <div class="container">
+          <div class="position-relative">
+            <!-- <owl-carousel-o [options]="customOptions"> -->
+              <ng-template carouselSlide *ngFor="let i of events">
+                <div class="slider">
+                  <div class="card course-card w-100 mr-4">
+                    <!-- Card Image -->
+                    <div class="card-image position-relative">
+                      <img *ngIf="getEventDt(i,'image',0) let x" class="card-img" [src]="x.imageUrl" alt="Event Image">
+                      <img *ngIf="!getEventDt(i,'image',0)" class="card-img" src="https://cdn-media.domestika.org/c_fill,dpr_2.0,f_auto,h_157,pg_1,t_base_params,w_280/v1620832638/course-covers/000/002/409/2409-original.jpg?1620832638" alt="Default Event Image">
+                      <div class="card-img-overlay d-flex justify-content-left">
+                        <div class="sale-badge">
+                          Best Seller
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                      <h4 class="card-title" style="font-size: 1.25rem; font-weight: 700; color: #2c3e50;">{{i.title}}</h4>
+                      <h6 class="card-subtitle mb-2 text-muted" *ngIf="getEventDt(i,'organized',0) let x" style="font-size: 0.9rem; color: #7f8c8d;">A Event by {{x.title}}</h6>
+                      <p class="card-text" style="font-size: 0.9rem; color: #7f8c8d; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                        {{i.aboutEvent}}
+                      </p>
+                      <!-- Price and Register Button -->
+                      <div class="buy">
+                        <div class="price text-success" style="font-size: 1.25rem; font-weight: 700;">
+                          ₹{{i.amount | number:'1.2-2'}}
+                        </div>
+                        <a href="events/{{i.canonicalUrl}}" class="btn btn-register mt-3 form-control">
+                          <i class="fa fa-shopping-cart"></i> Register
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-template>
+            <!-- </owl-carousel-o> -->
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+} @placeholder {
+  <!-- ✅ Skeleton placeholder maintains layout -->
+  <div class="row">
+    <div class="col-sm-12 col-12">
+      <div class="similar-section mt-3">
+        <div class="text-bold mt-2 mb-3 text-left" style="font-size: 1.25rem; font-weight: 600; color: #2c3e50;">
+          Events you might be interested in
+        </div>
+        <div class="container">
+          <div class="d-flex gap-3 overflow-hidden">
+            <div class="skeleton-card" style="min-width: 280px; height: 450px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
+            <div class="skeleton-card" style="min-width: 280px; height: 450px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
+            <div class="skeleton-card" style="min-width: 280px; height: 450px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+} @loading(minimum 200ms) {
+  <div class="row">
+    <div class="col-sm-12 col-12">
+      <div class="similar-section mt-3">
+        <div class="text-center p-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading related events...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
 
 
   <!-- <div class="Related event end  "> -->

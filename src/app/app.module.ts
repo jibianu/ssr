@@ -29,16 +29,14 @@ import { AdminappModule } from './modules/adminapp/adminapp.module';
         BrowserModule,
         BrowserAnimationsModule,
         FormsModule,
+        ReactiveFormsModule,
         AppRoutingModule,
         SharedModule,
         LayoutsModule,
-        // CoreModule,
         NgbModule,
         NgxSpinnerModule,
         AuthModule,
         AdminappModule,
-        ReactiveFormsModule,
-        FormsModule,
         CommonModule
     ], 
         

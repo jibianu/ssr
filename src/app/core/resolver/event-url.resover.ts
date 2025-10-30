@@ -24,6 +24,8 @@ export class EventResolverService  {
             return of(null);
         }
 
+        // Resolver runs on server - just fetch the data
+        // TransferState will be handled by HTTP transfer cache
         return this.adminService.getEventByCanonicalURL(eventUrl).pipe(
             catchError((err: unknown) => {
                 const message = err instanceof Error ? err.message : JSON.stringify(err);

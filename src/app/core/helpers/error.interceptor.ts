@@ -21,8 +21,10 @@ export class ErrorInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
-                 console.log(request)
-                console.error('error during http request', error);
+                // Only log in browser (not during SSR)
+                if (this.isBrowser) {
+                    console.error('Error during http request', error);
+                }
                 if (error.status === 401) {
                     this.handleUnauthorizedError();
                 }
@@ -38,9 +40,12 @@ export class ErrorInterceptor implements HttpInterceptor {
     }
 
     private handleUnauthorizedError(): void {
-        this.authenticationService.logout();
-        this.toasterService.showError("Your session has expired or you don't have permission to access this resource");
-        this.router.navigate(['/auth/login']);
+        // Only show toaster and navigate in browser
+        if (this.isBrowser) {
+            this.authenticationService.logout();
+            this.toasterService.showError("Your session has expired or you don't have permission to access this resource");
+            this.router.navigate(['/auth/login']);
+        }
     }
 
     private getErrorMessage(error: HttpErrorResponse): string {

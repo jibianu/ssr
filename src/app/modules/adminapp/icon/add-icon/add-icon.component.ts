@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -12,17 +12,17 @@ import { AdminAppService } from '../../adminapp.service';
     styleUrls: ['./add-icon.component.scss'],
     standalone: false
 })
-export class AddIconComponent implements OnInit,OnDestroy {
+export class AddIconComponent implements OnInit, OnDestroy {
 
-  pageTitle: string;
-  btntext: string;
-  iconId: string;
-  iconForm: UntypedFormGroup;
+  pageTitle: string = '';
+  btntext: string = '';
+  iconId: string = '';
+  iconForm: FormGroup;
   submitted = false;
-  subscription: Subscription = new Subscription();
+  private subscription: Subscription = new Subscription();
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private appService: AdminAppService,
     private toasterService: ToasterService,
     private activatedRoute: ActivatedRoute,
@@ -30,13 +30,14 @@ export class AddIconComponent implements OnInit,OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.activatedRoute
-      .params
-      .subscribe(params => {
-        if (params.id) {
-          this.iconId = params.id;
+    // FIXED: Add route.params subscription to cleanup on destroy
+    this.subscription.add(
+      this.activatedRoute.params.subscribe(params => {
+        if (params['id']) {
+          this.iconId = params['id'];
         }
-      });
+      })
+    );
     if (this.iconId) {
       this.pageTitle = 'Update Icon';
       this.btntext = 'Update';
@@ -68,14 +69,21 @@ export class AddIconComponent implements OnInit,OnDestroy {
     }));
   }
 
-  iconFileProgress(fileInput: any) {
-    let fileData = <File>fileInput.target.files[0];
-    this.appService.uploadIcon(fileData).subscribe(res => {
-      let uploadedFilePath = res.url;
-      this.iconForm.patchValue({
-        url: uploadedFilePath
+  iconFileProgress(fileInput: Event): void {
+    const target = fileInput.target as HTMLInputElement;
+    if (!target?.files?.[0]) {
+      return;
+    }
+    const fileData = target.files[0];
+    // FIXED: Add file upload subscription to cleanup on destroy
+    this.subscription.add(
+      this.appService.uploadIcon(fileData).subscribe(res => {
+        const uploadedFilePath = res.url;
+        this.iconForm.patchValue({
+          url: uploadedFilePath
+        });
       })
-    })
+    );
   }
 
   onSubmit() {
@@ -97,13 +105,11 @@ export class AddIconComponent implements OnInit,OnDestroy {
     }
   }
 
-  goBack() {
+  goBack(): void {
     this.location.back();
   }
 
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

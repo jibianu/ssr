@@ -72,7 +72,7 @@ export class MetadataService {
             // Standard meta tags
             { name: 'description', content: metadata.description },
             { name: 'author', content: metadata.author },
-            { name: 'robots', content: metadata.robots },
+            { name: 'robots', content: metadata.robots || 'index, follow' },
             
             // Open Graph (Facebook) meta tags
             { property: 'og:title', content: metadata.title },
@@ -113,14 +113,31 @@ export class MetadataService {
             tags.push({ property: 'article:tag', content: metadata.category });
         }
 
-        // Update viewport and content type (these rarely change)
-        this.meta.addTags([
-            { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Type', content: 'text/html; charset=utf-8' }
-        ]);
+        // ✅ SSR: Update viewport and content type (these rarely change)
+        // Only add if they don't exist to avoid duplicates during SSR
+        const viewportTag = this.meta.getTag('name="viewport"');
+        if (!viewportTag) {
+            this.meta.addTag({ name: 'viewport', content: 'width=device-width, initial-scale=1' });
+        }
 
-        // Update dynamic tags
-        tags.forEach(tag => this.meta.updateTag(tag));
+        const contentTypeTag = this.meta.getTag('http-equiv="Content-Type"');
+        if (!contentTypeTag) {
+            this.meta.addTag({ 'http-equiv': 'Content-Type', content: 'text/html; charset=utf-8' });
+        }
+
+        // Update dynamic tags - this works in both SSR and browser
+        tags.forEach(tag => {
+            // Check if tag already exists and update it, otherwise add it
+            const existingTag = tag.property 
+                ? this.meta.getTag(`property="${tag.property}"`)
+                : this.meta.getTag(`name="${tag.name}"`);
+            
+            if (existingTag) {
+                this.meta.updateTag(tag);
+            } else {
+                this.meta.addTag(tag);
+            }
+        });
     }
 
     public updateCanonicalUrl(url: string): void {

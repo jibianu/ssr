@@ -43,14 +43,15 @@ export class AddEventComponent implements OnInit, OnDestroy {
              "LinkdIn",
             "Twitter"
         ]
-        this.activatedRoute
-            .params
-            .subscribe(params => {
-                if (params.id) {
-                    this.eventId = params.id;
-                    this.isNew=params.isNew=="new";
+        // FIXED: Add route.params subscription to cleanup on destroy
+        this.subscription.add(
+            this.activatedRoute.params.subscribe(params => {
+                if (params['id']) {
+                    this.eventId = params['id'];
+                    this.isNew = params['isNew'] === 'new';
                 }
-            });
+            })
+        );
         if (this.eventId) {
             this.pageTitle = 'Update Event';
             this.btntext = 'Update';
@@ -173,7 +174,8 @@ export class AddEventComponent implements OnInit, OnDestroy {
     goBack() {
         this.location.back();
     }
-    eventCurriculumArrayControls(section: string) {
+    // ✅ TYPE SAFETY: Return FormGroup[] instead of AbstractControl[] for proper template access
+    eventCurriculumArrayControls(section: string): FormGroup[] {
         // var x = (<FormArray>this.eventForm.get('eventDetails')).controls;
         // var ix = 0;
         // var arr: AbstractControl[] = [];
@@ -188,7 +190,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
         // // console.log(dt);
         // return dt;
         return (<FormArray>this.eventForm.get('eventDetails')).
-            controls.filter((control: AbstractControl) => control.get('section').value === section);
+            controls.filter((control: AbstractControl) => control.get('section').value === section) as FormGroup[];
     }
     getIndexOfCurriculum(section: string, index: number): number {
         var x = (<FormArray>this.eventForm.get('eventDetails')).controls;

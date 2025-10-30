@@ -9,7 +9,12 @@
     "moduleResolution": "node",
     "target": "ES2022",
     "module": "ES2022",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    // ✅ ESBUILD OPTIMIZATION: Enhanced compiler options for faster builds
+    "importHelpers": true,
+    "skipLibCheck": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".angular/cache/tsconfig.app.tsbuildinfo"
   },
   "files": [
     "src/main.ts",
@@ -19,6 +24,11 @@
   ],
   "include": [
     "src/**/*.d.ts"
-  ]
+  ],
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
 }
-

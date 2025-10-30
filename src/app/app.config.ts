@@ -1,22 +1,65 @@
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from "@angular/common/http";
+import { LOCALE_ID } from "@angular/core";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideRouter, withComponentInputBinding } from "@angular/router";
 import { routes } from "./app-routing.module";
 import { provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from "@angular/core";
-import { provideClientHydration, withEventReplay } from "@angular/platform-browser";
+import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions } from "@angular/platform-browser";
 import { ErrorInterceptor } from "./core/helpers/error.interceptor";
 import { JwtInterceptor } from "./core/helpers/jwt.interceptor";
+import { CacheInterceptor } from "./core/helpers/cache.interceptor";
+import { RetryInterceptor } from "./core/helpers/retry.interceptor";
+import { TimeoutInterceptor } from "./core/helpers/timeout.interceptor";
 
 export const appConfig = {
     providers: [
+      // Locale detection on the client (browser)
+      { 
+        provide: LOCALE_ID, 
+        useFactory: () => {
+          const nav: any = (typeof navigator !== 'undefined') ? navigator : null;
+          const lang = nav?.language || nav?.languages?.[0] || 'en-US';
+          return lang;
+        }
+      },
       provideBrowserGlobalErrorListeners(),
       provideZoneChangeDetection({ eventCoalescing: true }),
-      provideClientHydration(withEventReplay()),
+      // ✅ SSR OPTIMIZATION: Enhanced hydration with HTTP transfer cache
+      provideClientHydration(
+        withEventReplay(),
+        withHttpTransferCacheOptions({
+          // Don't cache POST requests (mutations)
+          includePostRequests: false,
+          // Don't cache authenticated requests (they may be user-specific)
+          includeRequestsWithAuthHeaders: false,
+          // ✅ OPTIMIZED: Cache more API endpoints to reduce duplicate calls
+          filter: (req) => {
+            // Cache all GET requests except:
+            // - Auth endpoints (user-specific)
+            // - File uploads
+            // - Webhooks
+            return req.method === 'GET' && 
+                   !req.url.includes('/account/') &&
+                   !req.url.includes('/upload/') &&
+                   !req.url.includes('/webhook/') &&
+                   (
+                     req.url.includes('/api/page/') ||
+                     req.url.includes('/api/course/') ||    // ✅ Add courses
+                     req.url.includes('/api/category/') || // ✅ Add categories  
+                     req.url.includes('/api/event/')       // ✅ Add events
+                   );
+          }
+        })
+      ),
       provideRouter(routes, withComponentInputBinding()),
-      provideHttpClient(withFetch(),withInterceptorsFromDi()),
+      provideHttpClient(withFetch(), withInterceptorsFromDi()),
       provideAnimations(),
-      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+      // INTERCEPTOR ORDER MATTERS: Process in this order
+      { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },      // 1. Check cache first
+      { provide: HTTP_INTERCEPTORS, useClass: TimeoutInterceptor, multi: true },    // 2. Add timeout
+      { provide: HTTP_INTERCEPTORS, useClass: RetryInterceptor, multi: true },      // 3. Retry on failure
+      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },        // 4. Add auth headers
+      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },       // 5. Handle errors (last)
   ]
   };
   

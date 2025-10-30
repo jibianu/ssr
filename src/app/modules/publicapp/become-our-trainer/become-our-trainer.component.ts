@@ -89,4 +89,17 @@ export class BecomeOurTrainerComponent implements OnInit {
       this.router.navigate(['home']);
     }
   }
+
+  onFormSubmit(): void {
+    this.submitted = true;
+  }
+
+  onIframeLoad(): void {
+    if (this.submitted) {
+      const confirmed = confirm('Thank you for completing this form!');
+      if (confirmed) {
+        this.router.navigate(['/']);
+      }
+    }
+  }
 }

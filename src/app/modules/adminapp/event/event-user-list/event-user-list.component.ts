@@ -1,7 +1,7 @@
 import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
 // import { Category } from './../category.model';
 import { AdminAppService } from './../../adminapp.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -13,7 +13,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./event-user-list.component.scss'],
   standalone: false
 })
-export class EventUserListComponent implements OnInit {
+export class EventUserListComponent implements OnInit, OnDestroy {
 
   config: any;
   tableSizes = [5, 10, 25, 50];
@@ -28,13 +28,14 @@ export class EventUserListComponent implements OnInit {
     private modalService: NgbModal,
     private activatedRoute: ActivatedRoute,
   ) {
-    this.activatedRoute
-    .params
-    .subscribe(params => {
-        if (params.id) {
-            this.eventId = params.id;
+    // FIXED: Add route.params subscription to cleanup on destroy
+    this.subscription.add(
+      this.activatedRoute.params.subscribe(params => {
+        if (params['id']) {
+          this.eventId = params['id'];
         }
-    });
+      })
+    );
    }
 
   ngOnInit(): void {

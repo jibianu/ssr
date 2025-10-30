@@ -20,6 +20,9 @@
     "types": [
       "node"
     ],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".angular/cache/tsconfig.tsbuildinfo"
   }
 }

@@ -222,8 +222,9 @@
                                                 </div>
                                             </div>
                                             <div formArrayName="courseContentSubTypes" class="pl-3 mt-3 mb-2">
+                                                <!-- ✅ TYPE SAFETY: Use helper method that returns FormGroup[] -->
                                                 <div
-                                                    *ngFor="let item of CourseSubContent(i).controls; let j=index;last as isLast">
+                                                    *ngFor="let item of CourseSubContentControls(i); let j=index;last as isLast">
                                                     <h6>Sub Contents {{j + 1}}</h6>
                                                     <div [formGroupName]="j">
                                                         <div class="row no-gutters">
@@ -262,8 +263,9 @@
                                                         </div>
                                                         <div formArrayName="courseContentSubSubTypes"
                                                             class="pl-3 mt-3 mb-2">
+                                                            <!-- ✅ TYPE SAFETY: Use helper method that returns FormGroup[] -->
                                                             <div
-                                                                *ngFor="let item of CourseSubSubContent(i,j).controls; let k=index;last as isLast">
+                                                                *ngFor="let item of CourseSubSubContentControls(i,j); let k=index;last as isLast">
                                                                 <h6>Child
                                                                     Contents {{k+1}}
                                                                 </h6>

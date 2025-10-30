@@ -1,5 +1,5 @@
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -12,17 +12,17 @@ import { Location } from '@angular/common';
     styleUrls: ['./add-location.component.scss'],
     standalone: false
 })
-export class AddLocationComponent implements OnInit {
+export class AddLocationComponent implements OnInit, OnDestroy {
 
-  pageTitle: string;
-  btntext: string;
-  locationId: string;
-  locationForm: UntypedFormGroup;
+  pageTitle: string = '';
+  btntext: string = '';
+  locationId: string = '';
+  locationForm: FormGroup;
   submitted = false;
-  subscription: Subscription = new Subscription();
+  private subscription: Subscription = new Subscription();
 
   constructor(
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private appService: AdminAppService,
     private toasterService: ToasterService,
     private activatedRoute: ActivatedRoute,
@@ -30,13 +30,14 @@ export class AddLocationComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.activatedRoute
-      .params
-      .subscribe(params => {
-        if (params.id) {
-          this.locationId = params.id;
+    // FIXED: Add route.params subscription to cleanup on destroy
+    this.subscription.add(
+      this.activatedRoute.params.subscribe(params => {
+        if (params['id']) {
+          this.locationId = params['id'];
         }
-      });
+      })
+    );
     if (this.locationId) {
       this.pageTitle = 'Update Location';
       this.btntext = 'Update';
@@ -85,13 +86,11 @@ export class AddLocationComponent implements OnInit {
     }
   }
 
-  goBack() {
+  goBack(): void {
     this.location.back();
   }
 
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

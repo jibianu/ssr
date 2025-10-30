@@ -60,7 +60,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of icons  | paginate: config">
+      <tr *ngFor="let item of icons | paginate: config; trackBy: trackByIconId">
         <td>{{ item?.name }}</td>
         <td>{{ item?.url }}</td>
         <td>
@@ -80,7 +80,7 @@
     
     <div>
       <select (change)="onTableSizeChange($event)" class="custom-select">
-        <option *ngFor="let size of tableSizes" [ngValue]="size">{{ size }}</option>
+        <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">{{ size }}</option>
       </select>
     </div>
   </div>
