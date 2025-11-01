@@ -3,7 +3,7 @@
         <div class="top-banner">
             <div class="hero-image">
                 <img fetchpriority="high" src="{{bgImage}}" alt="Join from anywhere!" title="View events in Oilandgasclub" class=""
-                    loading="eager">
+                    loading="eager" width="1920" height="600" style="aspect-ratio: 16/5; object-fit: cover;">
             </div>
             <div class="banner-overlay"></div>
         </div>
@@ -99,7 +99,9 @@
                         </div>
                     </ng-container>
                     <ng-template #loadingTemplate>
-                        <div class="text-center p-4">Loading events...</div>
+                        <div class="events-list">
+                            <p class="text-center">Loading events...</p>
+                        </div>
                     </ng-template>
                     <!-- <div class="event-card p-3 cursor-pointer mb-3" routerLink="../event-details">
                         <div class="title-section">

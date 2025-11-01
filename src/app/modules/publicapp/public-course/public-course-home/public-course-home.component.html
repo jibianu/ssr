@@ -3,10 +3,27 @@
   <!-- ✅ SSR OPTIMIZATION: Use async pipe - no blocking, automatic unsubscribe -->
   <!-- ✅ ERROR HANDLING: Handle loading, error, and success states -->
   <ng-container *ngIf="items$ | async as items; else loadingTemplate">
+    <!-- ✅ BACKEND HEALTH: Show backend unavailable message -->
     <div *ngIf="error" class="alert alert-danger text-center mt-4">
-      <h5>Unable to Load Categories</h5>
+      <h5>
+        <i class="fa fa-exclamation-triangle"></i>
+        {{ !backendAvailable ? 'Backend API Unavailable' : 'Unable to Load Categories' }}
+      </h5>
       <p>{{ error }}</p>
-      <button class="btn btn-primary btn-sm" (click)="reload()">Retry</button>
+      @if (!backendAvailable) {
+        <div class="mt-3">
+          <strong>Troubleshooting:</strong>
+          <ul class="text-left mt-2" style="display: inline-block;">
+            <li>Is the backend server running?</li>
+            <li>Check if backend is accessible at: <code>{{ apiUrl }}</code></li>
+            <li>Verify CORS is configured correctly</li>
+            <li>Check browser console for detailed error messages</li>
+          </ul>
+        </div>
+      }
+      <button class="btn btn-primary btn-sm mt-2" (click)="reload()">
+        <i class="fa fa-refresh"></i> Retry Connection
+      </button>
     </div>
     
     <div *ngIf="items.length === 0 && !error" class="text-center mt-4">
@@ -61,8 +78,8 @@
   </ng-container>
   
   <ng-template #loadingTemplate>
-    <div class="alert alert-warning text-center mt-4">
-      <p>Loading categories...</p>
+    <div class="container mt-4">
+      <p class="text-center">Loading categories...</p>
     </div>
   </ng-template>
 </div>

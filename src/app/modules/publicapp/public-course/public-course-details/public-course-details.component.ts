@@ -121,6 +121,26 @@ export class PublicCourseDetailsComponent {
           }
         })
       });
+
+      // ✅ SEO: Add BreadcrumbList structured data
+      const breadcrumbs = [
+        { name: 'Home', url: environment.seoUrl },
+        { name: 'Courses', url: `${environment.seoUrl}list` }
+      ];
+      
+      if (this.categoryName) {
+        breadcrumbs.push({
+          name: this.categoryName,
+          url: `${environment.seoUrl}category/${this.categoryName}`
+        });
+      }
+      
+      breadcrumbs.push({
+        name: this.courseDetails.title || 'Course',
+        url: fullUrl
+      });
+      
+      this.structuredDataService.setBreadcrumbs(breadcrumbs);
   }
 
   // onImgError(event) {

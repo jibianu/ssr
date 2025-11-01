@@ -14,7 +14,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of userCourses">
+      <tr *ngFor="let item of userCourses; trackBy: trackByCourseId">
         <td>{{item.title}}</td>
         <td>{{item?.category?.name}}</td>
         <td>{{item?.canonicalUrl}}</td>
@@ -39,7 +39,7 @@
     <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
     <div class="ml-auto p-2 bd-highlight">
       <select (change)="onTableSizeChange($event)" class="custom-select">
-        <option *ngFor="let size of tableSizes" [ngValue]="size">
+        <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">
           {{ size }}
         </option>
       </select>

@@ -14,6 +14,11 @@ import { ReadMoreComponent } from './component/read-more/read-more.component';
 import { IconDropdownComponent } from './component/icon-dropdown/icon-dropdown.component';
 import { PageNotFoundComponent } from '../modules/publicapp/page-not-found/page-not-found.component';
 import { SeoService } from './service/seo.service';
+// ✅ PROGRESSIVE LOADING: Skeleton loader components
+import { SkeletonCourseCardComponent } from './components/skeleton-loaders/skeleton-course-card/skeleton-course-card.component';
+import { SkeletonCourseListComponent } from './components/skeleton-loaders/skeleton-course-list/skeleton-course-list.component';
+import { SkeletonEventCardComponent } from './components/skeleton-loaders/skeleton-event-card/skeleton-event-card.component';
+import { SkeletonRelatedCourseComponent } from './components/skeleton-loaders/skeleton-related-course/skeleton-related-course.component';
 
 const errorPages = [PageNotFoundComponent];
 
@@ -22,7 +27,12 @@ const errorPages = [PageNotFoundComponent];
         ToasterComponent, 
         ConfirmationModalComponent, 
         ReadMoreComponent, 
-        IconDropdownComponent, 
+        IconDropdownComponent,
+        // ✅ PROGRESSIVE LOADING: Skeleton loader components
+        SkeletonCourseCardComponent,
+        SkeletonCourseListComponent,
+        SkeletonEventCardComponent,
+        SkeletonRelatedCourseComponent,
         ...errorPages
     ],
     imports: [
@@ -49,6 +59,11 @@ const errorPages = [PageNotFoundComponent];
         NgMultiSelectDropDownModule,
         CarouselModule,
         IconDropdownComponent,
+        // ✅ PROGRESSIVE LOADING: Export skeleton loaders for use in other modules
+        SkeletonCourseCardComponent,
+        SkeletonCourseListComponent,
+        SkeletonEventCardComponent,
+        SkeletonRelatedCourseComponent,
         ...errorPages
     ],
     schemas: [

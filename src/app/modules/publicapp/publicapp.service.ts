@@ -71,11 +71,12 @@ export class PublicAppService {
         const fullUrl = this.apiUrl + apiPath;
         console.log(`🔍 API Call: ${fullUrl} (original URL: "${url}", normalized: "${normalizedUrl}")`);
         
-        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
-        const headers = new HttpHeaders().set('X-Timeout', '60000');
+        // ✅ Add longer timeout for course API calls (120 seconds) via custom header
+        // Increased from 60s to 120s to match proxy timeout settings
+        const headers = new HttpHeaders().set('X-Timeout', '120000');
         
         return this.http.get<any>(fullUrl, { headers }).pipe(
-            timeout(60000), // 60 seconds timeout for course API calls
+            timeout(120000), // 120 seconds timeout for course API calls (matches proxy timeout)
             retry({
                 count: 2, // Retry up to 2 times on failure
                 delay: (error: any, retryCount: number) => {
@@ -100,8 +101,10 @@ export class PublicAppService {
                     console.error(`   - Check network connectivity`);
                     console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
                 } else if (isTimeoutError) {
-                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 120 seconds`);
                     console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
+                    console.error(`   - Possible causes: Backend is slow, network issues, or backend is down`);
+                    console.error(`   - Check backend logs and performance`);
                 } else {
                     console.error(`❌ Error fetching course by URL "${url}" (normalized: "${normalizedUrl}"). API path: ${apiPath}`, error);
                 }
@@ -198,11 +201,12 @@ export class PublicAppService {
         const fullUrl = this.apiUrl + apiPath;
         console.log(`🔍 API Call: ${fullUrl} (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}", normalized: "${normalizedCourseUrl}" / "${normalizedLocation}")`);
         
-        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
-        const headers = new HttpHeaders().set('X-Timeout', '60000');
+        // ✅ Add longer timeout for course API calls (120 seconds) via custom header
+        // Increased from 60s to 120s to match proxy timeout settings
+        const headers = new HttpHeaders().set('X-Timeout', '120000');
         
         return this.http.get<any>(fullUrl, { headers }).pipe(
-            timeout(60000), // 60 seconds timeout for course API calls
+            timeout(120000), // 120 seconds timeout for course API calls (matches proxy timeout)
             retry({
                 count: 2, // Retry up to 2 times on failure
                 delay: (error: any, retryCount: number) => {
@@ -228,8 +232,10 @@ export class PublicAppService {
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
                 } else if (isTimeoutError) {
-                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 120 seconds`);
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
+                    console.error(`   - Possible causes: Backend is slow, network issues, or backend is down`);
+                    console.error(`   - Check backend logs and performance`);
                 } else {
                     console.error(`❌ Error fetching course by URL "${courseUrl}" and location "${locationUrl}". Normalized to: "${normalizedCourseUrl}" / "${normalizedLocation}". API path: ${apiPath}`, error);
                 }

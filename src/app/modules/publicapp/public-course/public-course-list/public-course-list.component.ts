@@ -1,7 +1,8 @@
 
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { NgxPaginationModule } from "ngx-pagination";
 import { CommonModule } from '@angular/common';
@@ -10,19 +11,24 @@ import { CommonModule } from '@angular/common';
   selector: 'app-public-course-list',
   templateUrl: './public-course-list.component.html',
   styleUrls: ['./public-course-list.component.scss'],
-  imports: [NgxPaginationModule, CommonModule, RouterLink],
+  imports: [NgxPaginationModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PublicCourseListComponent implements OnInit, OnDestroy {
 
-  config = {
-    currentPage: 1,
-    itemsPerPage: 18,
-    totalItems: 0
-  };
+  readonly itemsPerPage = 18;
 
-  courses: any[] = [];
-  subscription = new Subscription();
+  // ✅ SSR OPTIMIZATION: Use Observable with async pipe - no blocking
+  coursesData$: Observable<{
+    courses: any[];
+    totalItems: number;
+    currentPage: number;
+    config: {
+      currentPage: number;
+      itemsPerPage: number;
+      totalItems: number;
+    };
+  }>;
 
   constructor(
     private route: ActivatedRoute,
@@ -30,39 +36,58 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
     private publicAppService: PublicAppService,
     private cdr: ChangeDetectorRef
   ) {
-    // FIXED: Add subscription to cleanup on destroy
-    this.subscription.add(
-      this.route.queryParams.subscribe(params => {
-        this.config.currentPage = +params['page'] || 1;
-        this.fetchCourse();
-      })
+    // ✅ SSR OPTIMIZATION: Non-blocking Observable pipeline
+    // Combine route query params and fetch courses in parallel (non-blocking)
+    this.coursesData$ = this.route.queryParams.pipe(
+      switchMap(params => {
+        const currentPage = +params['page'] || 1;
+        const obj = {
+          pageSize: this.itemsPerPage,
+          pageNumber: currentPage
+        };
+
+        return this.publicAppService.getCourses(obj).pipe(
+          map(response => {
+            // ✅ FIX: Normalize canonicalUrl for all courses to ensure routerLink works correctly
+            const courses = (response.results || []).map((course: any) => ({
+              ...course,
+              canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
+            }));
+
+            const totalItems = response.totalNumberOfRecords || 0;
+            return {
+              courses,
+              totalItems,
+              currentPage,
+              config: {
+                currentPage,
+                itemsPerPage: this.itemsPerPage,
+                totalItems
+              }
+            };
+          }),
+          catchError(error => {
+            console.error('Error loading courses:', error);
+            return of({
+              courses: [],
+              totalItems: 0,
+              currentPage,
+              config: {
+                currentPage: 1,
+                itemsPerPage: this.itemsPerPage,
+                totalItems: 0
+              }
+            });
+          })
+        );
+      }),
+      shareReplay(1) // ✅ Cache for multiple subscriptions/renders
     );
   }
 
-  ngOnInit(): void {}
-
-  fetchCourse(): void {
-    const obj = {
-      pageSize: this.config.itemsPerPage,
-      pageNumber: this.config.currentPage
-    };
-
-    this.subscription.add(
-      this.publicAppService.getCourses(obj).subscribe(
-        response => {
-          // ✅ FIX: Normalize canonicalUrl for all courses to ensure routerLink works correctly
-          this.courses = (response.results || []).map((course: any) => ({
-            ...course,
-            canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
-          }));
-          this.config.totalItems = response.totalNumberOfRecords || 0;
-          this.cdr.markForCheck(); // Manual change detection trigger for OnPush
-        },
-        error => {
-          console.error('Error loading courses:', error);
-        }
-      )
-    );
+  ngOnInit(): void {
+    // ✅ SSR OPTIMIZATION: No blocking operations
+    // Observable is already set up in constructor - template uses async pipe
   }
 
   // ✅ FIX: Normalize course URL to ensure routerLink works correctly
@@ -93,6 +118,7 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
 
   pageChange(newPage: number): void {
     this.router.navigate(['/list'], { queryParams: { page: newPage } });
+    // ✅ OPTIMIZATION: Observable will automatically update via route.queryParams
   }
 
   onImgError(event: Event): void {
@@ -110,6 +136,6 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    // ✅ SSR OPTIMIZATION: No subscriptions to clean up - async pipe handles it automatically
   }
 }

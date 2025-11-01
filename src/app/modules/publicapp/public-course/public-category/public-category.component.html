@@ -7,7 +7,7 @@
           <a [href]="item?.canonicalUrl" class="no-underline">
             <div class="list-course-item h-100 d-flex flex-column">
               <div class="card-image position-relative">
-                <img [src]="item?.titleImageUrl" alt="{{ item?.title }}" class="card-img" />
+                <img [src]="item?.titleImageUrl" (error)="onImgError($event)" alt="{{ item?.title }}" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;" />
                 <div class="sale-badge" *ngIf="item?.isBestSeller">Best Seller</div>
               </div>
               <div class="card-body">

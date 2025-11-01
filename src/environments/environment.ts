@@ -1,13 +1,33 @@
 
-
+/**
+ * Development Environment Configuration
+ * 
+ * This file is used when running: ng serve or ng build (without --configuration production)
+ * For production builds, see: environment.prod.ts
+ * 
+ * ✅ RECOMMENDED: Using production backend for development
+ * Benefits:
+ * - No local backend setup required
+ * - Always available
+ * - Matches production environment
+ * - Works with SSR out of the box
+ * - No SSL/CORS configuration needed
+ */
 export const environment = {
   production: false,
-  //  RECOMMENDED: Use production backend (works with SSR, no SSL/CORS issues)
- // apiUrl: 'https://coursebackend.oilandgasclub.com/',
-  //  Local backend (requires SSL certificate, CORS configuration, and backend running)
-   apiUrl: 'https://localhost:52045/',
-  // apiUrl: 'http://localhost:52045/',  // Use HTTP if SSL is an issue
-  // apiUrl: 'http://coursebackend:8080/',  // Docker container name
+  
+  // ✅ PROXY CONFIGURATION: Use /api prefix for proxy in development
+  // The proxy.conf.json forwards /api/* requests to https://localhost:52045/*
+  // Production uses full URL (see environment.prod.ts)
+  apiUrl: '/api/',
+  
+  // ⚠️ Alternative: Use production backend directly (no proxy needed)
+  // apiUrl: 'https://coursebackend.oilandgasclub.com/',
+  
+  // ⚠️ Alternative: Use local backend directly (requires CORS and SSL setup)
+  // See BACKEND_CORS_CONFIGURATION.md for setup instructions
+  // apiUrl: 'https://localhost:52045/',
+  // apiUrl: 'http://localhost:52045/',  // Use HTTP if SSL certificate issues occur
   
   seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300'

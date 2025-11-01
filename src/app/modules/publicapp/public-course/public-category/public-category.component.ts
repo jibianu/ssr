@@ -1,11 +1,13 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { Observable } from 'rxjs';
 import { combineLatest } from 'rxjs';
-import { map, switchMap, shareReplay, catchError } from 'rxjs/operators';
+import { map, switchMap, shareReplay, catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
+import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-public-category',
@@ -25,6 +27,8 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
     currentPage: number;
     categoryName: string;
   }>;
+
+  private readonly structuredDataService = inject(StructuredDataService);
 
   constructor(
     private route: ActivatedRoute,
@@ -64,6 +68,15 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
             });
           })
         );
+      }),
+      tap(data => {
+        // ✅ SEO: Add BreadcrumbList structured data
+        const breadcrumbs = [
+          { name: 'Home', url: environment.seoUrl },
+          { name: 'Courses', url: `${environment.seoUrl}list` },
+          { name: data.categoryName || 'Category', url: `${environment.seoUrl}category/${data.categoryName}` }
+        ];
+        this.structuredDataService.setBreadcrumbs(breadcrumbs);
       }),
       shareReplay(1) // ✅ Cache for multiple subscriptions
     );

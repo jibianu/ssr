@@ -1,0 +1,30 @@
+{
+  "ports": {
+    "frontend": {
+      "default": 4200,
+      "description": "Angular development server port",
+      "configLocation": "angular.json -> serve.options.port"
+    },
+    "backend": {
+      "default": 52045,
+      "protocol": "https",
+      "description": ".NET Core API backend port",
+      "configLocation": "proxy.conf.json -> target, src/server.ts -> backendUrl"
+    },
+    "ssr": {
+      "default": 4000,
+      "description": "SSR server port (production builds)",
+      "configLocation": "src/server.ts -> PORT environment variable or default 4000"
+    }
+  },
+  "urls": {
+    "frontend": "http://localhost:4200",
+    "backend": "https://localhost:52045",
+    "ssr": "http://localhost:4000"
+  },
+  "notes": {
+    "frontend": "Can be changed with: ng serve --port <port>",
+    "backend": "Update proxy.conf.json and src/server.ts if changing",
+    "ssr": "Can be overridden with: PORT=<port> pnpm run serve:ssr"
+  }
+}

@@ -130,7 +130,8 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (isOffline) {
             this.logger.error('Network Error: You are currently offline. Please check your internet connection.');
         } else {
-            this.logger.error('Network Error: Unable to connect to the server. Please check your internet connection.');
+            // ✅ IMPROVEMENT: More specific error message for localhost connections
+            this.logger.error('Network Error: Unable to connect to the server. If using local backend, ensure it is running and CORS is configured correctly.');
         }
     }
 

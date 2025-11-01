@@ -5,7 +5,7 @@
                 <div class="event-hero-background" [ngStyle]="{'background-image': 'url(' + bgImage + ')'}">
                 </div>
                 <div class="hero-image">
-                    <img alt="Banner Image" class="img-fluid" src="{{bgImage}}">
+                    <img alt="Banner Image" class="img-fluid" src="{{bgImage}}" loading="eager" width="1920" height="600" style="aspect-ratio: 16/5; object-fit: cover;">
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <ul class="event-tags pl-4 mb-4">
-                                            <li class="mb-3" *ngFor="let tag of getInfo('tags')">{{tag.tag}}</li>
+                                            <li class="mb-3" *ngFor="let tag of getInfo('tags'); trackBy: trackByTagId">{{tag.tag}}</li>
                                         </ul>
                                     </div>
                                     <div>
@@ -171,7 +171,7 @@
                                 <div class="course-highlights-title mb-2">What Will You Learn?</div>
                                 <div class="workshop-cards-wrapper">
                                     <div class="d-flex justify-content-center flex-wrap">
-                                        <div class="card highlight-card" *ngFor="let e of getInfo('curriculum')">
+                                        <div class="card highlight-card" *ngFor="let e of getInfo('curriculum'); trackBy: trackByCurriculumId">
                                             <div class="card-body">
                                                 <div class="d-flex">
                                                     <div class="high-icon">
@@ -201,7 +201,7 @@
 </div>
 <div class="bonuses-cards-wrapper">
     <div class="d-flex justify-content-center flex-wrap">
-        <div class="card bonus-card m-2" *ngFor="let b of getInfo('bonuse'); let i = index">
+        <div class="card bonus-card m-2" *ngFor="let b of getInfo('bonuse'); let i = index; trackBy: trackByBonusId">
             <div class="card-body text-center p-3">
                 <div class="bonus-badge mb-2" style="color: #e74c3c; font-weight: 600;">
                     {{b.tag}}
@@ -284,7 +284,7 @@
                                             </div>
                                             <div class="know-card-wrap mt-4 mb-3">
                                                 <div class="d-flex justify-content-center flex-wrap">
-                                                    <div class="card know-card m-3" *ngFor="let l of getInfo('slary')">
+                                                    <div class="card know-card m-3" *ngFor="let l of getInfo('slary'); trackBy: trackBySalaryId">
                                                         <div class="card-body text-center">
                                                             <div class="pay" style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">
                                                                 {{l.amount}} LPA
@@ -319,7 +319,7 @@
                                     <!-- Students -->
                                     <div class="illustrator m-3">
                                         <div class="image text-center p-3" style="background: #FF9AA2; border-radius: 15px;">
-                                            <img src="assets\img\icons8-students-80.png" alt="Students" style="width: 50px; height: 50px;">
+                                            <img src="assets\img\icons8-students-80.png" alt="Students" width="50" height="50" loading="lazy">
                                         </div>
                                         <div class="know-desc text-center mt-2" style="font-size: 1rem; font-weight: 600; color: #2c3e50;">
                                             Students
@@ -329,7 +329,7 @@
                                     <!-- Professionals -->
                                     <div class="illustrator m-3">
                                         <div class="image text-center p-3" style="background: #B5EAD7; border-radius: 15px;">
-                                            <img src="assets\img\icons8-students-80.png" alt="Professionals" style="width: 50px; height: 50px;">
+                                            <img src="assets\img\icons8-students-80.png" alt="Professionals" width="50" height="50" loading="lazy">
                                         </div>
                                         <div class="know-desc text-center mt-2" style="font-size: 1rem; font-weight: 600; color: #2c3e50;">
                                             Professionals
@@ -339,7 +339,7 @@
                                     <!-- Job Seekers -->
                                     <div class="illustrator m-3">
                                         <div class="image text-center p-3" style="background: #C7CEEA; border-radius: 15px;">
-                                            <img src="assets\img\icons8-students-80.png" alt="Job Seekers" style="width: 50px; height: 50px;">
+                                            <img src="assets\img\icons8-students-80.png" alt="Job Seekers" width="50" height="50" loading="lazy">
                                         </div>
                                         <div class="know-desc text-center mt-2" style="font-size: 1rem; font-weight: 600; color: #2c3e50;">
                                             Job Seekers
@@ -373,9 +373,9 @@
                                 <div class="organizer-wrapper p-3">
                                     <div class="organizer">
                                         <div class="d-flex justify-content-between flex-wrap">
-                                            <div class="d-flex" *ngFor="let it of getInfo('organized')">
+                                            <div class="d-flex" *ngFor="let it of getInfo('organized'); trackBy: trackByOrganizerId">
                                                 <div class="organizer-img mr-3">
-                                                    <img [src]="it.imageUrl" alt="Chirag Jhumkawala" class="rounded-circle">
+                                                    <img [src]="it.imageUrl" alt="Chirag Jhumkawala" class="rounded-circle" width="60" height="60" loading="lazy" style="aspect-ratio: 1/1; object-fit: cover;">
                                                 </div>
                                                 <div class="organizer-details"  >
                                                     <div class="know-title text-left">{{it.title}}</div>
@@ -386,7 +386,7 @@
                                                     </div>
                                                     <div class="d-flex mt-2 align-items-center social-icons">
                                                         
-                                                        <a  [href]="iv.title" *ngFor="let iv of getInfo('organized_soc')">
+                                                        <a  [href]="iv.title" *ngFor="let iv of getInfo('organized_soc'); trackBy: trackBySocialId">
                                                             <i class="fa fa-linkedin mr-3" *ngIf="iv.tag=='LinkdIn'" aria-hidden="true"></i>
                                                             <i class="fa fa-twitter mr-3" *ngIf="iv.tag=='Twitter'" aria-hidden="true"></i>
                                                         </a>
@@ -397,7 +397,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="organizer-info mt-4" *ngFor="let it of getInfo('organized')">
+                                    <div class="organizer-info mt-4" *ngFor="let it of getInfo('organized'); trackBy: trackByOrganizerId">
                                         <!-- ✅ HYDRATION: Use signal for class binding (consistent SSR/Client) -->
                                         <p [class.text-collapse]="!isExpanded()" class="text-md text-muted" #largeText>
                                             {{it.description}}
@@ -438,13 +438,13 @@
             
                                 <div class="faqs mt-4">
                                     <div id="courseAccordion">
-                                        <div id="contents" class="card mb-2 rounded-0" *ngFor="let qa of getInfo('qa')">
+                                        <div id="contents" class="card mb-2 rounded-0" *ngFor="let qa of getInfo('qa'); trackBy: trackByQaId">
                                           <div class="card-header-custom" id="headingOne">
                                             <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none active collapsed "
                                               data-toggle="collapse" href="#x{{qa.id}}" aria-expanded="false"
                                               [attr.aria-controls]="'x' + qa.id" id='card-header'>
                                               <div class="mr-auto">
-                                                <img src="assets/icon-image/correct-icon.svg" height="20px" width="20px">
+                                                <img src="assets/icon-image/correct-icon.svg" width="20" height="20" loading="lazy" alt="Correct">
                                                 <span class="ml-2">
                                                     {{qa.title}}
                                                 </span>
@@ -499,14 +499,14 @@
     <article class="testimonial-card">
       <div class="card-header">
         <div class="person-info">
-          <img class="avatar" src="assets/avatars/ekta.jpg" alt="Ekta avatar" />
+          <img class="avatar" src="assets/avatars/ekta.jpg" alt="Ekta avatar" width="60" height="60" loading="lazy" style="aspect-ratio: 1/1; object-fit: cover;" />
           <div>
             <div class="name">Ekta</div>
             <div class="role">Placement At IBM</div>
           </div>
         </div>
         <div class="company-logo">
-          <img src="assets/logos/ibm.svg" alt="IBM logo" />
+          <img src="assets/logos/ibm.svg" alt="IBM logo" width="80" height="40" loading="lazy" />
         </div>
       </div>
       <p class="quote">
@@ -518,14 +518,14 @@
     <article class="testimonial-card">
       <div class="card-header">
         <div class="person-info">
-          <img class="avatar" src="assets/avatars/rupall.jpg" alt="Rupall avatar" />
+          <img class="avatar" src="assets/avatars/rupall.jpg" alt="Rupall avatar" width="60" height="60" loading="lazy" style="aspect-ratio: 1/1; object-fit: cover;" />
           <div>
             <div class="name">Rupall</div>
             <div class="role">Placement At Cognizant</div>
           </div>
         </div>
         <div class="company-logo">
-          <img src="assets/logos/cognizant.svg" alt="Cognizant logo" />
+          <img src="assets/logos/cognizant.svg" alt="Cognizant logo" width="80" height="40" loading="lazy" />
         </div>
       </div>
       <p class="quote">
@@ -537,14 +537,14 @@
     <article class="testimonial-card">
       <div class="card-header">
         <div class="person-info">
-          <img class="avatar" src="assets/avatars/nishant.jpg" alt="Nishant avatar" />
+          <img class="avatar" src="assets/avatars/nishant.jpg" alt="Nishant avatar" width="60" height="60" loading="lazy" style="aspect-ratio: 1/1; object-fit: cover;" />
           <div>
             <div class="name">Nishant</div>
             <div class="role">Placement At TCS</div>
           </div>
         </div>
         <div class="company-logo">
-          <img src="assets/logos/tcs.svg" alt="TCS logo" />
+          <img src="assets/logos/tcs.svg" alt="TCS logo" width="80" height="40" loading="lazy" />
         </div>
       </div>
       <p class="quote">
@@ -571,13 +571,13 @@
         <div class="container">
           <div class="position-relative">
             <!-- <owl-carousel-o [options]="customOptions"> -->
-              <ng-template carouselSlide *ngFor="let i of events">
+              <ng-template carouselSlide *ngFor="let i of events; trackBy: trackByEventId">
                 <div class="slider">
                   <div class="card course-card w-100 mr-4">
                     <!-- Card Image -->
                     <div class="card-image position-relative">
-                      <img *ngIf="getEventDt(i,'image',0) let x" class="card-img" [src]="x.imageUrl" alt="Event Image">
-                      <img *ngIf="!getEventDt(i,'image',0)" class="card-img" src="https://cdn-media.domestika.org/c_fill,dpr_2.0,f_auto,h_157,pg_1,t_base_params,w_280/v1620832638/course-covers/000/002/409/2409-original.jpg?1620832638" alt="Default Event Image">
+                      <img *ngIf="getEventDt(i,'image',0) let x" class="card-img" [src]="x.imageUrl" alt="Event Image" loading="lazy" width="280" height="200" style="aspect-ratio: 7/5; object-fit: cover;">
+                      <img *ngIf="!getEventDt(i,'image',0)" class="card-img" src="https://cdn-media.domestika.org/c_fill,dpr_2.0,f_auto,h_157,pg_1,t_base_params,w_280/v1620832638/course-covers/000/002/409/2409-original.jpg?1620832638" alt="Default Event Image" loading="lazy" width="280" height="200" style="aspect-ratio: 7/5; object-fit: cover;">
                       <div class="card-img-overlay d-flex justify-content-left">
                         <div class="sale-badge">
                           Best Seller
@@ -611,20 +611,10 @@
     </div>
   </div>
 } @placeholder {
-  <!-- ✅ Skeleton placeholder maintains layout -->
   <div class="row">
     <div class="col-sm-12 col-12">
       <div class="similar-section mt-3">
-        <div class="text-bold mt-2 mb-3 text-left" style="font-size: 1.25rem; font-weight: 600; color: #2c3e50;">
-          Events you might be interested in
-        </div>
-        <div class="container">
-          <div class="d-flex gap-3 overflow-hidden">
-            <div class="skeleton-card" style="min-width: 280px; height: 450px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
-            <div class="skeleton-card" style="min-width: 280px; height: 450px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
-            <div class="skeleton-card" style="min-width: 280px; height: 450px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
-          </div>
-        </div>
+        <p class="text-center">Loading events...</p>
       </div>
     </div>
   </div>
@@ -776,7 +766,7 @@
     <p>Share it on social media and in your performance review</p>
   </div>
   <div class="certificate-image">
-    <img src="assets/images/certificate.jpg" alt="Certificate" />
+    <img src="assets/images/certificate.jpg" alt="Certificate" loading="lazy" width="800" height="600" style="aspect-ratio: 4/3; object-fit: contain;">
   </div>
 </div>
 <!-- <div class="certificate-sec End  "> -->

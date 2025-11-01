@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { CookieService } from 'src/app/core/services/cookie.service';
@@ -15,7 +15,8 @@ import { RouterModule } from '@angular/router';
   templateUrl: './user-course.component.html',
   styleUrls: ['./user-course.component.scss'],
   standalone: true,
-  imports: [CommonModule, NgxPaginationModule, RouterModule, FormsModule]
+  imports: [CommonModule, NgxPaginationModule, RouterModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
 export class UserCourseComponent implements OnInit, OnDestroy {
 
@@ -30,6 +31,7 @@ export class UserCourseComponent implements OnInit, OnDestroy {
     private toasterService: ToasterService,
     private modalService: NgbModal,
     private cookieService: CookieService,
+    private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
   ) { }
 
   ngOnInit(): void {
@@ -59,6 +61,7 @@ export class UserCourseComponent implements OnInit, OnDestroy {
       .subscribe(
         response => {
           this.userCourses = response;
+          this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
@@ -85,6 +88,7 @@ export class UserCourseComponent implements OnInit, OnDestroy {
             response => {
               this.toasterService.showSuccess('Blog deleted successfully');
               this.fetchUserCourses();
+              this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
             },
             error => {
               console.log(error);
@@ -94,6 +98,15 @@ export class UserCourseComponent implements OnInit, OnDestroy {
     }, (reason) => {
 
     });
+  }
+
+  // ✅ PERFORMANCE: TrackBy functions for ngFor optimization
+  trackByCourseId(index: number, course: any): string {
+    return course?.id || index.toString();
+  }
+
+  trackByTableSize(index: number, size: number): number {
+    return size;
   }
 
   ngOnDestroy() {

@@ -39,11 +39,17 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: For manual change detection trigger with OnPush
   ) {
-    // FIXED: Add route.data subscription to cleanup on destroy
+    // ✅ PARALLEL API CALLS: Use resolver data that includes both event and upcoming events
     this.subscription.add(
       activatedRoute.data.subscribe((data) => {
         this.event = data.event;
         this.eventId = this.event?.['id'];
+        
+        // ✅ OPTIMIZATION: Use upcoming events from resolver (already fetched during SSR)
+        if (this.event?.upcomingEvents) {
+          this.events = this.event.upcomingEvents;
+        }
+        
         if (this.event?.eventDetails) {
           const imageItem = this.event.eventDetails.find((item: any) => item.section === 'image');
           if (imageItem?.imageUrl) {
@@ -71,9 +77,6 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
         this.subscription.add(new Subscription(() => {
           window.removeEventListener('resize', resizeListener);
         }));
-        
-        // ✅ Defer non-critical data loading
-        this.loadUpcomingEvents();
       });
     }
   }
@@ -178,17 +181,7 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     // ✅ HYDRATION: Non-critical data loading moved to afterNextRender (in constructor)
   }
   
-  // ✅ HYDRATION: Deferred loading for non-critical data
-  private loadUpcomingEvents(): void {
-    if (!this.eventId) return;
-    
-    this.subscription.add(
-      this.publicAppService.getUpcomingEvents(this.eventId).subscribe(res => {
-        this.events = res || [];
-        this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
-      })
-    );
-  }
+  // ✅ REMOVED: loadUpcomingEvents() - now handled in resolver for parallel fetching during SSR
   getInfo(section:string):any[]{
     return this.event.eventDetails.filter((item)=>item.section===section);
   }
@@ -225,7 +218,40 @@ getValue(section: string, title: string, key: string): any {
   }
   getEventDt(event:any,section:string,ix:number):any{
     return event.eventDetails.filter((item) => item.section === section)[ix];
-}
+  }
+
+  // ✅ PERFORMANCE: TrackBy functions for ngFor optimization
+  trackByTagId(index: number, tag: any): string {
+    return tag?.id || tag?.tag || index.toString();
+  }
+
+  trackByCurriculumId(index: number, item: any): string {
+    return item?.id || index.toString();
+  }
+
+  trackByBonusId(index: number, item: any): string {
+    return item?.id || index.toString();
+  }
+
+  trackBySalaryId(index: number, item: any): string {
+    return item?.id || index.toString();
+  }
+
+  trackByOrganizerId(index: number, item: any): string {
+    return item?.id || index.toString();
+  }
+
+  trackBySocialId(index: number, item: any): string {
+    return item?.id || index.toString();
+  }
+
+  trackByQaId(index: number, item: any): string {
+    return item?.id || index.toString();
+  }
+
+  trackByEventId(index: number, event: any): string {
+    return event?.id || index.toString();
+  }
   paymentProcess(): void {
     if (this.eventUserForm.invalid) {
       return;
@@ -311,6 +337,14 @@ getValue(section: string, title: string, key: string): any {
         }
       })
     });
+
+    // ✅ SEO: Add BreadcrumbList structured data
+    const breadcrumbs = [
+      { name: 'Home', url: environment.seoUrl },
+      { name: 'Events', url: `${environment.seoUrl}events` },
+      { name: eventTitle, url: fullUrl }
+    ];
+    this.structuredDataService.setBreadcrumbs(breadcrumbs);
   }
 
   /**

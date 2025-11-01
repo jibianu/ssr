@@ -82,32 +82,32 @@
           <div class="row p-3 justify-content-center">
             <div class="col-lg-2 col-md-4 col-6">
               <div class="mb-4 text-center company-logo">
-                <img src="assets/img/shell.svg" alt="Shell" class="img-fluid">
+                <img src="assets/img/shell.svg" alt="Shell" class="img-fluid" width="120" height="60" loading="lazy">
               </div>
             </div>
             <div class="col-lg-2 col-md-4 col-6">
               <div class="mb-4 text-center company-logo">
-                <img src="assets/img/adnoc.svg" alt="ADNOC" class="img-fluid">
+                <img src="assets/img/adnoc.svg" alt="ADNOC" class="img-fluid" width="120" height="60" loading="lazy">
               </div>
             </div>
             <div class="col-lg-2 col-md-4 col-6">
               <div class="mb-4 text-center company-logo">
-                <img src="assets/img/petronas-2.svg" alt="Petronas" class="img-fluid">
+                <img src="assets/img/petronas-2.svg" alt="Petronas" class="img-fluid" width="120" height="60" loading="lazy">
               </div>
             </div>
             <div class="col-lg-2 col-md-4 col-6">
               <div class="mb-4 text-center company-logo">
-                <img src="assets/img/fluor.svg" alt="Fluor" class="img-fluid">
+                <img src="assets/img/fluor.svg" alt="Fluor" class="img-fluid" width="120" height="60" loading="lazy">
               </div>
             </div>
             <div class="col-lg-2 col-md-4 col-6">
               <div class="mb-4 text-center company-logo">
-                <img src="assets/img/technipfm.svg" alt="TechnipFMC" class="img-fluid">
+                <img src="assets/img/technipfm.svg" alt="TechnipFMC" class="img-fluid" width="120" height="60" loading="lazy">
               </div>
             </div>
             <div class="col-lg-2 col-md-4 col-6">
               <div class="mb-4 text-center company-logo">
-                <img src="assets/img/sweco.svg" alt="Sweco" class="img-fluid">
+                <img src="assets/img/sweco.svg" alt="Sweco" class="img-fluid" width="120" height="60" loading="lazy">
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@
                 data-toggle="collapse" href="#courseContent{{ i }}" aria-expanded="false"
                 [attr.aria-controls]="'courseContent' + i" id="card-header">
                 <div class="mr-auto">
-                  <img [src]="item?.iconUrl" height="20px" width="20px" alt="{{ item?.title }}">
+                  <img [src]="item?.iconUrl" width="20" height="20" loading="lazy" alt="{{ item?.title }}">
                   <span class="ml-2">{{ item?.title }}</span>
                 </div>
               </a>
@@ -255,7 +255,7 @@
                     <!-- Trainer Image -->
                     <div class="col-sm-2 col-md-2" style="padding: 5px">
                       <img [src]="item?.imageUrl" (error)="onImgError($event)" alt="{{ item?.name }}"
-                        class="rounded-circle avatar-lg">
+                        class="rounded-circle avatar-lg" width="80" height="80" loading="lazy" style="aspect-ratio: 1/1; object-fit: cover;">
                     </div>
 
                     <!-- Trainer Name and Description -->
@@ -290,7 +290,7 @@
           <div class="p-0 ">
 
             <img [src]="courseDetails?.titleImageUrl" class="img-top rounded-top d-none d-sm-block "
-              (error)="onImgError($event)">
+              (error)="onImgError($event)" width="350" height="200" loading="lazy" style="aspect-ratio: 7/4; object-fit: cover;">
             <div class="card-body">
               <button class="buy-now mb-3"> Price : {{courseDetails.amount | currency:'INR':'symbol'}}</button>
               <!-- mb-3 adds margin-bottom -->

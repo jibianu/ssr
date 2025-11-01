@@ -1,10 +1,12 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID, Optional } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID, Optional, inject } from '@angular/core';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { OwlOptions } from 'ngx-owl-carousel-o';
 import { Observable, of } from 'rxjs';
-import { map, shareReplay, catchError } from 'rxjs/operators';
+import { map, shareReplay, catchError, tap } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
+import { BackendHealthService } from 'src/app/core/services/backend-health.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'app-public-course-home',
@@ -20,6 +22,9 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
   // ✅ ERROR HANDLING: Loading and error states
   loading = false;
   error: string | null = null;
+  backendAvailable = true; // Track if backend API is available
+  apiUrl = environment.apiUrl; // Expose API URL for template
+  private backendHealthService = inject(BackendHealthService);
   
   // ✅ FIX: Add missing isDragging property for owl-carousel dragging state
   isDragging = false;
@@ -117,11 +122,34 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     // ✅ SSR OPTIMIZATION: No blocking operations
     // HTTP transfer cache automatically handles SSR data transfer
     // Observable is already set up in constructor - template uses async pipe
+    
+    // ✅ BACKEND HEALTH: Check if backend is available (browser only)
+    if (isPlatformBrowser(this.platformId)) {
+      this.checkBackendHealth();
+    }
+  }
+  
+  /**
+   * ✅ BACKEND HEALTH: Check if backend API is available
+   * Shows user-friendly message when backend is offline
+   */
+  private checkBackendHealth(): void {
+    this.backendHealthService.checkHealthWithTimeout(3000).subscribe(available => {
+      this.backendAvailable = available;
+      if (!available && !this.error) {
+        // Only show backend unavailable message if there's no other error
+        this.error = `Unable to connect to API server. Please ensure the backend is running at ${environment.apiUrl}`;
+      }
+    });
   }
   
   // ✅ ERROR HANDLING: Reload on retry
   reload(): void {
     this.error = null;
+    // ✅ BACKEND HEALTH: Clear health check cache and re-check
+    this.backendHealthService.clearCache();
+    this.checkBackendHealth();
+    
     // Re-initialize the Observable (clear cache first)
     this.items$ = this.publicAppService.getDashboardCategories().pipe(
       map(categories => {
