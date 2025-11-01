@@ -113,7 +113,7 @@
               <div class="carousel-course-related h-100">
                 <div class="list-course-item">
                     <div class="card-image">
-                      <img [src]="course.image" [alt]="course.alt" class="card-img">
+                      <img [src]="course.image" [alt]="course.alt" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;">
                       @if (course.badge) {
                         <div class="sale-badge">{{ course.badge }}</div>
                       }
@@ -167,7 +167,7 @@
               <!-- Unlimited Access -->
               <div class="col-lg-4">
                 <div class="new-learn-cnt">
-                  <img src="assets/s3/unlimited-access1.png" alt="Unlimited Access" class="small-icon" />
+                  <img src="assets/s3/unlimited-access1.png" alt="Unlimited Access" class="small-icon" loading="lazy" width="64" height="64" />
                   <h3>Unlimited Access</h3>
                   <p>Choose exactly what you'd like to learn from our extensive subscription library.</p>
                 </div>
@@ -176,7 +176,7 @@
               <!-- Expert Teachers -->
               <div class="col-lg-4">
                 <div class="new-learn-cnt">
-                  <img src="assets/s3/expert1.png" alt="Expert Teachers" class="small-icon" />
+                  <img src="assets/s3/expert1.png" alt="Expert Teachers" class="small-icon" loading="lazy" width="64" height="64" />
                   <h3>Expert Teachers</h3>
                   <p>Learn from industry experts who are passionate about teaching.</p>
                 </div>
@@ -185,7 +185,7 @@
               <!-- Learn Anywhere -->
               <div class="col-lg-4">
                 <div class="new-learn-cnt">
-                  <img src="assets/s3/anywhere1.png" alt="Learn Anywhere" class="small-icon" />
+                  <img src="assets/s3/anywhere1.png" alt="Learn Anywhere" class="small-icon" loading="lazy" width="64" height="64" />
                   <h3>Learn Anywhere</h3>
                   <p>Switch between your devices without losing your place.</p>
                 </div>
@@ -244,47 +244,31 @@
           <!-- ✅ HYDRATION: Use @for loop for event cards (Angular 20 syntax, prevents SSR mismatches) -->
           @for (event of topEvents; track event.image) {
             <div class="carousel-course-related h-100">
-              @if (event.url) {
-                <a [routerLink]="event.url" class="no-underline">
-                  <div class="list-course-item">
-                    <div class="card-image">
-                      <img [src]="event.image" [alt]="event.alt" class="card-img">
-                      <div class="sale-badge">Best Seller</div>
-                    </div>
-                    <div class="card-body">
-                      <h4 class="card-title">{{ event.title }}</h4>
-                      <h6 class="card-subtitle">{{ event.subtitle }}</h6>
-                      <p class="card-text" [innerHTML]="event.description"></p>
-                      <div class="buy">
-                        <div class="price">{{ event.price }}</div>
-                        <a [routerLink]="event.url" class="btn btn-register no-underline">
-                          <i class="fa fa-shopping-cart"></i> Register Now
-                        </a>
-                      </div>
-                    </div>
+              <!-- ✅ HYDRATION FIX: Always render the same structure - no conditional wrapping -->
+              <!-- Since all events have empty URLs, always render div (not anchor) for consistency -->
+              <div class="list-course-item">
+                <div class="card-image">
+                  <img [src]="event.image" [alt]="event.alt" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;">
+                  <div class="sale-badge">Best Seller</div>
+                </div>
+                <div class="card-body">
+                  <h4 class="card-title">{{ event.title }}</h4>
+                  <h6 class="card-subtitle">{{ event.subtitle }}</h6>
+                  <p class="card-text" [innerHTML]="event.description"></p>
+                  <div class="buy">
+                    <div class="price">{{ event.price }}</div>
+                    @if (event.url) {
+                      <a [routerLink]="event.url" class="btn btn-register no-underline">
+                        <i class="fa fa-shopping-cart"></i> Register Now
+                      </a>
+                    } @else {
+                      <span class="btn btn-register no-underline">
+                        <i class="fa fa-shopping-cart"></i> Register Now
+                      </span>
+                    }
                   </div>
-                </a>
-              } @else {
-                <a class="no-underline">
-                  <div class="list-course-item">
-                    <div class="card-image">
-                      <img [src]="event.image" [alt]="event.alt" class="card-img">
-                      <div class="sale-badge">Best Seller</div>
-                    </div>
-                    <div class="card-body">
-                      <h4 class="card-title">{{ event.title }}</h4>
-                      <h6 class="card-subtitle">{{ event.subtitle }}</h6>
-                      <p class="card-text" [innerHTML]="event.description"></p>
-                      <div class="buy">
-                        <div class="price">{{ event.price }}</div>
-                        <a class="btn btn-register no-underline">
-                          <i class="fa fa-shopping-cart"></i> Register Now
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              }
+                </div>
+              </div>
             </div>
           }
         </div>
@@ -319,4 +303,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

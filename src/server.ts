@@ -5,8 +5,9 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
-import { dirname, resolve } from 'path';
+import { dirname, resolve, join } from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync, readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { getCacheConfig, isStaticRoute as checkStaticRoute } from './server.cache.config';
 import { createCacheAdapter, CacheAdapter } from './server.cache.adapter';
@@ -298,15 +299,60 @@ app.get('*', async (req, res, next) => {
       // ✅ PERFORMANCE: Record metrics for cache miss (render happened)
       performanceMonitor.endMeasure(markId, false);
     } else {
+      // ✅ FIX: If SSR returns no response, fallback to index.html for client-side routing
+      // This ensures deep links work correctly on refresh or direct access
+      try {
+        const indexPath = join(browserDistFolder, 'index.html');
+        if (existsSync(indexPath)) {
+          const html = readFileSync(indexPath, 'utf-8');
+          res.status(200).send(html);
+          performanceMonitor.endMeasure(markId, false);
+          return;
+        }
+      } catch (fallbackError) {
+        console.warn('Could not serve index.html fallback:', fallbackError);
+      }
+      
       // ✅ PERFORMANCE: Record metrics even if no response
       performanceMonitor.endMeasure(markId, false);
       next();
     }
   } catch (err) {
     console.error('SSR Error:', err);
+    // ✅ FIX: On SSR error, try to serve index.html as fallback
+    // This prevents 404 errors when Angular SSR fails but route might be valid client-side
+    try {
+      const indexPath = join(browserDistFolder, 'index.html');
+      if (existsSync(indexPath)) {
+        const html = readFileSync(indexPath, 'utf-8');
+        res.status(200).send(html);
+        performanceMonitor.endMeasure(markId, false);
+        return;
+      }
+    } catch (fallbackError) {
+      console.warn('Could not serve index.html fallback after SSR error:', fallbackError);
+    }
+    
     // ✅ PERFORMANCE: Record metrics on error
     performanceMonitor.endMeasure(markId, false);
     next(err);
+  }
+});
+
+// ✅ FIX: Final fallback - serve index.html for any unmatched routes
+// This ensures Angular handles routing client-side when SSR doesn't match
+app.use('*', (req, res) => {
+  try {
+    const indexPath = join(browserDistFolder, 'index.html');
+    if (existsSync(indexPath)) {
+      const html = readFileSync(indexPath, 'utf-8');
+      res.status(200).send(html);
+    } else {
+      res.status(404).send('Not Found');
+    }
+  } catch (error) {
+    console.error('Error serving index.html fallback:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 

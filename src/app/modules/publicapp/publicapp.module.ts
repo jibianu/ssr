@@ -24,6 +24,7 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 // ✅ MODULE: PageNotFoundComponent is imported via SharedModule (no need to import here)
 import { provideHttpClient, withFetch } from '@angular/common/http';
+import { PublicCourseModule } from './public-course/public-course.module';
 
 
 
@@ -56,7 +57,9 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
   imports: [
     CommonModule,
     PublicappRoutingModule,
-    SharedModule
+    SharedModule,
+    // ✅ Import PublicCourseModule to access PublicCategoryComponent for direct routing
+    PublicCourseModule
   ],
   providers: [ provideHttpClient(withFetch())],
   schemas: [

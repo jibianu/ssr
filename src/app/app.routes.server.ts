@@ -31,11 +31,10 @@ export const serverRoutes: ServerRoute[] = [
   // Dynamic routes - must be server-rendered
   { path: 'auth', renderMode: RenderMode.Server },
   { path: 'app', renderMode: RenderMode.Server },
-  { path: 'course', renderMode: RenderMode.Server }, // Public course home (category filtering)
-  // Note: course/:url and course/:url/:location are lazy-loaded child routes
-  // They will be handled by the wildcard fallback below
+  { path: 'courses', renderMode: RenderMode.Server }, // Public course home (category filtering)
   { path: 'events', renderMode: RenderMode.Server }, // Dynamic event listing
-  // Note: events/:url is a lazy-loaded child route, handled by wildcard
+  // Note: Dynamic routes (category/:name, course detail routes /:url and /:url/:location, events/:url) 
+  // are handled by the wildcard fallback below since they have parameters
 
   // Wildcard fallback
   { path: '**', renderMode: RenderMode.Server }

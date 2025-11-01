@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MetadataService } from 'src/app/shared/service/meta.service';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
@@ -42,7 +42,8 @@ interface QuickLink {
     selector: 'app-home',
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
-    standalone: false
+    standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush for faster change detection
     // ✅ HYDRATION: Removed ngSkipHydration to enable proper SSR hydration
     // Only browser-specific parts should skip hydration, not the entire component
 })

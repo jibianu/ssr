@@ -32,7 +32,7 @@
                     <div class="list-course-item">
                       <!-- Course Image -->
                       <div class="card-image">
-                        <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{ course?.title }}" class="card-img" />
+                        <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{ course?.title }}" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;" />
                         <div class="sale-badge" *ngIf="course?.isBestSeller">Best Seller</div>
                       </div>
 

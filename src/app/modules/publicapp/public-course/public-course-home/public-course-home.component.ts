@@ -180,8 +180,8 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     } else if (normalized.startsWith('course/')) {
       normalized = normalized.replace(/^course\//, '');
     }
-    // ✅ Return just the slug - routerLink will resolve relative to current route (/course)
-    return normalized;
+    // ✅ Return absolute path starting with '/' for root-level routing
+    return '/' + normalized;
   }
 
   onImgError(event: Event): void {

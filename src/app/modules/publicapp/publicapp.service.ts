@@ -1,9 +1,9 @@
 import { Category } from './../adminapp/category/category.model';
-import { Observable, of } from 'rxjs';
-import { shareReplay, catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { shareReplay, catchError, timeout, retry, delay } from 'rxjs/operators';
 import { environment } from './../../../environments/environment';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 // ✅ PERFORMANCE: Service-level caching prevents redundant API calls (40-50% reduction)
 // ✅ SSR: shareReplay works in both SSR and browser contexts
@@ -46,20 +46,68 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Cache by canonical URL - used in route resolvers and components
     getCourseByCanonicalURL(url: string): Observable<any> {
-        // ✅ FIX: Ensure url doesn't already contain 'course/course/' prefix to prevent malformed URLs
-        // Remove any leading 'course/course/' or 'course/' from url if present
-        let normalizedUrl = url;
+        // ✅ FIX: Normalize URL - remove leading slashes and any 'course/course/' or 'course/' prefixes
+        let normalizedUrl = (url || '').trim();
+        
+        // Remove leading slashes first
+        normalizedUrl = normalizedUrl.replace(/^\/+/, '');
+        
+        // Remove 'course/course/' prefix if present (more specific first)
         if (normalizedUrl.startsWith('course/course/')) {
             normalizedUrl = normalizedUrl.replace(/^course\/course\//, '');
         } else if (normalizedUrl.startsWith('course/')) {
             normalizedUrl = normalizedUrl.replace(/^course\//, '');
         }
         
-        return this.http.get<any>(this.apiUrl + `page/course/course/` + normalizedUrl).pipe(
+        // Remove any trailing slashes
+        normalizedUrl = normalizedUrl.replace(/\/+$/, '');
+        
+        if (!normalizedUrl) {
+            console.error('⚠️ Empty course URL after normalization');
+            return of(null);
+        }
+        
+        const apiPath = `page/course/course/${normalizedUrl}`;
+        const fullUrl = this.apiUrl + apiPath;
+        console.log(`🔍 API Call: ${fullUrl} (original URL: "${url}", normalized: "${normalizedUrl}")`);
+        
+        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
+        const headers = new HttpHeaders().set('X-Timeout', '60000');
+        
+        return this.http.get<any>(fullUrl, { headers }).pipe(
+            timeout(60000), // 60 seconds timeout for course API calls
+            retry({
+                count: 2, // Retry up to 2 times on failure
+                delay: (error: any, retryCount: number) => {
+                    // Only retry on network errors (no status or 0 status), not on client errors (4xx)
+                    if (error?.status && error.status >= 400 && error.status < 500) {
+                        // Don't retry client errors (like 404, 401, etc.)
+                        return throwError(() => error);
+                    }
+                    // Exponential backoff: 1s, 2s for network errors
+                    return of(null).pipe(delay(1000 * retryCount));
+                }
+            }),
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                console.error(`Error fetching course by URL ${url}:`, error);
-                return of(null); // ✅ ERROR HANDLING: Return null on error
+                // Better error handling for network/fetch failures
+                const isNetworkError = !error.status || error.status === 0 || error.message?.includes('fetch failed');
+                const isTimeoutError = error.name === 'TimeoutError' || error.status === 408;
+                
+                if (isNetworkError) {
+                    console.error(`🔴 Network Error: Unable to connect to API server at ${fullUrl}`);
+                    console.error(`   - Check if the API server is running`);
+                    console.error(`   - Check network connectivity`);
+                    console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
+                } else if (isTimeoutError) {
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
+                    console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
+                } else {
+                    console.error(`❌ Error fetching course by URL "${url}" (normalized: "${normalizedUrl}"). API path: ${apiPath}`, error);
+                }
+                
+                // Return null on error to prevent breaking the app
+                return of(null);
             })
         );
     }
@@ -115,29 +163,79 @@ export class PublicAppService {
     }
 
     getCourseByCanonicalLocationURL(courseUrl: string, locationUrl: string): Observable<any> {
-        // ✅ FIX: Ensure courseUrl doesn't already contain 'course/course/' prefix to prevent malformed URLs
-        // Remove any leading 'course/course/' or 'course/' from courseUrl if present
-        let normalizedCourseUrl = courseUrl || '';
+        // ✅ FIX: Normalize courseUrl - remove leading slashes and any 'course/course/' or 'course/' prefixes
+        let normalizedCourseUrl = (courseUrl || '').trim();
+        
         // Remove leading slashes first
         normalizedCourseUrl = normalizedCourseUrl.replace(/^\/+/, '');
-        // Remove 'course/course/' prefix if present (check most specific first)
+        
+        // Remove 'course/course/' prefix if present (more specific first)
         if (normalizedCourseUrl.startsWith('course/course/')) {
             normalizedCourseUrl = normalizedCourseUrl.replace(/^course\/course\//, '');
         } else if (normalizedCourseUrl.startsWith('course/')) {
             normalizedCourseUrl = normalizedCourseUrl.replace(/^course\//, '');
         }
         
+        // Remove any trailing slashes
+        normalizedCourseUrl = normalizedCourseUrl.replace(/\/+$/, '');
+        
         // ✅ Also normalize locationUrl
-        let normalizedLocation = locationUrl || '';
+        let normalizedLocation = (locationUrl || '').trim();
         normalizedLocation = normalizedLocation.replace(/^\/+/, '');
+        normalizedLocation = normalizedLocation.replace(/\/+$/, '');
+        
+        if (!normalizedCourseUrl) {
+            console.error('⚠️ Empty course URL after normalization');
+            return of(null);
+        }
+        
+        if (!normalizedLocation) {
+            console.error('⚠️ Empty location URL after normalization');
+            return of(null);
+        }
         
         const apiPath = `page/course/course/${normalizedCourseUrl}/location/${normalizedLocation}`;
-        console.log(`🔍 API Call: ${this.apiUrl + apiPath} (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}")`);
-        return this.http.get<any>(this.apiUrl + apiPath).pipe(
+        const fullUrl = this.apiUrl + apiPath;
+        console.log(`🔍 API Call: ${fullUrl} (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}", normalized: "${normalizedCourseUrl}" / "${normalizedLocation}")`);
+        
+        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
+        const headers = new HttpHeaders().set('X-Timeout', '60000');
+        
+        return this.http.get<any>(fullUrl, { headers }).pipe(
+            timeout(60000), // 60 seconds timeout for course API calls
+            retry({
+                count: 2, // Retry up to 2 times on failure
+                delay: (error: any, retryCount: number) => {
+                    // Only retry on network errors (no status or 0 status), not on client errors (4xx)
+                    if (error?.status && error.status >= 400 && error.status < 500) {
+                        // Don't retry client errors (like 404, 401, etc.)
+                        return throwError(() => error);
+                    }
+                    // Exponential backoff: 1s, 2s for network errors
+                    return of(null).pipe(delay(1000 * retryCount));
+                }
+            }),
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                console.error(`❌ Error fetching course by URL "${courseUrl}" and location "${locationUrl}". Normalized to: "${normalizedCourseUrl}" / "${normalizedLocation}". API path: ${apiPath}`, error);
-                return of(null); // ✅ ERROR HANDLING: Return null on error
+                // Better error handling for network/fetch failures
+                const isNetworkError = !error.status || error.status === 0 || error.message?.includes('fetch failed');
+                const isTimeoutError = error.name === 'TimeoutError' || error.status === 408;
+                
+                if (isNetworkError) {
+                    console.error(`🔴 Network Error: Unable to connect to API server at ${fullUrl}`);
+                    console.error(`   - Check if the API server is running`);
+                    console.error(`   - Check network connectivity`);
+                    console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
+                    console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
+                } else if (isTimeoutError) {
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
+                    console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
+                } else {
+                    console.error(`❌ Error fetching course by URL "${courseUrl}" and location "${locationUrl}". Normalized to: "${normalizedCourseUrl}" / "${normalizedLocation}". API path: ${apiPath}`, error);
+                }
+                
+                // Return null on error to prevent breaking the app
+                return of(null);
             })
         );
     }

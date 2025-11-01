@@ -8,6 +8,7 @@ import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions }
 import { ErrorInterceptor } from "./core/helpers/error.interceptor";
 import { JwtInterceptor } from "./core/helpers/jwt.interceptor";
 import { CacheInterceptor } from "./core/helpers/cache.interceptor";
+import { DeduplicationInterceptor } from "./core/helpers/deduplication.interceptor";
 import { RetryInterceptor } from "./core/helpers/retry.interceptor";
 import { TimeoutInterceptor } from "./core/helpers/timeout.interceptor";
 
@@ -55,11 +56,12 @@ export const appConfig = {
       provideHttpClient(withFetch(), withInterceptorsFromDi()),
       provideAnimations(),
       // INTERCEPTOR ORDER MATTERS: Process in this order
-      { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },      // 1. Check cache first
-      { provide: HTTP_INTERCEPTORS, useClass: TimeoutInterceptor, multi: true },    // 2. Add timeout
-      { provide: HTTP_INTERCEPTORS, useClass: RetryInterceptor, multi: true },      // 3. Retry on failure
-      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },        // 4. Add auth headers
-      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },       // 5. Handle errors (last)
+      { provide: HTTP_INTERCEPTORS, useClass: DeduplicationInterceptor, multi: true }, // 1. Deduplicate requests first
+      { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },         // 2. Check cache
+      { provide: HTTP_INTERCEPTORS, useClass: TimeoutInterceptor, multi: true },       // 3. Add timeout
+      { provide: HTTP_INTERCEPTORS, useClass: RetryInterceptor, multi: true },         // 4. Retry on failure
+      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },           // 5. Add auth headers
+      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },        // 6. Handle errors (last)
   ]
   };
   

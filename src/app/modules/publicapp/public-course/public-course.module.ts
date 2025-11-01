@@ -19,7 +19,9 @@ import { NgxPaginationModule } from "ngx-pagination";
     PublicCourseRoutingModule,
     SharedModule,
     NgxPaginationModule
-]
+  ],
+  // ✅ Export PublicCategoryComponent so it can be used in parent module routing
+  exports: [PublicCategoryComponent]
 })
 export class PublicCourseModule { }
 

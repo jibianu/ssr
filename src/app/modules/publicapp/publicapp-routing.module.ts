@@ -17,6 +17,7 @@ import { PoliciesComponent } from './policies/policies.component';
 import { MissionAndVisionComponent } from './mission-and-vision/mission-and-vision.component';
 import { AffiliateProgramComponent } from './affiliate-program/affiliate-program.component';
 import { PublicCourseHomeComponent } from './public-course/public-course-home/public-course-home.component';
+import { PublicCategoryComponent } from './public-course/public-category/public-category.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { WorldsLargestRefineriesComponent } from './worlds-largest-refineries/worlds-largest-refineries.component';
 import { TermsAndConditionComponent } from './terms-and-condition/terms-and-condition.component';
@@ -38,7 +39,7 @@ const routes: Routes = [
     } as RouteSeoData
   },
   { 
-    path: 'course', 
+    path: 'courses', 
     component: PublicCourseHomeComponent,
     data: {
       seo: {
@@ -293,7 +294,29 @@ const routes: Routes = [
       }
     } as RouteSeoData
   },
-  { path: '', loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule) },
+  // ✅ Category route - direct component (not lazy-loaded, simpler)
+  // Must be before dynamic course routes to avoid conflicts
+  {
+    path: 'category/:name',
+    component: PublicCategoryComponent
+  },
+  // ✅ Course detail routes moved to root level (must be after all static routes)
+  // These routes match course slugs directly at root: /{course-slug}
+  // IMPORTANT: These must come AFTER all static routes but BEFORE the wildcard
+  {
+    path: ':url/:location',
+    loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
+    data: {
+      skipRouteLocalization: true // Prevent i18n from trying to localize course URLs
+    }
+  },
+  {
+    path: ':url',
+    loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
+    data: {
+      skipRouteLocalization: true // Prevent i18n from trying to localize course URLs
+    }
+  },
   { path: '**', redirectTo: 'page-not-found' }
 ];
 

@@ -67,7 +67,7 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
 
   // ✅ FIX: Normalize course URL to ensure routerLink works correctly
   // Removes leading '/' and any 'course/course/' or 'course/' prefixes
-  // Returns just the course slug for routerLink (relative to /course route)
+  // Returns absolute path starting with '/' for root-level course routes
   private normalizeCourseUrl(url: string | null | undefined): string {
     if (!url) return '';
     // Remove leading slash
@@ -78,8 +78,8 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
     } else if (normalized.startsWith('course/')) {
       normalized = normalized.replace(/^course\//, '');
     }
-    // ✅ Return just the slug - routerLink will resolve relative to current route (/course)
-    return normalized;
+    // ✅ Return absolute path starting with '/' for root-level routing
+    return '/' + normalized;
   }
 
   // PERFORMANCE: Add trackBy for ngFor optimization

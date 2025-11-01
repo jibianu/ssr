@@ -7,31 +7,12 @@ import { PublicCourseHomeComponent } from './public-course-home/public-course-ho
 import { PublicCourseListComponent } from './public-course-list/public-course-list.component';
 
 const routes: Routes = [
-
- 
-    {
-    path: 'list',
-    component: PublicCourseListComponent,
-  },
+  // ✅ Course detail routes - matched when parent has :url or :url/:location
+  // The parent route (publicapp-routing) already matched the URL pattern
+  // This module is lazy-loaded and provides the component with empty path
   {
-    path: 'category/:name',
-    component: PublicCategoryComponent,
-  },
-
-  {
-    path: '',
-    component: PublicCourseHomeComponent,
-  },
-  {
-    path: ':url/:location',
-    resolve:{
-      courseDetails:publicCourseDetailsResolver
-    },
-    component: PublicCourseDetailsComponent,
-  },
-  {
-    path: ':url',
-    resolve:{
+    path: '', // Empty path - parent route already matched :url or :url/:location
+    resolve: {
       courseDetails: publicCourseDetailsResolver
     },
     component: PublicCourseDetailsComponent,
