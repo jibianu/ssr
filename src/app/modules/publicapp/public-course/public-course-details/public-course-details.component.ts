@@ -180,6 +180,13 @@ export class PublicCourseDetailsComponent {
     return item?.id || `subsubcontent-${index}`;
   }
 
+  // ✅ HELPER: Check if sub-item has nested items to show dropdown icon
+  hasNestedItems(subItem: any): boolean {
+    return subItem?.courseContentSubSubTypes && 
+           Array.isArray(subItem.courseContentSubSubTypes) && 
+           subItem.courseContentSubSubTypes.length > 0;
+  }
+
   trackByFaqId(index: number, item: any): string {
     return item?.id || `faq-${index}`;
   }
@@ -208,6 +215,7 @@ export class PublicCourseDetailsComponent {
   preventNavigation(event: Event): void {
     // Prevent default to stop Angular router from intercepting hash links
     event.preventDefault();
+    event.stopPropagation();
     
     // ✅ SSR: Only execute DOM operations in browser
     if (!this.isBrowser) {
@@ -217,50 +225,81 @@ export class PublicCourseDetailsComponent {
     const target = event.target as HTMLElement;
     const link = target.closest('a[data-toggle="collapse"]') as HTMLAnchorElement;
     
-    if (link && link.hash) {
-      // Check if Bootstrap is available (for Bootstrap collapse)
-      const bootstrap = (window as any).bootstrap;
-      const targetElement = document.querySelector(link.hash);
-      
-      if (targetElement && bootstrap) {
-        // Use Bootstrap 5+ Collapse API if available
-        try {
-          const collapse = bootstrap.Collapse.getOrCreateInstance(targetElement);
-          collapse.toggle();
-        } catch (e) {
-          // Fallback: manually toggle if Bootstrap API fails
-          const collapseElement = targetElement as HTMLElement;
-          const isExpanded = collapseElement.classList.contains('show');
-          
-          if (isExpanded) {
-            collapseElement.classList.remove('show');
-            link.setAttribute('aria-expanded', 'false');
+    if (!link) {
+      return;
+    }
+    
+    // Get the target element from href or hash
+    const targetId = link.getAttribute('href')?.replace('#', '') || link.hash?.replace('#', '');
+    if (!targetId) {
+      return;
+    }
+    
+    const targetElement = document.getElementById(targetId) || document.querySelector(`#${targetId}`);
+    
+    if (!targetElement) {
+      return;
+    }
+    
+    const collapseElement = targetElement as HTMLElement;
+    const isExpanded = collapseElement.classList.contains('show');
+    
+    // Check if Bootstrap is available (for Bootstrap collapse)
+    const bootstrap = (window as any).bootstrap;
+    
+    if (bootstrap && bootstrap.Collapse) {
+      // Use Bootstrap 5+ Collapse API if available
+      try {
+        const collapse = bootstrap.Collapse.getOrCreateInstance(collapseElement);
+        collapse.toggle();
+        
+        // Update link state
+        setTimeout(() => {
+          const isNowExpanded = collapseElement.classList.contains('show');
+          link.setAttribute('aria-expanded', isNowExpanded.toString());
+          if (isNowExpanded) {
+            link.classList.remove('collapsed');
           } else {
-            // Close other items in the same parent accordion
-            const parentId = link.getAttribute('data-parent') || 
-                            (targetElement.getAttribute('data-parent') || '').replace('#', '');
-            if (parentId) {
-              const parent = document.getElementById(parentId) || 
-                           document.querySelector(parentId);
-              if (parent) {
-                const siblings = parent.querySelectorAll('.collapse.show');
-                siblings.forEach((sibling: Element) => {
-                  if (sibling !== targetElement) {
-                    (sibling as HTMLElement).classList.remove('show');
-                  }
-                });
-              }
-            }
-            
-            collapseElement.classList.add('show');
-            link.setAttribute('aria-expanded', 'true');
+            link.classList.add('collapsed');
           }
-        }
+        }, 100);
+        return;
+      } catch (e) {
+        console.warn('Bootstrap Collapse API failed, using fallback:', e);
       }
     }
     
-    // Stop propagation to prevent event bubbling
-    event.stopPropagation();
+    // Fallback: manually toggle if Bootstrap API fails or isn't available
+    if (isExpanded) {
+      collapseElement.classList.remove('show');
+      link.setAttribute('aria-expanded', 'false');
+      link.classList.add('collapsed');
+    } else {
+      // Close other items in the same parent accordion
+      const parentSelector = link.getAttribute('data-parent') || 
+                            collapseElement.getAttribute('data-parent');
+      if (parentSelector) {
+        const parent = document.querySelector(parentSelector);
+        if (parent) {
+          const siblings = parent.querySelectorAll('.collapse.show');
+          siblings.forEach((sibling: Element) => {
+            if (sibling !== targetElement) {
+              (sibling as HTMLElement).classList.remove('show');
+              // Update sibling link states
+              const siblingLink = parent.querySelector(`a[href="#${sibling.id}"]`) as HTMLAnchorElement;
+              if (siblingLink) {
+                siblingLink.setAttribute('aria-expanded', 'false');
+                siblingLink.classList.add('collapsed');
+              }
+            }
+          });
+        }
+      }
+      
+      collapseElement.classList.add('show');
+      link.setAttribute('aria-expanded', 'true');
+      link.classList.remove('collapsed');
+    }
   }
 
 }

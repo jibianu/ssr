@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { AdminAppService } from './../../adminapp.service';
 import { ConfirmationModalComponent } from './../../../../shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { BaseComponent } from 'src/app/core/utils/base.component';
+import { getErrorMessage } from 'src/app/core/utils/error.util';
 
 @Component({
   selector: 'app-user-list',
@@ -13,7 +13,7 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserListComponent implements OnInit, OnDestroy {
+export class UserListComponent extends BaseComponent implements OnInit {
   
   users: any[] = [];
   page: number = 1;
@@ -24,14 +24,14 @@ export class UserListComponent implements OnInit, OnDestroy {
   sortBy: string = 'FirstName';
   isAsc: boolean = true;
 
-  private subscription: Subscription = new Subscription();
-
   constructor(
     private appService: AdminAppService,
     private modalService: NgbModal,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super(); // ✅ BEST PRACTICE: Initialize BaseComponent for subscription management
+  }
 
   ngOnInit(): void {
     this.fetchUsers();
@@ -46,7 +46,8 @@ export class UserListComponent implements OnInit, OnDestroy {
       pageNumber: this.page,
     };
 
-    this.subscription.add(
+    // ✅ BEST PRACTICE: Use BaseComponent.addSubscription for automatic cleanup
+    this.addSubscription(
       this.appService.getUsers(filters).subscribe({
         next: (response) => {
           this.users = response.results || [];
@@ -54,7 +55,10 @@ export class UserListComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck(); // Manual change detection trigger for OnPush
         },
         error: (error) => {
-          console.error('Error fetching users:', error);
+          // ✅ BEST PRACTICE: Use ErrorUtil for consistent error messages
+          const errorMessage = getErrorMessage(error);
+          console.error('Error fetching users:', errorMessage, error);
+          this.toasterService.showError(errorMessage);
         }
       })
     );
@@ -92,7 +96,8 @@ export class UserListComponent implements OnInit, OnDestroy {
 
     modalRef.result.then((result: string) => {
       if (result === 'ok') {
-        this.subscription.add(
+        // ✅ BEST PRACTICE: Use BaseComponent.addSubscription for automatic cleanup
+        this.addSubscription(
           this.appService.deleteUserById(userId).subscribe({
             next: () => {
               this.toasterService.showSuccess('User deleted successfully');
@@ -100,8 +105,10 @@ export class UserListComponent implements OnInit, OnDestroy {
               this.fetchUsers(); // This will call markForCheck internally
             },
             error: (err) => {
-              console.error('Delete error:', err);
-              this.toasterService.showError('Something went wrong');
+              // ✅ BEST PRACTICE: Use ErrorUtil for consistent error messages
+              const errorMessage = getErrorMessage(err);
+              console.error('Delete error:', errorMessage, err);
+              this.toasterService.showError(errorMessage || 'Something went wrong');
             }
           })
         );
@@ -122,9 +129,5 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.sortBy = column;
     this.isAsc = !this.isAsc;
     this.fetchUsers();
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
   }
 }

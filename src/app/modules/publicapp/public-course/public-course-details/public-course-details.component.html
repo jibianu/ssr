@@ -1,4 +1,5 @@
-<div class="jumbotron">
+<!-- ✅ FIX: Only render if course details are available (prevents hydration errors when resolver redirects) -->
+<div *ngIf="courseDetailsFromRoute$()" class="jumbotron">
   <div class="container">
     <div class="col-xl-8 col-lg-8 col-md-12">
       <div>
@@ -12,7 +13,7 @@
     </div>
   </div>
 </div>
-<div class="container">
+<div *ngIf="courseDetailsFromRoute$()" class="container">
   <div class="row">
     <div class="col-lg-8 col-md-12 col-12 mt-n8 mb-4 mb-lg-0">
 
@@ -152,17 +153,17 @@
               <div class="card-body" id="content">
                 <div class="ml-5" *ngFor="let subItem of item?.courseContentSubTypes; let j = index; trackBy: trackBySubContentId">
                   <!-- Sub Content with Nested Items -->
-                  <div *ngIf="subItem?.courseContentSubSubTypes?.length > 0; else subContent">
-                    <a class="mb-3 d-flex justify-content-between align-items-center text-inherit text-decoration-none"
-                      data-toggle="collapse" [attr.href]="'#subContentCollapse' + j" aria-expanded="false"
-                      [attr.aria-controls]="'subContentCollapse' + j" id="sub-card-header" (click)="preventNavigation($event)">
+                  <div *ngIf="subItem?.courseContentSubSubTypes && subItem?.courseContentSubSubTypes?.length > 0; else subContent">
+                    <a class="mb-3 d-flex justify-content-between align-items-center text-inherit text-decoration-none collapsed"
+                      data-toggle="collapse" [attr.href]="'#subContentCollapse' + i + '-' + j" aria-expanded="false"
+                      [attr.aria-controls]="'subContentCollapse' + i + '-' + j" id="sub-card-header" (click)="preventNavigation($event)">
                       <div class="mr-auto">
                         <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subItem?.title }}">
                         <span class="ml-2">{{ subItem?.title }}</span>
                       </div>
                     </a>
-                    <!-- ✅ FIX: Use attr.data-parent instead of data-parent for proper Angular binding -->
-                    <div class="collapse show" [attr.id]="'subContentCollapse' + j" [attr.data-parent]="'#subContentCollapse' + j">
+                    <!-- ✅ FIX: Use unique ID with both indices, remove 'show' class, and fix data-parent -->
+                    <div class="collapse" [attr.id]="'subContentCollapse' + i + '-' + j" [attr.data-parent]="'#courseContent' + i">
                       <ul>
                         <li *ngFor="let subSubItem of subItem?.courseContentSubSubTypes; trackBy: trackBySubSubContentId">
                           <div class="mr-auto">

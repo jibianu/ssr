@@ -1,12 +1,22 @@
 import { inject } from "@angular/core";
-import { RedirectCommand, ResolveFn, Router, UrlTree } from "@angular/router";
+import { ResolveFn, Router } from "@angular/router";
 import { PublicAppService } from "../../publicapp.service";
 import { catchError, map } from "rxjs/operators";
+import { throwError, of } from "rxjs";
 import { redirectToNotFoundPage } from "src/app/core/helpers/redirect-to-not-found";
+import { isNotFoundError, isServerError, getErrorMessages } from "src/app/core/utils/error.util";
 
 export const publicCourseDetailsResolver: ResolveFn<unknown> = (snap) => {
     let courseUrl = snap.paramMap.get('url') || '';
     let location = snap.paramMap.get('location');
+
+    // ✅ FIX: Exclude /assets/ paths from course routing
+    // /assets/config.json should not be treated as a course URL
+    if (courseUrl === 'assets' || courseUrl.startsWith('assets/')) {
+        const router = inject(Router);
+        console.warn(`⚠️ Blocked routing to assets path: ${courseUrl}`);
+        return redirectToNotFoundPage(router);
+    }
 
     if (!courseUrl) {
         const router = inject(Router);
@@ -36,19 +46,76 @@ export const publicCourseDetailsResolver: ResolveFn<unknown> = (snap) => {
     const publicAppService = inject(PublicAppService);
     const router = inject(Router);
 
-    const course$ = location ?
-        publicAppService.getCourseByCanonicalLocationURL(courseUrl, location):
-        publicAppService.getCourseByCanonicalURL(courseUrl);
-
-    return course$
-        .pipe(
+    // ✅ FIX: If location is provided, try course with location first, but fallback to course without location if it fails
+    // This handles cases where the route :url/:location matches a course slug followed by another course slug
+    if (location) {
+        return publicAppService.getCourseByCanonicalLocationURL(courseUrl, location).pipe(
+            // ✅ BEST PRACTICE: Handle null response from service (service returns null on error)
             map(course => {
                 if (!course) {
-                    throw new Error('Course not found');
+                    // If service returned null, throw error to trigger fallback
+                    throw { 
+                        status: 500, 
+                        error: { 
+                            StatusCode: 500, 
+                            Messages: ['Course not found'] 
+                        } 
+                    };
                 }
                 return course;
             }),
+            catchError((error) => {
+                // ✅ BEST PRACTICE: Use ErrorUtil for consistent error detection
+                const messages = getErrorMessages(error);
+                const status = error?.status || error?.error?.StatusCode || 0;
+                
+                // Check if it's a "not found" error (404, or 500 with "not found" message)
+                const isNotFound = isNotFoundError(error) || 
+                                 (status === 500 && messages.some((msg: string) => 
+                                     msg?.toLowerCase().includes('not found') || 
+                                     msg?.toLowerCase().includes('course not found')
+                                 )) ||
+                                 (isServerError(error) && messages.some((msg: string) => 
+                                     msg?.toLowerCase().includes('not found') || 
+                                     msg?.toLowerCase().includes('course not found')
+                                 ));
+                
+                if (isNotFound) {
+                    console.warn(`⚠️ Course "${courseUrl}" with location "${location}" not found. Trying "${location}" as course slug instead.`);
+                    // Try treating the "location" as the actual course URL
+                    return publicAppService.getCourseByCanonicalURL(location).pipe(
+                        map(course => {
+                            if (!course) {
+                                // ✅ FIX: If fallback also returns null, redirect to 404
+                                console.error(`❌ Fallback course "${location}" also not found. Redirecting to 404.`);
+                                throw new Error('Course not found');
+                            }
+                            return course;
+                        }),
+                        catchError((fallbackError) => {
+                            // ✅ FIX: Ensure fallback errors always redirect to 404
+                            console.error(`❌ Error fetching fallback course "${location}":`, fallbackError);
+                            return redirectToNotFoundPage(router);
+                        })
+                    );
+                }
+                // For other errors (network, timeout, etc.), redirect to 404
+                console.error(`❌ Non-not-found error for course "${courseUrl}" with location "${location}":`, error);
+                return redirectToNotFoundPage(router);
+            }),
             catchError(() => redirectToNotFoundPage(router))
         );
+    }
+
+    // No location parameter - just fetch course by URL
+    return publicAppService.getCourseByCanonicalURL(courseUrl).pipe(
+        map(course => {
+            if (!course) {
+                throw new Error('Course not found');
+            }
+            return course;
+        }),
+        catchError(() => redirectToNotFoundPage(router))
+    );
 }
 

@@ -303,15 +303,38 @@ const routes: Routes = [
   // ✅ Course detail routes moved to root level (must be after all static routes)
   // These routes match course slugs directly at root: /{course-slug}
   // IMPORTANT: These must come AFTER all static routes but BEFORE the wildcard
+  // ✅ FIX: Use matcher-only routes (no path) to exclude /assets/ paths from course routing
   {
-    path: ':url/:location',
+    // No path property - matcher handles all matching
+    matcher: (segments) => {
+      // ✅ FIX: Exclude /assets/ paths - they should not be routed as courses
+      if (segments.length >= 1 && segments[0].path === 'assets') {
+        return null; // Don't match this route
+      }
+      // Match :url/:location pattern (2 segments)
+      if (segments.length === 2) {
+        return { consumed: segments, posParams: { url: segments[0], location: segments[1] } };
+      }
+      return null;
+    },
     loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
     data: {
       skipRouteLocalization: true // Prevent i18n from trying to localize course URLs
     }
   },
   {
-    path: ':url',
+    // No path property - matcher handles all matching
+    matcher: (segments) => {
+      // ✅ FIX: Exclude /assets/ paths - they should not be routed as courses
+      if (segments.length >= 1 && segments[0].path === 'assets') {
+        return null; // Don't match this route
+      }
+      // Match :url pattern (1 segment)
+      if (segments.length === 1) {
+        return { consumed: segments, posParams: { url: segments[0] } };
+      }
+      return null;
+    },
     loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
     data: {
       skipRouteLocalization: true // Prevent i18n from trying to localize course URLs

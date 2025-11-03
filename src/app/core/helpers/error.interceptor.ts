@@ -25,8 +25,21 @@ export class ErrorInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
-                // Use LoggerService for consistent logging (handles SSR and production)
-                this.logger.error('Error during http request', error);
+                // ✅ SSR-FRIENDLY: Suppress verbose logging for network errors during SSR
+                // Network errors during SSR are expected if backend is not running
+                const isNetworkError = !error.status || error.status === 0;
+                const isSSR = !this.isBrowser;
+                
+                if (isSSR && isNetworkError) {
+                    // ✅ SSR: Only log network errors at warning level (they're expected if backend is down)
+                    this.logger.warn('SSR: Network error (backend may not be running)', {
+                        url: request.url,
+                        method: request.method
+                    });
+                } else {
+                    // ✅ Browser or non-network errors: Log normally
+                    this.logger.error('Error during http request', error);
+                }
                 
                 // ✅ SUGGESTION 1: Enhanced error classification and handling
                 this.handleErrorByStatus(error);
@@ -130,8 +143,14 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (isOffline) {
             this.logger.error('Network Error: You are currently offline. Please check your internet connection.');
         } else {
-            // ✅ IMPROVEMENT: More specific error message for localhost connections
-            this.logger.error('Network Error: Unable to connect to the server. If using local backend, ensure it is running and CORS is configured correctly.');
+            // ✅ IMPROVEMENT: More specific error message with troubleshooting steps
+            const message = 'Network Error: Unable to connect to the API server. ' +
+                'Possible solutions:\n' +
+                '1. Check if the backend server is running\n' +
+                '2. Verify the API URL in config.json or environment.ts\n' +
+                '3. Check CORS configuration if using local backend\n' +
+                '4. For development, ensure backend is running or use production backend URL';
+            this.logger.error(message);
         }
     }
 

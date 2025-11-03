@@ -1,14 +1,14 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription } from 'rxjs';
-
 import { CommonModule } from '@angular/common';
 import { NgxPaginationModule } from "ngx-pagination";
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from '../../adminapp.service';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // ✅ FIX: Add FormsModule for ngValue binding
+import { FormsModule } from '@angular/forms';
+import { BaseComponent } from 'src/app/core/utils/base.component';
+import { getErrorMessage } from 'src/app/core/utils/error.util';
 
 @Component({
   selector: 'app-location-list',
@@ -23,7 +23,7 @@ import { FormsModule } from '@angular/forms'; // ✅ FIX: Add FormsModule for ng
     FormsModule // ✅ FIX: FormsModule required for ngValue directive
   ]
 })
-export class LocationListComponent implements OnInit, OnDestroy {
+export class LocationListComponent extends BaseComponent implements OnInit {
 
   config = {
     itemsPerPage: 5,
@@ -34,31 +34,36 @@ export class LocationListComponent implements OnInit, OnDestroy {
   locations: any[] = [];
   filteredLocations: any[] = [];
   term: string = '';
-  subscription = new Subscription();
 
   constructor(
     private appService: AdminAppService,
     private toasterService: ToasterService,
     private modalService: NgbModal,
     private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
-  ) {}
+  ) {
+    super(); // ✅ BEST PRACTICE: Initialize BaseComponent for subscription management
+  }
 
   ngOnInit(): void {
     this.fetchLocations();
   }
 
   fetchLocations(): void {
-    this.subscription.add(
-      this.appService.getLocation().subscribe(
-        (response: any[]) => {
+    // ✅ BEST PRACTICE: Use BaseComponent.addSubscription for automatic cleanup
+    this.addSubscription(
+      this.appService.getLocation().subscribe({
+        next: (response: any[]) => {
           this.locations = response;
           this.applyFilter();
           this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
-        error => {
-          console.error('Error fetching locations:', error);
+        error: (error) => {
+          // ✅ BEST PRACTICE: Use ErrorUtil for consistent error messages
+          const errorMessage = getErrorMessage(error);
+          console.error('Error fetching locations:', errorMessage, error);
+          this.toasterService.showError(errorMessage);
         }
-      )
+      })
     );
   }
 
@@ -69,17 +74,20 @@ export class LocationListComponent implements OnInit, OnDestroy {
 
     modalRef.result.then(result => {
       if (result === 'ok') {
-        this.subscription.add(
-          this.appService.deleteLocationById(id).subscribe(
-            () => {
+        // ✅ BEST PRACTICE: Use BaseComponent.addSubscription for automatic cleanup
+        this.addSubscription(
+          this.appService.deleteLocationById(id).subscribe({
+            next: () => {
               this.toasterService.showSuccess('Location deleted successfully');
               this.fetchLocations();
             },
-            error => {
-              console.error('Deletion error:', error);
-              this.toasterService.showError('Something went wrong');
+            error: (error) => {
+              // ✅ BEST PRACTICE: Use ErrorUtil for consistent error messages
+              const errorMessage = getErrorMessage(error);
+              console.error('Deletion error:', errorMessage, error);
+              this.toasterService.showError(errorMessage || 'Something went wrong');
             }
-          )
+          })
         );
       }
     }).catch((e: unknown) => {
@@ -120,9 +128,5 @@ export class LocationListComponent implements OnInit, OnDestroy {
 
   trackByTableSize(index: number, size: number): number {
     return size;
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
   }
 }

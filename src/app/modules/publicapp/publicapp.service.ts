@@ -1,16 +1,16 @@
 import { Category } from './../adminapp/category/category.model';
 import { Observable, of, throwError } from 'rxjs';
 import { shareReplay, catchError, timeout, retry, delay } from 'rxjs/operators';
-import { environment } from './../../../environments/environment';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { API_URL } from '../../core/config/api-url.config';
 
 // ✅ PERFORMANCE: Service-level caching prevents redundant API calls (40-50% reduction)
 // ✅ SSR: shareReplay works in both SSR and browser contexts
 @Injectable({ providedIn: 'root' })
 export class PublicAppService {
     user: any;
-    apiUrl = environment.apiUrl;
+    private readonly apiUrl = inject(API_URL);
     
     // ✅ PERFORMANCE: Cached observables to prevent redundant API calls
     private categoriesCache$: Observable<Category[]> | null = null;
@@ -156,9 +156,18 @@ export class PublicAppService {
             this.dashboardCategoriesCache$ = this.http.get<any>(this.apiUrl + `page/Category/Dashboard`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
                 catchError(error => {
-                    console.error('Error fetching dashboard categories:', error);
+                    // ✅ SSR-FRIENDLY: Only log errors in browser (SSR errors are expected if backend is down)
+                    if (typeof window !== 'undefined') {
+                        console.error('Error fetching dashboard categories:', error);
+                    } else {
+                        // ✅ SSR: Log less verbose message for network errors (expected if backend is down)
+                        const isNetworkError = !error.status || error.status === 0;
+                        if (!isNetworkError) {
+                            console.warn('⚠️ SSR: Error fetching dashboard categories (non-network error):', error.status, error.statusText);
+                        }
+                    }
                     this.dashboardCategoriesCache$ = null; // ✅ ERROR HANDLING: Clear cache on error
-                    return of([]); // ✅ ERROR HANDLING: Return empty array on error
+                    return of([]); // ✅ ERROR HANDLING: Return empty array on error (allows SSR to continue)
                 })
             );
         }
@@ -221,9 +230,12 @@ export class PublicAppService {
             }),
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                // Better error handling for network/fetch failures
-                const isNetworkError = !error.status || error.status === 0 || error.message?.includes('fetch failed');
-                const isTimeoutError = error.name === 'TimeoutError' || error.status === 408;
+                // ✅ FIX: Correct error detection - 500 is a server error, not network error
+                const status = error?.status || error?.error?.StatusCode || 0;
+                const isNetworkError = status === 0 || !status || error.message?.includes('fetch failed');
+                const isTimeoutError = error.name === 'TimeoutError' || status === 408;
+                const isServerError = status >= 500 && status < 600;
+                const isClientError = status >= 400 && status < 500;
                 
                 if (isNetworkError) {
                     console.error(`🔴 Network Error: Unable to connect to API server at ${fullUrl}`);
@@ -236,11 +248,21 @@ export class PublicAppService {
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Possible causes: Backend is slow, network issues, or backend is down`);
                     console.error(`   - Check backend logs and performance`);
+                } else if (isServerError) {
+                    console.error(`🔴 Server Error ${status}: ${fullUrl}`);
+                    console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
+                    console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
+                    console.error(`   - Error details:`, error?.error || error);
+                } else if (isClientError) {
+                    console.error(`⚠️ Client Error ${status}: ${fullUrl}`);
+                    console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
+                    console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
+                    console.error(`   - Error details:`, error?.error || error);
                 } else {
                     console.error(`❌ Error fetching course by URL "${courseUrl}" and location "${locationUrl}". Normalized to: "${normalizedCourseUrl}" / "${normalizedLocation}". API path: ${apiPath}`, error);
                 }
                 
-                // Return null on error to prevent breaking the app
+                // Return null on error to prevent breaking the app - resolver will handle redirects
                 return of(null);
             })
         );

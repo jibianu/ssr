@@ -1,5 +1,5 @@
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from "@angular/common/http";
-import { LOCALE_ID } from "@angular/core";
+import { LOCALE_ID, APP_INITIALIZER } from "@angular/core";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideRouter, withComponentInputBinding } from "@angular/router";
 import { routes } from "./app-routing.module";
@@ -11,9 +11,24 @@ import { CacheInterceptor } from "./core/helpers/cache.interceptor";
 import { DeduplicationInterceptor } from "./core/helpers/deduplication.interceptor";
 import { RetryInterceptor } from "./core/helpers/retry.interceptor";
 import { TimeoutInterceptor } from "./core/helpers/timeout.interceptor";
+import { API_URL, loadApiUrl, getApiUrl } from "./core/config/api-url.config";
 
 export const appConfig = {
     providers: [
+      // ✅ DYNAMIC API URL: Load config.json before app initialization
+      {
+        provide: APP_INITIALIZER,
+        useFactory: loadApiUrl,
+        multi: true
+      },
+      // ✅ DYNAMIC API URL: Provide API_URL token with loaded value
+      {
+        provide: API_URL,
+        useFactory: () => {
+          // getApiUrl() returns loaded config or default
+          return getApiUrl();
+        }
+      },
       // Locale detection on the client (browser)
       { 
         provide: LOCALE_ID, 
