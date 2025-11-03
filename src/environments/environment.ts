@@ -19,10 +19,13 @@ export const environment = {
   // ✅ PROXY CONFIGURATION: Use /api prefix for proxy in development
   // The proxy.conf.json forwards /api/* requests to https://localhost:52045/*
   // Production uses full URL (see environment.prod.ts)
-  apiUrl: '/api/',
   
-  // ⚠️ Alternative: Use production backend directly (no proxy needed)
-  // apiUrl: 'https://coursebackend.oilandgasclub.com/',
+  // ⚠️ FIX: Using production backend to avoid ECONNREFUSED (local backend not running)
+  // If you want to use local backend, start it on port 52045 and uncomment the line below
+  apiUrl: 'https://coursebackend.oilandgasclub.com/',
+  
+  // Uncomment below if local backend is running:
+  // apiUrl: '/api/',  // This requires backend running on https://localhost:52045
   
   // ⚠️ Alternative: Use local backend directly (requires CORS and SSL setup)
   // See BACKEND_CORS_CONFIGURATION.md for setup instructions

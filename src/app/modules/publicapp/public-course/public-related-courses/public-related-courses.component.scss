@@ -26,3 +26,83 @@ a, a:hover {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .truncate {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .img-4by3-lg {
+        width: 5rem;
+        height: 6vh;
+    }
+}
+
+@media (max-width: 576px) {
+    .table-responsive {
+        border: none;
+    }
+    
+    .table tbody tr {
+        display: block;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background-color: #fff;
+    }
+    
+    .table tbody tr td {
+        display: block;
+        border: none;
+        padding: 0.5rem 0;
+        text-align: left;
+    }
+    
+    .table tbody tr td:first-child {
+        padding-top: 0;
+    }
+    
+    .table tbody tr td:last-child {
+        padding-bottom: 0;
+        border-top: 1px solid #e9ecef;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .table tbody tr td:last-child::before {
+        content: "Price: ";
+        font-weight: 400;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .img-4by3-lg {
+        width: 4rem;
+        height: 5vh;
+    }
+    
+    .d-lg-flex {
+        flex-direction: column;
+    }
+    
+    .ml-lg-3 {
+        margin-left: 0 !important;
+        margin-top: 0.75rem;
+    }
+    
+    .truncate {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        width: 100%;
+    }
+}

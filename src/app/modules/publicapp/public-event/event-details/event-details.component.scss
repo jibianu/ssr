@@ -261,13 +261,17 @@
     }
 }
 
+// ✅ MOBILE: Full width on very small screens (< 640px)
 @media (max-width: 640px) {
     .info-card {
-        min-width: 330px !important;
+        min-width: 100% !important;  // ✅ MOBILE: Full width on small screens
+        max-width: 100% !important;
+        width: 100%;
     }
     .highlight-card {
-        min-width: 350px !important;
-        max-width: 350px !important;
+        min-width: 100% !important;  // ✅ MOBILE: Full width on small screens
+        max-width: 100% !important;
+        width: 100%;
     }
 }
 
@@ -318,6 +322,8 @@
     font-weight: 600;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    min-height: 44px; /* Touch target size */
+    min-width: 120px;
     &:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -1054,14 +1060,28 @@
 
 @media (max-width: 480px) {
     .form-wrapper {
-        padding: 8px;
+        padding: 12px;
+    }
+    .form-group {
+        margin-bottom: 20px;
     }
     .form-group label {
-        font-size: 12px;
+        font-size: 14px;
+        margin-bottom: 6px;
     }
     .form-control {
-        font-size: 12px;
-        padding: 6px;
+        font-size: 16px; /* Prevent iOS zoom */
+        padding: 12px;
+        min-height: 44px; /* Touch target size */
+        border-radius: 6px;
+    }
+    
+    /* Buttons should have adequate touch targets */
+    .btn.form-control {
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: 16px;
+        font-weight: 600;
     }
 }
 

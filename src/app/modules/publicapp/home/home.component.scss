@@ -218,6 +218,15 @@
   scroll-behavior: smooth;
   align-items: center;
   justify-content: space-evenly;
+  
+  // ✅ MOBILE: Fix horizontal scrolling on small screens
+  @media (max-width: 768px) {
+    overflow-x: hidden;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px 0;
+  }
 }
 
 
@@ -509,8 +518,10 @@
 }
 
   .btn-register {
-    padding: 10px 20px; /* Larger button for easier tapping */
+    padding: 12px 24px; /* Larger button for easier tapping */
     font-size: 1rem;
+    min-height: 44px; /* Touch target size */
+    min-width: 120px;
   }
 }
 
@@ -1055,8 +1066,10 @@
   }
 
   .btn-primary {
-    padding: 8px 20px;
-    font-size: 0.8rem;
+    padding: 12px 24px;
+    font-size: 1rem;
+    min-height: 44px; /* Touch target size */
+    min-width: 120px;
   }
 }
 
@@ -1133,8 +1146,10 @@
   }
 
   .btn-primary {
-    padding: 8px 20px;
-    font-size: 0.8rem;
+    padding: 12px 24px;
+    font-size: 1rem;
+    min-height: 44px; /* Touch target size */
+    min-width: 120px;
   }
 
   .highlight-box p {

@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, computed, effect, inject, input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, effect, inject, input, ChangeDetectionStrategy, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { MetadataService } from 'src/app/shared/service/meta.service';
@@ -18,9 +19,11 @@ export class PublicCourseDetailsComponent {
   locationUrl: string;
   courseDetails;
   image = '';
-  isBrowser = false;
   categoryName = '';
   courseId = '';
+  
+  // ✅ SSR: Browser check for DOM operations
+  private readonly isBrowser: boolean;
   // createdBy=[
   //   'f48824b8-f021-70f5-0cb8-a5cee2516932',
   //   'e0986ef4-e84c-43cb-8a7a-f300a515ef4f'
@@ -32,7 +35,9 @@ export class PublicCourseDetailsComponent {
   // ✅ FIX: Add missing 'more' property for FAQ expansion functionality
   more = false;
 
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
     effect(() => {
       const course = this.courseDetailsFromRoute$();
       const location = this.location$();
@@ -189,6 +194,73 @@ export class PublicCourseDetailsComponent {
 
   trackByInfoItemId(index: number, item: any): string {
     return item?.id || `info-${index}`;
+  }
+
+  // ✅ FIX: Prevent navigation when clicking More/Less link
+  toggleMore(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.more = !this.more;
+  }
+
+  // ✅ FIX: Prevent navigation when clicking dropdown/collapse links
+  // ✅ SSR: Safe - only executes in browser
+  preventNavigation(event: Event): void {
+    // Prevent default to stop Angular router from intercepting hash links
+    event.preventDefault();
+    
+    // ✅ SSR: Only execute DOM operations in browser
+    if (!this.isBrowser) {
+      return;
+    }
+    
+    const target = event.target as HTMLElement;
+    const link = target.closest('a[data-toggle="collapse"]') as HTMLAnchorElement;
+    
+    if (link && link.hash) {
+      // Check if Bootstrap is available (for Bootstrap collapse)
+      const bootstrap = (window as any).bootstrap;
+      const targetElement = document.querySelector(link.hash);
+      
+      if (targetElement && bootstrap) {
+        // Use Bootstrap 5+ Collapse API if available
+        try {
+          const collapse = bootstrap.Collapse.getOrCreateInstance(targetElement);
+          collapse.toggle();
+        } catch (e) {
+          // Fallback: manually toggle if Bootstrap API fails
+          const collapseElement = targetElement as HTMLElement;
+          const isExpanded = collapseElement.classList.contains('show');
+          
+          if (isExpanded) {
+            collapseElement.classList.remove('show');
+            link.setAttribute('aria-expanded', 'false');
+          } else {
+            // Close other items in the same parent accordion
+            const parentId = link.getAttribute('data-parent') || 
+                            (targetElement.getAttribute('data-parent') || '').replace('#', '');
+            if (parentId) {
+              const parent = document.getElementById(parentId) || 
+                           document.querySelector(parentId);
+              if (parent) {
+                const siblings = parent.querySelectorAll('.collapse.show');
+                siblings.forEach((sibling: Element) => {
+                  if (sibling !== targetElement) {
+                    (sibling as HTMLElement).classList.remove('show');
+                  }
+                });
+              }
+            }
+            
+            collapseElement.classList.add('show');
+            link.setAttribute('aria-expanded', 'true');
+          }
+        }
+      }
+    }
+    
+    // Stop propagation to prevent event bubbling
+    event.stopPropagation();
   }
 
 }

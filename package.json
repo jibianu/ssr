@@ -25,6 +25,7 @@
     "verify:seo": "ts-node scripts/verify-ssr-seo.ts",
     "verify:seo:js": "node scripts/verify-ssr-seo.js",
     "check:stability": "ts-node scripts/check-ssr-stability.ts",
+    "verify:backend:cache": "ts-node scripts/verify-backend-cache-headers.ts",
     "monitor:dashboard": "node scripts/monitoring-dashboard.js",
     "docker:test:build": "docker build -t course-frontend-test .",
     "docker:test:run": "docker run -d --name course-frontend-test --restart unless-stopped -p 4008:4000 course-frontend-test",

@@ -45,7 +45,11 @@ export class PublicTopbarComponent implements OnInit {
   }
 
   // ✅ PERFORMANCE: Toggle invisibility and trigger change detection for OnPush
-  toggleinVisibility(): void {
+  toggleinVisibility(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (this.isBrowser) {
       this.isVisible = false;
       this.cdr.markForCheck(); // ✅ PERFORMANCE: Trigger change detection for OnPush

@@ -278,7 +278,12 @@ header#theme-header {
         padding: 4px 0 0 16px;
         text-align: center;
         background: #fff;
- 
+        border: none;
+        cursor: pointer;
+        outline: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
 }
 .close:hover {
   opacity: 1;

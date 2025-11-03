@@ -52,8 +52,8 @@
               *ngFor="let item of courseDetails?.courseInformation; let i = index; trackBy: trackByInfoItemId">
               <div class="card-header-about bg-white border-0" id="headingOne">
                 <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none py-3"
-                  data-toggle="collapse" href="#courseabout{{ i }}" aria-expanded="false"
-                  [attr.aria-controls]="'courseabout' + i" role="button">
+                  data-toggle="collapse" [attr.href]="'#courseabout' + i" aria-expanded="false"
+                  [attr.aria-controls]="'courseabout' + i" role="button" (click)="preventNavigation($event)">
                   <div class="mr-auto font-weight-bold text-dark">{{ item?.title }}</div>
                   <span class="chevron-arrow ml-4 transition-transform">
                     <i class="fa fa-chevron-down font-size-md text-primary"></i>
@@ -138,8 +138,8 @@
             <!-- Card Header -->
             <div class="card-header-custom" id="headingOne">
               <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none collapsed"
-                data-toggle="collapse" href="#courseContent{{ i }}" aria-expanded="false"
-                [attr.aria-controls]="'courseContent' + i" id="card-header">
+                data-toggle="collapse" [attr.href]="'#courseContent' + i" aria-expanded="false"
+                [attr.aria-controls]="'courseContent' + i" id="card-header" (click)="preventNavigation($event)">
                 <div class="mr-auto">
                   <img [src]="item?.iconUrl" width="20" height="20" loading="lazy" alt="{{ item?.title }}">
                   <span class="ml-2">{{ item?.title }}</span>
@@ -154,8 +154,8 @@
                   <!-- Sub Content with Nested Items -->
                   <div *ngIf="subItem?.courseContentSubSubTypes?.length > 0; else subContent">
                     <a class="mb-3 d-flex justify-content-between align-items-center text-inherit text-decoration-none"
-                      data-toggle="collapse" href="#subContentCollapse{{ j }}" aria-expanded="false"
-                      [attr.aria-controls]="'subContentCollapse' + j" id="sub-card-header">
+                      data-toggle="collapse" [attr.href]="'#subContentCollapse' + j" aria-expanded="false"
+                      [attr.aria-controls]="'subContentCollapse' + j" id="sub-card-header" (click)="preventNavigation($event)">
                       <div class="mr-auto">
                         <img [src]="subItem?.iconUrl" height="20px" width="20px" alt="{{ subItem?.title }}">
                         <span class="ml-2">{{ subItem?.title }}</span>
@@ -220,8 +220,8 @@
               <!-- FAQ Header -->
               <div class="card-header-about" id="headingOne">
                 <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none collapsed"
-                  data-toggle="collapse" href="#coursefaq{{ i }}" aria-expanded="false"
-                  [attr.aria-controls]="'coursefaq' + i">
+                  data-toggle="collapse" [attr.href]="'#coursefaq' + i" aria-expanded="false"
+                  [attr.aria-controls]="'coursefaq' + i" (click)="preventNavigation($event)">
                   <div class="mr-auto">{{ item?.question }}</div>
                   <span class="chevron-arrow ml-4">
                     <i class="fa fa-chevron-down font-size-md text-primary"></i>
@@ -269,7 +269,7 @@
 
                   <!-- Show More/Less Button -->
                   <br>
-                  <a class="text-primary" *ngIf="isLast && i > 2" (click)="more = !more">
+                  <a class="text-primary" *ngIf="isLast && i > 2" href="javascript:void(0)" (click)="toggleMore($event)">
                     {{ more ? 'Less' : 'More' }}
                   </a>
                 </div>

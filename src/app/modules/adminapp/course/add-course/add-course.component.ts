@@ -46,11 +46,27 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   toggleDragArray = [];
   selectedItems = [];
   locationArray: any = [];
-  dropdownSettings = {};
-  dropdownIconSettings = {};
+  // ✅ FIX: Initialize dropdown settings with default values to prevent undefined errors
+  dropdownSettings: any = {
+    singleSelection: false,
+    idField: 'id',
+    textField: 'name',
+    enableCheckAll: false,
+    itemsShowLimit: 5,
+    defaultOpen: false // ✅ FIX: Initialize defaultOpen to prevent undefined error
+  };
+  dropdownIconSettings: any = {
+    singleSelection: true,
+    itemsShowLimit: 5,
+    idField: 'id',
+    textField: 'url',
+    closeDropDownOnSelection: true,
+    defaultOpen: false // ✅ FIX: Initialize defaultOpen to prevent undefined error
+  };
   courseData: any;
   iconList = [];
-  selectedfeatureitems = [];
+  // ✅ FIX: Initialize selectedfeatureitems as empty array to prevent undefined errors
+  selectedfeatureitems: any[] = [];
   guid = '00000000-0000-0000-0000-000000000000'
   //formBuilder: any;
   //activatedRoute: any;
@@ -69,9 +85,8 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.getIcons();
-    this.getCategories();
-    this.fetchLocations();
+    // ✅ FIX: Initialize form FIRST before any async operations that might use it
+    this.formInit();
     
     // IMPROVED: Use utility for safe storage access
     try {
@@ -87,8 +102,15 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     
     // Use StorageUtil for safe sessionStorage access
     this.courseData = StorageUtil.getItemFromSession<any>('courseData', null);
-    this.formInit();
+    
+    // ✅ FIX: Now safe to call async operations that might trigger setvalue()
+    this.getIcons();
+    this.getCategories();
+    this.fetchLocations();
+    
+    // ✅ FIX: Update dropdown settings (already initialized with defaults above)
     this.dropdownSettings = {
+      ...this.dropdownSettings, // Preserve defaults
       singleSelection: false,
       idField: 'id',
       textField: 'name',
@@ -96,6 +118,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
       itemsShowLimit: 5
     };
     this.dropdownIconSettings = {
+      ...this.dropdownIconSettings, // Preserve defaults
       singleSelection: true,
       itemsShowLimit: 5,
       idField: 'id',
@@ -284,6 +307,12 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   }
 
   setvalue(res) {
+    // ✅ FIX: Ensure courseForm is initialized before patching values
+    if (!this.courseForm) {
+      console.warn('courseForm not initialized yet, skipping setvalue');
+      return;
+    }
+
     this.courseForm.patchValue({
       title: res?.title ?? '',
       titleImageUrl: res.titleImageUrl ? res.titleImageUrl : environment.imgUrl,
@@ -612,13 +641,11 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   }
 
   addCourseFeatureItems(): void {
-    this.courseFeaturesArray.push(this.createCourseFeatureItems())
-    let val = {
-      id: '',
-      name: '',
-      url: '',
-      iconId:'7d53ea73-a46d-45c0-a78e-85c83371a8f4'
-    }
+    this.courseFeaturesArray.push(this.createCourseFeatureItems());
+    
+    // ✅ FIX: Ensure selectedfeatureitems array has an item for the new index
+    // Initialize with empty array if needed, ng-multiselect expects an array
+    const val: any[] = [];
     this.selectedfeatureitems.push(val);
   }
 
