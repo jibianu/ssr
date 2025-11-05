@@ -17,20 +17,14 @@ export const environment = {
   production: false,
   
   // ✅ PROXY CONFIGURATION: Use /api prefix for proxy in development
-  // The proxy.conf.json forwards /api/* requests to https://localhost:52045/*
+  // The proxy.conf.json forwards /api/* requests to http://localhost:52045/* (removes /api prefix)
+  // This avoids CORS issues - no CORS configuration needed in .NET backend
   // Production uses full URL (see environment.prod.ts)
   
-  // ⚠️ FIX: Using production backend to avoid ECONNREFUSED (local backend not running)
-  // If you want to use local backend, start it on port 52045 and uncomment the line below
-  apiUrl: 'https://coursebackend.oilandgasclub.com/',
-  
-  // Uncomment below if local backend is running:
-  // apiUrl: '/api/',  // This requires backend running on https://localhost:52045
-  
-  // ⚠️ Alternative: Use local backend directly (requires CORS and SSL setup)
-  // See BACKEND_CORS_CONFIGURATION.md for setup instructions
-  // apiUrl: 'https://localhost:52045/',
-  // apiUrl: 'http://localhost:52045/',  // Use HTTP if SSL certificate issues occur
+  // ✅ LOCAL DEVELOPMENT: Use proxy to connect to local .NET backend on port 52045
+  // The proxy handles CORS automatically - frontend calls /api/*, proxy forwards to backend
+  // Make sure to run: ng serve (not ng serve --no-proxy)
+  apiUrl: '/api/',
   
   seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300'

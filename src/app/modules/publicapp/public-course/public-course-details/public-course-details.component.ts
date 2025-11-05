@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, effect, inject, input, ChangeDetectionStrategy, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, effect, input, ChangeDetectionStrategy, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
@@ -35,8 +35,22 @@ export class PublicCourseDetailsComponent {
   // ✅ FIX: Add missing 'more' property for FAQ expansion functionality
   more = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
+  private readonly canonicalService: CanonicalService;
+  private readonly metadataService: MetadataService;
+  private readonly structuredDataService: StructuredDataService;
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    canonicalService: CanonicalService,
+    metadataService: MetadataService,
+    structuredDataService: StructuredDataService
+  ) {
+    // ✅ FIX: Initialize injected services in constructor to ensure injector is available
     this.isBrowser = isPlatformBrowser(this.platformId);
+    this.canonicalService = canonicalService;
+    this.metadataService = metadataService;
+    this.structuredDataService = structuredDataService;
     
     effect(() => {
       const course = this.courseDetailsFromRoute$();
@@ -45,10 +59,6 @@ export class PublicCourseDetailsComponent {
       this.setComponentProperties(course, location);
     });
   }
-
-  private readonly canonicalService = inject(CanonicalService);
-  private readonly metadataService = inject(MetadataService);
-  private readonly structuredDataService = inject(StructuredDataService);
 
   protected readonly courseDetailsFromRoute$ = input.required<{
     createdByUser?: { id: string };

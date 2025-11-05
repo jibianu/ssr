@@ -43,73 +43,151 @@ export function setApiUrl(config: AppConfig): void {
   loadedConfig = config;
 }
 
+// ✅ FIX: Track if config is already loaded to prevent race conditions in SSR
+let isLoading = false;
+let loadPromise: Promise<void> | null = null;
+
 /**
  * Loads configuration from config.json or uses default
  * Used by APP_INITIALIZER to load config before app starts
  */
 export function loadApiUrl(): () => Promise<void> {
   return () => {
-      return new Promise<void>((resolve) => {
+    // ✅ FIX: If config is already loaded, resolve immediately
+    if (loadedConfig) {
+      return Promise.resolve();
+    }
+
+    // ✅ FIX: Use singleton promise to prevent multiple simultaneous loads
+    // This prevents race conditions when APP_INITIALIZER runs multiple times (SSR scenarios)
+    if (loadPromise) {
+      return loadPromise;
+    }
+
+    loadPromise = new Promise<void>((resolve) => {
       // ✅ DOCKER/PRODUCTION: Default to Docker container port (for same-container setup)
       // ✅ DEVELOPMENT: Fallback to environment.apiUrl if config.json not found
-      // Priority: config.json (Docker) > environment.apiUrl (Dev) > localhost:5000 (Docker fallback)
+      // Priority: config.json (Docker) > environment.apiUrl (Dev/Prod) > localhost:5000 (Docker fallback)
       const dockerDefault = 'http://localhost:5000/api/';
       const devDefault = environment.apiUrl || dockerDefault;
       const defaultConfig: AppConfig = {
         // ✅ In Docker, config.json should always exist, but use Docker default if not
-        // In development, use environment.apiUrl (production backend) if config.json not found
+        // In development, use environment.apiUrl (localhost:52045) if config.json not found
+        // In production, use environment.apiUrl (coursebackend.oilandgasclub.com) if config.json not found
         apiUrl: devDefault
       };
 
       // Only fetch in browser (not during SSR)
       if (typeof window === 'undefined' || typeof fetch === 'undefined') {
-        // ✅ SSR: Use Docker default (same container = localhost)
-        // During SSR in Docker, config.json might not be accessible yet, use Docker default
+        // ✅ SSR: Use full backend URL (proxy doesn't work in SSR)
+        // In development, use http://localhost:52045/ directly (proxy removes /api prefix)
+        // In production, use the production backend URL
+        let ssrApiUrl = devDefault;
+        
+        // If using proxy path (/api/), convert to full backend URL for SSR
+        // Backend doesn't use /api/ prefix (proxy removes it), so remove it for SSR too
+        if (ssrApiUrl === '/api/' || ssrApiUrl.startsWith('/api/')) {
+          ssrApiUrl = 'http://localhost:52045/';
+        }
+        
         const ssrDefault: AppConfig = {
-          apiUrl: dockerDefault
+          apiUrl: ssrApiUrl
         };
         setApiUrl(ssrDefault);
+        isLoading = false;
+        loadPromise = null;
         resolve();
         return;
       }
+
+      // ✅ FIX: Prevent multiple simultaneous fetches
+      if (isLoading) {
+        // This shouldn't happen due to loadPromise check above, but add safety
+        resolve();
+        return;
+      }
+
+      isLoading = true;
 
       // ✅ BROWSER: Try to load config.json first (Docker-generated from BACKEND_PORT)
       fetch('/assets/config.json', {
         cache: 'no-cache',
         headers: { 'Cache-Control': 'no-cache' }
       })
-        .then(response => {
+        .then(async response => {
+          // ✅ FIX: Check if response has content before parsing JSON
+          const text = await response.text();
+          
           if (!response.ok) {
             // ✅ config.json not found: Use dev default (environment.apiUrl) for development
             // In Docker, this should rarely happen as entrypoint.sh generates it
-            console.warn('⚠️ config.json not found, using fallback API URL:', defaultConfig.apiUrl);
-            return defaultConfig;
+            console.warn('⚠️ config.json not found (HTTP ' + response.status + '), using fallback API URL:', defaultConfig.apiUrl);
+            isLoading = false;
+            return { config: defaultConfig, fromFile: false };
           }
-          return response.json();
-        })
-        .then((config: AppConfig) => {
-          if (!config.apiUrl) {
-            console.warn('⚠️ Invalid config.json, using fallback API URL:', defaultConfig.apiUrl);
-            return defaultConfig;
+          if (!text || text.trim().length === 0) {
+            console.warn('⚠️ config.json is empty, using fallback API URL:', defaultConfig.apiUrl);
+            isLoading = false;
+            return { config: defaultConfig, fromFile: false };
           }
           
-          // ✅ SUCCESS: config.json loaded (from Docker BACKEND_PORT)
+          try {
+            const parsedConfig = JSON.parse(text);
+            isLoading = false;
+            return { config: parsedConfig, fromFile: true };
+          } catch (parseError) {
+            console.warn('⚠️ config.json is not valid JSON, using fallback API URL:', defaultConfig.apiUrl);
+            isLoading = false;
+            return { config: defaultConfig, fromFile: false };
+          }
+        })
+        .then((result: { config: AppConfig, fromFile: boolean }) => {
+          const config = result.config;
+          const fromFile = result.fromFile;
+          
+          // ✅ FIX: Ensure we only set config once and clean up state
+          if (!config || !config.apiUrl) {
+            console.warn('⚠️ Invalid config.json, using fallback API URL:', defaultConfig.apiUrl);
+            setApiUrl(defaultConfig);
+            isLoading = false;
+            loadPromise = null;
+            resolve();
+            return;
+          }
+          
           // Ensure apiUrl ends with /
           const apiUrl = config.apiUrl.endsWith('/') ? config.apiUrl : config.apiUrl + '/';
           
           const finalConfig: AppConfig = { apiUrl };
-          console.log('✅ Loaded API URL from config.json (Docker BACKEND_PORT):', apiUrl);
+          
+          // ✅ Only log success message if we actually loaded from config.json
+          if (fromFile) {
+            console.log('✅ Loaded API URL from config.json (Docker BACKEND_PORT):', apiUrl);
+          } else {
+            // In development, this is expected - config.json is only generated in Docker
+            if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+              console.log('ℹ️ Using development API URL (config.json not required in dev):', apiUrl);
+            } else {
+              console.log('ℹ️ Using fallback API URL:', apiUrl);
+            }
+          }
           
           setApiUrl(finalConfig);
+          isLoading = false;
+          loadPromise = null;
           resolve();
         })
         .catch(error => {
           console.error('❌ Error loading config.json:', error);
           console.warn('⚠️ Using fallback API URL:', defaultConfig.apiUrl);
           setApiUrl(defaultConfig);
+          isLoading = false;
+          loadPromise = null;
           resolve();
         });
     });
+
+    return loadPromise;
   };
 }
 

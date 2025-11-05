@@ -1,6 +1,6 @@
 
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MetadataService } from 'src/app/shared/service/meta.service';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
@@ -13,9 +13,21 @@ import { environment } from 'src/environments/environment';
     standalone: false
 })
 export class AboutUsComponent implements OnInit {
-  private readonly metadataService = inject(MetadataService);
-  private readonly canonicalService = inject(CanonicalService);
-  private readonly structuredDataService = inject(StructuredDataService);
+  // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
+  private readonly metadataService: MetadataService;
+  private readonly canonicalService: CanonicalService;
+  private readonly structuredDataService: StructuredDataService;
+
+  constructor(
+    metadataService: MetadataService,
+    canonicalService: CanonicalService,
+    structuredDataService: StructuredDataService
+  ) {
+    // ✅ FIX: Initialize injected services in constructor to ensure injector is available
+    this.metadataService = metadataService;
+    this.canonicalService = canonicalService;
+    this.structuredDataService = structuredDataService;
+  }
 
   ngOnInit(): void {
     const canonicalUrl = `${environment.seoUrl}about-us`;

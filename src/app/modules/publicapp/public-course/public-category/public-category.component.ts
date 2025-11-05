@@ -1,5 +1,5 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { Observable } from 'rxjs';
 import { combineLatest } from 'rxjs';
@@ -28,13 +28,17 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
     categoryName: string;
   }>;
 
-  private readonly structuredDataService = inject(StructuredDataService);
+  // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
+  private readonly structuredDataService: StructuredDataService;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private publicAppService: PublicAppService
+    private publicAppService: PublicAppService,
+    structuredDataService: StructuredDataService
   ) {
+    // ✅ FIX: Initialize injected service in constructor to ensure injector is available
+    this.structuredDataService = structuredDataService;
     // ✅ SSR OPTIMIZATION: Combine route params and query params in parallel
     // Executes asynchronously - doesn't block SSR rendering
     this.coursesData$ = combineLatest([

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, inject, INJECTOR, OnDestroy, OnInit, PLATFORM_ID, Renderer2, ViewChild, afterNextRender, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, Inject, INJECTOR, OnDestroy, OnInit, PLATFORM_ID, Renderer2, ViewChild, afterNextRender, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { OwlOptions } from 'ngx-owl-carousel-o';
@@ -23,11 +23,12 @@ import { environment } from 'src/environments/environment';
 export class EventDetailsComponent implements OnInit, OnDestroy {
 
   private subscription = new Subscription();
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  private readonly metadataService = inject(MetadataService);
-  private readonly canonicalService = inject(CanonicalService);
-  private readonly structuredDataService = inject(StructuredDataService);
-  private readonly router = inject(Router);
+  // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
+  private readonly isBrowser: boolean;
+  private readonly metadataService: MetadataService;
+  private readonly canonicalService: CanonicalService;
+  private readonly structuredDataService: StructuredDataService;
+  private readonly router: Router;
 
   constructor(
     private elRef: ElementRef, 
@@ -38,7 +39,18 @@ export class EventDetailsComponent implements OnInit, OnDestroy {
     private publicAppService: PublicAppService,
     private toasterService: ToasterService,
     private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: For manual change detection trigger with OnPush
+    @Inject(PLATFORM_ID) private platformId: Object,
+    metadataService: MetadataService,
+    canonicalService: CanonicalService,
+    structuredDataService: StructuredDataService,
+    router: Router
   ) {
+    // ✅ FIX: Initialize injected services in constructor to ensure injector is available
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    this.metadataService = metadataService;
+    this.canonicalService = canonicalService;
+    this.structuredDataService = structuredDataService;
+    this.router = router;
     // ✅ PARALLEL API CALLS: Use resolver data that includes both event and upcoming events
     this.subscription.add(
       activatedRoute.data.subscribe((data) => {

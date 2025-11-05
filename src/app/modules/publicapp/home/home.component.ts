@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MetadataService } from 'src/app/shared/service/meta.service';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
@@ -48,9 +48,21 @@ interface QuickLink {
     // Only browser-specific parts should skip hydration, not the entire component
 })
 export class HomeComponent implements OnInit {
-  private readonly metadataService = inject(MetadataService);
-  private readonly canonicalService = inject(CanonicalService);
-  private readonly structuredDataService = inject(StructuredDataService);
+  // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
+  private readonly metadataService: MetadataService;
+  private readonly canonicalService: CanonicalService;
+  private readonly structuredDataService: StructuredDataService;
+
+  constructor(
+    metadataService: MetadataService,
+    canonicalService: CanonicalService,
+    structuredDataService: StructuredDataService
+  ) {
+    // ✅ FIX: Initialize injected services in constructor to ensure injector is available
+    this.metadataService = metadataService;
+    this.canonicalService = canonicalService;
+    this.structuredDataService = structuredDataService;
+  }
 
   // ✅ HYDRATION: Data arrays for @for loops - prevents SSR mismatches
   readonly topCourses: CourseCard[] = [

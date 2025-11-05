@@ -1,7 +1,7 @@
 import { Category } from './../adminapp/category/category.model';
 import { Observable, of, throwError } from 'rxjs';
 import { shareReplay, catchError, timeout, retry, delay } from 'rxjs/operators';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { API_URL } from '../../core/config/api-url.config';
 
@@ -10,14 +10,20 @@ import { API_URL } from '../../core/config/api-url.config';
 @Injectable({ providedIn: 'root' })
 export class PublicAppService {
     user: any;
-    private readonly apiUrl = inject(API_URL);
+    private readonly apiUrl: string;
     
     // ✅ PERFORMANCE: Cached observables to prevent redundant API calls
     private categoriesCache$: Observable<Category[]> | null = null;
     private dashboardCategoriesCache$: Observable<any> | null = null;
     private eventsCache$: Observable<any> | null = null;
     
-    constructor(private http: HttpClient) {
+    // ✅ FIX: Use constructor injection instead of field initializer to prevent injector errors in SSR
+    // Field initializers with inject() can fail if injector is destroyed during navigation
+    constructor(
+        private http: HttpClient,
+        @Inject(API_URL) apiUrl: string
+    ) {
+        this.apiUrl = apiUrl;
     }
 
     // ✅ PERFORMANCE: shareReplay prevents duplicate concurrent requests for same data
@@ -69,7 +75,17 @@ export class PublicAppService {
         
         const apiPath = `page/course/course/${normalizedUrl}`;
         const fullUrl = this.apiUrl + apiPath;
-        console.log(`🔍 API Call: ${fullUrl} (original URL: "${url}", normalized: "${normalizedUrl}")`);
+        
+        // ✅ Show both frontend URL and actual backend URL for debugging
+        const isProxyPath = fullUrl.startsWith('/api/');
+        const backendUrl = isProxyPath 
+            ? `http://localhost:52045${fullUrl.replace('/api', '')}` 
+            : fullUrl;
+        console.log(`🔍 API Call: ${fullUrl}`);
+        if (isProxyPath) {
+            console.log(`   → Proxied to: ${backendUrl}`);
+        }
+        console.log(`   (original URL: "${url}", normalized: "${normalizedUrl}")`);
         
         // ✅ Add longer timeout for course API calls (120 seconds) via custom header
         // Increased from 60s to 120s to match proxy timeout settings
@@ -208,7 +224,17 @@ export class PublicAppService {
         
         const apiPath = `page/course/course/${normalizedCourseUrl}/location/${normalizedLocation}`;
         const fullUrl = this.apiUrl + apiPath;
-        console.log(`🔍 API Call: ${fullUrl} (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}", normalized: "${normalizedCourseUrl}" / "${normalizedLocation}")`);
+        
+        // ✅ Show both frontend URL and actual backend URL for debugging
+        const isProxyPath = fullUrl.startsWith('/api/');
+        const backendUrl = isProxyPath 
+            ? `http://localhost:52045${fullUrl.replace('/api', '')}` 
+            : fullUrl;
+        console.log(`🔍 API Call: ${fullUrl}`);
+        if (isProxyPath) {
+            console.log(`   → Proxied to: ${backendUrl}`);
+        }
+        console.log(`   (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}", normalized: "${normalizedCourseUrl}" / "${normalizedLocation}")`);
         
         // ✅ Add longer timeout for course API calls (120 seconds) via custom header
         // Increased from 60s to 120s to match proxy timeout settings
@@ -230,11 +256,36 @@ export class PublicAppService {
             }),
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                // ✅ FIX: Correct error detection - 500 is a server error, not network error
-                const status = error?.status || error?.error?.StatusCode || 0;
-                const isNetworkError = status === 0 || !status || error.message?.includes('fetch failed');
-                const isTimeoutError = error.name === 'TimeoutError' || status === 408;
+                // ✅ FIX: Enhanced error detection - check multiple error object structures
+                // Error might be HttpErrorResponse, Error object, or transformed error
+                // Check status from multiple possible locations
+                let status = 0;
+                if (error?.status) {
+                    status = error.status;
+                } else if (error?.error?.StatusCode) {
+                    status = error.error.StatusCode;
+                } else if (error?.error?.status) {
+                    status = error.error.status;
+                } else if (typeof error === 'object' && 'status' in error) {
+                    status = (error as any).status;
+                }
+                
+                // Check if it's a timeout error first (before status check)
+                const isTimeoutError = error?.name === 'TimeoutError' || 
+                                      error?.message?.includes('timeout') ||
+                                      status === 408;
+                
+                // Network errors have status 0 or no status at all
+                const isNetworkError = (status === 0 || !status) && 
+                                      !isTimeoutError && 
+                                      (error?.message?.includes('fetch failed') || 
+                                       error?.message?.includes('Network') ||
+                                       !error?.status);
+                
+                // Server errors (500-599)
                 const isServerError = status >= 500 && status < 600;
+                
+                // Client errors (400-499)
                 const isClientError = status >= 400 && status < 500;
                 
                 if (isNetworkError) {
@@ -243,23 +294,30 @@ export class PublicAppService {
                     console.error(`   - Check network connectivity`);
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
+                    console.error(`   - Full error:`, error);
                 } else if (isTimeoutError) {
                     console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 120 seconds`);
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Possible causes: Backend is slow, network issues, or backend is down`);
                     console.error(`   - Check backend logs and performance`);
                 } else if (isServerError) {
+                    const errorMessages = error?.error?.Messages || error?.error?.message || error?.message || 'Unknown server error';
                     console.error(`🔴 Server Error ${status}: ${fullUrl}`);
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
-                    console.error(`   - Error details:`, error?.error || error);
+                    console.error(`   - Error message:`, errorMessages);
+                    console.error(`   - Full error:`, error?.error || error);
                 } else if (isClientError) {
+                    const errorMessages = error?.error?.Messages || error?.error?.message || error?.message || 'Unknown client error';
                     console.error(`⚠️ Client Error ${status}: ${fullUrl}`);
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
-                    console.error(`   - Error details:`, error?.error || error);
+                    console.error(`   - Error message:`, errorMessages);
+                    console.error(`   - Full error:`, error?.error || error);
                 } else {
-                    console.error(`❌ Error fetching course by URL "${courseUrl}" and location "${locationUrl}". Normalized to: "${normalizedCourseUrl}" / "${normalizedLocation}". API path: ${apiPath}`, error);
+                    console.error(`❌ Error fetching course by URL "${courseUrl}" and location "${locationUrl}". Normalized to: "${normalizedCourseUrl}" / "${normalizedLocation}". API path: ${apiPath}`);
+                    console.error(`   - Status: ${status || 'unknown'}`);
+                    console.error(`   - Full error:`, error);
                 }
                 
                 // Return null on error to prevent breaking the app - resolver will handle redirects

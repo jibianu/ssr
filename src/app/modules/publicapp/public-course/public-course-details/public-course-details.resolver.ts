@@ -4,7 +4,7 @@ import { PublicAppService } from "../../publicapp.service";
 import { catchError, map } from "rxjs/operators";
 import { throwError, of } from "rxjs";
 import { redirectToNotFoundPage } from "src/app/core/helpers/redirect-to-not-found";
-import { isNotFoundError, isServerError, getErrorMessages } from "src/app/core/utils/error.util";
+import { isNotFoundError, isServerError, getErrorMessages, getErrorStatus } from "src/app/core/utils/error.util";
 
 export const publicCourseDetailsResolver: ResolveFn<unknown> = (snap) => {
     let courseUrl = snap.paramMap.get('url') || '';
@@ -67,7 +67,7 @@ export const publicCourseDetailsResolver: ResolveFn<unknown> = (snap) => {
             catchError((error) => {
                 // ✅ BEST PRACTICE: Use ErrorUtil for consistent error detection
                 const messages = getErrorMessages(error);
-                const status = error?.status || error?.error?.StatusCode || 0;
+                const status = getErrorStatus(error); // ✅ FIX: Use utility function for consistent status extraction
                 
                 // Check if it's a "not found" error (404, or 500 with "not found" message)
                 const isNotFound = isNotFoundError(error) || 

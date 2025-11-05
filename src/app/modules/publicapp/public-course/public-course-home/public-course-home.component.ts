@@ -1,5 +1,5 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID, Optional, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID, Optional } from '@angular/core';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { OwlOptions } from 'ngx-owl-carousel-o';
 import { Observable, of } from 'rxjs';
@@ -7,6 +7,7 @@ import { map, shareReplay, catchError, tap } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { BackendHealthService } from 'src/app/core/services/backend-health.service';
 import { environment } from 'src/environments/environment';
+import { getApiUrl } from 'src/app/core/config/api-url.config';
 
 @Component({
     selector: 'app-public-course-home',
@@ -23,8 +24,18 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
   loading = false;
   error: string | null = null;
   backendAvailable = true; // Track if backend API is available
-  apiUrl = environment.apiUrl; // Expose API URL for template
-  private backendHealthService = inject(BackendHealthService);
+  
+  // ✅ FIX: Expose actual backend URL for template (not proxy path)
+  get apiUrl(): string {
+    // Use BackendHealthService to get the actual backend URL for display
+    if (this.backendHealthService) {
+      return this.backendHealthService.getActualBackendUrl();
+    }
+    // Fallback if service not initialized yet
+    return 'http://localhost:52045/';
+  }
+  // ✅ FIX: Move inject() to constructor to prevent injector errors in SSR
+  private backendHealthService: BackendHealthService;
   
   // ✅ FIX: Add missing isDragging property for owl-carousel dragging state
   isDragging = false;
@@ -80,8 +91,11 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private publicAppService: PublicAppService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    backendHealthService: BackendHealthService
   ) {
+    // ✅ FIX: Initialize injected service in constructor to ensure injector is available
+    this.backendHealthService = backendHealthService;
     // ✅ SSR OPTIMIZATION: Non-blocking Observable pipeline
     // Data processing moved to RxJS pipeline - no blocking during SSR
     this.items$ = this.publicAppService.getDashboardCategories().pipe(
@@ -138,7 +152,9 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       this.backendAvailable = available;
       if (!available && !this.error) {
         // Only show backend unavailable message if there's no other error
-        this.error = `Unable to connect to API server. Please ensure the backend is running at ${environment.apiUrl}`;
+        // Use the actual backend URL for error message (not the proxy path)
+        const actualApiUrl = this.backendHealthService.getActualBackendUrl();
+        this.error = `Unable to connect to API server. Please ensure the backend is running at ${actualApiUrl}`;
       }
     });
   }

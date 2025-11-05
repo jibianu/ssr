@@ -60,16 +60,25 @@ export function isNotFoundError(error: any): boolean {
 
 /**
  * Gets the HTTP status code from an error
+ * Checks multiple possible error object structures to handle transformed errors
  */
 export function getErrorStatus(error: any): number {
   if (error instanceof HttpErrorResponse) {
     return error.status;
   }
+  // Check status from multiple possible locations
   if (error?.status) {
     return error.status;
   }
   if (error?.error?.StatusCode) {
     return error.error.StatusCode;
+  }
+  if (error?.error?.status) {
+    return error.error.status;
+  }
+  // Check if error has status property directly
+  if (typeof error === 'object' && 'status' in error) {
+    return (error as any).status;
   }
   return 0;
 }
