@@ -1,4 +1,4 @@
-import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, Inject, PLATFORM_ID } from '@angular/core';
 import { NgxSpinnerModule, NgxSpinnerService } from "ngx-spinner";
 import { AuthModule } from './modules/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
@@ -10,6 +10,8 @@ import {
   NavigationError,
   RouterModule
 } from "@angular/router";
+import { isPlatformBrowser } from '@angular/common';
+import { BackendHealthService } from './core/services/backend-health.service';
 
 @Component({
     selector: 'app-root',
@@ -31,9 +33,16 @@ export class AppComponent implements OnDestroy {
 
     constructor(
         private router: Router,
-        private spinner: NgxSpinnerService
+        private spinner: NgxSpinnerService,
+        private backendHealthService: BackendHealthService,
+        @Inject(PLATFORM_ID) private platformId: Object
     ) {
         this.setupNavigationInterceptor();
+        // ✅ DIAGNOSTIC: Expose backend health service to window for debugging
+        if (isPlatformBrowser(this.platformId)) {
+            (window as any).backendHealth = this.backendHealthService;
+            console.log('💡 Debug helper: Use window.backendHealth.testBackendConnection() in console to test backend');
+        }
     }
 
     private setupNavigationInterceptor(): void {

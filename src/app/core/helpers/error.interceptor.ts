@@ -85,7 +85,7 @@ export class ErrorInterceptor implements HttpInterceptor {
                 }
                 // Handle network errors (status 0 or no status)
                 else if (error.status === 0 || !error.status) {
-                    this.handleNetworkError();
+                    this.handleNetworkError(error);
                 }
                 break;
         }
@@ -137,21 +137,133 @@ export class ErrorInterceptor implements HttpInterceptor {
     /**
      * ✅ SUGGESTION 1 & 4: Handle network/connectivity errors with network status detection
      */
-    private handleNetworkError(): void {
+    private handleNetworkError(error?: HttpErrorResponse): void {
         // Use LoggerService for consistent logging (handles SSR and production)
         const isOffline = this.networkStatusService.isOffline;
         if (isOffline) {
             this.logger.error('Network Error: You are currently offline. Please check your internet connection.');
         } else {
-            // ✅ IMPROVEMENT: More specific error message with troubleshooting steps
-            const message = 'Network Error: Unable to connect to the API server. ' +
-                'Possible solutions:\n' +
-                '1. Check if the backend server is running\n' +
-                '2. Verify the API URL in config.json or environment.ts\n' +
-                '3. Check CORS configuration if using local backend\n' +
-                '4. For development, ensure backend is running or use production backend URL';
-            this.logger.error(message);
+            // ✅ Check if this is a CORS error
+            const isCorsError = this.isCorsError(error);
+            
+            if (isCorsError) {
+                const frontendOrigin = this.isBrowser ? window.location.origin : 'SSR';
+                const backendUrl = error?.url || 'http://localhost:52046/';
+                
+                const corsMessage = '🚫 CORS ERROR: Backend is blocking cross-origin requests\n\n' +
+                    `Frontend Origin: ${frontendOrigin}\n` +
+                    `Backend URL: ${backendUrl}\n\n` +
+                    '🔧 BACKEND FIX REQUIRED:\n\n' +
+                    'The backend needs to allow CORS from your frontend origin.\n' +
+                    'In your .NET Core backend, add/update CORS configuration:\n\n' +
+                    '📝 In Program.cs or Startup.cs:\n' +
+                    '```csharp\n' +
+                    '// Allow CORS for local development\n' +
+                    'builder.Services.AddCors(options =>\n' +
+                    '{\n' +
+                    '    options.AddPolicy("AllowLocalDev", policy =>\n' +
+                    '    {\n' +
+                    '        policy.WithOrigins(\n' +
+                    `            "http://localhost:4200",\n` +
+                    `            "http://localhost:65479",\n` +
+                    '            "http://localhost:4000",  // SSR port\n' +
+                    '            "https://localhost:4200"   // If using HTTPS frontend\n' +
+                    '        )\n' +
+                    '        .AllowAnyMethod()\n' +
+                    '        .AllowAnyHeader()\n' +
+                    '        .AllowCredentials();\n' +
+                    '    });\n' +
+                    '});\n\n' +
+                    '// Apply CORS middleware\n' +
+                    'app.UseCors("AllowLocalDev");\n' +
+                    '```\n\n' +
+                    '✅ VERIFICATION:\n' +
+                    '1. Restart your backend after adding CORS configuration\n' +
+                    '2. Check browser Network tab - you should see:\n' +
+                    '   - OPTIONS request (preflight) returns 200 OK\n' +
+                    '   - Response headers include: Access-Control-Allow-Origin\n' +
+                    '3. If still failing, check backend logs for CORS errors';
+                
+                this.logger.error(corsMessage);
+            } else {
+                // ✅ IMPROVEMENT: More specific error message with troubleshooting steps for ERR_EMPTY_RESPONSE
+                const message = 'ERR_EMPTY_RESPONSE: Connection refused - Backend server is not responding.\n\n' +
+                    '🔍 DIAGNOSTIC STEPS:\n' +
+                    '1. ✅ Check if backend is running:\n' +
+                    '   - Open http://localhost:52046/ in your browser (HTTP port)\n' +
+                    '   - Or https://localhost:52045/ (HTTPS port)\n' +
+                    '   - If "Connection refused" → Backend is NOT running\n' +
+                    '   - If page loads → Backend is running (likely CORS issue)\n\n' +
+                    '2. ✅ Verify backend port and protocol:\n' +
+                    '   - Check backend logs for port binding (HTTP: 52046, HTTPS: 52045)\n' +
+                    '   - Current config uses HTTP on port 52046\n' +
+                    '   - To use HTTPS: change environment.ts to https://localhost:52045/\n\n' +
+                    '3. ✅ Check backend logs:\n' +
+                    '   - Look for startup errors or crashes\n' +
+                    '   - Verify backend started successfully\n\n' +
+                    '4. ✅ Test backend directly:\n' +
+                    '   - Try: http://localhost:52046/page/category (HTTP)\n' +
+                    '   - Or: https://localhost:52045/page/category (HTTPS)\n' +
+                    '   - Check browser Network tab for detailed error\n\n' +
+                    '5. ✅ Firewall/Antivirus:\n' +
+                    '   - Temporarily disable to test if blocking connection';
+                this.logger.error(message);
+            }
         }
+    }
+
+    /**
+     * Detect if the error is a CORS error
+     */
+    private isCorsError(error?: HttpErrorResponse): boolean {
+        if (!error || !this.isBrowser) {
+            return false;
+        }
+
+        // Check error message for CORS keywords
+        const errorMessage = error.message?.toLowerCase() || '';
+        const errorText = error.error?.toString().toLowerCase() || '';
+        
+        const corsKeywords = [
+            'cors',
+            'cross-origin',
+            'access-control-allow-origin',
+            'blocked by cors policy',
+            'preflight'
+        ];
+
+        const hasCorsKeyword = corsKeywords.some(keyword => 
+            errorMessage.includes(keyword) || errorText.includes(keyword)
+        );
+
+        // If we found CORS keywords, it's definitely a CORS error
+        if (hasCorsKeyword) {
+            return true;
+        }
+
+        // Check if this is a cross-origin request failure
+        // CORS errors typically have:
+        // - Status 0 (request blocked by browser)
+        // - URL pointing to a different origin than the current page
+        if (error.status === 0 && error.url) {
+            try {
+                const frontendOrigin = window.location.origin;
+                const requestUrl = new URL(error.url, window.location.href);
+                const requestOrigin = `${requestUrl.protocol}//${requestUrl.host}`;
+                
+                // If origins are different, this could be a CORS error
+                const isCrossOrigin = frontendOrigin !== requestOrigin;
+                
+                // Additional check: status 0 with cross-origin is very likely CORS
+                if (isCrossOrigin) {
+                    return true;
+                }
+            } catch (e) {
+                // If URL parsing fails, fall back to basic checks
+            }
+        }
+
+        return false;
     }
 
     private getErrorMessage(error: HttpErrorResponse): string {
@@ -173,6 +285,10 @@ export class ErrorInterceptor implements HttpInterceptor {
         }
         
         if (error.status === 0 || !error.status) {
+            // Check if this is a CORS error
+            if (this.isCorsError(error)) {
+                return 'CORS Error: Backend is blocking cross-origin requests. Backend needs CORS configuration.';
+            }
             return 'Network error. Please check your internet connection and try again.';
         }
 

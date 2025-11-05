@@ -13,7 +13,7 @@ DEFAULT_BACKEND_PORT="5000"
 BACKEND_PORT="${BACKEND_PORT:-$DEFAULT_BACKEND_PORT}"
 
 # Construct API URL - backend is on localhost in same container
-API_URL="http://localhost:${BACKEND_PORT}/api/"
+API_URL="http://localhost:${BACKEND_PORT}/"
 
 # Create assets directory if it doesn't exist
 ASSETS_DIR="/usr/share/nginx/html/assets"

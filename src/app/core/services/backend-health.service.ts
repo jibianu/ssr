@@ -43,10 +43,15 @@ export class BackendHealthService {
    */
   getActualBackendUrl(): string {
     const currentUrl = getApiUrl();
-    // If it's the proxy path, return the actual backend URL (without /api/ since proxy removes it)
+    // Return the actual backend URL (should already be full URL, but handle proxy paths for backward compatibility)
     if (currentUrl === '/api/' || currentUrl.startsWith('/api/')) {
-      return 'http://localhost:52045/';
+      return 'http://localhost:52046/';
     }
+    // If it's just "/" or empty, return the backend URL
+    if (currentUrl === '/' || !currentUrl || currentUrl.trim() === '') {
+      return 'http://localhost:52046/';
+    }
+    // Already a full URL, return as-is
     return currentUrl;
   }
   
@@ -80,7 +85,7 @@ export class BackendHealthService {
       // Don't retry health checks - fail fast
       headers: { 'X-Health-Check': 'true' }
     }).pipe(
-      timeout(3000), // 3 second timeout for health check
+      timeout(5000), // 5 second timeout for health check (increased for SSL handshake)
       map(() => {
         // Cache successful result
         console.log(`✅ Health check passed: Backend is available at ${healthCheckUrl}`);
@@ -89,7 +94,34 @@ export class BackendHealthService {
       }),
       catchError((error) => {
         // Cache failed result (shorter cache duration)
-        console.warn(`⚠️ Health check failed: Backend unavailable at ${healthCheckUrl}`, error);
+        const errorMessage = error?.message || 'Unknown error';
+        const errorStatus = error?.status || error?.statusCode || 'N/A';
+        
+        // Provide detailed error information
+        if (error?.name === 'TimeoutError' || error?.name === 'Timeout') {
+          console.warn(`⚠️ Health check timeout: Backend did not respond within 5 seconds at ${healthCheckUrl}`);
+          console.warn(`💡 Possible causes: Backend not running, SSL certificate issue, or network problem`);
+        } else if (errorStatus === 0 || !errorStatus) {
+          console.error(`❌ ERR_EMPTY_RESPONSE: Connection refused or closed at ${healthCheckUrl}`);
+          console.error(`💡 DIAGNOSTIC STEPS:`);
+          console.error(`   1. ✅ Check if backend is running:`);
+          console.error(`      - Open: ${healthCheckUrl} in your browser`);
+          console.error(`      - If page loads → Backend is running (likely CORS issue)`);
+          console.error(`      - If "Connection refused" → Backend is NOT running`);
+          console.error(`   2. ✅ Verify backend port:`);
+          console.error(`      - Check backend logs to confirm port 52046 (HTTP) or 52045 (HTTPS)`);
+          console.error(`      - Try: http://localhost:52046/ (HTTP) or https://localhost:52045/ (HTTPS)`);
+          console.error(`   3. ✅ Check backend protocol:`);
+          console.error(`      - If backend uses HTTPS, change environment.ts to https://`);
+          console.error(`      - If backend uses HTTP, current config is correct`);
+          console.error(`   4. ✅ Check firewall/antivirus:`);
+          console.error(`      - Temporarily disable to test`);
+          console.error(`   5. ✅ Check backend logs:`);
+          console.error(`      - Look for errors when requests arrive`);
+        } else {
+          console.warn(`⚠️ Health check failed: Backend returned status ${errorStatus} at ${healthCheckUrl}`, errorMessage);
+        }
+        
         this.healthCheckCache = { available: false, timestamp: Date.now() };
         return of(false);
       })
@@ -127,5 +159,55 @@ export class BackendHealthService {
     }
 
     return this.healthCheckCache.available;
+  }
+
+  /**
+   * ✅ DIAGNOSTIC: Test backend connectivity manually
+   * Can be called from browser console for debugging:
+   * window.backendHealth?.testBackendConnection()
+   */
+  async testBackendConnection(): Promise<void> {
+    if (!this.isBrowser) {
+      console.warn('⚠️ Backend connectivity test only works in browser');
+      return;
+    }
+
+    const backendUrl = this.getActualBackendUrl();
+    const testUrl = `${backendUrl}page/category`;
+    
+    console.log('🔍 Testing backend connectivity...');
+    console.log(`📍 Backend URL: ${backendUrl}`);
+    console.log(`📍 Test URL: ${testUrl}`);
+    console.log('');
+    
+    try {
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'X-Health-Check': 'true'
+        }
+      });
+      
+      if (response.ok) {
+        console.log('✅ Backend is accessible!');
+        console.log(`   Status: ${response.status} ${response.statusText}`);
+        console.log(`   Connection successful`);
+      } else {
+        console.warn(`⚠️ Backend responded with error:`);
+        console.warn(`   Status: ${response.status} ${response.statusText}`);
+        console.warn(`   This might be a CORS issue or backend error`);
+      }
+    } catch (error: any) {
+      console.error('❌ Backend connection failed:');
+      console.error(`   Error: ${error?.message || error}`);
+      console.error('');
+      console.error('💡 TROUBLESHOOTING:');
+      console.error(`   1. Open ${testUrl} directly in your browser`);
+      console.error(`   2. Check if backend is running on port 52046 (HTTP) or 52045 (HTTPS)`);
+      console.error(`   3. Verify CORS is configured on backend`);
+      console.error(`   4. Check backend logs for errors`);
+      throw error;
+    }
   }
 }

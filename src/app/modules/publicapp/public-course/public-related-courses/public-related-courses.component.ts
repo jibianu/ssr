@@ -52,6 +52,19 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
         return this.publicAppService.getCourses(obj).pipe(
           map(response => {
             let courses = response.results || [];
+            // ✅ FIX: Normalize canonicalUrl for proper routing
+            courses = courses.map((course: any) => {
+              const originalUrl = course?.canonicalUrl;
+              const normalizedUrl = this.normalizeCourseUrl(originalUrl);
+              // Debug logging to help identify routing issues
+              if (originalUrl !== normalizedUrl) {
+                console.log(`🔗 Normalized course URL: "${originalUrl}" → "${normalizedUrl}"`);
+              }
+              return {
+                ...course,
+                canonicalUrl: normalizedUrl
+              };
+            });
             // ✅ FIX: Remove current course from related courses list
             if (courseId) {
               const index = courses.findIndex((course: any) => course.id === courseId);
@@ -100,11 +113,29 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
     if (target) {
       target.src = 'https://via.placeholder.com/468x300?text=oilandgasclub.com';
     }
+    // ✅ FIX: Removed dead code - courses are already loaded via courses$ Observable
   }
 
   // ✅ PERFORMANCE: Add trackBy function for ngFor optimization
   trackByCourseId(index: number, course: any): string {
     return course?.id || index.toString();
+  }
+
+  // ✅ FIX: Normalize course URL to ensure routerLink works correctly
+  // Removes leading '/' and any 'course/course/' or 'course/' prefixes
+  // Returns just the course slug for routerLink (relative to /course route)
+  private normalizeCourseUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    // Remove leading slash
+    let normalized = url.replace(/^\/+/, '');
+    // Remove 'course/course/' prefix if present
+    if (normalized.startsWith('course/course/')) {
+      normalized = normalized.replace(/^course\/course\//, '');
+    } else if (normalized.startsWith('course/')) {
+      normalized = normalized.replace(/^course\//, '');
+    }
+    // ✅ Return absolute path starting with '/' for root-level routing
+    return '/' + normalized;
   }
 
   ngOnDestroy(): void {

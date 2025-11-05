@@ -39,9 +39,9 @@ export const config: ApplicationConfig = {
                  !req.url.includes('/webhook/') &&
                  (
                    req.url.includes('/api/page/') ||
-                   req.url.includes('/api/course/') ||
-                   req.url.includes('/api/category/') ||
-                   req.url.includes('/api/event/')
+                   req.url.includes('/course/') ||
+                   req.url.includes('/category/') ||
+                   req.url.includes('/event/')
                  );
         }
       })

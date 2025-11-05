@@ -9,7 +9,6 @@ import { dirname, resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, readFileSync } from 'fs';
 import { createHash } from 'crypto';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import { getCacheConfig, isStaticRoute as checkStaticRoute } from './server.cache.config';
 import { createCacheAdapter, CacheAdapter } from './server.cache.adapter';
 import { performanceMonitor } from './server.performance';
@@ -21,56 +20,9 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-// ✅ PROXY: Configure API proxy for SSR (handles /api/* requests during server-side rendering)
-// This allows SSR to make API calls using /api/ prefix, which gets proxied to the backend
-const backendUrl = process.env['BACKEND_URL'] || 'https://localhost:52045';
-const isDevelopment = process.env['NODE_ENV'] !== 'production';
-
-if (isDevelopment) {
-  // ✅ PROXY: Only enable proxy in development (production uses full URLs)
-  // Configure proxy middleware with proper error handling and timeout
-  // Using 'as any' because http-proxy-middleware v3 types may be incomplete for onError
-  const proxyOptions: any = {
-    target: backendUrl,
-    changeOrigin: true,
-    secure: false, // Accept self-signed SSL certificates in development
-    timeout: 120000, // 120 seconds proxy timeout (2 minutes)
-    proxyTimeout: 120000, // Backend response timeout
-    pathRewrite: {
-      '^/api': '', // Strip /api prefix before forwarding
-    },
-    onError: (err: any, req: express.Request, res: express.Response) => {
-      console.error('[Proxy Error]', err.message);
-      console.warn('⚠️  Backend not available at', backendUrl);
-      console.warn('💡 Make sure your .NET backend is running, or use production backend');
-      if (!res.headersSent) {
-        // Check if it's a timeout error
-        const isTimeout = err.code === 'ECONNRESET' || err.code === 'ETIMEDOUT' || err.message?.includes('timeout');
-        res.status(isTimeout ? 504 : 502).json({ 
-          error: isTimeout ? 'Backend timeout' : 'Backend connection failed', 
-          message: `Cannot connect to ${backendUrl}`,
-          tip: isTimeout 
-            ? 'Backend took too long to respond. Check backend performance or increase timeout.'
-            : 'Ensure backend is running or set BACKEND_URL environment variable'
-        });
-      }
-    },
-  };
-
-  const proxyMiddleware = createProxyMiddleware(proxyOptions);
-
-  // ✅ PROXY: Add logging middleware before proxy
-  app.use('/api', (req, res, next) => {
-    console.log(`[Proxy] ${req.method} ${req.url} → ${backendUrl}${req.url.replace('/api', '')}`);
-    next();
-  });
-
-  // Apply proxy middleware
-  app.use('/api', proxyMiddleware);
-  console.log(`✅ SSR API Proxy configured: /api/* → ${backendUrl}/*`);
-} else {
-  console.log('ℹ️  SSR Proxy disabled in production (using full URLs)');
-}
+// ✅ PROXY: SSR proxy disabled - using direct backend URLs from environment config
+// SSR will make direct API calls to the backend URL configured in environment.ts
+// No proxy middleware needed - frontend uses full backend URLs directly
 
 // ✅ CACHING: Initialize cache adapter (memory or Redis based on config)
 const cacheConfig = getCacheConfig();

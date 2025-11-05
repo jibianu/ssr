@@ -61,8 +61,31 @@ export class RetryInterceptor implements HttpInterceptor {
 
   /**
    * Determine if request should be retried based on error
+   * ✅ IMPROVEMENT: Don't retry on ERR_EMPTY_RESPONSE (backend not running)
    */
   private shouldRetry(error: HttpErrorResponse): boolean {
+    // Don't retry timeout errors (408) - backend is too slow/hanging
+    // Check status 408 (Request Timeout) or error message containing 'timeout'
+    const isTimeoutError = error.status === 408 || 
+                          error.message?.toLowerCase().includes('timeout');
+    
+    if (isTimeoutError) {
+      // Backend is too slow - don't retry as it will just timeout again
+      return false;
+    }
+    
+    // Don't retry if it's clearly a connection refused error (backend not running)
+    // This prevents unnecessary retries when backend is down
+    const isConnectionRefused = error.status === 0 && 
+                                 (error.message?.includes('ERR_EMPTY_RESPONSE') || 
+                                  error.message?.includes('Connection refused') ||
+                                  error.message?.includes('fetch failed'));
+    
+    if (isConnectionRefused) {
+      // Backend is likely not running - don't retry
+      return false;
+    }
+    
     // Retry on network errors (status 0) or server errors (5xx)
     if (error.status === 0 || (error.status >= 500 && error.status < 600)) {
       return true;

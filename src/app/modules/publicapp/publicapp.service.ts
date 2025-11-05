@@ -30,7 +30,7 @@ export class PublicAppService {
     getCourses(params): Observable<any> {
         // Note: Params-based requests are handled by CacheInterceptor
         // ✅ PERFORMANCE: shareReplay ensures concurrent requests share same response
-        return this.http.get<any>(this.apiUrl + `page/course`, { params }).pipe(
+        return this.http.get<any>(`${this.apiUrl}page/course`, { params }).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error('Error fetching courses:', error);
@@ -41,7 +41,7 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Cache course by ID - frequently accessed detail pages
     getCourseById(id): Observable<any> {
-        return this.http.get<any>(this.apiUrl + `page/course/id/` + id).pipe(
+        return this.http.get<any>(`${this.apiUrl}page/course/id/${id}`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error(`Error fetching course ${id}:`, error);
@@ -74,34 +74,39 @@ export class PublicAppService {
         }
         
         const apiPath = `page/course/course/${normalizedUrl}`;
-        const fullUrl = this.apiUrl + apiPath;
+        const fullUrl = `${this.apiUrl}${apiPath}`;
         
-        // ✅ Show both frontend URL and actual backend URL for debugging
-        const isProxyPath = fullUrl.startsWith('/api/');
-        const backendUrl = isProxyPath 
-            ? `http://localhost:52045${fullUrl.replace('/api', '')}` 
-            : fullUrl;
+        // ✅ Direct backend connection (no proxy)
         console.log(`🔍 API Call: ${fullUrl}`);
-        if (isProxyPath) {
-            console.log(`   → Proxied to: ${backendUrl}`);
-        }
         console.log(`   (original URL: "${url}", normalized: "${normalizedUrl}")`);
         
-        // ✅ Add longer timeout for course API calls (120 seconds) via custom header
-        // Increased from 60s to 120s to match proxy timeout settings
-        const headers = new HttpHeaders().set('X-Timeout', '120000');
+        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
+        // Reduced from 120s to 60s - if backend needs more time, it should be optimized
+        const headers = new HttpHeaders().set('X-Timeout', '60000');
         
         return this.http.get<any>(fullUrl, { headers }).pipe(
-            timeout(120000), // 120 seconds timeout for course API calls (matches proxy timeout)
+            timeout(60000), // 60 seconds timeout for course API calls (reduced from 120s)
             retry({
-                count: 2, // Retry up to 2 times on failure
+                count: 1, // Reduced retries: only 1 retry (was 2) to avoid long waits
                 delay: (error: any, retryCount: number) => {
-                    // Only retry on network errors (no status or 0 status), not on client errors (4xx)
-                    if (error?.status && error.status >= 400 && error.status < 500) {
-                        // Don't retry client errors (like 404, 401, etc.)
+                    // Don't retry timeout errors (408) - they indicate backend is too slow/hanging
+                    const isTimeoutError = error?.name === 'TimeoutError' || 
+                                         error?.name === 'Timeout' || 
+                                         error?.status === 408 ||
+                                         error?.message?.includes('timeout');
+                    
+                    if (isTimeoutError) {
+                        console.warn(`⏱️ Timeout detected - skipping retry to avoid further delays`);
                         return throwError(() => error);
                     }
-                    // Exponential backoff: 1s, 2s for network errors
+                    
+                    // Don't retry client errors (4xx) - like 404, 401, etc.
+                    if (error?.status && error.status >= 400 && error.status < 500) {
+                        return throwError(() => error);
+                    }
+                    
+                    // Exponential backoff: 1s for network errors only
+                    console.log(`🔄 Retrying request (attempt ${retryCount + 1}/2) after ${1000 * retryCount}ms...`);
                     return of(null).pipe(delay(1000 * retryCount));
                 }
             }),
@@ -117,10 +122,19 @@ export class PublicAppService {
                     console.error(`   - Check network connectivity`);
                     console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
                 } else if (isTimeoutError) {
-                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 120 seconds`);
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
                     console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
-                    console.error(`   - Possible causes: Backend is slow, network issues, or backend is down`);
-                    console.error(`   - Check backend logs and performance`);
+                    console.error(`   - Possible causes:`);
+                    console.error(`     1. Backend is processing slowly or hanging`);
+                    console.error(`     2. Backend endpoint might be stuck/infinite loop`);
+                    console.error(`     3. Database query is taking too long`);
+                    console.error(`     4. Network connectivity issues`);
+                    console.error(`   - Actions:`);
+                    console.error(`     • Check backend logs for errors or slow queries`);
+                    console.error(`     • Test endpoint directly in browser: ${fullUrl}`);
+                    console.error(`     • Verify backend is responsive (try root URL: ${this.apiUrl})`);
+                    console.error(`     • Check database performance if applicable`);
+                    console.error(`     • Consider optimizing backend endpoint if it consistently times out`);
                 } else {
                     console.error(`❌ Error fetching course by URL "${url}" (normalized: "${normalizedUrl}"). API path: ${apiPath}`, error);
                 }
@@ -132,7 +146,7 @@ export class PublicAppService {
     }
 
     getDashboardCourses(): Observable<any> {
-        return this.http.get<any>(this.apiUrl + `page/course/Dashboard`).pipe(
+        return this.http.get<any>(`${this.apiUrl}page/course/Dashboard`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error('Error fetching dashboard courses:', error);
@@ -144,7 +158,7 @@ export class PublicAppService {
     // ✅ PERFORMANCE: Service-level cache with shareReplay - prevents duplicate API calls
     getCategories(): Observable<Category[]> {
         if (!this.categoriesCache$) {
-            this.categoriesCache$ = this.http.get<Category[]>(this.apiUrl + `page/category`).pipe(
+            this.categoriesCache$ = this.http.get<Category[]>(`${this.apiUrl}page/category`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }), // ✅ PERFORMANCE: refCount=true releases memory when no subscribers
                 catchError(error => {
                     console.error('Error fetching categories:', error);
@@ -157,7 +171,7 @@ export class PublicAppService {
     }
 
     getCourseByCategoryId(id): Observable<any> {
-        return this.http.get<any>(this.apiUrl + `page/Course/` + id + '/Dashboard').pipe(
+        return this.http.get<any>(`${this.apiUrl}page/Course/${id}/Dashboard`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error(`Error fetching courses by category ${id}:`, error);
@@ -169,7 +183,7 @@ export class PublicAppService {
     // ✅ PERFORMANCE: Cache dashboard categories - called on home page load
     getDashboardCategories(): Observable<any> {
         if (!this.dashboardCategoriesCache$) {
-            this.dashboardCategoriesCache$ = this.http.get<any>(this.apiUrl + `page/Category/Dashboard`).pipe(
+            this.dashboardCategoriesCache$ = this.http.get<any>(`${this.apiUrl}page/Category/Dashboard`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
                 catchError(error => {
                     // ✅ SSR-FRIENDLY: Only log errors in browser (SSR errors are expected if backend is down)
@@ -223,34 +237,39 @@ export class PublicAppService {
         }
         
         const apiPath = `page/course/course/${normalizedCourseUrl}/location/${normalizedLocation}`;
-        const fullUrl = this.apiUrl + apiPath;
+        const fullUrl = `${this.apiUrl}${apiPath}`;
         
-        // ✅ Show both frontend URL and actual backend URL for debugging
-        const isProxyPath = fullUrl.startsWith('/api/');
-        const backendUrl = isProxyPath 
-            ? `http://localhost:52045${fullUrl.replace('/api', '')}` 
-            : fullUrl;
+        // ✅ Direct backend connection (no proxy)
         console.log(`🔍 API Call: ${fullUrl}`);
-        if (isProxyPath) {
-            console.log(`   → Proxied to: ${backendUrl}`);
-        }
         console.log(`   (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}", normalized: "${normalizedCourseUrl}" / "${normalizedLocation}")`);
         
-        // ✅ Add longer timeout for course API calls (120 seconds) via custom header
-        // Increased from 60s to 120s to match proxy timeout settings
-        const headers = new HttpHeaders().set('X-Timeout', '120000');
+        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
+        // Reduced from 120s to 60s - if backend needs more time, it should be optimized
+        const headers = new HttpHeaders().set('X-Timeout', '60000');
         
         return this.http.get<any>(fullUrl, { headers }).pipe(
-            timeout(120000), // 120 seconds timeout for course API calls (matches proxy timeout)
+            timeout(60000), // 60 seconds timeout for course API calls (reduced from 120s)
             retry({
-                count: 2, // Retry up to 2 times on failure
+                count: 1, // Reduced retries: only 1 retry (was 2) to avoid long waits
                 delay: (error: any, retryCount: number) => {
-                    // Only retry on network errors (no status or 0 status), not on client errors (4xx)
-                    if (error?.status && error.status >= 400 && error.status < 500) {
-                        // Don't retry client errors (like 404, 401, etc.)
+                    // Don't retry timeout errors (408) - they indicate backend is too slow/hanging
+                    const isTimeoutError = error?.name === 'TimeoutError' || 
+                                         error?.name === 'Timeout' || 
+                                         error?.status === 408 ||
+                                         error?.message?.includes('timeout');
+                    
+                    if (isTimeoutError) {
+                        console.warn(`⏱️ Timeout detected - skipping retry to avoid further delays`);
                         return throwError(() => error);
                     }
-                    // Exponential backoff: 1s, 2s for network errors
+                    
+                    // Don't retry client errors (4xx) - like 404, 401, etc.
+                    if (error?.status && error.status >= 400 && error.status < 500) {
+                        return throwError(() => error);
+                    }
+                    
+                    // Exponential backoff: 1s for network errors only
+                    console.log(`🔄 Retrying request (attempt ${retryCount + 1}/2) after ${1000 * retryCount}ms...`);
                     return of(null).pipe(delay(1000 * retryCount));
                 }
             }),
@@ -296,7 +315,7 @@ export class PublicAppService {
                     console.error(`   - Normalized: "${normalizedCourseUrl}" / "${normalizedLocation}"`);
                     console.error(`   - Full error:`, error);
                 } else if (isTimeoutError) {
-                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 120 seconds`);
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
                     console.error(`   - Original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}"`);
                     console.error(`   - Possible causes: Backend is slow, network issues, or backend is down`);
                     console.error(`   - Check backend logs and performance`);
@@ -329,7 +348,7 @@ export class PublicAppService {
     // ✅ PERFORMANCE: Cache events list - frequently accessed
     getEvents(): Observable<any> {
         if (!this.eventsCache$) {
-            this.eventsCache$ = this.http.get(this.apiUrl + `page/event/dashboard`).pipe(
+            this.eventsCache$ = this.http.get(`${this.apiUrl}page/event/dashboard`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
                 catchError(error => {
                     console.error('Error fetching events:', error);
@@ -343,7 +362,7 @@ export class PublicAppService {
 
     getUpcomingEvents(eventId: string): Observable<any> {
         // ✅ PERFORMANCE: shareReplay prevents duplicate requests for same eventId
-        return this.http.get(this.apiUrl + `page/event/upcoming/${eventId}`).pipe(
+        return this.http.get(`${this.apiUrl}page/event/upcoming/${eventId}`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error(`Error fetching upcoming events for ${eventId}:`, error);
@@ -354,7 +373,7 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Cache event by ID - used in route resolvers
     getEventById(eventId: string): Observable<any> {
-        return this.http.get(this.apiUrl + `page/event/${eventId}`).pipe(
+        return this.http.get(`${this.apiUrl}page/event/${eventId}`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error(`Error fetching event ${eventId}:`, error);
@@ -366,7 +385,7 @@ export class PublicAppService {
     createEventUser(eventId: string, eventUser: any): Observable<any> {
         // ✅ PERFORMANCE: Invalidate events cache on mutation
         this.eventsCache$ = null;
-        return this.http.post(this.apiUrl + `page/event/users/${eventId}`, eventUser).pipe(
+        return this.http.post(`${this.apiUrl}page/event/users/${eventId}`, eventUser).pipe(
             catchError(error => {
                 console.error(`Error creating event user for ${eventId}:`, error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling

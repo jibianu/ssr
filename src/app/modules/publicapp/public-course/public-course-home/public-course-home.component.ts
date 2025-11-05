@@ -32,7 +32,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       return this.backendHealthService.getActualBackendUrl();
     }
     // Fallback if service not initialized yet
-    return 'http://localhost:52045/';
+    return 'http://localhost:52046/';
   }
   // ✅ FIX: Move inject() to constructor to prevent injector errors in SSR
   private backendHealthService: BackendHealthService;
@@ -148,7 +148,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
    * Shows user-friendly message when backend is offline
    */
   private checkBackendHealth(): void {
-    this.backendHealthService.checkHealthWithTimeout(3000).subscribe(available => {
+    this.backendHealthService.checkHealthWithTimeout(5000).subscribe(available => {
       this.backendAvailable = available;
       if (!available && !this.error) {
         // Only show backend unavailable message if there's no other error

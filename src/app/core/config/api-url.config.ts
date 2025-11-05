@@ -10,7 +10,7 @@ export const API_URL = new InjectionToken<string>('API_URL', {
   factory: () => {
     // ✅ FIX: Fallback to environment.apiUrl if available (supports development with production backend)
     // Otherwise use Docker default (for containerized deployments)
-    return environment.apiUrl || 'http://localhost:5000/api/';
+    return environment.apiUrl || 'http://localhost:52046/';
   }
 });
 
@@ -33,7 +33,7 @@ export function getApiUrl(): string {
   }
   // ✅ FIX: Fallback to environment.apiUrl if available (supports development)
   // Otherwise use Docker default (for containerized deployments)
-  return environment.apiUrl || 'http://localhost:5000/api/';
+  return environment.apiUrl || 'http://localhost:52045/';
 }
 
 /**
@@ -72,22 +72,24 @@ export function loadApiUrl(): () => Promise<void> {
       const devDefault = environment.apiUrl || dockerDefault;
       const defaultConfig: AppConfig = {
         // ✅ In Docker, config.json should always exist, but use Docker default if not
-        // In development, use environment.apiUrl (localhost:52045) if config.json not found
+        // In development, use environment.apiUrl (localhost:52046) if config.json not found
         // In production, use environment.apiUrl (coursebackend.oilandgasclub.com) if config.json not found
         apiUrl: devDefault
       };
 
       // Only fetch in browser (not during SSR)
       if (typeof window === 'undefined' || typeof fetch === 'undefined') {
-        // ✅ SSR: Use full backend URL (proxy doesn't work in SSR)
-        // In development, use http://localhost:52045/ directly (proxy removes /api prefix)
+        // ✅ SSR: Use full backend URL directly (no proxy needed)
+        // In development, use http://localhost:52046/ directly (matches backend HTTP port)
         // In production, use the production backend URL
         let ssrApiUrl = devDefault;
         
-        // If using proxy path (/api/), convert to full backend URL for SSR
-        // Backend doesn't use /api/ prefix (proxy removes it), so remove it for SSR too
+        // If apiUrl is a relative path (old proxy setup), convert to full backend URL
         if (ssrApiUrl === '/api/' || ssrApiUrl.startsWith('/api/')) {
-          ssrApiUrl = 'http://localhost:52045/';
+          ssrApiUrl = 'http://localhost:52046/';
+        } else if (ssrApiUrl === '/' || !ssrApiUrl || ssrApiUrl.trim() === '') {
+          // Handle case where apiUrl is just "/" or empty
+          ssrApiUrl = 'http://localhost:52046/';
         }
         
         const ssrDefault: AppConfig = {
