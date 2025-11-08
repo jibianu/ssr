@@ -33,7 +33,7 @@ export function getApiUrl(): string {
   }
   // ✅ FIX: Fallback to environment.apiUrl if available (supports development)
   // Otherwise use Docker default (for containerized deployments)
-  return environment.apiUrl || 'http://localhost:52045/';
+  return environment.apiUrl || 'http://localhost:52046/';
 }
 
 /**

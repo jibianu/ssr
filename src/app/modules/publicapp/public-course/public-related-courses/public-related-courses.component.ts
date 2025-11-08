@@ -1,110 +1,90 @@
 import { Observable, of, combineLatest, BehaviorSubject } from 'rxjs';
-import { switchMap, map, catchError, shareReplay, startWith } from 'rxjs/operators';
+import { switchMap, map, catchError, shareReplay, startWith, filter, distinctUntilChanged } from 'rxjs/operators';
 import { PublicAppService } from './../../publicapp.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy, Input, OnChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, Input, OnChanges, ChangeDetectionStrategy, SimpleChanges } from '@angular/core';
 
 @Component({
     selector: 'app-public-related-courses',
     templateUrl: './public-related-courses.component.html',
     styleUrls: ['./public-related-courses.component.scss'],
     standalone: false,
-    changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestroy {
+export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
 
   readonly itemsPerPage = 5;
 
-  // ✅ SSR OPTIMIZATION: Use Observable with async pipe - no blocking
   courses$: Observable<any[]>;
 
   @Input() categoryName: string | null = null;
   @Input() courseId: string | null = null;
 
-  // ✅ SSR OPTIMIZATION: Use BehaviorSubject to react to @Input changes
   private categoryName$ = new BehaviorSubject<string | null>(null);
   private courseId$ = new BehaviorSubject<string | null>(null);
 
   constructor(
-    private route: ActivatedRoute, 
-    private router: Router,
-    private publicAppService: PublicAppService,
-    private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
+    private publicAppService: PublicAppService
   ) {
-    // ✅ SSR OPTIMIZATION: Non-blocking Observable pipeline
-    // Reacts to @Input changes via BehaviorSubjects
-    this.courses$ = combineLatest([
-      this.categoryName$.pipe(startWith(null)),
-      this.courseId$.pipe(startWith(null))
-    ]).pipe(
-      switchMap(([categoryName, courseId]) => {
-        // Skip if no category name provided
-        if (!categoryName) {
-          return of([]);
-        }
+    const categoryChanges$ = this.categoryName$.pipe(
+      map(value => (value ?? '').trim()),
+      filter(value => value.length > 0),
+      distinctUntilChanged()
+    );
 
-        const obj = {
-          pageSize: this.itemsPerPage,
-          pageNumber: 1,
-          'Filter.Category': categoryName
-        };
+    const courseIdChanges$ = this.courseId$.pipe(
+      distinctUntilChanged(),
+      startWith(null)
+    );
 
-        return this.publicAppService.getCourses(obj).pipe(
-          map(response => {
-            let courses = response.results || [];
-            // ✅ FIX: Normalize canonicalUrl for proper routing
-            courses = courses.map((course: any) => {
-              const originalUrl = course?.canonicalUrl;
-              const normalizedUrl = this.normalizeCourseUrl(originalUrl);
-              // Debug logging to help identify routing issues
-              if (originalUrl !== normalizedUrl) {
-                console.log(`🔗 Normalized course URL: "${originalUrl}" → "${normalizedUrl}"`);
+    this.courses$ = categoryChanges$.pipe(
+      switchMap(categoryName =>
+        combineLatest([
+          this.publicAppService.getRelatedCourses(categoryName).pipe(
+            map(courses => {
+              if (!Array.isArray(courses)) {
+                return [];
               }
-              return {
+
+              return courses.map((course: any) => ({
                 ...course,
-                canonicalUrl: normalizedUrl
-              };
-            });
-            // ✅ FIX: Remove current course from related courses list
-            if (courseId) {
-              const index = courses.findIndex((course: any) => course.id === courseId);
-              if (index >= 0) {
-                courses = [...courses]; // Create new array for immutability
-                courses.splice(index, 1);
-              }
+                canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
+              }));
+            }),
+            catchError(error => {
+              console.error('Error fetching related courses:', error);
+              return of([]);
+            }),
+            startWith([])
+          ),
+          courseIdChanges$
+        ]).pipe(
+          map(([courses, currentCourseId]) => {
+            if (!currentCourseId) {
+              return courses;
             }
-            return courses;
-          }),
-          catchError(error => {
-            console.error('Error fetching related courses:', error);
-            return of([]); // ✅ ERROR HANDLING: Return empty array on error
-          }),
-          shareReplay(1) // ✅ Cache for multiple subscriptions/renders
-        );
-      }),
-      shareReplay(1) // ✅ Cache the entire stream
+
+            const index = courses.findIndex(course => course?.id === currentCourseId);
+            if (index === -1) {
+              return courses;
+            }
+
+            const updatedCourses = [...courses];
+            updatedCourses.splice(index, 1);
+            return updatedCourses;
+          })
+        )
+      ),
+      startWith([]),
+      shareReplay(1)
     );
   }
 
-  ngOnInit(): void {
-    // ✅ SSR OPTIMIZATION: No blocking operations
-    // Observable is already set up in constructor - template uses async pipe
-    // Initialize with current @Input values
-    if (this.categoryName) {
-      this.categoryName$.next(this.categoryName);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.categoryName) {
+      this.updateCategoryName(changes.categoryName.currentValue);
     }
-    if (this.courseId) {
-      this.courseId$.next(this.courseId);
-    }
-  }
-
-  ngOnChanges() {
-    // ✅ SSR OPTIMIZATION: Update BehaviorSubjects to trigger Observable stream
-    if (this.categoryName !== undefined) {
-      this.categoryName$.next(this.categoryName);
-    }
-    if (this.courseId !== undefined) {
-      this.courseId$.next(this.courseId);
+    if (changes.courseId) {
+      this.updateCourseId(changes.courseId.currentValue);
     }
   }
 
@@ -113,17 +93,12 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
     if (target) {
       target.src = 'https://via.placeholder.com/468x300?text=oilandgasclub.com';
     }
-    // ✅ FIX: Removed dead code - courses are already loaded via courses$ Observable
   }
 
-  // ✅ PERFORMANCE: Add trackBy function for ngFor optimization
   trackByCourseId(index: number, course: any): string {
     return course?.id || index.toString();
   }
 
-  // ✅ FIX: Normalize course URL to ensure routerLink works correctly
-  // Removes leading '/' and any 'course/course/' or 'course/' prefixes
-  // Returns just the course slug for routerLink (relative to /course route)
   private normalizeCourseUrl(url: string | null | undefined): string {
     if (!url) return '';
     // Remove leading slash
@@ -134,14 +109,39 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
     } else if (normalized.startsWith('course/')) {
       normalized = normalized.replace(/^course\//, '');
     }
-    // ✅ Return absolute path starting with '/' for root-level routing
     return '/' + normalized;
   }
 
   ngOnDestroy(): void {
-    // ✅ SSR OPTIMIZATION: Complete BehaviorSubjects on destroy
     this.categoryName$.complete();
     this.courseId$.complete();
   }
 
+  private updateCategoryName(value: string | null | undefined): void {
+    const normalized = (value ?? '').trim();
+    const current = this.categoryName$.value ?? '';
+
+    if (!normalized) {
+      if (current !== '') {
+        this.categoryName$.next(null);
+      }
+      return;
+    }
+
+    if (current === normalized) {
+      return;
+    }
+
+    this.categoryName$.next(normalized);
+  }
+
+  private updateCourseId(value: string | null | undefined): void {
+    const normalized = value ?? null;
+
+    if (this.courseId$.value === normalized) {
+      return;
+    }
+
+    this.courseId$.next(normalized);
+  }
 }

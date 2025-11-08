@@ -1,9 +1,12 @@
-import { Component, OnDestroy, OnInit, computed, effect, input, ChangeDetectionStrategy, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { MetadataService } from 'src/app/shared/service/meta.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+import { PublicAppService } from '../../publicapp.service';
 import { environment } from './../../../../../environments/environment';
 
 @Component({
@@ -13,25 +16,23 @@ import { environment } from './../../../../../environments/environment';
     standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush for faster change detection
 })
-export class PublicCourseDetailsComponent {
+export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
 
-  courseUrl: string;
-  locationUrl: string;
-  courseDetails;
+  course: any = null; // ✅ Course data - only set when user clicks "Load Course" button
+  courseDetails: any = null; // ✅ Alias for backward compatibility with existing template
   image = '';
   categoryName = '';
   courseId = '';
   
+  // ✅ Loading states
+  isLoading = false;
+  isLoaded = false;
+  loadError: string | null = null;
+  
   // ✅ SSR: Browser check for DOM operations
   private readonly isBrowser: boolean;
-  // createdBy=[
-  //   'f48824b8-f021-70f5-0cb8-a5cee2516932',
-  //   'e0986ef4-e84c-43cb-8a7a-f300a515ef4f'
-  // ];
   private readonly createdByList = ['f48824b8-f021-70f5-0cb8-a5cee2516932', 'e0986ef4-e84c-43cb-8a7a-f300a515ef4f'];
 
-  isLoaded=false
-  
   // ✅ FIX: Add missing 'more' property for FAQ expansion functionality
   more = false;
 
@@ -39,46 +40,100 @@ export class PublicCourseDetailsComponent {
   private readonly canonicalService: CanonicalService;
   private readonly metadataService: MetadataService;
   private readonly structuredDataService: StructuredDataService;
+  private readonly publicAppService: PublicAppService;
+  private readonly changeDetectorRef: ChangeDetectorRef;
+  private subscription = new Subscription();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
+    private route: ActivatedRoute,
     canonicalService: CanonicalService,
     metadataService: MetadataService,
-    structuredDataService: StructuredDataService
+    structuredDataService: StructuredDataService,
+    publicAppService: PublicAppService,
+    changeDetectorRef: ChangeDetectorRef
   ) {
     // ✅ FIX: Initialize injected services in constructor to ensure injector is available
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.canonicalService = canonicalService;
     this.metadataService = metadataService;
     this.structuredDataService = structuredDataService;
-    
-    effect(() => {
-      const course = this.courseDetailsFromRoute$();
-      const location = this.location$();
+    this.publicAppService = publicAppService;
+    this.changeDetectorRef = changeDetectorRef;
+  }
 
-      this.setComponentProperties(course, location);
+  ngOnInit(): void {
+    // ✅ Automatic course loading on page load
+    this.loadCourse();
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  // ✅ Manual course loading - ONLY triggered by user interaction (button click)
+  // NO automatic calls on page load
+  loadCourse(): void {
+    // Get route params directly (no need to store in component properties)
+    const slug = this.route.snapshot.paramMap.get('url');
+    const location = this.route.snapshot.paramMap.get('location');
+    
+    if (!slug) {
+      this.loadError = 'Course URL not found';
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.isLoaded = false;
+    this.loadError = null;
+    this.changeDetectorRef.markForCheck();
+
+    // ✅ Use service method (caching works automatically via shareReplay)
+    // ✅ IMPORTANT: This should result in ONLY ONE API call to /api/course/{slug}
+    // shareReplay ensures duplicate concurrent requests share the same response
+    const courseObservable = location 
+      ? this.publicAppService.getCourseByCanonicalLocationURL(slug, location)
+      : this.publicAppService.getCourseByCanonicalURL(slug);
+
+    courseObservable.subscribe({
+      next: (data) => {
+        if (!data) {
+          this.loadError = 'Course not found';
+          this.isLoading = false;
+          this.changeDetectorRef.markForCheck();
+          return;
+        }
+        
+        // ✅ Set course data (only after successful API response)
+        this.course = data;
+        this.courseDetails = data; // ✅ Alias for backward compatibility
+        this.setComponentProperties(data, location);
+        this.isLoaded = true;
+        this.isLoading = false;
+        this.changeDetectorRef.markForCheck();
+      },
+      error: (error) => {
+        console.error('Error loading course:', error);
+        this.loadError = 'Failed to load course. Please try again.';
+        this.isLoading = false;
+        this.changeDetectorRef.markForCheck();
+      }
     });
   }
 
-  protected readonly courseDetailsFromRoute$ = input.required<{
-    createdByUser?: { id: string };
-    title?: string;
-    metaDescription?: string;
-    titleImageUrl?: string;
-    createdOn?: string;
-    updatedOn?: string;
-    canonicalUrl?: string;
-    category?: { name: string };
-    price?: number;
-    currency?: string;
-  }>({alias: 'courseDetails'});
-  protected readonly location$ = input<string | null>(null,{alias: 'location'});
-
-  protected readonly isSelfLearning$ = computed(() => {
-    const course = this.courseDetailsFromRoute$();
-    return course.createdByUser && 
-      this.createdByList.includes(course.createdByUser.id);
-  })
+  // ✅ Getter for self-learning check
+  get isSelfLearning$(): boolean {
+    if (!this.course) {
+      return false;
+    }
+    return this.course.createdByUser && 
+      this.createdByList.includes(this.course.createdByUser.id);
+  }
 
   setComponentProperties(courseDetails, location: string | null) {
     const canonicalUrl = location ?

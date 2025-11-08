@@ -1,6 +1,6 @@
-import { ErrorInterceptor } from './helpers/error.interceptor';
-import { JwtInterceptor } from './helpers/jwt.interceptor';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
+// ✅ REMOVED: Interceptors are now provided in app.config.ts and app.config.server.ts
+// This prevents duplicate registration since the app uses standalone components with bootstrapApplication
+// CoreModule is kept for backward compatibility but interceptors are registered via ApplicationConfig providers
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -10,8 +10,8 @@ import { CommonModule } from '@angular/common';
     CommonModule
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    // ✅ Interceptors are provided in app.config.ts and app.config.server.ts
+    // No need to register here to avoid duplicate registration
   ]
 })
 export class CoreModule { }

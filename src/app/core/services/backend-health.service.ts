@@ -1,4 +1,4 @@
-import { Injectable, inject, PLATFORM_ID, Inject } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, timeout } from 'rxjs/operators';
@@ -23,13 +23,19 @@ import { API_URL, getApiUrl } from '../config/api-url.config';
   providedIn: 'root'
 })
 export class BackendHealthService {
-  private http = inject(HttpClient);
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly http: HttpClient;
+  private readonly isBrowser: boolean;
   
   private apiUrl: string;
   
   // ✅ FIX: Use the resolved API URL from config (handles proxy in dev, full URL in prod/SSR)
-  constructor(@Inject(API_URL) injectedApiUrl: string) {
+  constructor(
+    private readonly httpClient: HttpClient,
+    @Inject(PLATFORM_ID) platformId: Object,
+    @Inject(API_URL) injectedApiUrl: string
+  ) {
+    this.http = this.httpClient;
+    this.isBrowser = isPlatformBrowser(platformId);
     // In browser, use /api/ for proxy (works with Angular dev server)
     // In SSR or production, use full URL
     this.apiUrl = injectedApiUrl || getApiUrl();

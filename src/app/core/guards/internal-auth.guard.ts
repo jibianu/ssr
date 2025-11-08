@@ -1,62 +1,53 @@
 import { Injectable } from '@angular/core';
-import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { CookieService } from '../services/cookie.service';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { AuthenticationService } from '../../modules/auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
-export class InternalAuthGuard  {
-    private readonly adminRestrictedRoutes = [
-        'user',
-        'category',
-        'location'
-    ];
+export class InternalAuthGuard {
+  private readonly adminRestrictedRoutes = ['user', 'category', 'location'];
+  private readonly loginUrl = '/auth/login';
+  private readonly defaultAdminUrl = '/app/course';
 
-    constructor(
-        private router: Router,
-        private cookieService: CookieService
-    ) { }
+  constructor(
+    private router: Router,
+    private authenticationService: AuthenticationService
+  ) {}
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-        try {
-          const currentUser = this.getCurrentUser();
-          
-          if (!currentUser) {
-            this.redirectToLogin();
-            return false;
-          }
-      
-          if (!this.isAdminUser(currentUser) && this.isRestrictedRoute(state.url)) {
-            this.redirectToDefault();
-            return false;
-          }
-      
-          return true;
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : String(error);
-          console.error('AuthGuard error:', message);
-          this.redirectToLogin();
-          return false;
-        }
-      }
-      
-
-    private getCurrentUser(): any {
-        const userCookie = this.cookieService.getCookie('currentUser');
-        return userCookie ? JSON.parse(userCookie) : null;
+  canActivate(_route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    if (!this.authenticationService.hasValidAccessToken()) {
+      this.authenticationService.logout();
+      this.redirectToLogin(state.url);
+      return false;
     }
 
-    private isAdminUser(user: any): boolean {
-        return user.isAdmin === true;
+    const currentUser = this.authenticationService.currentUser();
+
+    if (!currentUser) {
+      this.redirectToLogin(state.url);
+      return false;
     }
 
-    private isRestrictedRoute(url: string): boolean {
-        return this.adminRestrictedRoutes.some(route => url.includes(route));
+    if (!this.isAdminUser(currentUser) && this.isRestrictedRoute(state.url)) {
+      this.redirectToDefault();
+      return false;
     }
 
-    private redirectToLogin(): void {
-        this.router.navigate(['/login']); // Adjust to your login route
-    }
+    return true;
+  }
 
-    private redirectToDefault(): void {
-        this.router.navigate(['/app/course']);
-    }
+  private isAdminUser(user: any): boolean {
+    return !!user && user.isAdmin === true;
+  }
+
+  private isRestrictedRoute(url: string): boolean {
+    return this.adminRestrictedRoutes.some(route => url.includes(route));
+  }
+
+  private redirectToLogin(returnUrl: string): void {
+    this.router.navigate([this.loginUrl], { queryParams: { returnUrl } });
+  }
+
+  private redirectToDefault(): void {
+    this.router.navigate([this.defaultAdminUrl]);
+  }
 }

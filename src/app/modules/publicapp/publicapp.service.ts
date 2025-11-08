@@ -1,8 +1,9 @@
 import { Category } from './../adminapp/category/category.model';
 import { Observable, of, throwError } from 'rxjs';
-import { shareReplay, catchError, timeout, retry, delay } from 'rxjs/operators';
-import { Injectable, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { shareReplay, catchError, timeout, retry, delay, map } from 'rxjs/operators';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { API_URL } from '../../core/config/api-url.config';
 
 // ✅ PERFORMANCE: Service-level caching prevents redundant API calls (40-50% reduction)
@@ -11,6 +12,7 @@ import { API_URL } from '../../core/config/api-url.config';
 export class PublicAppService {
     user: any;
     private readonly apiUrl: string;
+    private readonly isServer: boolean;
     
     // ✅ PERFORMANCE: Cached observables to prevent redundant API calls
     private categoriesCache$: Observable<Category[]> | null = null;
@@ -21,16 +23,45 @@ export class PublicAppService {
     // Field initializers with inject() can fail if injector is destroyed during navigation
     constructor(
         private http: HttpClient,
-        @Inject(API_URL) apiUrl: string
+        @Inject(API_URL) apiUrl: string,
+        @Inject(PLATFORM_ID) platformId: Object
     ) {
         this.apiUrl = apiUrl;
+        this.isServer = isPlatformServer(platformId);
     }
 
     // ✅ PERFORMANCE: shareReplay prevents duplicate concurrent requests for same data
     getCourses(params): Observable<any> {
         // Note: Params-based requests are handled by CacheInterceptor
         // ✅ PERFORMANCE: shareReplay ensures concurrent requests share same response
-        return this.http.get<any>(`${this.apiUrl}page/course`, { params }).pipe(
+        let httpParams: HttpParams | undefined;
+
+        if (params instanceof HttpParams) {
+            httpParams = params;
+        } else if (params && typeof params === 'object') {
+            httpParams = Object.keys(params).reduce((acc: HttpParams, key: string) => {
+                const value = params[key];
+
+                if (value === null || value === undefined) {
+                    return acc;
+                }
+
+                const stringValue = Array.isArray(value)
+                    ? value.map(v => (v ?? '').toString()).filter(v => v.trim().length > 0)
+                    : [(value ?? '').toString()];
+
+                return stringValue.reduce((innerAcc, item) => {
+                    if (!item || !item.trim()) {
+                        return innerAcc;
+                    }
+                    return innerAcc.set(key, item.trim());
+                }, acc);
+            }, new HttpParams());
+        }
+
+        const options = httpParams ? { params: httpParams } : {};
+
+        return this.http.get<any>(`${this.apiUrl}page/course`, options).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error('Error fetching courses:', error);
@@ -77,8 +108,11 @@ export class PublicAppService {
         const fullUrl = `${this.apiUrl}${apiPath}`;
         
         // ✅ Direct backend connection (no proxy)
+        // ✅ IMPORTANT: This should only be called ONCE per course page navigation
+        // shareReplay ensures duplicate concurrent requests share the same response
         console.log(`🔍 API Call: ${fullUrl}`);
         console.log(`   (original URL: "${url}", normalized: "${normalizedUrl}")`);
+        console.log(`   ⚠️ This should only appear ONCE per course page load`);
         
         // ✅ Add longer timeout for course API calls (60 seconds) via custom header
         // Reduced from 120s to 60s - if backend needs more time, it should be optimized
@@ -157,6 +191,15 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Service-level cache with shareReplay - prevents duplicate API calls
     getCategories(): Observable<Category[]> {
+        if (this.isServer) {
+            return this.http.get<Category[]>(`${this.apiUrl}page/category`).pipe(
+                catchError(error => {
+                    console.error('Error fetching categories:', error);
+                    return of([]);
+                })
+            );
+        }
+
         if (!this.categoriesCache$) {
             this.categoriesCache$ = this.http.get<Category[]>(`${this.apiUrl}page/category`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }), // ✅ PERFORMANCE: refCount=true releases memory when no subscribers
@@ -168,6 +211,50 @@ export class PublicAppService {
             );
         }
         return this.categoriesCache$;
+    }
+
+    // ✅ LIGHTWEIGHT: Get related courses with minimal data (name, image, category, slug)
+    // This endpoint should return only essential fields, not full course details
+    // Prevents multiple /api/course/{slug} calls - uses lightweight endpoint instead
+    getRelatedCourses(category: string): Observable<any[]> {
+        if (!category || !category.trim()) {
+            return of([]);
+        }
+
+        // ✅ Use existing /page/course endpoint with category filter (returns list, not individual course details)
+        // This endpoint returns a list of courses, preventing individual /api/course/{slug} calls
+        const params = new HttpParams()
+            .set('pageSize', '5')
+            .set('pageNumber', '1')
+            .set('Filters.Category', category.trim());
+        
+        const fullUrl = `${this.apiUrl}page/course`;
+        
+        console.log(`🔍 Related Courses API Call: ${fullUrl}?Filters.Category=${category.trim()}`);
+        console.log(`   ⚠️ Using list endpoint (minimal data only, NOT individual /api/course/{slug} calls)`);
+        
+        return this.http.get<any>(fullUrl, { params }).pipe(
+            map(response => {
+                // ✅ Extract only minimal data needed for related courses display
+                // Backend returns: { results: [...], totalNumberOfRecords: ... }
+                const courses = (response?.results || []).map((course: any) => ({
+                    id: course.id,
+                    title: course.title,
+                    titleImageUrl: course.titleImageUrl,
+                    canonicalUrl: course.canonicalUrl,
+                    amount: course.amount,
+                    category: course.category || course.categoryName
+                }));
+                return courses;
+            }),
+            timeout(30000), // 30 seconds timeout (lighter than full course endpoint)
+            shareReplay({ bufferSize: 1, refCount: true }),
+            catchError(error => {
+                console.error(`Error fetching related courses for category "${category}":`, error);
+                // Return empty array on error - don't break the page
+                return of([]);
+            })
+        );
     }
 
     getCourseByCategoryId(id): Observable<any> {
@@ -182,6 +269,18 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Cache dashboard categories - called on home page load
     getDashboardCategories(): Observable<any> {
+        if (this.isServer) {
+            return this.http.get<any>(`${this.apiUrl}page/Category/Dashboard`).pipe(
+                catchError(error => {
+                    const isNetworkError = !error?.status || error.status === 0;
+                    if (!isNetworkError) {
+                        console.warn('⚠️ SSR: Error fetching dashboard categories:', error.status, error.statusText);
+                    }
+                    return of([]);
+                })
+            );
+        }
+
         if (!this.dashboardCategoriesCache$) {
             this.dashboardCategoriesCache$ = this.http.get<any>(`${this.apiUrl}page/Category/Dashboard`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
@@ -347,13 +446,22 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Cache events list - frequently accessed
     getEvents(): Observable<any> {
+        if (this.isServer) {
+            return this.http.get<any>(`${this.apiUrl}page/event`).pipe(
+                catchError(error => {
+                    console.error('Error fetching events:', error);
+                    return of([]);
+                })
+            );
+        }
+
         if (!this.eventsCache$) {
-            this.eventsCache$ = this.http.get(`${this.apiUrl}page/event/dashboard`).pipe(
+            this.eventsCache$ = this.http.get<any>(`${this.apiUrl}page/event`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
                 catchError(error => {
                     console.error('Error fetching events:', error);
                     this.eventsCache$ = null; // ✅ ERROR HANDLING: Clear cache on error
-                    return of([]); // ✅ ERROR HANDLING: Return empty array on error
+                    return of([]); // ✅ ERROR HANDLING: Return empty array instead of throwing
                 })
             );
         }

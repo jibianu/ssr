@@ -106,18 +106,31 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
         // ✅ Process data in RxJS pipeline - executes asynchronously
         return categories
           .map((ele: any) => {
-            const courses = (ele.courses || []).map((course: any) => ({
-              ...course,
-              // ✅ FIX: Normalize canonicalUrl to ensure it's just the course slug for routerLink
-              // Remove leading '/' and any 'course/course/' or 'course/' prefixes
-              canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
-            }));
+            const categoryName = ele.name || '';
+            // ✅ FILTER: Only include courses that match this category
+            const originalCourses = ele.courses || [];
+            let filteredCourses = originalCourses
+              .filter((course: any) => {
+                const courseCategory = course?.category?.name || course?.categoryName || course?.category || '';
+                return this.normalizeCategoryName(courseCategory) === this.normalizeCategoryName(categoryName);
+              })
+              .map((course: any) => ({
+                ...course,
+                canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
+              }));
+
+            // ✅ FALLBACK: If strict filtering removes everything, show original list to avoid empty sections
+            if (filteredCourses.length === 0 && originalCourses.length > 0) {
+              filteredCourses = originalCourses.map((course: any) => ({
+                ...course,
+                canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
+              }));
+            }
             return {
-              categoryName: ele.name,
-              categoryCourse: courses,
+              categoryName: categoryName,
+              categoryCourse: filteredCourses,
               sortOrder: ele.sortOrder || 0,
-              // ✅ Pre-compute carousel options to avoid calling method in template (prevents infinite loops)
-              carouselOptions: this.getCarouselOptions(courses.length)
+              carouselOptions: this.getCarouselOptions(filteredCourses.length)
             };
           })
           .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -174,17 +187,29 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
         }
         return categories
           .map((ele: any) => {
-            const courses = (ele.courses || []).map((course: any) => ({
-              ...course,
-              // ✅ FIX: Normalize canonicalUrl to ensure it's just the course slug for routerLink
-              canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
-            }));
+            const categoryName = ele.name || '';
+            const originalCourses = ele.courses || [];
+            let filteredCourses = originalCourses
+              .filter((course: any) => {
+                const courseCategory = course?.category?.name || course?.categoryName || course?.category || '';
+                return this.normalizeCategoryName(courseCategory) === this.normalizeCategoryName(categoryName);
+              })
+              .map((course: any) => ({
+                ...course,
+                canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
+              }));
+
+            if (filteredCourses.length === 0 && originalCourses.length > 0) {
+              filteredCourses = originalCourses.map((course: any) => ({
+                ...course,
+                canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
+              }));
+            }
             return {
-              categoryName: ele.name,
-              categoryCourse: courses,
+              categoryName: categoryName,
+              categoryCourse: filteredCourses,
               sortOrder: ele.sortOrder || 0,
-              // ✅ Pre-compute carousel options to avoid calling method in template (prevents infinite loops)
-              carouselOptions: this.getCarouselOptions(courses.length)
+              carouselOptions: this.getCarouselOptions(filteredCourses.length)
             };
           })
           .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -224,8 +249,15 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     } else if (normalized.startsWith('course/')) {
       normalized = normalized.replace(/^course\//, '');
     }
-    // ✅ Return absolute path starting with '/' for root-level routing
-    return '/' + normalized;
+    // ✅ Return absolute path starting with '/' for root-level routing (handle empty gracefully)
+    return normalized ? `/${normalized}` : '';
+  }
+
+  // ✅ FILTER: Normalize category name for case-insensitive comparison
+  private normalizeCategoryName(categoryName: string | null | undefined): string {
+    if (!categoryName) return '';
+    // Trim whitespace and convert to lowercase for case-insensitive comparison
+    return categoryName.trim().toLowerCase();
   }
 
   onImgError(event: Event): void {

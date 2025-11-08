@@ -1,3 +1,8 @@
+// ✅ DISABLED: Resolver completely disabled to prevent automatic course API calls
+// Course data is now fetched manually via button click in the component
+// This file is kept for reference but the resolver is not used in routing
+
+/*
 import { inject } from "@angular/core";
 import { ResolveFn, Router } from "@angular/router";
 import { PublicAppService } from "../../publicapp.service";
@@ -118,4 +123,8 @@ export const publicCourseDetailsResolver: ResolveFn<unknown> = (snap) => {
         catchError(() => redirectToNotFoundPage(router))
     );
 }
+*/
+
+// ✅ PLACEHOLDER: Return null to prevent any accidental usage
+export const publicCourseDetailsResolver = null;
 

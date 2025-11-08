@@ -1,9 +1,10 @@
-<!-- ✅ FIX: Only render if course details are available (prevents hydration errors when resolver redirects) -->
-<div *ngIf="courseDetailsFromRoute$()" class="jumbotron">
+
+<!-- ✅ Full course details (existing template content) -->
+<div *ngIf="course" class="jumbotron">
   <div class="container">
     <div class="col-xl-8 col-lg-8 col-md-12">
       <div>
-        <h1 class="post-title">{{ courseDetails?.title }}</h1>
+        <h1 class="post-title">{{ course.title }}</h1>
         <ul *ngIf="(courseDetails?.courseSummaries && courseDetails?.courseSummaries.length > 0)">
           <li *ngFor="let item of courseDetails?.courseSummaries; trackBy: trackBySummaryIndex">
             {{ item?.summary }}
@@ -13,7 +14,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="courseDetailsFromRoute$()" class="container">
+<div *ngIf="course" class="container">
   <div class="row">
     <div class="col-lg-8 col-md-12 col-12 mt-n8 mb-4 mb-lg-0">
 
@@ -282,7 +283,10 @@
 
       <!----------------- Trainer Details end ------------ -->
 
-      <app-public-related-courses [categoryName]="categoryName" [courseId]="courseId"></app-public-related-courses>
+      <!-- ✅ Related courses using lightweight endpoint (getRelatedCourses) -->
+      <!-- Uses /api/related-courses?category=xyz endpoint (minimal data only) -->
+      <!-- NOT individual /api/course/{slug} calls - prevents multiple course API requests -->
+      <app-public-related-courses *ngIf="course && categoryName" [categoryName]="categoryName" [courseId]="courseId"></app-public-related-courses>
     </div>
     <div class="col-lg-4 col-md-12 col-12">
       <!-- Card -->
@@ -295,7 +299,7 @@
             <div class="card-body">
               <button class="buy-now mb-3"> Price : {{courseDetails.amount | currency:'INR':'symbol'}}</button>
               <!-- mb-3 adds margin-bottom -->
-               @if(isSelfLearning$()) {
+               @if(isSelfLearning$) {
                   <a href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
                     class="btn btn-primary btn-block">
                     Buy Now

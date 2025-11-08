@@ -17,10 +17,10 @@ import { TimeoutInterceptor } from './core/helpers/timeout.interceptor';
 
 // ✅ FIX: Server config with server rendering + client hydration
 // provideClientHydration() MUST be in both client and server configs for hydration to work
-// The duplicate provider issue was from mergeApplicationConfig, not from this provider
+// ✅ IMPORTANT: provideServerRendering() MUST be provided ONLY ONCE - do not use ServerModule
 export const config: ApplicationConfig = {
   providers: [
-    // ✅ Server rendering provider - MUST be provided only once
+    // ✅ Server rendering provider - MUST be provided only once (not with ServerModule)
     provideServerRendering(withRoutes(serverRoutes)),
     
     // ✅ Client hydration - Required for SSR hydration (must be in server config too)
@@ -33,16 +33,24 @@ export const config: ApplicationConfig = {
         includeRequestsWithAuthHeaders: false,
         // Cache API endpoints to reduce duplicate calls
         filter: (req) => {
-          return req.method === 'GET' && 
-                 !req.url.includes('/account/') &&
-                 !req.url.includes('/upload/') &&
-                 !req.url.includes('/webhook/') &&
-                 (
-                   req.url.includes('/api/page/') ||
-                   req.url.includes('/course/') ||
-                   req.url.includes('/category/') ||
-                   req.url.includes('/event/')
-                 );
+          if (req.method !== 'GET') {
+            return false;
+          }
+
+          const url = req.url || '';
+          const normalizedUrl = url.toLowerCase();
+
+          if (normalizedUrl.includes('/account/') || normalizedUrl.includes('/upload/') || normalizedUrl.includes('/webhook/')) {
+            return false;
+          }
+
+          return normalizedUrl.includes('/api/page/') ||
+                 normalizedUrl.includes('/api/course/') ||
+                 normalizedUrl.includes('/api/category/') ||
+                 normalizedUrl.includes('/api/event/') ||
+                 normalizedUrl.includes('/page/course') ||
+                 normalizedUrl.includes('/page/category') ||
+                 normalizedUrl.includes('/page/dashboard');
         }
       })
     ),

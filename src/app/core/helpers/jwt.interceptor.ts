@@ -63,10 +63,18 @@ export class JwtInterceptor implements HttpInterceptor {
             return request;
         }
 
-        return request.clone({
+        const authRequest = request.clone({
             setHeaders: {
                 Authorization: `Bearer ${token}`
             }
         });
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+            console.debug('[JwtInterceptor] Attached Authorization header', {
+                url: request.url,
+                hasToken: !!token,
+                tokenPreview: token.substring(0, Math.min(token.length, 20)) + '...'
+            });
+        }
+        return authRequest;
     }
 }

@@ -1,10 +1,8 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
-import { Observable } from 'rxjs';
-import { combineLatest } from 'rxjs';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, combineLatest, of } from 'rxjs';
 import { map, switchMap, shareReplay, catchError, tap } from 'rxjs/operators';
-import { of } from 'rxjs';
 import { PublicAppService } from '../../publicapp.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
 import { environment } from 'src/environments/environment';
@@ -16,7 +14,7 @@ import { environment } from 'src/environments/environment';
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
-export class PublicCategoryComponent implements OnInit, OnDestroy {
+export class PublicCategoryComponent {
 
   readonly itemsPerPage = 12; // Used in template
 
@@ -43,16 +41,34 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
     // Executes asynchronously - doesn't block SSR rendering
     this.coursesData$ = combineLatest([
       this.route.params,
-      this.route.queryParams
+      this.route.queryParams,
+      this.publicAppService.getCategories().pipe(
+        catchError(error => {
+          console.error('Error fetching categories for category page:', error);
+          return of([]);
+        })
+      )
     ]).pipe(
-      switchMap(([params, queryParams]) => {
-        const categoryName = params['name'] || '';
+      switchMap(([params, queryParams, categories]) => {
+        const rawCategoryParam = params['name'] || '';
         const currentPage = +queryParams['page'] || 1;
-        
+
+        const resolvedCategory = this.resolveCategoryName(rawCategoryParam, categories);
+
+        if (!resolvedCategory.filterName) {
+          console.warn(`Category parameter "${rawCategoryParam}" did not match any known category.`);
+          return of({
+            courses: [],
+            totalItems: 0,
+            currentPage,
+            categoryName: resolvedCategory.displayName
+          });
+        }
+
         const requestObj = {
           pageSize: this.itemsPerPage,
           pageNumber: currentPage,
-          'Filter.Category': categoryName
+          'Filters.Category': resolvedCategory.filterName
         };
 
         return this.publicAppService.getCourses(requestObj).pipe(
@@ -60,7 +76,7 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
             courses: response?.results || [],
             totalItems: response?.totalNumberOfRecords || 0,
             currentPage,
-            categoryName
+            categoryName: resolvedCategory.displayName
           })),
           catchError(error => {
             console.error('Error fetching courses:', error);
@@ -68,27 +84,22 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
               courses: [],
               totalItems: 0,
               currentPage,
-              categoryName
+              categoryName: resolvedCategory.displayName
             });
           })
         );
       }),
       tap(data => {
-        // ✅ SEO: Add BreadcrumbList structured data
+        const categoryForBreadcrumb = data.categoryName || 'Category';
         const breadcrumbs = [
           { name: 'Home', url: environment.seoUrl },
           { name: 'Courses', url: `${environment.seoUrl}list` },
-          { name: data.categoryName || 'Category', url: `${environment.seoUrl}category/${data.categoryName}` }
+          { name: categoryForBreadcrumb, url: `${environment.seoUrl}category/${this.normalizeCategorySlug(categoryForBreadcrumb)}` }
         ];
         this.structuredDataService.setBreadcrumbs(breadcrumbs);
       }),
       shareReplay(1) // ✅ Cache for multiple subscriptions
     );
-  }
-
-  ngOnInit(): void {
-    // ✅ SSR OPTIMIZATION: No blocking operations
-    // Observable is already set up in constructor - template uses async pipe
   }
 
   // Pagination handler - uses route snapshot for navigation
@@ -126,7 +137,67 @@ export class PublicCategoryComponent implements OnInit, OnDestroy {
     return feature?.id || index.toString();
   }
 
-  ngOnDestroy(): void {
-    // ✅ No subscriptions to clean up - async pipe handles unsubscribe automatically
+  private resolveCategoryName(rawParam: string, categories: any[]): { filterName: string; displayName: string } {
+    const normalizedParamSlug = this.normalizeCategorySlug(rawParam);
+
+    if (!normalizedParamSlug) {
+      return { filterName: '', displayName: '' };
+    }
+
+    const matchingCategory = (categories || []).find((category: any) => {
+      const candidateValues = [
+        category?.name,
+        category?.categoryName,
+        category?.canonicalUrl,
+        category?.canonicalCategoryUrl
+      ];
+
+      return candidateValues.some(value => this.normalizeCategorySlug(value) === normalizedParamSlug);
+    });
+
+    if (matchingCategory) {
+      const displayName = matchingCategory?.name || matchingCategory?.categoryName || this.formatCategoryTitle(rawParam);
+      return {
+        filterName: displayName,
+        displayName
+      };
+    }
+
+    const fallbackDisplay = this.formatCategoryTitle(rawParam);
+    return {
+      filterName: fallbackDisplay,
+      displayName: fallbackDisplay
+    };
   }
+
+  private normalizeCategorySlug(value: string): string {
+    if (!value) {
+      return '';
+    }
+
+    const trimmed = decodeURIComponent(value)
+      .replace(/^\/+/, '')
+      .replace(/category\//i, '')
+      .trim()
+      .toLowerCase();
+
+    return trimmed
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  private formatCategoryTitle(value: string): string {
+    if (!value) {
+      return '';
+    }
+
+    const words = this.normalizeCategorySlug(value)
+      .split('-')
+      .filter(Boolean);
+
+    return words
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
 }

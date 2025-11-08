@@ -1,26 +1,35 @@
 <div class="container-fluid mt-5">
-  <!-- ✅ SSR OPTIMIZATION: Use async pipe - no blocking, automatic unsubscribe -->
   <ng-container *ngIf="coursesData$ | async as data">
     <div class="row course-column">
-      <div class="col-lg-3 d-flex mb-4" *ngFor="let item of data.courses | paginate: { itemsPerPage: itemsPerPage, currentPage: data.currentPage, totalItems: data.totalItems }; trackBy: trackByCourseId">
+      <div
+        class="col-lg-3 d-flex mb-4"
+        *ngFor="let item of data.courses | paginate: { itemsPerPage: itemsPerPage, currentPage: data.currentPage, totalItems: data.totalItems }; let idx = index; trackBy: trackByCourseId">
         <div class="carousel-course-related w-100">
-          <a [href]="item?.canonicalUrl" class="no-underline">
+          <a [routerLink]="item?.canonicalUrl" class="no-underline d-block h-100">
             <div class="list-course-item h-100 d-flex flex-column">
               <div class="card-image position-relative">
-                <img [src]="item?.titleImageUrl" (error)="onImgError($event)" alt="{{ item?.title }}" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;" />
+                <img
+                  [src]="item?.titleImageUrl"
+                  (error)="onImgError($event)"
+                  alt="{{ item?.title }}"
+                  class="card-img"
+                  [attr.loading]="idx === 0 ? 'eager' : 'lazy'"
+                  width="300"
+                  height="200"
+                  style="aspect-ratio: 3/2; object-fit: cover;" />
                 <div class="sale-badge" *ngIf="item?.isBestSeller">Best Seller</div>
               </div>
               <div class="card-body">
                 <h6>{{ item?.title }}</h6>
-                <ul>
+                <ul *ngIf="item?.courseFeatures?.length > 0">
                   <li *ngFor="let feature of item?.courseFeatures; trackBy: trackByFeatureId">{{ feature?.description }}</li>
                 </ul>
               </div>
               <div class="buy">
                 <div class="price">{{ item.amount | currency: 'INR':'symbol' }}</div>
-                <a [href]="item?.canonicalUrl" class="btn btn-register">
+                <span class="btn btn-register" role="button">
                   <i class="fa fa-shopping-cart"></i> Enroll Now
-                </a>
+                </span>
               </div>
             </div>
           </a>
