@@ -1,20 +1,30 @@
+@import '../public-course-common.scss';
+
 .card {
+  @include course-card-shell(
+    $border-radius: 0.5rem,
+    $border-color: transparent,
+    $shadow: 0 1px 3px rgb(3 0 71 / 9%),
+    $hover-translate: null,
+    $hover-border-color: null,
+    $hover-shadow: null,
+    $transition: $course-transition-slow
+  );
   border: 0;
-  box-shadow: 0 1px 3px rgb(3 0 71 / 9%);
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: $course-color-surface;
+  background-clip: border-box;
+  overflow: visible;
+  transition: transform $course-transition-medium ease, box-shadow $course-transition-medium ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 .rounded-lg {
   border-radius: 0.5rem !important;
-}
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  word-wrap: break-word;
-  background-color: #fff;
-  background-clip: border-box;
-  // border: 1px solid #eae7f5;
-  border-radius: 0.5rem;
 }
 
 .card-header:first-child {
@@ -65,8 +75,8 @@
 .nav-lb-tab .nav-item .nav-link.active,
 .nav-lb-tab .nav-item .nav-link:hover {
   background-color: transparent;
-  border-bottom: 2px solid #bd2300;
-  color: #bd2300;            
+  border-bottom: 2px solid $course-color-accent-red;
+  color: $course-color-accent-red;            
 }
 
 @media (min-width: 992px) {
@@ -100,48 +110,6 @@
     font-size: 0.95rem;
     white-space: nowrap;
   }
-}
-
-.bg-cover {
-  background: no-repeat 50% / cover;
-}
-.pb-10,
-.py-10 {
-  padding-bottom: 4.5rem !important;
-}
-.pt-10,
-.py-10 {
-  padding-top: 4.5rem !important;
-}
-.position-relative {
-  position: relative !important;
-}
-
-.list-group-flush {
-  border-radius: 0;
-}
-.list-group {
-  display: flex;
-  flex-direction: column;
-  padding-left: 0;
-  margin-bottom: 0;
-  border-radius: 0.25rem;
-}
-
-.list-group-flush > .list-group-item {
-  border-width: 0 0 1px;
-}
-.list-group-item:first-child {
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
-}
-
-.list-group-item {
-    position: relative;
-    display: block;
-    padding: .75rem 1.25rem;
-    background-color: #fff;
-    border: 1px solid #eae7f5;
 }
 
 .text-inherit {
@@ -237,15 +205,6 @@
   color: #333;
 }
 
-.post-sub-title {
-  color: #333;
-font-size: 22px !important;
-margin-bottom: 20px;
-letter-spacing: 0.5px;
-font-weight: 600;
-text-align: left !important;
-}
-
 .fixedContainer {
   position: fixed;
   top: 15%;
@@ -255,10 +214,6 @@ text-align: left !important;
 .blog-toc__list {
   max-height: 25vh;
   overflow-y: auto;
-}
-
-.margin-top-3{
-  margin-top: 3.2rem;
 }
 
 .blog-table-heading {
@@ -293,28 +248,11 @@ ul {
 }
 
 .footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  /* Set the fixed height of the footer here */
-  height: 60px;
-  line-height: 60px; /* Vertically center the text there */
-  z-index: 1;
+  @include course-fixed-footer();
 }
 
 
 /*---------------------------------- About course start------------------------------------------ */
-/* Card styling */
-.card {
-  border: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
 /* Accordion header styling */
 .card-header-about {
   cursor: pointer !important; /* Force pointer */
@@ -338,62 +276,56 @@ ul {
 
 
 /* ----------------------Top Companies Trust Us start -------------------------------*/
-
-/* General Styles */
-.card {
-  background-color: #fff;
+.course-details__trusted-card {
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform $course-transition-medium ease, box-shadow $course-transition-medium ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $course-color-heading;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #7f8c8d;
+  }
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-h3 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #2c3e50;
-}
-
-p {
-  font-size: 1rem;
-  color: #7f8c8d;
-}
-
-/* Company Logo Styles */
 .company-logo {
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 10px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform $course-transition-medium ease, box-shadow $course-transition-medium ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    filter: grayscale(100%);
+    transition: filter $course-transition-medium ease;
+  }
+
+  &:hover img {
+    filter: grayscale(0%);
+  }
 }
 
-.company-logo:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.company-logo img {
-  max-width: 100%;
-  height: auto;
-  filter: grayscale(100%);
-  transition: filter 0.3s ease;
-}
-
-.company-logo:hover img {
-  filter: grayscale(0%);
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
-  h3 {
+  .course-details__trusted-card h3 {
     font-size: 1.5rem;
   }
 
-  p {
+  .course-details__trusted-card p {
     font-size: 0.9rem;
   }
 
@@ -403,11 +335,11 @@ p {
 }
 
 @media (max-width: 480px) {
-  h3 {
+  .course-details__trusted-card h3 {
     font-size: 1.25rem;
   }
 
-  p {
+  .course-details__trusted-card p {
     font-size: 0.8rem;
   }
 
@@ -416,16 +348,15 @@ p {
   }
 }
 
-
 /* ---------------------Description  start ------------------------- */
 
 /* General Styles */
 .description-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: $course-color-heading;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #bd2300;
+  border-bottom: 2px solid $course-color-accent-red;
   padding-bottom: 0.5rem;
   display: inline-block;
 }
@@ -451,7 +382,7 @@ p {
 .description-heading {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: $course-color-heading;
   margin-bottom: 1rem;
   display: block;
 }
@@ -462,19 +393,19 @@ p {
   margin-bottom: 1rem;
 }
 
-/* Read More Component Styles */
 .read-more-button {
-  color: #bd2300;
+  color: $course-color-accent-red;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color $course-transition-slow ease;
+
+  &:hover {
+    color: $course-color-accent-red;
+  }
 }
 
-.read-more-button:hover {
-  color: #bd2300;
-}
-
+/* Read More Component Styles */
 /* Responsive Design */
 @media (max-width: 768px) {
   .description-title {
@@ -515,9 +446,9 @@ p {
 .post-sub-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: $course-color-heading;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #bd2300;
+  border-bottom: 2px solid $course-color-accent-red;
   padding-bottom: 0.5rem;
   display: inline-block;
 }
@@ -531,13 +462,13 @@ p {
 }
 
 .card-header-about a {
-  color: #2c3e50;
+  color: $course-color-heading;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .card-header-about a:hover {
-  color: #bd2300;
+  color: $course-color-accent-red;
 }
 
 .card-header-about .chevron-arrow {
@@ -560,19 +491,6 @@ p {
 
 .card-body .ml-5 {
   margin-left: 1.5rem;
-}
-
-/* Read More Component Styles */
-.read-more-button {
-  color: #bd2300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.read-more-button:hover {
-  color: #bd2300;
 }
 
 /* Responsive Design */
@@ -606,28 +524,6 @@ p {
 
 
 /* -------------------about traineer ----------------- */
-
-/* General Styles */
-.margin-top-3 {
-  margin-top: 1.5rem;
-}
-
-.post-sub-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #bd2300;
-  padding-bottom: 0.5rem;
-  display: inline-block;
-}
-
-/* Trainer Card Body */
-.card-body {
-  padding: 1rem;
-  background-color: #fff;
-}
-
 /* Trainer Image */
 .rounded-circle.avatar-lg {
   width: 80px;
@@ -639,26 +535,13 @@ p {
 h4.mb-0 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: $course-color-heading;
   margin-bottom: 0.5rem;
-}
-
-/* Read More Component Styles */
-.read-more-button {
-  color: #bd2300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.read-more-button:hover {
-  color:#bd2300;
 }
 
 /* Show More/Less Button */
 .text-primary {
-  color: #bd2300;
+  color: $course-color-accent-red;
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
@@ -666,15 +549,11 @@ h4.mb-0 {
 }
 
 .text-primary:hover {
-  color: #bd2300;
+  color: $course-color-accent-red;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .post-sub-title {
-    font-size: 1.5rem;
-  }
-
   .rounded-circle.avatar-lg {
     width: 60px;
     height: 60px;
@@ -686,10 +565,6 @@ h4.mb-0 {
 }
 
 @media (max-width: 480px) {
-  .post-sub-title {
-    font-size: 1.25rem;
-  }
-
   .rounded-circle.avatar-lg {
     width: 50px;
     height: 50px;
@@ -709,48 +584,37 @@ h4.mb-0 {
 }
 
 
-.buy-now {
-  width: 100%;
-  background-color: white;
-  color:#f02c00 0%, #f02c00 100%;
-  font-weight: bold;
-  border: 2px solid #bd2300;
-  padding: 12px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 100px; /* Add this line to create space below the Price button */
+.course-detail__cta {
+  @include course-cta-button(0.85rem 1.5rem);
+  margin-bottom: 1rem;
+
+  .course-detail__cta-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+
+  .course-detail__cta-price {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
 }
 
-.btn {
-  display: inline-block;
-  font-weight: bold;
+.course-detail__cta--info {
+  justify-content: center;
+  gap: 0.75rem;
+  white-space: normal;
   text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  user-select: none;
-  border: 2px solid transparent;
-  padding: 12px 0;
-  font-size: 16px;
-  line-height: 1.5;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
 
-.btn-block {
-  display: block;
-  width: 100%;
-}
+  .course-detail__cta-text {
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
 
-.btn-primary {
-  background-color:  #ca2600; /* Purple shade */
-  color: #fff;
-  border-color: #bd2300;
-}
-
-.btn-primary:hover {
-  background-color:  #ca2600;
-  border-color: #bd2300;
-  color: #fff;
+  .course-detail__cta-price {
+    display: none;
+  }
 }

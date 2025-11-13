@@ -26,7 +26,7 @@
         </div>
       </div>
     </div>
-  </div>
+    
 
 
   <!-- Networks  end -->
@@ -45,7 +45,7 @@
             </div>
             <h4>Welding</h4>
           </div>
-  
+
           <!-- Process -->
           <div class="icon-card">
             <div class="icon-container">
@@ -53,7 +53,7 @@
             </div>
             <h4>Process</h4>
           </div>
-  
+
           <!-- Piping -->
           <div class="icon-card">
             <div class="icon-container">
@@ -61,7 +61,7 @@
             </div>
             <h4>Piping</h4>
           </div>
-  
+
           <!-- Instrumentation -->
           <div class="icon-card">
             <div class="icon-container">
@@ -69,7 +69,7 @@
             </div>
             <h4>Instrumentation</h4>
           </div>
-  
+
           <!-- Structural -->
           <div class="icon-card">
             <div class="icon-container">
@@ -85,200 +85,171 @@
 
 
 
-<div class="clearfix"></div>
-<div class="new-top-cour col-centered">
+<section class="home-section home-section--courses">
   <div class="container">
-    <h2>Browse Our <span>Top Courses</span></h2>
-    <p class="new-top-cour-description">
-      Upgrade your career with flexible, cost-effective training. Explore Oilandgasclub’s top-ranked engineering courses today!
-    </p>
-  </div>
-</div>
+    <header class="home-section__header">
+      <h2 class="home-section__title">Browse Our <span>Top Courses</span></h2>
+      <p class="home-section__subtitle">
+        Upgrade your career with flexible, cost-effective training. Explore Oilandgasclub’s top-ranked engineering courses today!
+      </p>
+    </header>
 
-
-      <!-- <div class="row"> -->
-
-
-
-        <!-- course start -->
-
-   
-  <div class="main">
-    <div class="sub-div-new">
-      <div class="main-img">
-        <div class="course-column">
-          <div class="course">
-            <!-- ✅ HYDRATION: Use @for loop for course cards (Angular 20 syntax, prevents SSR mismatches) -->
-            @for (course of topCourses; track course.url) {
-              <div class="carousel-course-related h-100">
-                <div class="list-course-item">
-                    <div class="card-image">
-                      <img [src]="course.image" [alt]="course.alt" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;">
-                      @if (course.badge) {
-                        <div class="sale-badge">{{ course.badge }}</div>
-                      }
-                    </div>
-                    <div class="card-body">
-                      <h6>{{ course.title }}</h6>
-                      <div class="star-rating-update">
-                        <span class="star-rating-icon">A Course by Oilandgasclub</span>
-                      </div>
-                      <ul>
-                        @for (feature of course.features; track feature) {
-                          <li>{{ feature }}</li>
-                        }
-                      </ul>
-                      <div class="buy">
-                        <div class="price">{{ course.price }}</div>
-                        <a [routerLink]="course.url" class="btn btn-register">
-                          <i class="fa fa-shopping-cart"></i> Enroll Now
-                        </a>
-                      </div>
-                    </div>
-                </div>
-              </div>
+    <div class="home-section__grid">
+      @for (course of topCourses; track course.url) {
+        <article class="home-card home-card--course">
+          <div class="home-card__media">
+            <img [src]="course.image" [alt]="course.alt" loading="lazy" width="320" height="240" />
+            @if (course.badge) {
+              <span class="home-card__badge">{{ course.badge }}</span>
             }
           </div>
-        </div>
-      </div>
+          <div class="home-card__body">
+            <h3 class="home-card__title">{{ course.title }}</h3>
+            <ul class="home-card__list">
+              @for (feature of course.features; track feature) {
+                <li>{{ feature }}</li>
+              }
+            </ul>
+          </div>
+          <footer class="home-card__footer">
+            <a [routerLink]="course.url" class="home-card__cta">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+              <span class="home-card__cta-label">{{ course.ctaLabel || 'Buy' }}</span>
+              <span class="home-card__cta-price">{{ course.price }}</span>
+            </a>
+          </footer>
+        </article>
+      }
+    </div>
+
+    <div class="section-actions">
+      <a [routerLink]="'/list'" class="btn-see-all">
+        See All Courses
+        <span class="btn-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
   </div>
-<!-- course end -->
+</section>
 
 
 <!-- Start learning today with start -->
 
 
     
-    <div class="clearfix"></div>
-    <div class="new-top-cour col-centered">
-      <div class="container">
-        <h2>The Best Investment is in Yourself - Learn Now with  <span>Oilandgasclub.com! </span></h2>
-        
-      </div>
-    </div>
+    <section class="home-section home-section--value">
+      <div class="home-section__container">
+        <div class="home-section__block">
+          <div class="new-top-cour col-centered">
+            <h2>The Best Investment is in Yourself - Learn Now with <span>Oilandgasclub.com! </span></h2>
+          </div>
 
+          <div class="main">
+            <div class="sub-div-new">
+              <div class="main-img">
+                <div class="course">
+                  <!-- Unlimited Access -->
+                  <div class="col-lg-4">
+                    <div class="new-learn-cnt">
+                      <img src="assets/s3/unlimited-access1.png" alt="Unlimited Access" class="small-icon" loading="lazy" width="64" height="64" />
+                      <h3>Unlimited Access</h3>
+                      <p>Choose exactly what you'd like to learn from our extensive subscription library.</p>
+                    </div>
+                  </div>
 
-    
-      <div class="main">
-        <div class="sub-div-new">
-          <div class="main-img">
-            <div class="row course">
-              <!-- Unlimited Access -->
-              <div class="col-lg-4">
-                <div class="new-learn-cnt">
-                  <img src="assets/s3/unlimited-access1.png" alt="Unlimited Access" class="small-icon" loading="lazy" width="64" height="64" />
-                  <h3>Unlimited Access</h3>
-                  <p>Choose exactly what you'd like to learn from our extensive subscription library.</p>
+                  <!-- Expert Teachers -->
+                  <div class="col-lg-4">
+                    <div class="new-learn-cnt">
+                      <img src="assets/s3/expert1.png" alt="Expert Teachers" class="small-icon" loading="lazy" width="64" height="64" />
+                      <h3>Expert Teachers</h3>
+                      <p>Learn from industry experts who are passionate about teaching.</p>
+                    </div>
+                  </div>
+
+                  <!-- Learn Anywhere -->
+                  <div class="col-lg-4">
+                    <div class="new-learn-cnt">
+                      <img src="assets/s3/anywhere1.png" alt="Learn Anywhere" class="small-icon" loading="lazy" width="64" height="64" />
+                      <h3>Learn Anywhere</h3>
+                      <p>Switch between your devices without losing your place.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-      
-              <!-- Expert Teachers -->
-              <div class="col-lg-4">
-                <div class="new-learn-cnt">
-                  <img src="assets/s3/expert1.png" alt="Expert Teachers" class="small-icon" loading="lazy" width="64" height="64" />
-                  <h3>Expert Teachers</h3>
-                  <p>Learn from industry experts who are passionate about teaching.</p>
-                </div>
-              </div>
-      
-              <!-- Learn Anywhere -->
-              <div class="col-lg-4">
-                <div class="new-learn-cnt">
-                  <img src="assets/s3/anywhere1.png" alt="Learn Anywhere" class="small-icon" loading="lazy" width="64" height="64" />
-                  <h3>Learn Anywhere</h3>
-                  <p>Switch between your devices without losing your place.</p>
-                </div>
+            </div>
+          </div>
+
+          <div class="new-top-cour col-centered">
+            <div class="cour-feature-datas">
+              <div class="cour-feature-card">
+                <!-- ✅ HYDRATION: Use @for loop for category cards (Angular 20 syntax) -->
+                @for (category of categoryLinks; track category.url) {
+                  <div [ngClass]="category.class">
+                    <a [routerLink]="category.url" target="blank" class="cour-box">
+                      <div [ngClass]="category.class === 'cour-item1' ? 'cour-overlay1' : 'cour-overlay'">
+                        <h3>{{ category.title }}</h3>
+                        <p>{{ category.description }}</p>
+                      </div>
+                    </a>
+                  </div>
+                }
               </div>
             </div>
           </div>
         </div>
       </div>
- 
-
-     
-<div class="clearfix"></div>
-<div class="new-top-cour col-centered">
-  <div class="container">
-      <div class="cour-feature-datas">
-        <div class="cour-feature-card">
-          <!-- ✅ HYDRATION: Use @for loop for category cards (Angular 20 syntax) -->
-          @for (category of categoryLinks; track category.url) {
-            <div [ngClass]="category.class">
-              <a [routerLink]="category.url" target="blank" class="cour-box">
-                <div [ngClass]="category.class === 'cour-item1' ? 'cour-overlay1' : 'cour-overlay'">
-                  <h3>{{ category.title }}</h3>
-                  <p>{{ category.description }}</p>
-                </div>
-              </a>
-            </div>
-          }
-        </div>
-      </div>
-  </div>
-</div>
-<div class="clearfix"></div>
+    </section>
 
 <!-- piping ,process box end -->
 
 
-<div class="clearfix"></div>
-<div class="new-top-cour col-centered">
+<section class="home-section home-section--events">
   <div class="container">
-    <h2>Browse Our <span>Top Events</span></h2>
-    <p class="new-top-cour-description">
-      Stay ahead in the industry with Oilandgasclub events! Join expert-led sessions and enhance your skills.
-    </p>
-  </div>
-</div>
+    <header class="home-section__header">
+      <h2 class="home-section__title">Browse Our <span>Top Events</span></h2>
+      <p class="home-section__subtitle">
+        Stay ahead in the industry with Oilandgasclub events! Join expert-led sessions and enhance your skills.
+      </p>
+    </header>
 
-<!-- Event start -->
+    <div class="home-section__grid">
+      @for (event of topEvents; track event.image) {
+        <article class="home-card home-card--event">
+          <div class="home-card__media">
+            <img [src]="event.image" [alt]="event.alt" loading="lazy" width="320" height="240" />
+            <span class="home-card__badge">Featured</span>
+          </div>
+          <div class="home-card__body">
+            <h3 class="home-card__title">{{ event.title }}</h3>
+            <p class="home-card__meta">{{ event.subtitle }}</p>
+            <div class="home-card__copy" [innerHTML]="event.description"></div>
+          </div>
+          <footer class="home-card__footer">
+            @if (event.url) {
+              <a [routerLink]="event.url" class="home-card__cta">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                <span class="home-card__cta-label">{{ event.ctaLabel || 'Register Now' }}</span>
+                <span class="home-card__cta-price">{{ event.price }}</span>
+              </a>
+            } @else {
+              <span class="home-card__cta is-disabled">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                <span class="home-card__cta-label">{{ event.ctaLabel || 'Register Now' }}</span>
+                <span class="home-card__cta-price">{{ event.price }}</span>
+              </span>
+            }
+          </footer>
+        </article>
+      }
+    </div>
 
-
-
-<div class="main">
-  <div class="sub-div-new">
-    <div class="main-img">
-      <div class="course-column">
-        <div class="course">
-          <!-- ✅ HYDRATION: Use @for loop for event cards (Angular 20 syntax, prevents SSR mismatches) -->
-          @for (event of topEvents; track event.image) {
-            <div class="carousel-course-related h-100">
-              <!-- ✅ HYDRATION FIX: Always render the same structure - no conditional wrapping -->
-              <!-- Since all events have empty URLs, always render div (not anchor) for consistency -->
-              <div class="list-course-item">
-                <div class="card-image">
-                  <img [src]="event.image" [alt]="event.alt" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;">
-                  <div class="sale-badge">Best Seller</div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-title">{{ event.title }}</h4>
-                  <h6 class="card-subtitle">{{ event.subtitle }}</h6>
-                  <p class="card-text" [innerHTML]="event.description"></p>
-                  <div class="buy">
-                    <div class="price">{{ event.price }}</div>
-                    @if (event.url) {
-                      <a [routerLink]="event.url" class="btn btn-register no-underline">
-                        <i class="fa fa-shopping-cart"></i> Register Now
-                      </a>
-                    } @else {
-                      <span class="btn btn-register no-underline">
-                        <i class="fa fa-shopping-cart"></i> Register Now
-                      </span>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
+    <div class="section-actions">
+      <a [routerLink]="'/events'" class="btn-see-all">
+        View All Events
+        <span class="btn-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
   </div>
-</div>
-
-
-<!-- Event end -->
+</section>
 
 <!-- 100% Project Oriented Learning start -->
 

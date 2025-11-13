@@ -51,11 +51,11 @@ export class BackendHealthService {
     const currentUrl = getApiUrl();
     // Return the actual backend URL (should already be full URL, but handle proxy paths for backward compatibility)
     if (currentUrl === '/api/' || currentUrl.startsWith('/api/')) {
-      return 'http://localhost:52046/';
+      return 'http://localhost:52056/';
     }
     // If it's just "/" or empty, return the backend URL
     if (currentUrl === '/' || !currentUrl || currentUrl.trim() === '') {
-      return 'http://localhost:52046/';
+      return 'http://localhost:52056/';
     }
     // Already a full URL, return as-is
     return currentUrl;
@@ -115,8 +115,8 @@ export class BackendHealthService {
           console.error(`      - If page loads → Backend is running (likely CORS issue)`);
           console.error(`      - If "Connection refused" → Backend is NOT running`);
           console.error(`   2. ✅ Verify backend port:`);
-          console.error(`      - Check backend logs to confirm port 52046 (HTTP) or 52045 (HTTPS)`);
-          console.error(`      - Try: http://localhost:52046/ (HTTP) or https://localhost:52045/ (HTTPS)`);
+          console.error(`      - Check backend logs to confirm port 52056 (HTTP) or 52055 (HTTPS)`);
+          console.error(`      - Try: http://localhost:52056/ (HTTP) or https://localhost:52055/ (HTTPS)`);
           console.error(`   3. ✅ Check backend protocol:`);
           console.error(`      - If backend uses HTTPS, change environment.ts to https://`);
           console.error(`      - If backend uses HTTP, current config is correct`);
@@ -210,7 +210,7 @@ export class BackendHealthService {
       console.error('');
       console.error('💡 TROUBLESHOOTING:');
       console.error(`   1. Open ${testUrl} directly in your browser`);
-      console.error(`   2. Check if backend is running on port 52046 (HTTP) or 52045 (HTTPS)`);
+      console.error(`   2. Check if backend is running on port 52056 (HTTP) or 52055 (HTTPS)`);
       console.error(`   3. Verify CORS is configured on backend`);
       console.error(`   4. Check backend logs for errors`);
       throw error;

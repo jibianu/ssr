@@ -15,6 +15,7 @@ export class EventsComponent {
   bgImage = 'https://courseoilandgasbucket.s3.ap-northeast-1.amazonaws.com/Event/header.jpg';
   viewMoreCategory = false;
   viewMoreDate = false;
+  mobileFiltersOpen = false;
   
   // ✅ SSR OPTIMIZATION: Use Observable with async pipe (non-blocking)
   events$: Observable<any[]>;
@@ -40,5 +41,9 @@ export class EventsComponent {
 
   trackByTagIndex(index: number, tag: string): number {
     return index;
+  }
+
+  toggleMobileFilters(): void {
+    this.mobileFiltersOpen = !this.mobileFiltersOpen;
   }
 }

@@ -18,6 +18,7 @@ import { MissionAndVisionComponent } from './mission-and-vision/mission-and-visi
 import { AffiliateProgramComponent } from './affiliate-program/affiliate-program.component';
 import { PublicCourseHomeComponent } from './public-course/public-course-home/public-course-home.component';
 import { PublicCategoryComponent } from './public-course/public-category/public-category.component';
+import { PublicCourseListComponent } from './public-course/public-course-list/public-course-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { WorldsLargestRefineriesComponent } from './worlds-largest-refineries/worlds-largest-refineries.component';
 import { TermsAndConditionComponent } from './terms-and-condition/terms-and-condition.component';
@@ -46,6 +47,17 @@ const routes: Routes = [
         title: 'Oil and Gas Courses | Professional Training Programs',
         description: 'Browse our comprehensive collection of oil and gas courses. From beginner to advanced levels, enhance your skills with industry-expert training.',
         keywords: 'oil and gas courses, petroleum training, energy education, professional development',
+        type: 'website'
+      }
+    } as RouteSeoData
+  },
+  {
+    path: 'list',
+    component: PublicCourseListComponent,
+    data: {
+      seo: {
+        title: 'All Courses - Oilandgasclub',
+        description: 'Browse the complete list of Oilandgasclub courses and training programs.',
         type: 'website'
       }
     } as RouteSeoData

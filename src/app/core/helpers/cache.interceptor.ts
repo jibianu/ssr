@@ -39,7 +39,8 @@ export class CacheInterceptor implements HttpInterceptor {
     }
 
     // ✅ ENHANCEMENT: Check if we have a cached response with ETag
-    const cachedEntry = this.getCachedEntry(request.url);
+    const cacheKey = request.urlWithParams;
+    const cachedEntry = this.getCachedEntry(cacheKey);
     if (cachedEntry && cachedEntry.etag) {
       // Add If-None-Match header for ETag validation
       request = request.clone({
@@ -51,7 +52,7 @@ export class CacheInterceptor implements HttpInterceptor {
 
     // Check if we can return cached response without validation
     if (cachedEntry && !cachedEntry.etag) {
-      const cachedResponse = this.getCachedResponse(request.url);
+      const cachedResponse = this.getCachedResponse(cacheKey);
       if (cachedResponse) {
         // Return cached response immediately (no ETag validation)
         return of(new HttpResponse({ 
@@ -69,7 +70,7 @@ export class CacheInterceptor implements HttpInterceptor {
           // ✅ ENHANCEMENT: Handle 304 Not Modified
           if (event.status === 304) {
             // Response is unchanged - cache is still valid
-            const cached = this.cache.get(request.url);
+            const cached = this.cache.get(cacheKey);
             if (cached) {
               // Update timestamp to extend cache validity
               cached.timestamp = Date.now();
@@ -92,7 +93,7 @@ export class CacheInterceptor implements HttpInterceptor {
             }
           }
 
-          this.cacheResponse(request.url, event.body, {
+          this.cacheResponse(cacheKey, event.body, {
             etag: etag || undefined,
             maxAge,
           });

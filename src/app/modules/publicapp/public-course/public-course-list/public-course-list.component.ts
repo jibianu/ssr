@@ -4,23 +4,40 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
-import { NgxPaginationModule } from "ngx-pagination";
-import { CommonModule } from '@angular/common';
+
+interface CourseListFeature {
+  id?: string;
+  description?: string;
+  iconUrl?: string;
+}
+
+interface CourseListItem {
+  id?: string;
+  title?: string;
+  titleImageUrl?: string;
+  shortDescription?: string;
+  courseDuration?: string;
+  categoryName?: string;
+  amount?: number;
+  canonicalUrl: string;
+  courseFeatures: CourseListFeature[];
+  badge?: string;
+}
 
 @Component({
   selector: 'app-public-course-list',
   templateUrl: './public-course-list.component.html',
   styleUrls: ['./public-course-list.component.scss'],
-  imports: [NgxPaginationModule, CommonModule],
+  standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PublicCourseListComponent implements OnInit, OnDestroy {
 
-  readonly itemsPerPage = 18;
+  readonly itemsPerPage = 15;
 
   // ✅ SSR OPTIMIZATION: Use Observable with async pipe - no blocking
   coursesData$: Observable<{
-    courses: any[];
+    courses: CourseListItem[];
     totalItems: number;
     currentPage: number;
     config: {
@@ -49,10 +66,7 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
         return this.publicAppService.getCourses(obj).pipe(
           map(response => {
             // ✅ FIX: Normalize canonicalUrl for all courses to ensure routerLink works correctly
-            const courses = (response.results || []).map((course: any) => ({
-              ...course,
-              canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
-            }));
+            const courses: CourseListItem[] = (response.results || []).map((course: any) => this.mapCourse(course));
 
             const totalItems = response.totalNumberOfRecords || 0;
             return {
@@ -108,17 +122,63 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
   }
 
   // PERFORMANCE: Add trackBy for ngFor optimization
-  trackByCourseId(index: number, course: any): string {
-    return course?.id || index;
+  trackByCourseId(index: number, course: CourseListItem): string {
+    return course?.id != null ? String(course.id) : String(index);
   }
 
-  trackByFeatureId(index: number, feature: any): string {
-    return feature?.id || index;
+  trackByFeatureId(index: number, feature: CourseListFeature): string {
+    return feature?.id != null ? String(feature.id) : String(index);
   }
 
-  pageChange(newPage: number): void {
-    this.router.navigate(['/list'], { queryParams: { page: newPage } });
-    // ✅ OPTIMIZATION: Observable will automatically update via route.queryParams
+  pageChange(newPage: number, totalItems?: number): void {
+    const clampedPage = this.clampPage(newPage, totalItems);
+    const currentPage = +this.route.snapshot.queryParamMap.get('page') || 1;
+
+    if (clampedPage === currentPage) {
+      return;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: clampedPage },
+      queryParamsHandling: 'merge'
+    });
+
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  totalPages(totalItems: number): number {
+    return Math.max(1, Math.ceil((totalItems || 0) / this.itemsPerPage));
+  }
+
+  private clampPage(page: number, totalItems?: number): number {
+    const maxPage = totalItems != null ? this.totalPages(totalItems) : undefined;
+    if (page < 1) {
+      return 1;
+    }
+    if (maxPage && page > maxPage) {
+      return maxPage;
+    }
+    return page;
+  }
+
+  private mapCourse(course: any): CourseListItem {
+    const courseFeatures: CourseListFeature[] = Array.isArray(course?.courseFeatures)
+      ? course.courseFeatures.map((feature: any) => ({
+          id: feature?.id,
+          description: feature?.description,
+          iconUrl: feature?.iconUrl,
+        }))
+      : [];
+
+    return {
+      ...course,
+      canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl),
+      badge: course?.badge,
+      courseFeatures,
+    };
   }
 
   onImgError(event: Event): void {

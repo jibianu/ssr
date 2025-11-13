@@ -63,8 +63,12 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // ✅ Automatic course loading on page load
-    this.loadCourse();
+    const paramsSub = this.route.paramMap.subscribe(paramMap => {
+      const slug = paramMap.get('url');
+      const location = paramMap.get('location');
+      this.loadCourse(slug, location);
+    });
+    this.subscription.add(paramsSub);
   }
 
   ngOnDestroy(): void {
@@ -73,11 +77,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
 
   // ✅ Manual course loading - ONLY triggered by user interaction (button click)
   // NO automatic calls on page load
-  loadCourse(): void {
-    // Get route params directly (no need to store in component properties)
-    const slug = this.route.snapshot.paramMap.get('url');
-    const location = this.route.snapshot.paramMap.get('location');
-    
+  loadCourse(slug: string | null, location: string | null): void {
     if (!slug) {
       this.loadError = 'Course URL not found';
       return;
@@ -91,6 +91,8 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.isLoaded = false;
     this.loadError = null;
+    this.course = null;
+    this.courseDetails = null;
     this.changeDetectorRef.markForCheck();
 
     // ✅ Use service method (caching works automatically via shareReplay)

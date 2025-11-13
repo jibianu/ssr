@@ -3,7 +3,7 @@ import { CookieService } from './../../core/services/cookie.service';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, map, shareReplay } from 'rxjs/operators';
+import { catchError, finalize, map, shareReplay } from 'rxjs/operators';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 
 interface CognitoTokens {
@@ -30,6 +30,7 @@ export class AuthenticationService {
   private refreshToken: string | null = null;
   private idToken: string | null = null;
   private accessTokenExpiresAt: number | null = null;
+  private refreshInProgress$: Observable<string | null> | null = null;
 
   readonly apiUrl = environment.apiUrl;
 
@@ -89,7 +90,6 @@ export class AuthenticationService {
     }
 
     if (this.isAccessTokenExpired()) {
-      this.logout();
       return null;
     }
 
@@ -109,7 +109,11 @@ export class AuthenticationService {
    * Primary login flow – parses Cognito tokens and stores them securely.
    */
   public login(username: string, password: string): Observable<string> {
-    return this.http.post<any>(`${this.apiUrl}page/account/login`, { username, password }).pipe(
+    return this.http.post<any>(
+      `${this.apiUrl}page/account/login`,
+      { username, password },
+      { withCredentials: true }
+    ).pipe(
       map(response => {
         const tokens = this.parseAuthResponse(response);
         if (!tokens.accessToken) {
@@ -129,7 +133,11 @@ export class AuthenticationService {
   }
 
   public register(payload: unknown): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}page/account/register`, payload).pipe(
+    return this.http.post<any>(
+      `${this.apiUrl}page/account/register`,
+      payload,
+      { withCredentials: true }
+    ).pipe(
       catchError(error => {
         console.error('Registration error:', error);
         throw error;
@@ -148,7 +156,10 @@ export class AuthenticationService {
     }
 
     if (!this.userInfoCache$) {
-      this.userInfoCache$ = this.http.get(`${this.apiUrl}page/Account/getinfo`).pipe(
+      this.userInfoCache$ = this.http.get(
+        `${this.apiUrl}page/Account/getinfo`,
+        { withCredentials: true }
+      ).pipe(
         map(user => {
           if (user) {
             this.storeUser(user);
@@ -183,9 +194,101 @@ export class AuthenticationService {
     this.updateAuthState(false);
   }
 
+  public canRefreshToken(): boolean {
+    return isPlatformBrowser(this.platformId) && !!this.refreshToken;
+  }
+
+  public refreshTokens(force = false): Observable<string | null> {
+    if (!this.canRefreshToken()) {
+      return of(null);
+    }
+
+    if (this.refreshInProgress$ && !force) {
+      return this.refreshInProgress$;
+    }
+
+    const payload: Record<string, unknown> = {
+      refreshToken: this.refreshToken
+    };
+
+    const secretHashUser = this.resolveUserNameForSecretHash();
+    if (secretHashUser) {
+      payload.userName = secretHashUser;
+    }
+
+    const refresh$ = this.http.post<any>(
+      `${this.apiUrl}page/account/refresh`,
+      payload,
+      { withCredentials: true }
+    ).pipe(
+      map(response => {
+        const tokens = this.parseAuthResponse(response);
+        if (!tokens.accessToken) {
+          throw new Error('Token refresh response did not include a Cognito access token');
+        }
+
+        const mergedTokens: CognitoTokens = {
+          accessToken: tokens.accessToken,
+          idToken: tokens.idToken ?? this.idToken,
+          refreshToken: tokens.refreshToken ?? this.refreshToken,
+          expiresAt: tokens.expiresAt
+        };
+
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.debug('[AuthenticationService] Refreshed Cognito tokens.', {
+            hasAccessToken: !!mergedTokens.accessToken,
+            hasIdToken: !!mergedTokens.idToken,
+            hasRefreshToken: !!mergedTokens.refreshToken
+          });
+        }
+
+        this.storeTokens(mergedTokens);
+        this.updateAuthState(true);
+        this.userInfoCache$ = null;
+        return mergedTokens.accessToken;
+      }),
+      catchError(error => {
+        console.error('Token refresh failed:', error);
+        this.logout();
+        return of(null);
+      }),
+      finalize(() => {
+        this.refreshInProgress$ = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.refreshInProgress$ = refresh$;
+    return refresh$;
+  }
+
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  private resolveUserNameForSecretHash(): string | null {
+    const current = this.currentUser();
+    if (current?.userName) {
+      return current.userName;
+    }
+
+    const tokenSource = this.idToken ?? this.accessToken;
+    if (!tokenSource) {
+      return null;
+    }
+
+    try {
+      const parts = tokenSource.split('.');
+      if (parts.length < 2) {
+        return null;
+      }
+
+      const payload = JSON.parse(this.base64UrlDecode(parts[1]));
+      return payload?.['cognito:username'] ?? payload?.username ?? null;
+    } catch (_error) {
+      return null;
+    }
+  }
 
   private initializeFromStorage(): void {
     const storage = this.getStorage();
@@ -324,6 +427,7 @@ export class AuthenticationService {
     this.refreshToken = null;
     this.idToken = null;
     this.accessTokenExpiresAt = null;
+    this.refreshInProgress$ = null;
 
     const storage = this.getStorage();
     if (storage) {

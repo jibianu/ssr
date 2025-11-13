@@ -7,6 +7,25 @@ import { PublicAppService } from '../../publicapp.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
 import { environment } from 'src/environments/environment';
 
+interface CategoryCourseFeature {
+  id?: string;
+  description?: string;
+  iconUrl?: string;
+}
+
+interface CategoryCourseItem {
+  id?: string;
+  title?: string;
+  titleImageUrl?: string;
+  shortDescription?: string;
+  courseDuration?: string;
+  categoryName?: string;
+  amount?: number;
+  canonicalUrl: string;
+  courseFeatures: CategoryCourseFeature[];
+  badge?: string;
+}
+
 @Component({
   selector: 'app-public-category',
   templateUrl: './public-category.component.html',
@@ -16,11 +35,11 @@ import { environment } from 'src/environments/environment';
 })
 export class PublicCategoryComponent {
 
-  readonly itemsPerPage = 12; // Used in template
+  readonly itemsPerPage = 16; // Used in template
 
   // ✅ SSR OPTIMIZATION: Parallel fetching with combineLatest - no blocking
   coursesData$: Observable<{
-    courses: any[];
+    courses: CategoryCourseItem[];
     totalItems: number;
     currentPage: number;
     categoryName: string;
@@ -72,12 +91,16 @@ export class PublicCategoryComponent {
         };
 
         return this.publicAppService.getCourses(requestObj).pipe(
-          map(response => ({
-            courses: response?.results || [],
-            totalItems: response?.totalNumberOfRecords || 0,
-            currentPage,
-            categoryName: resolvedCategory.displayName
-          })),
+          map(response => {
+            const courses: CategoryCourseItem[] = (response?.results || []).map((course: any) => this.mapCourse(course));
+
+            return {
+              courses,
+              totalItems: response?.totalNumberOfRecords || 0,
+              currentPage,
+              categoryName: resolvedCategory.displayName
+            };
+          }),
           catchError(error => {
             console.error('Error fetching courses:', error);
             return of({
@@ -103,14 +126,28 @@ export class PublicCategoryComponent {
   }
 
   // Pagination handler - uses route snapshot for navigation
-  pageChange(newPage: number): void {
-    const categoryName = this.route.snapshot.params['name'] || '';
-    this.router.navigate(
-      ['category', categoryName],
-      { queryParams: { page: newPage } }
-    );
+  pageChange(newPage: number, totalItems?: number): void {
+    const clampedPage = this.clampPage(newPage, totalItems);
+    const currentPage = +this.route.snapshot.queryParamMap.get('page') || 1;
+
+    if (clampedPage === currentPage) {
+      return;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: clampedPage },
+      queryParamsHandling: 'merge'
+    });
+
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
-  
+
+  totalPages(totalItems: number): number {
+    return Math.max(1, Math.ceil((totalItems || 0) / this.itemsPerPage));
+  }
 
   // Fallback image for course image
   onImgError(event: Event): void {
@@ -129,12 +166,12 @@ export class PublicCategoryComponent {
   }
 
   // ✅ PERFORMANCE: Add trackBy functions for ngFor optimization
-  trackByCourseId(index: number, course: any): string {
-    return course?.id || index.toString();
+  trackByCourseId(index: number, course: CategoryCourseItem): string {
+    return course?.id != null ? String(course.id) : String(index);
   }
 
-  trackByFeatureId(index: number, feature: any): string {
-    return feature?.id || index.toString();
+  trackByFeatureId(index: number, feature: CategoryCourseFeature): string {
+    return feature?.id != null ? String(feature.id) : String(index);
   }
 
   private resolveCategoryName(rawParam: string, categories: any[]): { filterName: string; displayName: string } {
@@ -200,4 +237,49 @@ export class PublicCategoryComponent {
       .join(' ');
   }
 
+  private normalizeCourseUrl(url: string | null | undefined): string {
+    if (!url) {
+      return '';
+    }
+
+    let normalized = url.replace(/^\/+/, '');
+
+    if (normalized.startsWith('course/course/')) {
+      normalized = normalized.replace(/^course\/course\//, '');
+    } else if (normalized.startsWith('course/')) {
+      normalized = normalized.replace(/^course\//, '');
+    }
+
+    return normalized ? `/${normalized}` : '';
+  }
+
+  private mapCourse(course: any): CategoryCourseItem {
+    const courseFeatures: CategoryCourseFeature[] = Array.isArray(course?.courseFeatures)
+      ? course.courseFeatures.map((feature: any) => ({
+          id: feature?.id,
+          description: feature?.description,
+          iconUrl: feature?.iconUrl,
+        }))
+      : [];
+
+    const badge = course?.isBestSeller ? 'Best Seller' : course?.badge;
+
+    return {
+      ...course,
+      canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl),
+      courseFeatures,
+      badge,
+    };
+  }
+
+  private clampPage(page: number, totalItems?: number): number {
+    const maxPage = totalItems != null ? this.totalPages(totalItems) : undefined;
+    if (page < 1) {
+      return 1;
+    }
+    if (maxPage && page > maxPage) {
+      return maxPage;
+    }
+    return page;
+  }
 }

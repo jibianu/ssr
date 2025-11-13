@@ -1,84 +1,89 @@
 
-<div style="min-height: 90vh;">
-  <!-- ✅ SSR OPTIMIZATION: Use async pipe - no blocking, automatic unsubscribe -->
-  <!-- ✅ ERROR HANDLING: Handle loading, error, and success states -->
+<div class="course-home" style="min-height: 90vh;">
   <ng-container *ngIf="items$ | async as items; else loadingTemplate">
-    <!-- ✅ BACKEND HEALTH: Show backend unavailable message -->
-    <div *ngIf="error" class="alert alert-danger text-center mt-4">
+    <div *ngIf="error" class="course-home__alert">
       <h5>
         <i class="fa fa-exclamation-triangle"></i>
         {{ !backendAvailable ? 'Backend API Unavailable' : 'Unable to Load Categories' }}
       </h5>
       <p>{{ error }}</p>
-      @if (!backendAvailable) {
-        <div class="mt-3">
-          <strong>Troubleshooting:</strong>
-          <ul class="text-left mt-2" style="display: inline-block;">
-            <li>Is the backend server running?</li>
-            <li>Check if backend is accessible at: <code>{{ apiUrl }}</code></li>
-            <li>Verify CORS is configured correctly</li>
-            <li>Check browser console for detailed error messages</li>
-          </ul>
-        </div>
-      }
-      <button class="btn btn-primary btn-sm mt-2" (click)="reload()">
+      <div class="course-home__alert-details" *ngIf="!backendAvailable">
+        <strong>Troubleshooting:</strong>
+        <ul>
+          <li>Is the backend server running?</li>
+          <li>Check if backend is accessible at: <code>{{ apiUrl }}</code></li>
+          <li>Verify CORS is configured correctly</li>
+          <li>Check browser console for detailed error messages</li>
+        </ul>
+      </div>
+      <button class="course-home__alert-btn" (click)="reload()">
         <i class="fa fa-refresh"></i> Retry Connection
       </button>
     </div>
-    
-    <div *ngIf="items.length === 0 && !error" class="text-center mt-4">
+
+    <div *ngIf="items.length === 0 && !error" class="course-home__empty">
       <p>No categories available at the moment.</p>
     </div>
-    
-    <div *ngFor="let item of items; trackBy: trackByItemIndex">
-    <div class="container" *ngIf="item?.categoryCourse?.length > 0">
-      <!-- Category Header -->
-      <div class="d-flex align-items-center mb-3 mt-4">
-        <h2 class="mb-0 flex-grow-1">{{ item.categoryName }}</h2>
-        <a class="btn btn-outline-primary btn-sm" [routerLink]="['/category', item.categoryName]">See all</a>
-      </div>
 
-      <!-- ✅ REMOVED @defer to fix HMR compatibility - carousel loads normally -->
-      <div class="position-relative">
-        <owl-carousel-o [options]="item.carouselOptions" (dragging)="isDragging = $event.dragging">
-            <ng-container *ngFor="let course of item.categoryCourse; trackBy: trackByCourseId">
-              <ng-template carouselSlide>
-                <!-- Course Card -->
-                <div class="carousel-course-related h-100">
-                  <a [routerLink]="course?.canonicalUrl" class="no-underline">
-                    <div class="list-course-item">
-                      <!-- Course Image -->
-                      <div class="card-image">
-                        <img [src]="course?.titleImageUrl" (error)="onImgError($event)" alt="{{ course?.title }}" class="card-img" loading="lazy" width="300" height="200" style="aspect-ratio: 3/2; object-fit: cover;" />
-                        <div class="sale-badge" *ngIf="course?.isBestSeller">Best Seller</div>
-                      </div>
+    <section class="course-section container" *ngFor="let item of items; trackBy: trackByItemIndex">
+      <header class="course-section__header">
+        <div>
+          <h2 class="course-section__title">{{ item.categoryName }}</h2>
+          <p class="course-section__subtitle">
+            Explore expert-led programs curated for this category.
+          </p>
+        </div>
+        <a class="course-section__link" [routerLink]="['/category', item.categorySlug || item.categoryName]">
+          See all
+          <i class="fa fa-chevron-right" aria-hidden="true"></i>
+        </a>
+      </header>
 
-                      <!-- Course Body -->
-                      <div class="card-body">
-                        <h6>{{ course?.title }}</h6>
-                        <ul>
-                          <li *ngFor="let feature of course?.courseFeatures; trackBy: trackByFeatureId">{{ feature?.description }}</li>
-                        </ul>
-                        <div class="buy">
-                          <div class="price">{{ course.amount | currency:'INR':'symbol' }}</div>
-                          <a [routerLink]="course?.canonicalUrl" class="btn btn-register">
-                            <i class="fa fa-shopping-cart"></i> Enroll Now
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-              </ng-template>
-            </ng-container>
-          </owl-carousel-o>
+      <div class="course-section__grid">
+        <article class="course-card" *ngFor="let course of item.courses; trackBy: trackByCourseId">
+          <a class="course-card__media" [routerLink]="course?.canonicalUrl">
+            <img
+              [src]="course?.titleImageUrl"
+              (error)="onImgError($event)"
+              alt="{{ course?.title }}"
+              loading="lazy"
+            />
+            <span class="course-card__badge" *ngIf="course?.badge">{{ course.badge }}</span>
+          </a>
+
+          <div class="course-card__body">
+            <h3 class="course-card__title">
+              <a [routerLink]="course?.canonicalUrl">{{ course?.title }}</a>
+            </h3>
+
+            <ul class="course-card__highlights">
+              <li *ngFor="let feature of (course.courseFeatures | slice:0:3); trackBy: trackByFeatureId">
+                {{ feature?.description }}
+              </li>
+              <li *ngIf="!course?.courseFeatures?.length">
+                Learn industry-ready skills with expert mentors and real-world projects.
+              </li>
+            </ul>
+          </div>
+
+          <footer class="course-card__footer">
+            <a class="course-card__cta" [routerLink]="course?.canonicalUrl">
+              <span class="course-card__cta-text">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                Buy
+              </span>
+              <span class="course-card__cta-price">
+                {{ course.amount | currency:'INR':'symbol' }}
+              </span>
+            </a>
+          </footer>
+        </article>
       </div>
-    </div>
-    </div>
+    </section>
   </ng-container>
-  
+
   <ng-template #loadingTemplate>
-    <div class="container mt-4">
+    <div class="course-home__loading container">
       <p class="text-center">Loading categories...</p>
     </div>
   </ng-template>

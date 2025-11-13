@@ -1,36 +1,98 @@
-<!-- ✅ SSR OPTIMIZATION: Use async pipe - no blocking, automatic unsubscribe -->
-<ng-container *ngIf="courses$ | async as courses; else loadingTemplate">
-<div class="table-responsive border-0 overflow-y-hidden">
-    <table class="table mb-0 text-nowrap">
-        <tbody>
-            <tr *ngFor="let item of courses; trackBy: trackByCourseId">
-                <td class="border-top border-bottom">
-                    <div class="d-lg-flex">
-                        <div>
-                            <a [routerLink]="item?.canonicalUrl">
-                                <img [src]="item?.titleImageUrl" (error)="onImgError($event)" alt=""
-                                    class="rounded img-4by3-lg"
-                                    loading="lazy"
-                                    width="100"
-                                    height="75">
-                            </a>
-                        </div>
-                        <div class="ml-lg-3 mt-2 mt-lg-0">
-                            <h4 class="mb-1 h5 truncate">
-                                <a [routerLink]="item?.canonicalUrl" class="text-inherit">
-                                    {{item?.title}}
-                                </a>
-                            </h4>
-                        </div>
-                    </div>
-                </td>
-                <td class="border-top border-bottom">{{item?.amount | currency:"INR":"symbol"}}</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-</ng-container>
+<div class="related-courses">
+  <ng-container *ngIf="courses$ | async as courses; else loadingTemplate">
+    <div *ngIf="courses.length === 0" class="related-empty">
+      <p>No related courses available.</p>
+    </div>
 
-<ng-template #loadingTemplate>
-    <p class="text-center">Loading related courses...</p>
-</ng-template>
+    <div class="related-grid" *ngIf="courses.length > 0">
+      <article class="related-card" *ngFor="let course of courses; trackBy: trackByCourseId">
+        <a class="related-card__media" [routerLink]="course?.canonicalUrl">
+          <img
+            [src]="course?.titleImageUrl"
+            (error)="onImgError($event)"
+            alt="{{ course?.title }}"
+            loading="lazy"
+            width="320"
+            height="220"
+          />
+          <span class="related-card__flag" *ngIf="course?.badge">{{ course.badge }}</span>
+          <span class="related-card__play">
+            <i class="fa fa-play" aria-hidden="true"></i>
+          </span>
+        </a>
+
+        <div class="related-card__body">
+          <div class="related-card__labels" *ngIf="course?.tagLabel">
+            <span class="related-card__label">{{ course.tagLabel }}</span>
+          </div>
+
+          <h3 class="related-card__title">
+            <a [routerLink]="course?.canonicalUrl">{{ course?.title }}</a>
+          </h3>
+
+          <p class="related-card__mentor" *ngIf="course?.instructorName">
+            A course by {{ course.instructorName }}
+          </p>
+
+          <p class="related-card__description" *ngIf="course?.shortDescription">
+            {{ course.shortDescription }}
+          </p>
+
+          <ul class="related-card__stats" *ngIf="course?.learnersCount || course?.rating || course?.reviewCount">
+            <li *ngIf="course?.learnersCount">
+              <i class="fa fa-users" aria-hidden="true"></i>
+              {{ course.learnersCount | number:'1.0-0' }}
+            </li>
+            <li *ngIf="course?.rating">
+              <i class="fa fa-star" aria-hidden="true"></i>
+              {{ course.rating | number:'1.1-1' }}
+              <span *ngIf="course?.reviewCount">
+                ({{ course.reviewCount | number:'1.0-0' }})
+              </span>
+            </li>
+            <li *ngIf="!course?.rating && course?.reviewCount">
+              <i class="fa fa-comments" aria-hidden="true"></i>
+              {{ course.reviewCount | number:'1.0-0' }}
+            </li>
+          </ul>
+
+          <ul class="related-card__highlights" *ngIf="!course?.shortDescription">
+            <li *ngFor="let feature of (course.courseFeatures | slice:0:2)">
+              {{ feature?.description }}
+            </li>
+            <li *ngIf="!course?.courseFeatures?.length">
+              Learn industry-ready skills with expert mentors.
+            </li>
+          </ul>
+        </div>
+
+        <div class="related-card__offer" *ngIf="course?.discountPercent || course?.listPrice">
+          <span class="related-card__offer-percent" *ngIf="course?.discountPercent">
+            {{ course.discountPercent }}% Disc.
+          </span>
+          <span class="related-card__offer-strike" *ngIf="course?.listPrice">
+            {{ course.listPrice | currency:'INR':'symbol' }}
+          </span>
+        </div>
+
+        <footer class="related-card__footer">
+          <a class="related-card__cta" [routerLink]="course?.canonicalUrl">
+            <span class="related-card__cta-text">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+              Buy
+            </span>
+            <span class="related-card__cta-price">
+              {{ course.amount | currency:'INR':'symbol' }}
+            </span>
+          </a>
+        </footer>
+      </article>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="related-loading">
+      <p>Loading related courses...</p>
+    </div>
+  </ng-template>
+</div>

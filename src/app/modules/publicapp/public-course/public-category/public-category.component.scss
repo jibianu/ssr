@@ -1,113 +1,149 @@
+@import '../public-course-common.scss';
 
-.course-column {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
+.category-page {
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 2.6rem);
+  padding-block: clamp(2rem, 5vw, 3rem);
 }
 
-.carousel-course-related {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.category-page__header {
+  @include course-header-panel(
+    linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(208, 231, 255, 0.55)),
+    rgba(59, 130, 246, 0.25)
+  );
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr auto;
+  }
 }
 
-.carousel-course-related:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+.category-page__eyebrow {
+  @include course-eyebrow($course-color-accent-blue);
 }
 
-.list-course-item {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  justify-content: space-between;
-  padding: 15px;
+.category-page__title {
+  @include course-title();
 }
 
-.card-image {
-  position: relative;
-  border-radius: 10px 10px 0 0;
-  overflow: hidden;
-  height: 150px;
-  width: 100%;
+.category-page__subtitle {
+  @include course-subtitle();
 }
 
-.card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.category-page__metrics {
+  @include course-metrics(
+    $course-color-accent-blue,
+    '.category-page__metric-label',
+    '.category-page__metric-value'
+  );
 }
 
-.sale-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: #ff4757;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: bold;
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.75rem, 5vw, 2.4rem);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.card-body {
-  padding: 10px 15px;
+.category-card {
+  @include course-card-shell(
+    $hover-border-color: rgba(59, 130, 246, 0.3),
+    $hover-shadow: $course-shadow-card-hover-category,
+    $min-height: 460px
+  );
 }
 
-h6 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 8px;
+.category-card__media {
+  @include course-card-media();
+
+  .category-card__badge {
+    @include course-card-badge();
+  }
 }
 
-ul {
-  list-style: none;
-  margin: 0 0 10px;
-  padding: 0;
+.category-card__body {
+  @include course-card-body(clamp(1.2rem, 3vw, 1.5rem));
 }
 
-ul li {
-  font-size: 0.8rem;
-  color: #7f8c8d;
-  margin-bottom: 4px;
+.category-card__title {
+  @include course-card-title(
+    1.15rem,
+    $course-color-text-primary,
+    $course-color-accent-blue,
+    3
+  );
 }
 
-.buy {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
+.category-card__highlights {
+  @include course-bullet-list(
+    $course-color-accent-blue,
+    0.4rem,
+    0.92rem,
+    1.5,
+    5rem
+  );
 }
 
-.price {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #27ae60;
+.category-card__footer {
+  @include course-card-footer(
+    clamp(0.95rem, 2.5vw, 1.2rem),
+    space-between,
+    center,
+    1rem
+  );
 }
 
-.btn-register {
-  background: #007bff;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+.category-card__cta {
+  @include course-cta-button(0.85rem 1.5rem);
+
+  .category-card__cta-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+
+  .category-card__cta-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
 }
 
-.btn-register:hover {
-  background: #0056b3;
+.category-pagination {
+  @include course-pagination();
+
+  &__btn {
+    @include course-pagination-button();
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
+  &__status {
+    @include course-pagination-status();
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    border-radius: 24px;
+    width: min(100%, 320px);
+
+    &__btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    &__status {
+      width: 100%;
+    }
+  }
 }
 
-.no-underline {
-  color: inherit;
-  text-decoration: none;
-}

@@ -3,6 +3,30 @@ import { switchMap, map, catchError, shareReplay, startWith, filter, distinctUnt
 import { PublicAppService } from './../../publicapp.service';
 import { Component, OnDestroy, Input, OnChanges, ChangeDetectionStrategy, SimpleChanges } from '@angular/core';
 
+interface RelatedCourseFeature {
+  id?: string;
+  description?: string;
+  iconUrl?: string;
+}
+
+interface RelatedCourseCard {
+  id?: string;
+  title?: string;
+  titleImageUrl?: string;
+  amount?: number;
+  canonicalUrl: string;
+  courseFeatures: RelatedCourseFeature[];
+  badge?: string;
+  listPrice?: number;
+  discountPercent?: number;
+  instructorName?: string;
+  shortDescription?: string;
+  learnersCount?: number;
+  rating?: number;
+  reviewCount?: number;
+  tagLabel?: string;
+}
+
 @Component({
     selector: 'app-public-related-courses',
     templateUrl: './public-related-courses.component.html',
@@ -12,9 +36,9 @@ import { Component, OnDestroy, Input, OnChanges, ChangeDetectionStrategy, Simple
 })
 export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
 
-  readonly itemsPerPage = 5;
+  readonly itemsPerPage = 4;
 
-  courses$: Observable<any[]>;
+  courses$: Observable<RelatedCourseCard[]>;
 
   @Input() categoryName: string | null = null;
   @Input() courseId: string | null = null;
@@ -45,10 +69,7 @@ export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
                 return [];
               }
 
-              return courses.map((course: any) => ({
-                ...course,
-                canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl)
-              }));
+              return courses.map(course => this.mapCourse(course));
             }),
             catchError(error => {
               console.error('Error fetching related courses:', error);
@@ -59,22 +80,15 @@ export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
           courseIdChanges$
         ]).pipe(
           map(([courses, currentCourseId]) => {
-            if (!currentCourseId) {
-              return courses;
-            }
+            const filtered = currentCourseId
+              ? courses.filter(course => course?.id !== currentCourseId)
+              : courses;
 
-            const index = courses.findIndex(course => course?.id === currentCourseId);
-            if (index === -1) {
-              return courses;
-            }
-
-            const updatedCourses = [...courses];
-            updatedCourses.splice(index, 1);
-            return updatedCourses;
+            return filtered.slice(0, this.itemsPerPage);
           })
         )
       ),
-      startWith([]),
+      startWith([] as RelatedCourseCard[]),
       shareReplay(1)
     );
   }
@@ -95,21 +109,114 @@ export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
     }
   }
 
-  trackByCourseId(index: number, course: any): string {
-    return course?.id || index.toString();
+  trackByCourseId(index: number, course: RelatedCourseCard): string {
+    return course?.id != null ? String(course.id) : String(index);
   }
 
   private normalizeCourseUrl(url: string | null | undefined): string {
     if (!url) return '';
-    // Remove leading slash
     let normalized = url.replace(/^\/+/, '');
-    // Remove 'course/course/' prefix if present
     if (normalized.startsWith('course/course/')) {
       normalized = normalized.replace(/^course\/course\//, '');
     } else if (normalized.startsWith('course/')) {
       normalized = normalized.replace(/^course\//, '');
     }
-    return '/' + normalized;
+    return normalized ? `/${normalized}` : '';
+  }
+
+  private mapCourse(course: any): RelatedCourseCard {
+    const courseFeatures: RelatedCourseFeature[] = Array.isArray(course?.courseFeatures)
+      ? course.courseFeatures.map((feature: any) => ({
+          id: feature?.id,
+          description: feature?.description,
+          iconUrl: feature?.iconUrl
+        }))
+      : [];
+
+    const badge = course?.isBestSeller ? 'Best Seller' : course?.badge;
+    const salePrice = this.toNumber(
+      course?.amount ??
+      course?.saleAmount ??
+      course?.salePrice ??
+      course?.discountedPrice ??
+      course?.price
+    );
+    const listPrice = this.toNumber(
+      course?.mrp ??
+      course?.originalAmount ??
+      course?.strikePrice ??
+      course?.listPrice ??
+      course?.basePrice ??
+      course?.markedPrice ??
+      course?.actualAmount
+    );
+    const discountPercent = this.calculateDiscount(listPrice, salePrice);
+
+    const instructorName =
+      course?.mentorName ??
+      course?.trainerName ??
+      course?.instructorName ??
+      course?.teacherName ??
+      course?.createdBy ??
+      course?.author ??
+      '';
+
+    const learnersCount = this.toNumber(
+      course?.learnersCount ??
+      course?.studentsCount ??
+      course?.totalStudents ??
+      course?.totalEnrollments ??
+      course?.enrolledCount ??
+      course?.enrollmentCount
+    );
+
+    const rating = this.toNumber(
+      course?.rating ??
+      course?.averageRating ??
+      course?.ratingsAverage ??
+      course?.ratings?.average ??
+      course?.ratingValue
+    );
+
+    const reviewCount = this.toNumber(
+      course?.reviewCount ??
+      course?.ratingsCount ??
+      course?.numberOfRatings ??
+      course?.ratingCount ??
+      course?.reviewsCount
+    );
+
+    const tagLabel =
+      course?.tag ??
+      course?.label ??
+      course?.badgeSecondary ??
+      course?.categoryName ??
+      course?.courseType ??
+      '';
+
+    const shortDescription =
+      course?.shortDescription ??
+      course?.aboutCourse ??
+      course?.shortDesc ??
+      course?.metaDescription ??
+      course?.summary ??
+      '';
+
+    return {
+      ...course,
+      canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl),
+      courseFeatures,
+      badge,
+      amount: salePrice ?? listPrice ?? this.toNumber(course?.amount) ?? undefined,
+      listPrice,
+      discountPercent,
+      instructorName: instructorName || undefined,
+      shortDescription: shortDescription || undefined,
+      learnersCount,
+      rating,
+      reviewCount,
+      tagLabel: tagLabel || undefined
+    };
   }
 
   ngOnDestroy(): void {
@@ -143,5 +250,32 @@ export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
     }
 
     this.courseId$.next(normalized);
+  }
+
+  private toNumber(value: unknown): number | undefined {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : undefined;
+    }
+
+    if (typeof value === 'string') {
+      const cleaned = value.replace(/[, ]+/g, '');
+      const parsed = Number(cleaned);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    return undefined;
+  }
+
+  private calculateDiscount(listPrice?: number, salePrice?: number): number | undefined {
+    if (!listPrice || !salePrice || salePrice >= listPrice) {
+      return undefined;
+    }
+
+    const discount = Math.round(((listPrice - salePrice) / listPrice) * 100);
+    return Number.isFinite(discount) ? discount : undefined;
   }
 }

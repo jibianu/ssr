@@ -2,8 +2,8 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { AuthenticationService } from '../../modules/auth/auth.service';
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
 
@@ -32,9 +32,40 @@ export class JwtInterceptor implements HttpInterceptor {
             }, 300);
         }
 
+        let refreshAttempted = false;
         const modifiedRequest = this.addAuthHeader(request);
 
         return next.handle(modifiedRequest).pipe(
+            catchError(error => {
+                if (
+                    !refreshAttempted &&
+                    error?.status === 401 &&
+                    this.authenticationService.canRefreshToken()
+                ) {
+                    refreshAttempted = true;
+                    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                        console.warn('[JwtInterceptor] 401 detected. Attempting token refresh before retry.', {
+                            url: request.url
+                        });
+                    }
+
+                    return this.authenticationService.refreshTokens().pipe(
+                        switchMap(newToken => {
+                            if (!newToken) {
+                                return throwError(() => error);
+                            }
+
+                            const retryRequest = this.addAuthHeader(request, newToken);
+                            return next.handle(retryRequest);
+                        }),
+                        catchError(refreshError => {
+                            return throwError(() => refreshError || error);
+                        })
+                    );
+                }
+
+                return throwError(() => error);
+            }),
             finalize(() => {
                 // Clear timeout if request completes before showing spinner
                 if (this.spinnerTimeout) {
@@ -52,12 +83,12 @@ export class JwtInterceptor implements HttpInterceptor {
         return !this.excludedEndpoints.some(endpoint => url.includes(endpoint));
     }
 
-    private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
+    private addAuthHeader(request: HttpRequest<any>, tokenOverride?: string): HttpRequest<any> {
         if (!this.isBrowser) {
             return request;
         }
         
-        const token = this.authenticationService.currentToken();
+        const token = tokenOverride ?? this.authenticationService.currentToken();
         
         if (!token) {
             return request;

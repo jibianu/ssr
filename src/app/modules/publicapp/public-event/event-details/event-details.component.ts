@@ -1,312 +1,348 @@
-import { Component, DestroyRef, ElementRef, HostListener, Inject, INJECTOR, OnDestroy, OnInit, PLATFORM_ID, Renderer2, ViewChild, afterNextRender, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { IDropdownSettings } from 'ng-multiselect-dropdown';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { OwlOptions } from 'ngx-owl-carousel-o';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  ViewChild
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
+
 import { PublicAppService } from '../../publicapp.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
-import { isPlatformBrowser } from '@angular/common';
-import { MetadataService } from 'src/app/shared/service/meta.service';
-import { CanonicalService } from 'src/app/shared/service/canonical.service';
-import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
 import { environment } from 'src/environments/environment';
+import { CanonicalService } from 'src/app/shared/service/canonical.service';
+import { MetadataService } from 'src/app/shared/service/meta.service';
+import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+
+interface EventDetail {
+  section: string;
+  id?: string;
+  title?: string;
+  amount?: number;
+  description?: string;
+  tag?: string;
+  imageUrl?: string;
+}
+
+interface Testimonial {
+  name: string;
+  role: string;
+  avatar: string;
+  brand: string;
+  brandAlt: string;
+  quote: string;
+}
 
 @Component({
-    selector: 'app-event-details',
-    templateUrl: './event-details.component.html',
-    styleUrls: ['./event-details.component.scss'],
-    standalone: false,
-    changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush for faster change detection
+  selector: 'app-event-details',
+  templateUrl: './event-details.component.html',
+  styleUrls: ['./event-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
-export class EventDetailsComponent implements OnInit, OnDestroy {
+export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('viewMoreBtn', { static: false }) viewMoreBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChild('largeText', { static: false }) largeText?: ElementRef<HTMLParagraphElement>;
+  @ViewChild('testimonialSlider', { static: false }) testimonialSlider?: ElementRef<HTMLDivElement>;
 
-  private subscription = new Subscription();
-  // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
+  event: any = null;
+  events: any[] = [];
+  eventId = '';
+  bgImage =
+    'https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F935098893%2F2194700540003%2F1%2Foriginal.20250114-070250?crop=focalpoint&fit=crop&w=940&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.417955571955&fp-y=0.327681496879&s=ba16dfa89eb36e033ae72207acd91b33';
+
+  eventUserForm!: FormGroup;
+  modalRef: NgbModalRef | null = null;
+
+  testimonials: Testimonial[] = [
+    {
+      name: 'Ekta',
+      role: 'Placement at IBM',
+      avatar: 'assets/avatars/ekta.jpg',
+      brand: 'assets/logos/ibm.svg',
+      brandAlt: 'IBM',
+      quote:
+        'The hands-on focus stood out for me. Live labs and constant feedback helped me master the tools quickly.'
+    },
+    {
+      name: 'Rupall',
+      role: 'Placement at Cognizant',
+      avatar: 'assets/avatars/rupall.jpg',
+      brand: 'assets/logos/cognizant.svg',
+      brandAlt: 'Cognizant',
+      quote:
+        'Mentors were extremely approachable. They bridged theory with real projects, which gave me clarity and confidence.'
+    },
+    {
+      name: 'Nishant',
+      role: 'Placement at TCS',
+      avatar: 'assets/avatars/nishant.jpg',
+      brand: 'assets/logos/tcs.svg',
+      brandAlt: 'TCS',
+      quote:
+        'Oilandgasclub helped me with resume building and mock interviews. I’m grateful for their assistance in launching my IT career.'
+    },
+    {
+      name: 'Aparna',
+      role: 'DevOps Engineer at Accenture',
+      avatar: 'assets/avatars/aparna.jpg',
+      brand: 'assets/logos/accenture.svg',
+      brandAlt: 'Accenture',
+      quote:
+        'Loved the accountability pods and weekly checkpoints. It kept me on track, and I picked up best practices fast.'
+    }
+  ];
+
+  canScrollLeft = false;
+  canScrollRight = true;
+
+  private readonly subscription = new Subscription();
   private readonly isBrowser: boolean;
-  private readonly metadataService: MetadataService;
-  private readonly canonicalService: CanonicalService;
-  private readonly structuredDataService: StructuredDataService;
-  private readonly router: Router;
+  private expanded = false;
+  private testimonialScrollTimeout: any = null;
 
   constructor(
-    private elRef: ElementRef, 
-    private renderer: Renderer2, 
-    private modalService: NgbModal,
-    private activatedRoute: ActivatedRoute,
-    private formBuilder: FormBuilder,
-    private publicAppService: PublicAppService,
-    private toasterService: ToasterService,
-    private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: For manual change detection trigger with OnPush
-    @Inject(PLATFORM_ID) private platformId: Object,
-    metadataService: MetadataService,
-    canonicalService: CanonicalService,
-    structuredDataService: StructuredDataService,
-    router: Router
+    private readonly modalService: NgbModal,
+    private readonly formBuilder: FormBuilder,
+    private readonly publicAppService: PublicAppService,
+    private readonly toasterService: ToasterService,
+    private readonly route: ActivatedRoute,
+    private readonly metadataService: MetadataService,
+    private readonly canonicalService: CanonicalService,
+    private readonly structuredDataService: StructuredDataService,
+    private readonly cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) platformId: Object
   ) {
-    // ✅ FIX: Initialize injected services in constructor to ensure injector is available
-    this.isBrowser = isPlatformBrowser(this.platformId);
-    this.metadataService = metadataService;
-    this.canonicalService = canonicalService;
-    this.structuredDataService = structuredDataService;
-    this.router = router;
-    // ✅ PARALLEL API CALLS: Use resolver data that includes both event and upcoming events
+    this.isBrowser = isPlatformBrowser(platformId);
+
     this.subscription.add(
-      activatedRoute.data.subscribe((data) => {
-        this.event = data.event;
-        this.eventId = this.event?.['id'];
-        
-        // ✅ OPTIMIZATION: Use upcoming events from resolver (already fetched during SSR)
-        if (this.event?.upcomingEvents) {
-          this.events = this.event.upcomingEvents;
-        }
-        
-        if (this.event?.eventDetails) {
-          const imageItem = this.event.eventDetails.find((item: any) => item.section === 'image');
-          if (imageItem?.imageUrl) {
-            this.bgImage = imageItem.imageUrl;
-          }
-        }
-        // ✅ SEO: Set metadata for SSR
+      this.route.data.subscribe((data) => {
+        const resolvedEvent = data?.['event'] ?? null;
+        this.event = resolvedEvent;
+        this.events = resolvedEvent?.upcomingEvents ?? [];
+        this.eventId = resolvedEvent?.id ?? '';
+        this.bgImage = this.resolveHeroImage(resolvedEvent);
         this.setEventMetadata();
-        this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
+        this.cdr.markForCheck();
       })
     );
-    
-    // ✅ HYDRATION: Initialize window width safely after render
-    if (this.isBrowser) {
-      afterNextRender(() => {
-        this.windowWidth.set(window.innerWidth);
-        
-        // ✅ Listen for window resize events
-        const resizeListener = () => {
-          if (this.isBrowser) {
-            this.windowWidth.set(window.innerWidth);
-          }
-        };
-        window.addEventListener('resize', resizeListener);
-        this.subscription.add(new Subscription(() => {
-          window.removeEventListener('resize', resizeListener);
-        }));
-      });
-    }
-  }
-
-  @ViewChild('stickySection', {static: false}) public stickySection!: ElementRef;
-  @ViewChild('coursesSection', {static: false}) public coursesSection?: ElementRef;
-  @ViewChild('largeText', {static: false}) public largeText?: ElementRef<HTMLElement>;
-  @ViewChild('viewMoreBtn', {static: false}) public viewMoreBtn?: ElementRef<HTMLElement>;
-  
-  stickyTop = 0;
-  
-  // ✅ HYDRATION: Use signal instead of direct window access to prevent hydration mismatches
-  private windowWidth = signal<number>(0);
-  
-  // ✅ HYDRATION: Signal for expanded state to prevent hydration issues
-  isExpanded = signal(false);
-
-  event:any;
-  events:any=[];
-  bgImage = 'https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F935098893%2F2194700540003%2F1%2Foriginal.20250114-070250?crop=focalpoint&fit=crop&w=940&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.417955571955&fp-y=0.327681496879&s=ba16dfa89eb36e033ae72207acd91b33';
-  desigantion = null;
-  department = null;
-  dropdownSettings: IDropdownSettings = {
-    singleSelection: true,
-    idField: 'item_id',
-    textField: 'item_text',
-    selectAllText: 'Select All',
-    unSelectAllText: 'UnSelect All',
-    itemsShowLimit: 3,
-    allowSearchFilter: true
-  };
-
-  items: any[] = [];
-  categories: any[] = [];
-  eventId: string = '';
-  modalRef: NgbModalRef | null = null;
-  eventUserForm: FormGroup;
-  customOptions: OwlOptions = {
-    loop: false,
-    mouseDrag: true,
-    touchDrag: true,
-    pullDrag: false,
-    dots: false,
-    navSpeed: 700,
-    margin: 5,
-    navText: ['<i class="fa fa-chevron-left fa-3x"></i>', '<i class="fa fa-chevron-right fa-3x"></i>'],
-    nav: true,
-    responsive: {
-      0: {
-        items: 1
-      },
-      400: {
-        items: 2
-      },
-      740: {
-        items: 3
-      },
-      940: {
-        items: 3
-      }
-    },
-  }
-
-  @HostListener('window:scroll', [])
-  onWindowScroll() {
-    if (!this.isBrowser)
-      return;
-
-    // ✅ HYDRATION: Use signal instead of direct window access
-    if (this.windowWidth() > 935) {
-      const stickyDiv = this.stickySection.nativeElement;
-      const stickySec = stickyDiv?.querySelector('.sticky-sec');
-      const scrollPosition = stickyDiv?.getBoundingClientRect();
-      
-      // ✅ HYDRATION: Use ViewChild instead of document.getElementById
-      const coursesCarousel = this.coursesSection?.nativeElement;
-      if (coursesCarousel && stickySec) {
-        const cPos = coursesCarousel.getBoundingClientRect().top;
-        if (cPos >= this.stickyTop && cPos <= stickySec.offsetHeight) {
-          this.renderer.removeClass(stickySec, 'fixed-section');
-        } else {
-          if ((scrollPosition?.top || 0) <= this.stickyTop) {
-            this.renderer.addClass(stickySec, 'fixed-section');
-          } else {
-            this.renderer.removeClass(stickySec, 'fixed-section');
-          }
-        }
-      }
-    }
   }
 
   ngOnInit(): void {
     this.eventUserForm = this.formBuilder.group({
       name: ['', Validators.required],
-      email: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
       mobile: ['', Validators.required],
       companyName: ['', Validators.required],
       designation: ['', Validators.required],
       department: ['', Validators.required],
-      paymentRefNo: [''],
+      paymentRefNo: ['']
     });
-    // ✅ HYDRATION: Non-critical data loading moved to afterNextRender (in constructor)
+
+    if (this.isBrowser) {
+      setTimeout(() => this.updateTestimonialControls(), 0);
+    }
   }
-  
-  // ✅ REMOVED: loadUpcomingEvents() - now handled in resolver for parallel fetching during SSR
-  getInfo(section:string):any[]{
-    return this.event.eventDetails.filter((item)=>item.section===section);
+
+  ngAfterViewInit(): void {
+    if (this.isBrowser) {
+      setTimeout(() => this.updateTestimonialControls(), 0);
+    }
   }
+
+  ngOnDestroy(): void {
+    if (this.testimonialScrollTimeout) {
+      clearTimeout(this.testimonialScrollTimeout);
+    }
+    this.subscription.unsubscribe();
+  }
+
+  getInfo(section: string): EventDetail[] {
+    return this.event?.eventDetails?.filter((detail: EventDetail) => detail.section === section) ?? [];
+  }
+
   sumAmount(section: string): number {
-    return this.event.eventDetails.filter((item) => item.section === section)
-        .reduce((acc, item) => acc + item.amount, 0);
-}
-getRemaining(dt: string): any {
-  const eventDate = new Date(dt);
-  const currentDate = new Date();
-  var days = 0;
-  var hours = 0;
-
-  if (eventDate > currentDate) {
-      var diff = eventDate.getTime() - currentDate.getTime();
-      days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  }
-  return { days, hours };
-}
-getValue(section: string, title: string, key: string): any {
-  return this.event.eventDetails.find((item) => item.section === section && item.title === title)?.[key] || '';
-}
-
-  openRegisterModal(longContent: any) {
-    this.modalRef= this.modalService.open(longContent, { scrollable: true });
+    return this.getInfo(section).reduce((total, detail) => total + (detail.amount ?? 0), 0);
   }
 
-  // ✅ HYDRATION: Use signal for state - template binding handles DOM updates automatically
-  onViewMoreInfo() {
-    if (!this.isBrowser) return;
-    // ✅ Signal update automatically triggers template binding updates
-    this.isExpanded.update(v => !v);
-  }
-  getEventDt(event:any,section:string,ix:number):any{
-    return event.eventDetails.filter((item) => item.section === section)[ix];
-  }
-
-  // ✅ PERFORMANCE: TrackBy functions for ngFor optimization
-  trackByTagId(index: number, tag: any): string {
-    return tag?.id || tag?.tag || index.toString();
-  }
-
-  trackByCurriculumId(index: number, item: any): string {
-    return item?.id || index.toString();
+  getRemaining(startDate: string | Date | null): { days: number; hours: number } {
+    if (!startDate) {
+      return { days: 0, hours: 0 };
+    }
+    const start = new Date(startDate);
+    const now = new Date();
+    if (start <= now) {
+      return { days: 0, hours: 0 };
+    }
+    const diff = start.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    return { days, hours };
   }
 
-  trackByBonusId(index: number, item: any): string {
-    return item?.id || index.toString();
+  getValue(section: string, title: string, key: string): any {
+    return this.event?.eventDetails?.find(
+      (detail: EventDetail) => detail.section === section && detail.title === title
+    )?.[key] ?? '';
   }
 
-  trackBySalaryId(index: number, item: any): string {
-    return item?.id || index.toString();
+  getEventDt(event: any, section: string, index: number): EventDetail | undefined {
+    return event?.eventDetails?.filter((detail: EventDetail) => detail.section === section)?.[index];
   }
 
-  trackByOrganizerId(index: number, item: any): string {
-    return item?.id || index.toString();
+  openRegisterModal(content: any): void {
+    this.modalRef = this.modalService.open(content, { scrollable: true });
   }
 
-  trackBySocialId(index: number, item: any): string {
-    return item?.id || index.toString();
+  onViewMoreInfo(): void {
+    this.expanded = !this.expanded;
+    this.cdr.markForCheck();
   }
 
-  trackByQaId(index: number, item: any): string {
-    return item?.id || index.toString();
+  isExpanded(): boolean {
+    return this.expanded;
   }
 
-  trackByEventId(index: number, event: any): string {
-    return event?.id || index.toString();
+  trackByTagId(index: number, item: EventDetail): string {
+    return item?.id ?? item?.tag ?? index.toString();
   }
-  paymentProcess(): void {
-    if (this.eventUserForm.invalid) {
+
+  trackByCurriculumId(index: number, item: EventDetail): string {
+    return item?.id ?? index.toString();
+  }
+
+  trackByBonusId(index: number, item: EventDetail): string {
+    return item?.id ?? index.toString();
+  }
+
+  trackBySalaryId(index: number, item: EventDetail): string {
+    return item?.id ?? index.toString();
+  }
+
+  trackByOrganizerId(index: number, item: EventDetail): string {
+    return item?.id ?? index.toString();
+  }
+
+  trackBySocialId(index: number, item: EventDetail): string {
+    return item?.id ?? index.toString();
+  }
+
+  trackByQaId(index: number, item: EventDetail): string {
+    return item?.id ?? index.toString();
+  }
+
+  trackByEventId(index: number, related: any): string {
+    return related?.id ?? index.toString();
+  }
+
+  trackByTestimonial(index: number, testimonial: Testimonial): string {
+    return testimonial?.name ?? index.toString();
+  }
+
+  scrollTestimonials(direction: 1 | -1): void {
+    if (!this.isBrowser || !this.testimonialSlider) {
       return;
     }
-  
-    // FIXED: Already using subscription.add() - good!
-    this.subscription.add(this.publicAppService.createEventUser(this.eventId, this.eventUserForm.value).subscribe({
-      next: (x) => {
-        const url = x.paymentRefNo;
-        this.toasterService.showSuccess('Event registration successfully');
-        this.modalRef?.close();
-        if (this.isBrowser && url) {
-          window.location.href = url;
-        }
-        this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
-      },
-      error: () => {
-        this.toasterService.showError('Registration failed. Please try again.');
-        this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
-      }
-    }));
+
+    const slider = this.testimonialSlider.nativeElement;
+    const sampleCard = slider.querySelector<HTMLElement>('.testimonial-card');
+    const cardWidth = sampleCard ? sampleCard.offsetWidth : slider.clientWidth;
+    const gap = parseInt(getComputedStyle(slider).gap || '24', 10);
+    const distance = cardWidth + gap;
+
+    slider.scrollTo({
+      left: slider.scrollLeft + direction * distance,
+      behavior: 'smooth'
+    });
+
+    if (this.testimonialScrollTimeout) {
+      clearTimeout(this.testimonialScrollTimeout);
+    }
+
+    this.testimonialScrollTimeout = setTimeout(() => this.updateTestimonialControls(), 320);
   }
 
-  /**
-   * ✅ SEO: Set metadata for event details page (SSR-compatible)
-   */
+  updateTestimonialControls(): void {
+    if (!this.isBrowser || !this.testimonialSlider) {
+      this.canScrollLeft = false;
+      this.canScrollRight = false;
+      return;
+    }
+
+    const slider = this.testimonialSlider.nativeElement;
+    const maxScrollLeft = slider.scrollWidth - slider.clientWidth - 1;
+    this.canScrollLeft = slider.scrollLeft > 1;
+    this.canScrollRight = slider.scrollLeft < maxScrollLeft;
+    this.cdr.markForCheck();
+  }
+
+  paymentProcess(): void {
+    if (this.eventUserForm.invalid || !this.eventId) {
+      return;
+    }
+
+    this.subscription.add(
+      this.publicAppService.createEventUser(this.eventId, this.eventUserForm.value).subscribe({
+        next: (response) => {
+          const redirectUrl = response?.paymentRefNo;
+          this.toasterService.showSuccess('Event registration successful.');
+          this.modalRef?.close();
+          if (this.isBrowser && redirectUrl) {
+            window.location.href = redirectUrl;
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.toasterService.showError('Registration failed. Please try again.');
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  private resolveHeroImage(resolvedEvent: any): string {
+    const imageDetail = resolvedEvent?.eventDetails?.find(
+      (detail: EventDetail) => detail.section === 'image'
+    );
+    return imageDetail?.imageUrl ?? this.bgImage;
+  }
+
   private setEventMetadata(): void {
-    if (!this.event) return;
+    if (!this.event) {
+      return;
+    }
 
-    const eventUrl = this.event.canonicalUrl || '';
-    const fullUrl = eventUrl ? `${environment.seoUrl}events/${eventUrl}` : `${environment.seoUrl}events`;
-    const canonicalUrl = fullUrl;
+    const canonicalSlug = this.event.canonicalUrl ?? '';
+    const fullUrl = canonicalSlug
+      ? `${environment.seoUrl}events/${canonicalSlug}`
+      : `${environment.seoUrl}events`;
 
-    // Get event details
-    const titleSection = this.event.eventDetails?.find((item: any) => item.section === 'title');
-    const descriptionSection = this.event.eventDetails?.find((item: any) => item.section === 'description');
-    const imageSection = this.event.eventDetails?.find((item: any) => item.section === 'image');
-    
-    const eventTitle = titleSection?.title || this.event.title || 'Event - Oilandgasclub';
-    const eventDescription = descriptionSection?.description || this.event.description || 'Join our upcoming oil and gas industry event';
-    const eventImage = imageSection?.imageUrl || this.bgImage || 'https://www.oilandgasclub.com/assets/images/og-image.jpg';
+    const titleSection = this.event.eventDetails?.find(
+      (detail: EventDetail) => detail.section === 'title'
+    );
+    const descriptionSection = this.event.eventDetails?.find(
+      (detail: EventDetail) => detail.section === 'description'
+    );
+    const imageSection = this.event.eventDetails?.find(
+      (detail: EventDetail) => detail.section === 'image'
+    );
 
-    // Set meta tags
+    const eventTitle = titleSection?.title ?? this.event.title ?? 'Event - Oilandgasclub';
+    const eventDescription =
+      descriptionSection?.description ??
+      this.event.description ??
+      'Join our upcoming oil and gas industry event';
+    const eventImage = imageSection?.imageUrl ?? this.bgImage;
+
     this.metadataService.updateMetadata({
       title: `${eventTitle} - Oilandgasclub`,
       description: eventDescription,
@@ -316,41 +352,35 @@ getValue(section: string, title: string, key: string): any {
       imageWidth: 1200,
       imageHeight: 630,
       seoUrl: fullUrl,
-      time: this.event.startDate || this.event.createdOn,
+      time: this.event.startDate ?? this.event.createdOn,
       updatedTime: this.event.updatedOn,
       category: 'Oil and Gas Events, Professional Training, Industry Events',
-      canonicalUrl: canonicalUrl
+      canonicalUrl: fullUrl
     });
 
-    this.canonicalService.setCanonicalURL(canonicalUrl);
-
-    // ✅ SEO: Add Event structured data (JSON-LD)
-    const startDate = this.event.startDate ? new Date(this.event.startDate).toISOString() : '';
-    const endDate = this.event.endDate ? new Date(this.event.endDate).toISOString() : undefined;
+    this.canonicalService.setCanonicalURL(fullUrl);
 
     this.structuredDataService.setEvent({
       name: eventTitle,
       description: eventDescription,
       url: fullUrl,
       image: eventImage,
-      startDate: startDate,
-      endDate: endDate,
+      startDate: this.event.startDate ? new Date(this.event.startDate).toISOString() : '',
+      endDate: this.event.endDate ? new Date(this.event.endDate).toISOString() : undefined,
       organizer: {
         name: 'Oilandgasclub',
         url: 'https://www.oilandgasclub.com'
       },
-      // Add offers if pricing information is available
       ...(this.getEventPrice() && {
         offers: {
           price: this.getEventPrice(),
-          priceCurrency: 'USD',
+          priceCurrency: 'INR',
           availability: 'https://schema.org/InStock',
           url: fullUrl
         }
       })
     });
 
-    // ✅ SEO: Add BreadcrumbList structured data
     const breadcrumbs = [
       { name: 'Home', url: environment.seoUrl },
       { name: 'Events', url: `${environment.seoUrl}events` },
@@ -359,22 +389,14 @@ getValue(section: string, title: string, key: string): any {
     this.structuredDataService.setBreadcrumbs(breadcrumbs);
   }
 
-  /**
-   * Get event price from event details
-   */
   private getEventPrice(): string | undefined {
-    if (!this.event?.eventDetails) return undefined;
-    
-    const pricingSection = this.event.eventDetails.find((item: any) => item.section === 'pricing');
+    const pricingSection = this.event?.eventDetails?.find(
+      (detail: EventDetail) => detail.section === 'pricing'
+    );
     if (pricingSection?.amount) {
       return pricingSection.amount.toString();
     }
     return undefined;
   }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
 }
-
 

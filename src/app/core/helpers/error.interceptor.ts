@@ -148,7 +148,7 @@ export class ErrorInterceptor implements HttpInterceptor {
             
             if (isCorsError) {
                 const frontendOrigin = this.isBrowser ? window.location.origin : 'SSR';
-                const backendUrl = error?.url || 'http://localhost:52046/';
+            const backendUrl = error?.url || 'http://localhost:52056/';
                 
                 const corsMessage = '🚫 CORS ERROR: Backend is blocking cross-origin requests\n\n' +
                     `Frontend Origin: ${frontendOrigin}\n` +
@@ -190,20 +190,20 @@ export class ErrorInterceptor implements HttpInterceptor {
                 const message = 'ERR_EMPTY_RESPONSE: Connection refused - Backend server is not responding.\n\n' +
                     '🔍 DIAGNOSTIC STEPS:\n' +
                     '1. ✅ Check if backend is running:\n' +
-                    '   - Open http://localhost:52046/ in your browser (HTTP port)\n' +
-                    '   - Or https://localhost:52045/ (HTTPS port)\n' +
+                    '   - Open http://localhost:52056/ in your browser (HTTP port)\n' +
+                    '   - Or https://localhost:52055/ (HTTPS port)\n' +
                     '   - If "Connection refused" → Backend is NOT running\n' +
                     '   - If page loads → Backend is running (likely CORS issue)\n\n' +
                     '2. ✅ Verify backend port and protocol:\n' +
-                    '   - Check backend logs for port binding (HTTP: 52046, HTTPS: 52045)\n' +
-                    '   - Current config uses HTTP on port 52046\n' +
-                    '   - To use HTTPS: change environment.ts to https://localhost:52045/\n\n' +
+                    '   - Check backend logs for port binding (HTTP: 52056, HTTPS: 52055)\n' +
+                    '   - Current config uses HTTP on port 52056\n' +
+                    '   - To use HTTPS: change environment.ts to https://localhost:52055/\n\n' +
                     '3. ✅ Check backend logs:\n' +
                     '   - Look for startup errors or crashes\n' +
                     '   - Verify backend started successfully\n\n' +
                     '4. ✅ Test backend directly:\n' +
-                    '   - Try: http://localhost:52046/page/category (HTTP)\n' +
-                    '   - Or: https://localhost:52045/page/category (HTTPS)\n' +
+                    '   - Try: http://localhost:52056/page/category (HTTP)\n' +
+                    '   - Or: https://localhost:52055/page/category (HTTPS)\n' +
                     '   - Check browser Network tab for detailed error\n\n' +
                     '5. ✅ Firewall/Antivirus:\n' +
                     '   - Temporarily disable to test if blocking connection';

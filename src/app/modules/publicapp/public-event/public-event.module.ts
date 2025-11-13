@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { EventDetailsComponent } from './event-details/event-details.component';
 import { EventsComponent } from './events/events.component';
 import {  RouterModule, Routes } from '@angular/router';
-import { NgbAccordionModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { SharedModule } from 'src/app/shared/shared.module';
@@ -38,8 +37,6 @@ const routes : Routes=[
   ],
   imports: [
     CommonModule,RouterModule.forChild(routes),
-    NgbAccordionModule,
-    NgbDropdownModule,
     FormsModule,
     ReactiveFormsModule,
     NgMultiSelectDropDownModule.forRoot(),

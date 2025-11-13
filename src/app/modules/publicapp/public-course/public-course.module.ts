@@ -12,7 +12,13 @@ import { PublicRelatedCoursesComponent } from './public-related-courses/public-r
 import { NgxPaginationModule } from "ngx-pagination";
 
 @NgModule({
-  declarations: [PublicCourseHomeComponent,  PublicCourseDetailsComponent,PublicCategoryComponent, PublicRelatedCoursesComponent],
+  declarations: [
+    PublicCourseHomeComponent,
+    PublicCourseListComponent,
+    PublicCourseDetailsComponent,
+    PublicCategoryComponent,
+    PublicRelatedCoursesComponent
+  ],
   imports: [
     CommonModule,
     RouterModule,
@@ -21,7 +27,7 @@ import { NgxPaginationModule } from "ngx-pagination";
     NgxPaginationModule
   ],
   // ✅ Export PublicCategoryComponent so it can be used in parent module routing
-  exports: [PublicCategoryComponent]
+  exports: [PublicCategoryComponent, PublicCourseListComponent]
 })
 export class PublicCourseModule { }
 

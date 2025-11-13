@@ -14,7 +14,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="course" class="container">
+<div *ngIf="course" class="container course-details">
   <div class="row">
     <div class="col-lg-8 col-md-12 col-12 mt-n8 mb-4 mb-lg-0">
 
@@ -76,7 +76,7 @@
 
       <!-- 🆕 HYDRATION OPTIMIZATION: Defer company logos section (below the fold) -->
       @defer (on viewport) {
-        <div class="card w-100 mt-5 mb-5">
+        <div class="card w-100 mt-5 mb-5 course-details__trusted-card">
           <div class="p-3">
             <h3 class="text-center mb-3">Top Companies Trust Us</h3>
             <p class="text-center text-muted mb-4">Get your team access to top 70+ courses</p>
@@ -116,7 +116,7 @@
         </div>
       } @placeholder {
         <!-- ✅ Placeholder maintains layout -->
-        <div class="card w-100 mt-5 mb-5">
+        <div class="card w-100 mt-5 mb-5 course-details__trusted-card">
           <div class="p-3">
             <h3 class="text-center mb-3">Top Companies Trust Us</h3>
             <p class="text-center text-muted mb-4">Get your team access to top 70+ courses</p>
@@ -297,17 +297,25 @@
             <img [src]="courseDetails?.titleImageUrl" class="img-top rounded-top d-none d-sm-block "
               (error)="onImgError($event)" width="350" height="200" loading="lazy" style="aspect-ratio: 7/4; object-fit: cover;">
             <div class="card-body">
-              <button class="buy-now mb-3"> Price : {{courseDetails.amount | currency:'INR':'symbol'}}</button>
               <!-- mb-3 adds margin-bottom -->
                @if(isSelfLearning$) {
                   <a href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
-                    class="btn btn-primary btn-block">
-                    Buy Now
+                    class="course-detail__cta">
+                    <span class="course-detail__cta-text">
+                      <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                      Buy Now
+                    </span>
+                    <span class="course-detail__cta-price">
+                      {{ courseDetails.amount | currency:'INR':'symbol' }}
+                    </span>
                   </a>
                }
                @else { 
-                  <a href="#!" class="btn btn-primary btn-block">
-                    More info +91 9840287919
+                  <a href="#!" class="course-detail__cta course-detail__cta--info">
+                    <span class="course-detail__cta-text">
+                      <i class="fa fa-phone" aria-hidden="true"></i>
+                      More info +91 9840287919
+                    </span>
                   </a>  
                }
               <div class="guarantee">
@@ -334,7 +342,9 @@
       </div>
       <div class="d-block d-sm-none footer">
         <a href="https://elearn.oilandgasclub.com/app/payment/checkout/{{courseDetails.id}}"
-          class="btn btn-primary btn-block">More info</a>
+          class="course-detail__cta course-detail__cta--info">
+          <span class="course-detail__cta-text">More info</span>
+        </a>
       </div>
     </div>
   </div>

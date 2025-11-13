@@ -12,8 +12,16 @@ interface CourseCard {
   alt: string;
   title: string;
   badge?: string;
+  tags?: string[];
+  instructor?: string;
+  students?: string;
+  rating?: string;
+  ratingCount?: string;
+  discount?: string;
+  originalPrice?: string;
   features: string[];
   price: string;
+  ctaLabel?: string;
 }
 
 interface EventCard {
@@ -22,8 +30,15 @@ interface EventCard {
   alt: string;
   title: string;
   subtitle: string;
+  tags?: string[];
   description: string;
   price: string;
+  seats?: string;
+  mode?: string;
+  schedule?: string;
+  discount?: string;
+  originalPrice?: string;
+  ctaLabel?: string;
 }
 
 interface CategoryLink {
@@ -72,8 +87,20 @@ export class HomeComponent implements OnInit {
       alt: 'PIPENET training materials',
       title: 'PIPENET training materials, Self Learning',
       badge: 'Best Seller',
-      features: ['steady-state flow analysis', 'PIPENET self-learning for simulation', 'Transient dynamic flow analysis'],
-      price: '₹3,999.00'
+      tags: ['Fundamentals'],
+      instructor: 'Anush',
+      students: '18,450 learners',
+      rating: '4.7',
+      ratingCount: '1.2K reviews',
+      discount: '90% Disc.',
+      originalPrice: '₹3,999.00',
+      features: [
+        'Steady-state flow analysis',
+        'Self-paced simulation practice',
+        'Transient dynamic flow walkthroughs'
+      ],
+      price: '₹399.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/api-570-closed-book-mock-exam-comprehensive-preparation',
@@ -81,8 +108,20 @@ export class HomeComponent implements OnInit {
       alt: 'API 570 Mock Exam',
       title: 'API 570 Closed-Book Mock Exam Q&A Practice',
       badge: 'Best Seller',
-      features: ['API 570 Mock Exam Preparation', 'Real-time Q&A practice session', 'Structured Q&A for better learning'],
-      price: '₹99.00.00'
+      tags: ['Exam Ready'],
+      instructor: 'Jaya Kumar',
+      students: '26,300 learners',
+      rating: '4.9',
+      ratingCount: '2.4K reviews',
+      discount: '95% Disc.',
+      originalPrice: '₹1,999.00',
+      features: [
+        'Mock exam question banks',
+        'Timed practice simulations',
+        'Answer keys with expert insights'
+      ],
+      price: '₹99.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/cswip-three-point-one-question-paper-part-two',
@@ -90,8 +129,20 @@ export class HomeComponent implements OnInit {
       alt: 'CSWIP 3.1 Exam',
       title: 'CSWIP 3.1 Exam Preparation with Q&A Practice',
       badge: 'Best Seller',
-      features: ['CSWIP 3.1 Q&A Practice', 'CSWIP 3.1 Mock Test', 'CSWIP 3.1 Practice Course'],
-      price: '₹198.00'
+      tags: ['Certification'],
+      instructor: 'Ragavan Iyer',
+      students: '12,980 learners',
+      rating: '4.8',
+      ratingCount: '980 reviews',
+      discount: '88% Disc.',
+      originalPrice: '₹1,699.00',
+      features: [
+        'Practice exam simulations',
+        'Topic-wise revision decks',
+        'Live doubt-solving recordings'
+      ],
+      price: '₹198.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/welding-and-ndt-service',
@@ -99,8 +150,20 @@ export class HomeComponent implements OnInit {
       alt: 'Welding & NDT Training',
       title: 'Welding & NDT Self-Paced Training for Professionals',
       badge: 'Best Seller',
-      features: ['Learn from real exam questions', 'Crack your exam with confidence', 'Master inspection skills easily'],
-      price: '₹79.00'
+      tags: ['Hands-on'],
+      instructor: 'Mahesh Varma',
+      students: '9,640 learners',
+      rating: '4.6',
+      ratingCount: '760 reviews',
+      discount: '94% Disc.',
+      originalPrice: '₹1,299.00',
+      features: [
+        'Welding procedure walk-throughs',
+        'NDT technique video library',
+        'Case-based inspection drills'
+      ],
+      price: '₹79.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/coating-and-painting-techniques-cbt-part-one-training-for-excellence',
@@ -108,8 +171,20 @@ export class HomeComponent implements OnInit {
       alt: 'Coating & Painting Course',
       title: 'Coating & Painting Exam Preparation Course',
       badge: 'Best Seller',
-      features: ['Practice with real-time Q&A', 'Crack the exam with confidence', 'Master Coating Painting Techniques'],
-      price: '₹198.00'
+      tags: ['Skill Boost'],
+      instructor: 'Nisha Varadarajan',
+      students: '7,420 learners',
+      rating: '4.7',
+      ratingCount: '640 reviews',
+      discount: '90% Disc.',
+      originalPrice: '₹1,999.00',
+      features: [
+        'Surface prep best practices',
+        'Application troubleshooting demos',
+        'Mock certification exercises'
+      ],
+      price: '₹198.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/bgas-painting-questions',
@@ -117,8 +192,20 @@ export class HomeComponent implements OnInit {
       alt: 'BGAS Painting Inspector',
       title: 'BGAS Painting Inspector Q&A Practice Course',
       badge: 'Best Seller',
-      features: ['Practice with real exam questions', 'BGAS Painting Mock Exam Practice', 'Secure your certification fast'],
-      price: '₹199.00'
+      tags: ['Mock Tests'],
+      instructor: 'Sarayu Megh',
+      students: '11,560 learners',
+      rating: '4.8',
+      ratingCount: '1.1K reviews',
+      discount: '92% Disc.',
+      originalPrice: '₹2,499.00',
+      features: [
+        'Timed BGAS mock exams',
+        'Topic-wise revision notes',
+        'Exam-day strategy planner'
+      ],
+      price: '₹199.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/cswip-three-point-one-question-paper-part-two',
@@ -126,8 +213,20 @@ export class HomeComponent implements OnInit {
       alt: 'CSWIP 3.1 Q&A',
       title: 'CSWIP 3.1 Q&A Self-Practice Course',
       badge: 'Best Seller',
-      features: ['Get hands-on practice with Q&A', 'CSWIP 3.1 Q&A Practice', 'Practice with real exam questions'],
-      price: '₹198.00'
+      tags: ['Popular'],
+      instructor: 'Gayathri Devi',
+      students: '14,220 learners',
+      rating: '4.9',
+      ratingCount: '1.4K reviews',
+      discount: '88% Disc.',
+      originalPrice: '₹1,699.00',
+      features: [
+        'Real exam style question sets',
+        'Self-evaluation scorecards',
+        'Peer discussion recordings'
+      ],
+      price: '₹198.00',
+      ctaLabel: 'Buy'
     },
     {
       url: '/bgas-question-and-answers',
@@ -135,8 +234,20 @@ export class HomeComponent implements OnInit {
       alt: 'BGAS Certification',
       title: 'BGAS Certification Q&A Practice Course',
       badge: 'Best Seller',
-      features: ['Prepare for BGAS Certification', 'Learn through Q&A practice', 'Pass the exam easily'],
-      price: '₹299.00'
+      tags: ['Fast Track'],
+      instructor: 'Kishore Menon',
+      students: '8,010 learners',
+      rating: '4.7',
+      ratingCount: '890 reviews',
+      discount: '89% Disc.',
+      originalPrice: '₹2,799.00',
+      features: [
+        'Q&A vault with explanations',
+        'Scenario-based practice labs',
+        'Exam readiness checklist'
+      ],
+      price: '₹299.00',
+      ctaLabel: 'Buy'
     }
   ];
 
@@ -147,8 +258,15 @@ export class HomeComponent implements OnInit {
       alt: 'PIPENET Transient Module Event',
       title: 'PIPENET Transient Module for Fire Protection Systems',
       subtitle: 'A Event by Anush',
+      tags: ['Live', 'Hands-on'],
       description: 'Online Workshop<br>Oilandgasclub Team, India<br>Streaming Virtually Through Microsoft Teams',
-      price: '₹797.00'
+      price: '₹797.00',
+      seats: '40 seats left',
+      mode: 'Virtual',
+      schedule: 'Sat, 10 AM IST',
+      discount: 'Save ₹1,200',
+      originalPrice: '₹1,999.00',
+      ctaLabel: 'Register'
     },
     {
       url: '',
@@ -156,8 +274,15 @@ export class HomeComponent implements OnInit {
       alt: 'Static Equipment Design',
       title: 'Static Equipment Design: Mastering Pressure Vessels, Heat Exchangers, and Tall Towers',
       subtitle: 'A Event by Anush',
+      tags: ['Live', 'Design'],
       description: 'Online Workshop<br>Oilandgasclub Team, India<br>Streaming Virtually Through Microsoft Teams',
-      price: '₹899.00'
+      price: '₹899.00',
+      seats: '25 seats left',
+      mode: 'Virtual',
+      schedule: 'Sun, 3 PM IST',
+      discount: 'Save ₹1,500',
+      originalPrice: '₹2,399.00',
+      ctaLabel: 'Register'
     },
     {
       url: '',
@@ -165,8 +290,15 @@ export class HomeComponent implements OnInit {
       alt: 'Pressure Vessel Design',
       title: 'Masterclass on Pressure Vessel Design – ASME Codes & PVElite Training',
       subtitle: 'A Event by Anush',
+      tags: ['Masterclass'],
       description: 'Online Workshop<br>Oilandgasclub Team, India<br>Streaming Virtually Through Microsoft Teams',
-      price: '₹799.00'
+      price: '₹799.00',
+      seats: 'Sold out soon',
+      mode: 'Hybrid',
+      schedule: 'Fri, 6 PM IST',
+      discount: 'Save ₹900',
+      originalPrice: '₹1,699.00',
+      ctaLabel: 'Register'
     },
     {
       url: '',
@@ -174,8 +306,15 @@ export class HomeComponent implements OnInit {
       alt: 'Mastering Heat Exchangers',
       title: 'Mastering Heat Exchangers with HTRI Software',
       subtitle: 'A Event by Anush',
+      tags: ['Software Lab'],
       description: 'Online Workshop<br>Oilandgasclub Team, India<br>Streaming Virtually Through Microsoft Teams',
-      price: '₹899.00'
+      price: '₹899.00',
+      seats: '30 seats left',
+      mode: 'Virtual',
+      schedule: 'Wed, 7 PM IST',
+      discount: 'Save ₹1,300',
+      originalPrice: '₹2,199.00',
+      ctaLabel: 'Register'
     }
   ];
 

@@ -1,45 +1,90 @@
-<div class="container-fluid mt-5">
-  <ng-container *ngIf="coursesData$ | async as data">
-    <div class="row course-column">
-      <div
-        class="col-lg-3 d-flex mb-4"
-        *ngFor="let item of data.courses | paginate: { itemsPerPage: itemsPerPage, currentPage: data.currentPage, totalItems: data.totalItems }; let idx = index; trackBy: trackByCourseId">
-        <div class="carousel-course-related w-100">
-          <a [routerLink]="item?.canonicalUrl" class="no-underline d-block h-100">
-            <div class="list-course-item h-100 d-flex flex-column">
-              <div class="card-image position-relative">
-                <img
-                  [src]="item?.titleImageUrl"
-                  (error)="onImgError($event)"
-                  alt="{{ item?.title }}"
-                  class="card-img"
-                  [attr.loading]="idx === 0 ? 'eager' : 'lazy'"
-                  width="300"
-                  height="200"
-                  style="aspect-ratio: 3/2; object-fit: cover;" />
-                <div class="sale-badge" *ngIf="item?.isBestSeller">Best Seller</div>
-              </div>
-              <div class="card-body">
-                <h6>{{ item?.title }}</h6>
-                <ul *ngIf="item?.courseFeatures?.length > 0">
-                  <li *ngFor="let feature of item?.courseFeatures; trackBy: trackByFeatureId">{{ feature?.description }}</li>
-                </ul>
-              </div>
-              <div class="buy">
-                <div class="price">{{ item.amount | currency: 'INR':'symbol' }}</div>
-                <span class="btn btn-register" role="button">
-                  <i class="fa fa-shopping-cart"></i> Enroll Now
-                </span>
-              </div>
-            </div>
-          </a>
+<ng-container *ngIf="coursesData$ | async as data">
+  <section class="category-page container">
+    <header class="category-page__header">
+      <div>
+        <p class="category-page__eyebrow">Learning Path</p>
+        <h1 class="category-page__title">{{ data.categoryName || 'Courses' }}</h1>
+        <p class="category-page__subtitle">
+          Browse curated training programs tailored to accelerate your growth in the oil and gas domain.
+        </p>
+      </div>
+      <div class="category-page__metrics">
+        <div>
+          <span class="category-page__metric-label">Total Programs</span>
+          <span class="category-page__metric-value">{{ data.totalItems }}</span>
+        </div>
+        <div>
+          <span class="category-page__metric-label">Per Page</span>
+          <span class="category-page__metric-value">{{ itemsPerPage }}</span>
         </div>
       </div>
+    </header>
+
+    <div class="category-grid">
+      <article class="category-card" *ngFor="let item of data.courses; trackBy: trackByCourseId">
+        <a class="category-card__media" [routerLink]="item?.canonicalUrl">
+          <img
+            [src]="item?.titleImageUrl"
+            (error)="onImgError($event)"
+            alt="{{ item?.title }}"
+            loading="lazy"
+          />
+          <span class="category-card__badge" *ngIf="item?.badge">{{ item.badge }}</span>
+        </a>
+
+        <div class="category-card__body">
+          <h2 class="category-card__title">
+            <a [routerLink]="item?.canonicalUrl">{{ item?.title }}</a>
+          </h2>
+
+          <ul class="category-card__highlights">
+            <li *ngFor="let feature of (item.courseFeatures | slice:0:3); trackBy: trackByFeatureId">
+              {{ feature?.description }}
+            </li>
+            <li *ngIf="!item?.courseFeatures?.length">
+              Learn industry-ready skills with expert mentors and real-world projects.
+            </li>
+          </ul>
+        </div>
+
+        <footer class="category-card__footer">
+          <a class="category-card__cta" [routerLink]="item?.canonicalUrl">
+            <span class="category-card__cta-text">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+              Buy
+            </span>
+            <span class="category-card__cta-price">
+              {{ item.amount | currency:'INR':'symbol' }}
+            </span>
+          </a>
+        </footer>
+      </article>
     </div>
-    
-    <!-- Pagination -->
-    <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-      <pagination-controls (pageChange)="pageChange($event)"></pagination-controls>
-    </div>
-  </ng-container>
-</div>
+
+    <nav class="category-pagination" *ngIf="data.totalItems > itemsPerPage">
+      <button
+        type="button"
+        class="category-pagination__btn"
+        [disabled]="data.currentPage <= 1"
+        (click)="pageChange(data.currentPage - 1, data.totalItems)"
+      >
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        <span>Previous</span>
+      </button>
+
+      <span class="category-pagination__status">
+        Page {{ data.currentPage }} of {{ totalPages(data.totalItems) }}
+      </span>
+
+      <button
+        type="button"
+        class="category-pagination__btn"
+        [disabled]="data.currentPage >= totalPages(data.totalItems)"
+        (click)="pageChange(data.currentPage + 1, data.totalItems)"
+      >
+        <span>Next</span>
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </nav>
+  </section>
+</ng-container>
