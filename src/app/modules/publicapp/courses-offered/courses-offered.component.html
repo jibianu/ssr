@@ -1,152 +1,105 @@
-<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<div class="background-cover" ngSkipHydration style="background: url( https://www.oilandgasclub.com/wp-content/uploads/2016/08/available-courses-banner.jpg )no-repeat scroll center center / cover #1E3133;position:relative;display:inline-block;height:330px;">	
-	<nav id="training-nav" style="background-color: rgba(10, 9, 10, 0.78);">
-	</nav>
-	<html>
-<head>
-  <meta name="robots" content="index, follow">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <!-- Meta Title -->
-  <!-- <meta name="title" content="Courses Offered | Oilandgasclub - Online Training for API, ASNT, CSWIP Certifications">
-  <title>Courses Offered | Oilandgasclub - API, ASNT, CSWIP, NDT Certifications</title> -->
-
-  <!-- Meta Description -->
-  <meta name="description" content="Explore Oilandgasclub's online courses for API, ASNT, CSWIP, and NDT certifications. Boost your skills and advance your career in the oil and gas industry with expert-led training programs.">
-
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:site_name" content="Oilandgasclub">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Courses Offered | Oilandgasclub - Online Training for Oil & Gas Certifications">
-  <meta property="og:description" content="Advance your career with Oilandgasclub’s courses in API, ASNT, CSWIP, and NDT certifications. Flexible self-paced learning designed for professionals in the oil and gas industry.">
-  <meta property="og:image" content="https://www.oilandgasclub.com/images/course-banner.jpg">
-  <meta property="og:image:width" content="600">
-  <meta property="og:image:height" content="500">
-  <meta property="og:url" content="https://www.oilandgasclub.com/course">
-  <meta property="og:author" content="Oilandgasclub Team">
-
-  <!-- Article Meta -->
-  <meta property="article:published_time" content="2021-09-01T06:18:55.5419129">
-  <meta property="article:modified_time" content="2023-07-08T06:43:07.881401">
-  <meta property="article:tag" content="API Certification, ASNT, CSWIP, NDT, Oil and Gas Training, Online Courses, Exam Preparation, Career Advancement">
-  <meta property="article:publisher" content="https://www.oilandgasclub.com">
-
-  <!-- Twitter Meta Tags -->
-  <meta name="twitter:title" content="Courses Offered | Oilandgasclub - Online API, ASNT, CSWIP Certifications">
-  <meta name="twitter:description" content="Learn from Oilandgasclub's expert-led online courses for API, ASNT, CSWIP, and NDT certifications. Start preparing for your exams today!">
-  <meta name="twitter:label1" content="Certification Courses">
-  <meta name="twitter:data1" content="API, ASNT, CSWIP, NDT, and more">
-  <meta name="twitter:label2" content="Flexible Learning">
-  <meta name="twitter:data2" content="Self-paced and accessible 24/7">
-  <meta name="twitter:site" content="@oilandgasclub">
-  <meta name="twitter:creator" content="@Oilandgasclub">
-  <meta name="twitter:url" content="https://www.oilandgasclub.com/course">
-</head>
-</html>
-
-	<div class="container">
-	<div class="avail-banner-content">
-	    <div class="avail-training-head">
-		<h1 class="name post-title entry-title"><span itemprop="name">70+&nbsp;&nbsp;Courses</span></h1>
-	     </div>
-		 <div class="avail-course-form">	 
-		 <div class="custom-quote"><button type="button" class="btn" data-toggle="modal" data-target="#myModalcorp">REQUEST A CUSTOM QUOTE</button></div>
-		 <div class="modal fade" id="myModalcorp" role="dialog">
-    <div class="modal-dialog col-md-5 col-centered">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-body">
-          [contact-form-7 id="5944" title="Custom Quote"]        </div>
-      </div>  
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
+<div class="courses-page" ngSkipHydration>
+  <section class="courses-hero">
+    <div class="courses-hero__copy">
+      <p class="courses-eyebrow">API · ASNT · CSWIP · HTRI · Digital oilfield</p>
+      <h1>Explore <span>70+ courses</span> built for working oil &amp; gas professionals</h1>
+      <p>Pick live cohorts, hybrid bootcamps, or self-paced labs that fit your schedule. Every program blends real projects, assessments, and certification prep.</p>
+      <div class="courses-hero__stats">
+        @for (stat of heroHighlights; track stat.label) {
+          <div class="courses-stat">
+            <span class="courses-stat__value">{{ stat.value }}</span>
+            <span class="courses-stat__label">{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="courses-hero__actions">
+        <a class="btn-primary" href="mailto:admissions@oilandgasclub.com">Request a custom quote</a>
+        <a class="btn-link" href="/list">See full catalog →</a>
+      </div>
     </div>
-  </div>
-		 <div class="cor-mail">
-<p class="cor-mail-1p-head"><span></span></p>
-<p class="cor-mail-2p"> <a href="mailto:corptrain@oilandgasclub.com">corptrain&#64;oilandgasclub.com </a></p></div>
-		 </div>
-		 
-	</div>
-	</div>
+    <div class="courses-hero__card">
+      <h3>Need guidance?</h3>
+      <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> with your target roles, timeline, and preferred format.</p>
+      <p class="courses-note">We respond within 24 hours with recommended tracks and bundled pricing.</p>
+    </div>
+  </section>
+
+  <section class="courses-section">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Training tracks</p>
+      <h2>Areas of expertise</h2>
+    </header>
+    <div class="courses-grid">
+      @for (track of trainingTracks; track track.title) {
+        <article class="courses-card">
+          <h3>{{ track.title }}</h3>
+          <ul>
+            @for (item of track.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Delivery options</p>
+      <h2>Choose how you learn</h2>
+    </header>
+    <div class="courses-grid courses-grid--delivery">
+      @for (option of deliveryOptions; track option.title) {
+        <article class="courses-mode">
+          <h3>{{ option.title }}</h3>
+          <p>{{ option.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section courses-section--spotlight">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Featured programs</p>
+      <h2>Spotlight courses</h2>
+    </header>
+    <div class="courses-grid courses-grid--spotlight">
+      @for (course of spotlightCourses; track course.title) {
+        <article class="courses-spotlight">
+          <span class="courses-tag">{{ course.tag }}</span>
+          <h3>{{ course.title }}</h3>
+          <p>{{ course.description }}</p>
+          <a class="btn-link" [routerLink]="course.link">Learn more →</a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section courses-section--testimonials">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Learner stories</p>
+      <h2>Trusted by teams worldwide</h2>
+    </header>
+    <div class="courses-testimonials">
+      @for (story of testimonials; track story.author) {
+        <article class="courses-testimonial">
+          <p class="courses-testimonial__quote">{{ story.quote }}</p>
+          <p class="courses-testimonial__author">{{ story.author }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section courses-section--cta">
+    <div class="courses-cta">
+      <div>
+        <p class="courses-eyebrow">Ready to start?</p>
+        <h2>Join a cohort or build your own learning path</h2>
+        <p>Send us the courses you’re interested in or the competency goals you’re targeting. We’ll recommend bundles, schedules, and pricing.</p>
+      </div>
+      <a class="btn-primary" href="mailto:admissions@oilandgasclub.com">Contact learning advisor</a>
+    </div>
+  </section>
 </div>
 
-
-<div id="main-content" class="container">
-	<div class="content">
-		
-		 
-										
-		<article class="post-listing post post-6565 page type-page status-publish has-post-thumbnail hentry">
-						<div class="post-inner">
-				<p class="post-meta"></p>
-				<div class="clear"></div>
-				<div class="entry">
-					
-					<div class="cour-offer">
-<h2>AREAS OF TRAINING</h2>
-<div class="cour-offer-cont">
-<div class="cour-offer-list">
-<p class="cour-offer-text">DESIGN COURSES</p>
-<ul class="cour-list">
-<li><a href="#">Admin Training</a></li>
-<li><a href="#">All the Design Software</a></li>
-</ul>
-</div>
-<div class="cour-offer-list">
-<p class="cour-offer-text">PRIMAVERA</p>
-<ul>
-<li><a href="#">Primavera Training</a></li>
-<li><a href="#">Risk Analysis</a></li>
-</ul>
-</div>
-<div class="cour-offer-list">
-<p class="cour-offer-text">STANDARDS</p>
-<ul>
-<li><a href="#">ASME</a></li>
-<li><a href="#">API</a></li>
-</ul>
-</div>
-<div class="cour-offer-list">
-<p class="cour-offer-text">COATING AND PAINTING</p>
-<ul>
-<li><a href="#">SSPC</a></li>
-</ul>
-</div>
-<div class="cour-offer-list">
-<p class="cour-offer-text">MEP COURSES</p>
-<ul>
-<li><a href="#">HVAC</a></li>
-<li><a href="#">Plumbing</a></li>
-<li><a href="#">Electrical</a></li>
-<li><a href="#">Fire Fighting System</a></li>
-</ul>
-</div>
-<div class="cour-offer-list">
-<p class="cour-offer-text">SAFETY</p>
-<ul>
-<li><a href="#">IOSH</a></li>
-<li><a href="#">NEBOSH</a></li>
-</ul>
-</div>
-</div>
-<h2 class="conve-cour">CONVENIENT TRAINING METHODS</h2>
-<div class="cour-offer-cont-sub">
-<div class="cour-offer-list-sub-sec1">
-<span class="self-pac-img"></span><br>
-<h6 class="cour-offer-text-sub">Online Self-paced Training</h6>
-<p>Get multiple licenses at special prices to our industry best online content and give your workforce an easy way to learn at their own pace right from their desk.</p>
-</div>
-<div class="cour-offer-list-sub-sec1">
-<span class="led-on-img"></span><br>
-<h6 class="cour-offer-text-sub">Instructor Led Online Sessions</h6>
-<p>Get access to the best trainer’s world over, at affordable cost. Have your workforce trained online by the best trainers through videoconferencing.</p>
-</div>
-<div class="cour-offer-list-sub-sec1">
-<span class="cls-ste-img"></span><br>
-<h6 class="cour-offer-text-sub">On-site Classroom Sessions</h6>
-<p>Prefer on-site training? Let our industry renowned trainers train your workforce on our flagship certification training customized for your specific needs.</p>
-</div>
-</div>
-</div>
-								

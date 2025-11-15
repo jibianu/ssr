@@ -10,6 +10,34 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 })
 export class RefundCancellationPolicyComponent implements OnInit {
 
+  readonly highlights = [
+    { title: 'Clarity first', description: 'Straightforward rules for every self-learning course so you always know what to expect.' },
+    { title: 'Human support', description: 'Dedicated advisors respond within 24 hours to resolve technical or content concerns.' },
+    { title: 'Flexible resolutions', description: 'Eligible cases include unused access, platform issues, or major content mismatches.' }
+  ];
+
+  readonly refundSteps = [
+    {
+      title: 'Contact support',
+      detail: 'Email anush@oilandgasclub.com within 7–14 days of purchase with your order ID and reason.'
+    },
+    {
+      title: 'Verification',
+      detail: 'Our team reviews access logs, technical reports, or content feedback within 3–5 business days.'
+    },
+    {
+      title: 'Resolution',
+      detail: 'Approved refunds go back to the original payment method within 3–5 business days.'
+    }
+  ];
+
+  readonly importantNotes = [
+    'Once course material is consumed, refunds typically do not apply unless there is a verified issue.',
+    'Partial refunds may be possible when minimal usage occurred before access was revoked.',
+    'Payment gateway fees and currency conversion charges are non-refundable.',
+    'We’re committed to a positive learning experience—reach out if you need help or clarification.'
+  ];
+
   constructor(
     private titleService: Title,
     private metaService: Meta,

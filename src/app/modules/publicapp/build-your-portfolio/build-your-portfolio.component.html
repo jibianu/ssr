@@ -1,46 +1,138 @@
 <!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<div class="container" ngSkipHydration>
-    <div class="content">
-        <article class="post-listing post post-8042 page type-page status-publish has-post-thumbnail hentry">
-
-            <div class="post-inner">
-
-                <h1 class="name post-title entry-title"><span itemprop="name">Build Your Portfolio</span></h1>
-
-                <div class="clear"></div>
-                <div class="entry">
-
-                    <div class="inner-page-content">
-                        <p>Oilandgasclub.com believes in offering customized, innovative solution to the students and
-                            corporate level creation, its preservation, designing and its eventual inter-generational
-                            transfer in a efficient manner. We develop long-term relationships, like we deals with
-                            structure-learn from the past, act in the present with a forethought on the future.</p>
-                        <p><strong>Our Philosophy:</strong></p>
-                        <p>We believe that “a transaction is for a moment but a relationship is forever”. It is our
-                            endeavour to build strong and long-term relationships with all the success path of the
-                            clients.</p>
-                        <p>Hence, we pivot ourselves on:</p>
-                        <p><strong>Transparency:</strong></p>
-                        <p>The corporate level training for students we offer a balanced view of getting success with
-                            oilandgasclub.com with an accurate picture of your portfolio and its performance.</p>
-                        <p><strong>Alignment of Course:</strong></p>
-                        <p>Our agenda is to ensure that our thinking is aligned to your success.</p>
-                    </div>
-
-
-                </div>
-                <span style="display:none" class="updated">2016-09-30</span>
-                
-
-            </div><!-- .post-inner -->
-        </article><!-- .post-listing -->
-
-
-        <div id="comments">
-
-
-
-
-        </div><!-- #comments -->
+<div class="portfolio-page" ngSkipHydration>
+  <section class="portfolio-hero">
+    <div class="portfolio-hero__copy">
+      <p class="portfolio-eyebrow">🎯 Build Your Portfolio</p>
+      <h1>Show the world a <span>career story</span> that travels with you</h1>
+      <p class="portfolio-hero__lead">
+        Transform certificates, projects, and wins into a premium digital portfolio built for the energy workforce.
+        Curate proof, spotlight credibility, and send a single link whenever opportunity appears.
+      </p>
+      <div class="portfolio-hero__stats">
+        @for (stat of heroHighlights; track stat.label) {
+          <article class="portfolio-stat">
+            <span class="portfolio-stat__value">{{ stat.value }}</span>
+            <span class="portfolio-stat__label">{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+      <div class="portfolio-hero__cta">
+        <a class="btn-primary" href="https://www.oilandgasclub.com/courses-offered">Start building</a>
+        <a class="btn-secondary" href="mailto:learn@oilandgasclub.com">Talk to a mentor</a>
+      </div>
     </div>
+    <figure class="portfolio-hero__visual" aria-hidden="true">
+      <svg class="portfolio-svg portfolio-svg--hero" viewBox="0 0 360 320" role="presentation">
+        <defs>
+          <linearGradient id="portfolioHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e5edff" />
+            <stop offset="100%" stop-color="#c9d7ff" />
+          </linearGradient>
+          <linearGradient id="portfolioHeroAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#fbd7c6" />
+            <stop offset="100%" stop-color="#f2a482" />
+          </linearGradient>
+        </defs>
+        <rect x="32" y="32" width="296" height="220" rx="32" fill="url(#portfolioHeroBg)" />
+        <rect x="70" y="70" width="220" height="80" rx="16" fill="#ffffff" opacity="0.95" />
+        <rect x="70" y="164" width="220" height="64" rx="16" fill="#1d2a44" opacity="0.9" />
+        <circle cx="120" cy="110" r="18" fill="#6a94f1" />
+        <rect x="150" y="96" width="60" height="12" rx="6" fill="#c2d3ff" />
+        <rect x="150" y="118" width="80" height="10" rx="5" fill="#e4ebff" />
+        <rect x="90" y="184" width="40" height="20" rx="8" fill="#fff" />
+        <rect x="140" y="184" width="40" height="20" rx="8" fill="#fbd7c6" />
+        <rect x="190" y="184" width="40" height="20" rx="8" fill="#6a94f1" />
+        <path d="M80 250c32-50 168-50 200 0" fill="none" stroke="url(#portfolioHeroAccent)" stroke-width="16" stroke-linecap="round" />
+      </svg>
+    </figure>
+  </section>
+
+  <section class="portfolio-section">
+    <header class="portfolio-section__header">
+      <p class="portfolio-eyebrow">✨ Experience layers</p>
+      <h2>Designed for credible storytelling</h2>
+      <p>Layer in case studies, certifications, and live skill signals using structured blocks tuned for energy professionals.</p>
+    </header>
+    <div class="portfolio-grid">
+      @for (pillar of experiencePillars; track pillar.title) {
+        <article class="portfolio-card">
+          <div class="portfolio-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 80 80" role="presentation">
+              <defs>
+                <linearGradient id="pillarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#e3ebff" />
+                  <stop offset="100%" stop-color="#c8d9ff" />
+                </linearGradient>
+              </defs>
+              <rect x="12" y="18" width="56" height="44" rx="14" fill="url(#pillarGradient)" />
+              <path d="M20 36h40" stroke="#6a94f1" stroke-width="4" stroke-linecap="round" />
+              <path d="M30 48h20" stroke="#f02c00" stroke-width="4" stroke-linecap="round" />
+              <circle cx="28" cy="28" r="6" fill="#6a94f1" />
+            </svg>
+          </div>
+          <h3>{{ pillar.title }}</h3>
+          <p>{{ pillar.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="portfolio-section portfolio-section--steps">
+    <header class="portfolio-section__header">
+      <p class="portfolio-eyebrow">🧭 Guided flow</p>
+      <h2>Three-step build journey</h2>
+    </header>
+    <div class="portfolio-steps">
+      @for (step of buildSteps; track step.title) {
+        <article class="portfolio-step">
+          <span class="portfolio-step__badge">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+          <div class="portfolio-step__visual" aria-hidden="true">
+            <svg viewBox="0 0 140 60" role="presentation">
+              <rect x="10" y="14" width="120" height="32" rx="16" fill="#e5edff" />
+              <rect x="24" y="24" width="32" height="12" rx="6" fill="#6a94f1" />
+              <rect x="60" y="24" width="28" height="12" rx="6" fill="#fbd7c6" />
+              <rect x="94" y="24" width="16" height="12" rx="6" fill="#f02c00" />
+            </svg>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="portfolio-section portfolio-section--showcase">
+    <header class="portfolio-section__header">
+      <p class="portfolio-eyebrow">📂 Showcase modules</p>
+      <h2>Bring every proof point together</h2>
+    </header>
+    <div class="portfolio-showcase">
+      @for (callout of showcaseSpotlights; track callout.title) {
+        <article class="portfolio-showcase__card">
+          <div class="portfolio-showcase__meta">
+            <span class="portfolio-showcase__badge">{{ callout.badge }}</span>
+            <h3>{{ callout.title }}</h3>
+          </div>
+          <p>{{ callout.description }}</p>
+          <svg class="portfolio-svg portfolio-svg--showcase" viewBox="0 0 200 80" role="presentation">
+            <rect x="12" y="16" width="176" height="48" rx="18" fill="#f7f9ff" />
+            <rect x="28" y="30" width="48" height="20" rx="10" fill="#6a94f1" />
+            <rect x="84" y="30" width="36" height="20" rx="10" fill="#fbd7c6" />
+            <rect x="128" y="30" width="36" height="20" rx="10" fill="#f02c00" />
+          </svg>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="portfolio-section portfolio-section--cta">
+    <div class="portfolio-cta">
+      <div>
+        <p class="portfolio-eyebrow">🚀 Ready when you are</p>
+        <h2>Spin up a living portfolio in minutes</h2>
+        <p>Upload artefacts, tag competencies, and receive a shareable link that keeps updating as you learn.</p>
+      </div>
+      <a class="btn-primary" href="mailto:learn@oilandgasclub.com">Request access</a>
+    </div>
+  </section>
 </div>

@@ -1,7 +1,7 @@
 
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
- import { Meta, Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
  @Component({
     selector: 'app-career',
     templateUrl: './career.component.html',
@@ -9,6 +9,61 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
     standalone: false
 })
 export class CareerComponent implements OnInit {
+
+  readonly highlights = [
+    {
+      title: 'Fully remote culture',
+      description: 'We operate across time zones with async-first collaboration, flexible schedules, and zero commute.'
+    },
+    {
+      title: 'Work with industry SMEs',
+      description: 'Build courses, simulations, and playbooks alongside seasoned oil & gas engineers and technologists.'
+    },
+    {
+      title: 'Continuous learning stipend',
+      description: 'Every teammate receives dedicated budget for certifications, conferences, and tech experimentation.'
+    },
+    {
+      title: 'Ownership & autonomy',
+      description: 'Ship initiatives end-to-end, measure direct learner impact, and influence the product roadmap.'
+    }
+  ];
+
+  readonly openings = [
+    {
+      title: 'Curriculum Lead – Process Engineering',
+      type: 'Full-time · Remote (APAC preferred)',
+      tags: ['Curriculum', 'Process', 'Simulation'],
+      summary: 'Design multi-week learning paths for process design, HYSYS/HTRI simulations, and hands-on labs.'
+    },
+    {
+      title: 'Marketing Strategist – B2B Growth',
+      type: 'Full-time · Remote',
+      tags: ['Marketing', 'B2B', 'Demand Gen'],
+      summary: 'Launch product-led growth campaigns, webinars, and partner programs that inspire engineering leaders.'
+    },
+    {
+      title: 'Learning Experience Designer',
+      type: 'Contract · Remote',
+      tags: ['Instructional Design', 'Video', 'Motion'],
+      summary: 'Create bite-sized videos, interactive assessments, and community resources for self-paced tracks.'
+    }
+  ];
+
+  readonly culturePrinciples = [
+    {
+      title: 'Learner obsession',
+      detail: 'We start with the learner problem, prototype, test with real engineers, and iterate relentlessly.'
+    },
+    {
+      title: 'Bias for shipping',
+      detail: 'Small squads own a metric, deploy often, and learn from data. Progress over perfection.'
+    },
+    {
+      title: 'Transparent communication',
+      detail: 'Weekly async updates, open design docs, and always-on Loom/Notion spaces keep everyone aligned.'
+    }
+  ];
 
   constructor(
     private titleService: Title,

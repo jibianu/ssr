@@ -1,3 +1,4 @@
+<div class="home-page">
 <div class="container">
   <div class="header-name">
   <!-- ✅ SEO: Meta tags are managed via MetadataService in component TypeScript (SSR-compatible) -->
@@ -9,11 +10,11 @@
   <div class="home-wrapper">
       <div class="main-content-header">
       <div class="container">
-        <h1> Master industry skills designed for oil and gas professionals. Upgrade your skills anytime, anywhere! <span>Access 70+ courses</span></h1>
+        <h1 class="home-hero__title"> Master industry skills designed for oil and gas professionals. Upgrade your skills anytime, anywhere! <span>Access 70+ courses</span></h1>
         <div class="row justify-content-center stats">
-          <div class="sub-head col-md-2 text-center">70+ Courses</div>
-          <div class="sub-head col-md-2 text-center">250k+ Learners</div>
-          <div class="sub-head col-md-2 text-center">30+ Countries</div>
+          @for (stat of heroStats; track stat) {
+            <div class="sub-head col-md-2 text-center">{{ stat }}</div>
+          }
         </div>
         <div class="col-md-3 col-centered try-free">
           <a href="https://elearn.oilandgasclub.com/auth/register" class="btn-explore">Start my free trial</a>
@@ -152,7 +153,7 @@
                     <div class="new-learn-cnt">
                       <img src="assets/s3/unlimited-access1.png" alt="Unlimited Access" class="small-icon" loading="lazy" width="64" height="64" />
                       <h3>Unlimited Access</h3>
-                      <p>Choose exactly what you'd like to learn from our extensive subscription library.</p>
+                      <p>Choose what you want from our learning library.</p>
                     </div>
                   </div>
 
@@ -161,7 +162,7 @@
                     <div class="new-learn-cnt">
                       <img src="assets/s3/expert1.png" alt="Expert Teachers" class="small-icon" loading="lazy" width="64" height="64" />
                       <h3>Expert Teachers</h3>
-                      <p>Learn from industry experts who are passionate about teaching.</p>
+                      <p>Learn from industry experts passionate about teaching</p>
                     </div>
                   </div>
 
@@ -274,5 +275,6 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 </div>

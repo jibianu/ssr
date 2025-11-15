@@ -1,4 +1,4 @@
-@import '../public-course-common.scss';
+@use '../public-course-common' as *;
 
 .card {
   @include course-card-shell(

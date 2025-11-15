@@ -28,6 +28,101 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 })
 export class CoursesOfferedComponent implements OnInit {
 
+  readonly heroHighlights = [
+    { label: 'Courses', value: '70+' },
+    { label: 'Industries', value: '12' },
+    { label: 'Learners', value: '250K+' }
+  ];
+
+  readonly trainingTracks = [
+    {
+      title: 'Design & Engineering',
+      items: ['Industrial Piping Design', 'Static Equipment', 'Heat Exchangers', 'Stress Analysis']
+    },
+    {
+      title: 'Planning & Primavera',
+      items: ['Primavera P6', 'Risk Analysis', 'Progress Dashboards', 'Field Coordination']
+    },
+    {
+      title: 'Codes & Standards',
+      items: ['ASME', 'API 510/570', 'RBI & FFS', 'Tank Design']
+    },
+    {
+      title: 'Inspection & NDT',
+      items: ['CSWIP', 'ASNT Level II/III', 'Coating & Painting', 'Corrosion Monitoring']
+    },
+    {
+      title: 'MEP & Building Systems',
+      items: ['HVAC', 'Plumbing', 'Fire Fighting', 'Electrical']
+    },
+    {
+      title: 'Safety & Compliance',
+      items: ['IOSH', 'NEBOSH', 'Process Safety', 'Digital Permits']
+    }
+  ];
+
+  readonly deliveryOptions = [
+    {
+      title: 'Online self-paced',
+      description: '24/7 access to recorded modules, simulator walkthroughs, quizzes, and downloadable templates.'
+    },
+    {
+      title: 'Live cohort sessions',
+      description: 'Virtual classrooms with breakout labs, instructor feedback, and capstone project reviews.'
+    },
+    {
+      title: 'On-site intensives',
+      description: 'Bootcamps tailored to your facility, equipment, and compliance goals.'
+    }
+  ];
+
+  readonly spotlightCourses = [
+    {
+      title: 'Design of Industrial Piping Systems',
+      tag: 'Specialization',
+      description: 'Multi-week journey covering layout, hydraulics, stress, and constructability.',
+      link: '/courses/piping-design'
+    },
+    {
+      title: 'PIPENET Suite (Transient + Spray)',
+      tag: 'Simulation',
+      description: 'Scenario-based labs with firefighting networks, relief loads, and emergency shutdowns.',
+      link: '/courses/pipenet'
+    },
+    {
+      title: 'API 653 Storage Tank Inspection',
+      tag: 'Inspection',
+      description: 'Certification prep with field checklists, corrosion case studies, and reporting templates.',
+      link: '/courses/api-653'
+    },
+    {
+      title: 'Process Safety Fundamentals',
+      tag: 'Safety',
+      description: 'HAZOP + LOPA workshops, digital permit demos, and incident response simulations.',
+      link: '/courses/process-safety'
+    }
+  ];
+
+  readonly testimonials = [
+    {
+      quote: '“The hybrid track let our engineers balance project work and certification prep effortlessly.”',
+      author: 'Learning Lead – EPC Major'
+    },
+    {
+      quote: '“Labs and calculators were so practical that our team applied them the next day in the field.”',
+      author: 'Maintenance Manager – Refinery'
+    }
+  ];
+
+  readonly categories = [
+    'Process & Simulation',
+    'Mechanical & Piping',
+    'Inspection & Integrity',
+    'Planning & PMO',
+    'MEP & Infrastructure',
+    'Safety & Compliance'
+  ];
+
   constructor(
     private titleService: Title,
     private metaService: Meta,

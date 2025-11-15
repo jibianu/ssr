@@ -1,4 +1,4 @@
-@import '../public-course-common.scss';
+@use '../public-course-common' as *;
 
 .course-listing {
   display: grid;

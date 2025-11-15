@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.content-area {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+app-public-footer {
+  flex-shrink: 0;
+  width: 100%;
+}
+

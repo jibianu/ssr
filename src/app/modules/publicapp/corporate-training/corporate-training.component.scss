@@ -1,33 +1,315 @@
 
-.experts_heading {
-    color: #ffffff;
-    font-weight: 300;
-    text-align: center;
-    font-size: 15px;
-    margin-bottom: 20px;
-}
-.training-head h1 {
-    font-size: 38px;
-    line-height: 55px;
-    letter-spacing: 0.25px;
-    color: #ffffff;
-    text-align: center;
+@use 'sass:color';
+
+$corp-bg: #f5f7fb;
+$corp-primary: #0f172a;
+$corp-muted: #5a6a88;
+$corp-border: rgba(15, 23, 42, 0.12);
+$corp-highlight: #f04a00;
+
+.corp-page {
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  background: $corp-bg;
+  color: $corp-primary;
 }
 
-.sub-training-head {
-    color: #f39521;
-    margin-top: 15px;
-    text-align: center;
-    font-size: 20px;
-    margin-right: 35px;
-}
-element.style {
-    background: url(https://www.oilandgasclub.com/wp-content/uploads/2016/08/corporate-training-banner.jpg) no-repeat scroll center center / cover #1E3133;
-    position: relative;
-    display: inline-block;
-    height: 625px;
+.corp-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.78rem;
+  color: $corp-highlight;
 }
 
-.background-cover {
-    width: 100%;
+.corp-hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: center;
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 3.1rem);
+      font-weight: 800;
+
+      span {
+        color: $corp-highlight;
+      }
+    }
+
+    p {
+      margin: 0;
+      color: $corp-muted;
+      line-height: 1.6;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 0.5rem;
+  }
+}
+
+.corp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.corp-stat {
+  flex: 1 1 140px;
+  min-width: 140px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid $corp-border;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.07);
+
+  &__value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: $corp-highlight;
+  }
+
+  &__label {
+    color: $corp-muted;
+  }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.8rem;
+  border-radius: 999px;
+  background: $corp-highlight;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px rgba(240, 74, 0, 0.3);
+  }
+}
+
+.btn-link {
+  text-decoration: none;
+  font-weight: 600;
+  color: $corp-primary;
+}
+
+.corp-hero__card {
+  background: #fff;
+  border-radius: 24px;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid $corp-border;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+
+  h3 {
+    margin-top: 0;
+  }
+
+  ol {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+    color: $corp-primary;
+
+    li {
+      margin-bottom: 0.4rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+.corp-note {
+  margin: 0.8rem 0 0;
+  color: $corp-muted;
+  font-size: 0.95rem;
+}
+
+.corp-section {
+  background: #fff;
+  border-radius: 24px;
+  padding: clamp(1.6rem, 4vw, 2.4rem);
+  border: 1px solid $corp-border;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.07);
+
+  &--highlight {
+    background: linear-gradient(120deg, #fff, #fef4f0);
+  }
+
+  &--testimonials {
+    background: #0f172a;
+    color: #fff;
+
+    .corp-eyebrow,
+    h2,
+    p {
+      color: #fff;
+    }
+  }
+
+  &--cta {
+    background: #0f172a;
+    color: #fff;
+  }
+}
+
+.corp-section__header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto clamp(1rem, 3vw, 1.5rem);
+
+  h2 {
+    margin: 0.3rem 0 0.6rem;
+    font-size: clamp(2rem, 3vw, 2.4rem);
+  }
+
+  p {
+    margin: 0;
+    color: $corp-muted;
+  }
+}
+
+.corp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.4rem);
+
+  &--modes {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.corp-card,
+.corp-mode {
+  border: 1px solid $corp-border;
+  border-radius: 18px;
+  padding: 1.4rem;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+
+  h3 {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0;
+    color: $corp-muted;
+  }
+}
+
+.corp-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.corp-step {
+  border: 1px solid $corp-border;
+  border-radius: 18px;
+  padding: 1.4rem;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+
+  &__index {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(240, 74, 0, 0.12);
+    color: $corp-highlight;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  h3 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+    color: $corp-muted;
+  }
+}
+
+.corp-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+}
+
+.corp-testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.corp-testimonial {
+  padding: 1.6rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &__quote {
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+    line-length: 1.6;
+  }
+
+  &__author {
+    margin: 0;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+}
+
+.corp-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+
+  img {
+    max-width: 120px;
+    opacity: 0.8;
+  }
+}
+
+.corp-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+@media (max-width: 768px) {
+  .corp-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

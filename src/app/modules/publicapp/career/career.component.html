@@ -1,4 +1,104 @@
 <!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="career-page" ngSkipHydration>
+  <section class="career-hero">
+    <div class="career-hero__content">
+      <p class="career-hero__eyebrow">Careers · Remote friendly · Impact at scale</p>
+      <h1>Build the future of <span>oil &amp; gas learning</span> with us</h1>
+      <p class="career-hero__lead">
+        We’re a remote-first, profitable team designing self-learning programs that help engineers thrive.
+        Join experts, creators, and builders reimagining how energy professionals master new skills.
+      </p>
+      <div class="career-hero__actions">
+        <a class="btn-primary" href="mailto:careers@oilandgasclub.com">Email your resume</a>
+        <a class="btn-link" href="https://www.oilandgasclub.com/about">Read our story →</a>
+      </div>
+    </div>
+    <div class="career-hero__stats">
+      <div class="career-stat">
+        <span class="career-stat__value">20+</span>
+        <span class="career-stat__label">Teammates worldwide</span>
+      </div>
+      <div class="career-stat">
+        <span class="career-stat__value">5</span>
+        <span class="career-stat__label">Time zones covered</span>
+      </div>
+      <div class="career-stat">
+        <span class="career-stat__value">250K+</span>
+        <span class="career-stat__label">Learners empowered</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="career-section">
+    <header class="career-section__header">
+      <p class="career-eyebrow">Why Oilandgasclub</p>
+      <h2>How we work</h2>
+      <p>Autonomy, deep collaboration, and learner obsession power everything we build.</p>
+    </header>
+    <div class="career-grid">
+      @for (highlight of highlights; track highlight.title) {
+        <article class="career-card">
+          <h3>{{ highlight.title }}</h3>
+          <p>{{ highlight.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="career-section">
+    <header class="career-section__header">
+      <p class="career-eyebrow">Roles we hire for</p>
+      <h2>Current openings</h2>
+      <p>We welcome generalists, SMEs, creators, and caretakers of learner experience.</p>
+    </header>
+    <div class="career-grid career-grid--openings">
+      @for (role of openings; track role.title) {
+        <article class="career-opening">
+          <div class="career-opening__meta">
+            <span class="career-opening__type">{{ role.type }}</span>
+            <div class="career-opening__tags">
+              @for (tag of role.tags; track tag) {
+                <span class="career-tag">{{ tag }}</span>
+              }
+            </div>
+          </div>
+          <h3>{{ role.title }}</h3>
+          <p>{{ role.summary }}</p>
+          <a class="btn-primary btn-primary--outline"
+             href="mailto:careers@oilandgasclub.com?subject=Application: {{ role.title }}">
+            Apply via email
+          </a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="career-section">
+    <header class="career-section__header">
+      <p class="career-eyebrow">Our culture</p>
+      <h2>Principles we live by</h2>
+      <p>We value progress, radically candid feedback, and building with purpose.</p>
+    </header>
+    <div class="career-grid career-grid--culture">
+      @for (principle of culturePrinciples; track principle.title) {
+        <article class="career-culture-card">
+          <h3>{{ principle.title }}</h3>
+          <p>{{ principle.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="career-section career-section--cta">
+    <div class="career-cta">
+      <p class="career-eyebrow">Ready to make an impact?</p>
+      <h2>Let’s transform learning together</h2>
+      <p>Send your portfolio, LinkedIn, or GitHub along with a short note about why Oilandgasclub excites you.</p>
+      <a class="btn-primary" href="mailto:careers@oilandgasclub.com">Introduce yourself</a>
+    </div>
+  </section>
+</div>
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
 <div class="container" ngSkipHydration>
 
     <html>

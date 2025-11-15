@@ -1,39 +1,100 @@
-
-
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
- import { Meta, Title } from '@angular/platform-browser';
- @Component({
-    selector: 'app-membership',
-    templateUrl: './membership.component.html',
-    styleUrls: ['./membership.component.scss'],
-    standalone: false
+import { Meta, Title } from '@angular/platform-browser';
+
+@Component({
+  selector: 'app-membership',
+  templateUrl: './membership.component.html',
+  styleUrls: ['./membership.component.scss'],
+  standalone: false,
 })
 export class MembershipComponent implements OnInit {
+  readonly heroStats = [
+    { value: '15K+', label: 'Active members' },
+    { value: '220+', label: 'Expert mentors' },
+    { value: '40+', label: 'Annual industry events' },
+  ];
+
+  readonly reasonsToJoin = [
+    {
+      title: 'Priority invites',
+      description: 'Secure first access to masterclasses, summits, and talent showcases across regions.',
+    },
+    {
+      title: 'Advisor access',
+      description: 'Book tactical sessions with drilling, inspection, and automation experts on demand.',
+    },
+    {
+      title: 'Technical concierge',
+      description: 'Get troubleshooting guidance and curated standards for operational decisions.',
+    },
+    {
+      title: 'Community recognition',
+      description: 'Showcase thought leadership in forums, newsletters, and partner webinars.',
+    },
+  ];
+
+  readonly membershipTiers = [
+    {
+      name: 'Essential',
+      tagline: 'For engineers building core capability',
+      benefits: ['Monthly newsletter & insights', 'Community discussion forums', 'Discounted public courses'],
+      ctaUrl: '/contact-us',
+    },
+    {
+      name: 'Professional',
+      tagline: 'For leads managing teams & projects',
+      benefits: ['All Essential benefits', 'Quarterly mentor sessions', 'Exclusive technical briefs', 'Event priority seating'],
+      ctaUrl: '/contact-us',
+    },
+    {
+      name: 'Enterprise',
+      tagline: 'For organizations powering large cohorts',
+      benefits: ['All Professional benefits', 'Custom learning analytics', 'Private forums & AMAs', 'White-glove onboarding'],
+      ctaUrl: '/partner-us',
+    },
+  ];
+
+  readonly perks = [
+    'Monthly e-newsletters',
+    'Guideline library access',
+    'Technical forums',
+    'Networking sessions',
+    'Industry councils',
+    'Partner event passes',
+    'Calls with experts',
+    'Project showcases',
+  ];
 
   constructor(
-    private titleService: Title,
-    private metaService: Meta,
-    private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
+    private readonly titleService: Title,
+    private readonly metaService: Meta,
+    private readonly renderer: Renderer2,
+    @Inject(DOCUMENT) private readonly document: Document
   ) {}
 
   ngOnInit(): void {
     this.setCanonicalURL('https://www.oilandgasclub.com/membership');
-         this.titleService.setTitle('membership - Oil and Gas Club');
-     this.metaService.addTags([
-      { name: 'description', content: 'Join Oilandgasclub.com to access premium training and certification programs for professionals in the oil and gas industry. Enjoy exclusive benefits, expert-led courses, and a community of like-minded individuals dedicated to career growth and skill development.' },
-      { name: 'keywords', content: 'oil and gas membership, professional development, oil and gas training, certification programs, industry memberships, oil and gas learning, career advancement, digital skills' },
+    this.titleService.setTitle('Membership - Oilandgasclub');
+    this.metaService.addTags([
+      {
+        name: 'description',
+        content:
+          'Join Oilandgasclub membership for premium training perks, expert access, and invitations to global oil & gas events.',
+      },
+      {
+        name: 'keywords',
+        content:
+          'oil and gas membership, industry community, professional network, technical mentors, oilandgasclub benefits',
+      },
     ]);
   }
 
-  setCanonicalURL(url: string): void {
-    // Remove any existing canonical link
+  private setCanonicalURL(url: string): void {
     const existingLink: HTMLLinkElement | null = this.document.querySelector('link[rel="canonical"]');
     if (existingLink) {
       existingLink.setAttribute('href', url);
     } else {
-      // Create a new canonical link
       const link: HTMLLinkElement = this.renderer.createElement('link');
       link.setAttribute('rel', 'canonical');
       link.setAttribute('href', url);
@@ -41,3 +102,5 @@ export class MembershipComponent implements OnInit {
     }
   }
 }
+
+

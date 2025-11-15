@@ -12,6 +12,56 @@ import { Meta, Title } from '@angular/platform-browser';
 })
 export class WhyOilandgasclubComponent implements OnInit {
 
+  readonly heroHighlights = [
+    { label: 'Customized content', value: '100%' },
+    { label: 'Locations served', value: '7+' },
+    { label: 'Learners', value: '250K+' }
+  ];
+
+  readonly pillars = [
+    {
+      icon: 'assets/icons/corporate-pricing.svg',
+      title: 'Corporate pricing',
+      description: 'Volume-based licenses, bundled cohorts, and enterprise dashboards keep training ROI measurable.'
+    },
+    {
+      icon: 'assets/icons/custom-course.svg',
+      title: 'Custom curriculum',
+      description: 'Blend your assets, procedures, and tool stack so every module feels native to your workflows.'
+    },
+    {
+      icon: 'assets/icons/support.svg',
+      title: 'Always-on support',
+      description: 'Dedicated learning managers for scheduling, reporting, and on-site coordination worldwide.'
+    }
+  ];
+
+  readonly differentiators = [
+    {
+      title: 'Built by practitioners',
+      description: 'Programs are authored by plant leads, inspectors, and digital engineers—not generic content studios.'
+    },
+    {
+      title: 'Hands-on simulators',
+      description: 'Scenario labs using HYSYS, PV Elite, PIPENET, and RBI/FFS calculators sharpen real skills.'
+    },
+    {
+      title: 'Career pathways',
+      description: 'Structured roadmaps for process, mechanical, inspection, safety, and digital roles with certificates.'
+    }
+  ];
+
+  readonly testimonials = [
+    {
+      quote: '“Flexible design sprints helped our global team master new codes without leaving the refinery.”',
+      author: 'Training Lead – Downstream Major'
+    },
+    {
+      quote: '“The community and mentor office hours kept our young engineers motivated post-certification.”',
+      author: 'HR Partner – EPC'
+    }
+  ];
+
   constructor(
     private titleService: Title,
     private metaService: Meta,

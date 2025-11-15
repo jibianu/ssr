@@ -1,45 +1,86 @@
-<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<div class="container" ngSkipHydration>
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static page -->
+<div class="refund-page" ngSkipHydration>
+  <section class="refund-hero">
+    <div class="refund-hero__copy">
+      <p class="refund-eyebrow">Refund &amp; cancellation policy</p>
+      <h1>Transparent refunds for <span>self-learning courses</span></h1>
+      <p>Our goal is to keep policies simple, fair, and learner friendly. Review the summary below and reach out if you need clarification.</p>
+      <div class="refund-hero__highlights">
+        @for (item of highlights; track item.title) {
+          <article class="refund-card">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+    <div class="refund-hero__summary">
+      <h3>Quick snapshot</h3>
+      <ul>
+        <li>Most self-learning fees are non-refundable once course content is consumed.</li>
+        <li>Refund eligibility exists for unused access, platform issues, or content mismatches.</li>
+        <li>Technical problems on our side? We’ll validate and make it right.</li>
+      </ul>
+    </div>
+  </section>
 
-    <p>The right of recovery of amounts paid for Self-Learning course at OilandGasClub</p>
+  <section class="refund-section">
+    <header class="refund-section__header">
+      <p class="refund-eyebrow">Eligibility</p>
+      <h2>When refunds may apply</h2>
+    </header>
+    <div class="refund-grid">
+      <article class="refund-eligibility">
+        <h3>Course access</h3>
+        <p>If you never logged in or never started the curriculum, you may qualify for a refund.</p>
+      </article>
+      <article class="refund-eligibility">
+        <h3>Technical issues</h3>
+        <p>Unable to access the platform due to confirmed technical issues on our side? Contact support for resolution.</p>
+      </article>
+      <article class="refund-eligibility">
+        <h3>Content accuracy</h3>
+        <p>If the delivered course deviates significantly from the advertised curriculum, and our team verifies the issue, a refund may be granted.</p>
+      </article>
+    </div>
+  </section>
 
-    <p>OilandGasClub offers the best self-learning courses so that you can meet your career aspirations effectively. To
-        ensure a fair and transparent process, our refund policy is outlined below:To ensure a fair and transparent
-        process, our refund policy is outlined below:</p>
+  <section class="refund-section">
+    <header class="refund-section__header">
+      <p class="refund-eyebrow">How to request</p>
+      <h2>Refund process in three steps</h2>
+    </header>
+    <div class="refund-steps">
+      @for (step of refundSteps; track step.title) {
+        <article class="refund-step">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
-    <p>Non-Refundable Fees:</p>
+  <section class="refund-section">
+    <header class="refund-section__header">
+      <p class="refund-eyebrow">Important notes</p>
+      <h2>Before you submit a request</h2>
+    </header>
+    <ul class="refund-notes">
+      @for (note of importantNotes; track note) {
+        <li>{{ note }}</li>
+      }
+    </ul>
+  </section>
 
-    <p>It is necessary to note that most of the charges given for the self-learning courses are not refundable. Refund
-        Eligibility:</p>
-
-    <p>Some grounds that entitle the buyer to get a refund may exist. Eligibility for a refund depends on the following
-        criteria:Eligibility for a refund depends on the following criteria: Course Access: If, for example, you never
-        logged into this course and never started it at all, you might be able to get your money back. Importantly, any
-        use of the course and materials means usage as defined above. Technical Issues: If, for some reason, you cannot
-        enter the course area &ndash; technical problems on our side &ndash; please contact us, and, after checking the
-        problem, you can get a refund. Course Content Issues: This means that in the event that the content that is
-        being delivered in the course differs greatly from what was included in the description or the advertised
-        curriculum and this is confirmed to our team, then one could be eligible for a refund. </p>
-        
-        <p>Refund Request Process:</p>
-    
-
-    <p>To request a refund, please follow these steps:To request a refund, please follow these steps: </p>
-    <p>Contact Support:</p>
-    <p>Contact our support team at anush&#64;oilandgasclub.com within 7-14 days from date of purchase. Give your
-        order number and a clear description of explaining your reason for asking for a refund. Review Process: Our team
-        will consider your request and may need to ask for further details and/or confirmation. This process usually
-        does not take more than 3-5 business days. Refund Approval: When your request is granted, the
-        refund will be made to the initial means of payment within 3-5 business days. </p>
-
-        
-        <p>Important Notes:</p>
-  
-
-    <p>Refund policy does not cover any money or course once it has been taken by the student. Refund of partial amount
-        may be allowed where the course usage has been limited and access has been denied. The transaction fees or
-        charges that may be charged in the process of the payment are non refundable. It&rsquo;s out duty to ensure that
-        students get the best experience when learning. We welcome any questions or comments you may have about our
-        refund policy;please contact our support team at anush&#64;oilandgasclub.com/+91-9840287919.</p>
-
+  <section class="refund-section refund-section--cta">
+    <div class="refund-cta">
+      <div>
+        <p class="refund-eyebrow">Need assistance?</p>
+        <h2>We’re here to help</h2>
+        <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> or call +91-9840287919 with your order number and details.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Contact support</a>
+    </div>
+  </section>
 </div>
+

@@ -1,70 +1,89 @@
 <!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<div class="container" ngSkipHydration>
-    <html>
-<head>
-  <!-- SEO Meta Tags -->
-  <meta name="robots" content="index, follow">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  
-
-  <!-- Open Graph Meta Tags for Social Sharing -->
-  <meta property="og:site_name" content="Oilandgasclub">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Join the Oilandgasclub Affiliate Program - Earn Commissions on Online Courses">
-  <meta property="og:description" content="Become an affiliate with Oilandgasclub and earn commissions by promoting online training programs like API, ASNT, CSWIP, and HTRI certifications.">
-  <meta property="og:image" content="https://www.oilandgasclub.com/images/affiliate-banner.jpg">
-  <meta property="og:image:width" content="600">
-  <meta property="og:image:height" content="500">
-  <meta property="og:url" content="https://www.oilandgasclub.com/affiliate-program">
-  <meta property="og:author" content="Oilandgasclub Team">
-
-  <!-- Article Meta Tags -->
-  <meta property="article:published_time" content="2024-01-01T06:18:55.5419129">
-  <meta property="article:modified_time" content="2024-12-26T06:43:07.881401">
-  <meta property="article:tag" content="Affiliate Program, Oil and Gas Training, Online Courses, API Certification, ASNT, CSWIP, HTRI, Professional Certifications">
-
-  <!-- Twitter Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Oilandgasclub Affiliate Program - Earn While Promoting Online Courses">
-  <meta name="twitter:description" content="Earn commissions with Oilandgasclub's affiliate program by promoting top oil and gas certifications like API, ASNT, and CSWIP. Sign up today!">
-  <meta name="twitter:label1" content="Program Features">
-  <meta name="twitter:data1" content="High Commissions, Easy Tracking, Flexible Payments">
-  <meta name="twitter:label2" content="Get Started">
-  <meta name="twitter:data2" content="Join Now at Oilandgasclub.com">
-  <meta name="twitter:site" content="@oilandgasclub">
-  <meta name="twitter:creator" content="@Oilandgasclub">
-  <meta name="twitter:url" content="https://www.oilandgasclub.com/affiliate-program">
-</head>
-</html>
-    <div class="aff-pgm-content">
-
-        Oilandgasclub.com believes that generating meaningful and lasting result is only made possible by engaging and
-        connecting partners. The strength of our partnership from the community to the global level. We invite faculty
-        to partner with us. We create innovative, high performing technical programs with partner worldwide.
-
+<div class="affiliate-page" ngSkipHydration>
+  <section class="affiliate-hero">
+    <div class="affiliate-hero__content">
+      <p class="affiliate-eyebrow">Affiliate program · Remote · High payouts</p>
+      <h1>Earn generous commissions promoting <span>industry-leading courses</span></h1>
+      <p class="affiliate-hero__lead">
+        Join the Oilandgasclub affiliate network and accelerate your audience’s growth with job-ready API, ASNT, CSWIP,
+        process, and software training. We’ll handle learner delivery—you keep sharing and earning.
+      </p>
+      <div class="affiliate-hero__cta">
+        <a class="btn-primary" href="https://forms.gle/64Dr4QAyBHXupsvS6" target="_blank">Apply to be an affiliate</a>
+        <a class="btn-link" href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a>
+      </div>
     </div>
-    <div class="works-with">
-        <h2>HOW IT WORKS</h2>
-        <div class="how-it-first">
-            <div class="round-bar"></div>
-            &nbsp;
-
-            Join our affiliate program and earn attractive commission on each referral.
-
-        </div>
-        <div class="how-it-first it-second">
-            <div class="round-bar bar-2"></div>
-            &nbsp;
-
-            As an affiliate, you promote our course and blog on your blog or social networking page.
-
-        </div>
-        <div class="how-it-first it-third">
-            <div class="round-bar bar-3"></div>
-            &nbsp;
-
-            When your website visitor click on your promotional link and buy. Join our course you will earn commission.
-
-        </div>
+    <div class="affiliate-hero__stats">
+      <div class="affiliate-stat">
+        <span class="affiliate-stat__value">30%</span>
+        <span class="affiliate-stat__label">Recurring commission</span>
+      </div>
+      <div class="affiliate-stat">
+        <span class="affiliate-stat__value">60 days</span>
+        <span class="affiliate-stat__label">Tracking window</span>
+      </div>
+      <div class="affiliate-stat">
+        <span class="affiliate-stat__value">500+</span>
+        <span class="affiliate-stat__label">Affiliates worldwide</span>
+      </div>
     </div>
+  </section>
+
+  <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">Why partner with us</p>
+      <h2>Program benefits</h2>
+      <p>Premium courses, global learners, and a dedicated partner success squad.</p>
+    </header>
+    <div class="affiliate-grid">
+      @for (perk of programPerks; track perk.title) {
+        <article class="affiliate-card">
+          <h3>{{ perk.title }}</h3>
+          <p>{{ perk.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">How it works</p>
+      <h2>Quick start in three steps</h2>
+    </header>
+    <div class="affiliate-steps">
+      @for (step of steps; track step.step) {
+        <article class="affiliate-step">
+          <span class="affiliate-step__index">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <div class="affiliate-cta">
+      <div>
+        <p class="affiliate-eyebrow">Apply today</p>
+        <h2>Ready to share game-changing training?</h2>
+        <p>Tell us about your audience, platforms, and campaign ideas. We’ll get back within 1 business day.</p>
+      </div>
+      <a class="btn-primary" href="https://forms.gle/64Dr4QAyBHXupsvS6" target="_blank">Submit application</a>
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">FAQs</p>
+      <h2>Everything you need to know</h2>
+    </header>
+    <div class="affiliate-faq">
+      @for (faq of faqList; track faq.question) {
+        <details>
+          <summary>{{ faq.question }}</summary>
+          <p>{{ faq.answer }}</p>
+        </details>
+      }
+    </div>
+  </section>
 </div>

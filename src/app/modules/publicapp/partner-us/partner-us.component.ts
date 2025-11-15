@@ -11,6 +11,32 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 export class PartnerUsComponent implements OnInit {
 
   submitted = false;
+
+  readonly spotlightPoints = [
+    'Global audience: reach engineers, inspectors, and decision-makers across 30+ countries.',
+    'Flexible partnership models: sponsors, distributors, referral partners, facilitators.',
+    'Co-marketing campaigns with guaranteed impressions and qualified leads.'
+  ];
+
+  readonly opportunities = [
+    {
+      title: 'Sponsorship & exhibitions',
+      description: 'Showcase your brand at conferences, live trainings, and digital events attended by industry leaders.'
+    },
+    {
+      title: 'Affiliate & referral programs',
+      description: 'Promote courses or consulting services, earn commissions, and expand your service catalog.'
+    },
+    {
+      title: 'Content collaborations',
+      description: 'Co-create webinars, whitepapers, and best-practice guides for the oil & gas community.'
+    },
+    {
+      title: 'Speaker & facilitator roles',
+      description: 'Share expertise onstage or in classrooms while strengthening personal and corporate credibility.'
+    }
+  ];
+
   constructor(
     private titleService: Title,
     private metaService: Meta,

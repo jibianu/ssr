@@ -326,6 +326,12 @@ export class HomeComponent implements OnInit {
     { url: '/category/API%20Self%20Learning%20Courses', title: 'API Self Learning Courses', description: 'Over 20+ course', class: 'cour-item5' }
   ];
 
+  readonly heroStats: ReadonlyArray<string> = [
+    '70+ Courses',
+    '250k+ Learners',
+    '30+ Countries'
+  ];
+
   readonly quickLinks: QuickLink[] = [
     { url: '/Intools-Training/', title: 'Smart Plant Instrumentation Design' },
     { url: '/Aspen-HYSYS-Training', title: 'Process Simulation' },

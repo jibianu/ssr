@@ -14,19 +14,29 @@ const routerOptions: ExtraOptions = {
 
 export const routes: Routes = [
     {
-        path: 'auth',
-        loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+        path: '',
+        component: PublicLayoutComponent,
+        children: [
+            {
+                path: '',
+                loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule)
+            },
+            {
+                path: 'auth',
+                loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+            }
+        ]
     },
     {
         path: 'app',
         component: AdminLayoutComponent,
-        loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule),
-        canActivate: [AuthGuard]
-    },
-    {
-        path: '',
-        component: PublicLayoutComponent,
-        loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule)
+        canActivate: [AuthGuard],
+        children: [
+            {
+                path: '',
+                loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule)
+            }
+        ]
     },
     { 
         path: 'page-not-found', 

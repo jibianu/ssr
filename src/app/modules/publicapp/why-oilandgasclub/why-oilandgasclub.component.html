@@ -1,81 +1,89 @@
-<!-- ✅ HYDRATION OPTIMIZATION: Skip hydration for static content sections -->
-<!-- Note: Meta tags are handled in component.ts via Meta service -->
-
-<!-- ✅ HYDRATION: Skip hydration for static banner section -->
-<div class="background-cover why-og-cover" ngSkipHydration
-    style="background: url( https://www.oilandgasclub.com/wp-content/uploads/2016/08/why-oilandgasclub-banner.jpg )no-repeat scroll center center / cover #1E3133;position:relative;display:inline-block;height:330px;">
-    <nav id="training-nav" style="background-color: rgba(10, 9, 10, 0.78);">
-    </nav>
-
-    <div class="container">
-      <div class="avail-banner-content">
-        <div class="why-og-training-head">
-          <h1 class="name post-title entry-title" itemprop="itemReviewed" itemscope=""
-            itemtype="http://schema.org/Thing"><span itemprop="name">GATEWAY TO INDUSTRY NETWORKS</span></h1>
-          <p class="why-og-sub-training-head">
-            <b>Customized</b> Content <b>Across</b> 7+Locations <b>Online</b> 30+ Countries
-          </p>
-        </div>
-        <div class="why-og-train-form">
-          <div class="custom-quote"><button type="button" class="btn" data-toggle="modal"
-              data-target="#myModalcorp">REQUEST A CUSTOM QUOTE</button></div>
-          <div class="modal fade" id="myModalcorp" role="dialog">
-            <div class="modal-dialog col-md-5 col-centered">
-
-              <!-- Modal content-->
-              <div class="modal-content">
-                <div class="modal-body">
-                  [contact-form-7 id="5944" title="Custom Quote"] </div>
-              </div>
-            </div>
+<!-- ✅ HYDRATION OPTIMIZATION: Skip hydration for static sections -->
+<div class="why-og-page" ngSkipHydration>
+  <section class="why-og-hero">
+    <div class="why-og-hero__copy">
+      <p class="why-og-eyebrow">Global network · Customized cohorts · 24/7 support</p>
+      <h1>Gateway to industry networks and <span>job-ready skills</span></h1>
+      <p>Oilandgasclub pairs practitioner-led content with flexible delivery so you can upskill teams, accelerate certifications, and stay audit-ready.</p>
+      <div class="why-og-hero__stats">
+        @for (stat of heroHighlights; track stat.label) {
+          <div class="why-og-stat">
+            <span class="why-og-stat__value">{{ stat.value }}</span>
+            <span class="why-og-stat__label">{{ stat.label }}</span>
           </div>
-          <div class="cor-mail">
-            <p class="cor-mail-1p-head"><span></span></p>
-            <p class="cor-mail-2p"><a href="mailto:corptrain@oilandgasclub.com">anush&#64;oilandgasclub.com</a></p>
-          </div>
-        </div>
+        }
+      </div>
+      <div class="why-og-hero__actions">
+        <a class="btn-primary" href="mailto:hello@oilandgasclub.com">Talk to our team</a>
+        <a class="btn-link" href="/corporate-training">See corporate programs →</a>
       </div>
     </div>
-  </div>
+    <div class="why-og-hero__card">
+      <h3>Remote delivery</h3>
+      <p>Serving teams across <strong>7+ countries</strong> with localized cohorts, time zones, and compliance requirements—fully virtual or hybrid.</p>
+      <ul>
+        <li>Regional cohorts with bilingual mentors</li>
+        <li>Weekly office hours across APAC, EMEA, and Americas</li>
+        <li>On-demand recordings, transcripts, and LMS tracking</li>
+      </ul>
+    </div>
+  </section>
 
-  <div class="container">
-    <p>
-      Across<br><span>7+</span>Locations
-    </p>
-    <span><img src="https://www.oilandgasclub.com/wp-content/uploads/2016/08/location-map.jpg" alt="location" loading="lazy" width="800" height="600" style="aspect-ratio: 4/3; object-fit: contain;"></span>
-  </div>
+  <section class="why-og-section">
+    <header class="why-og-section__header">
+      <p class="why-og-eyebrow">Why customers choose us</p>
+      <h2>Three pillars of delivery</h2>
+    </header>
+    <div class="why-og-grid">
+      @for (pillar of pillars; track pillar.title) {
+        <article class="why-og-card">
+          <img [src]="pillar.icon" [alt]="pillar.title" width="48" height="48" loading="lazy" />
+          <h3>{{ pillar.title }}</h3>
+          <p>{{ pillar.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
-  <div id="main-content" class="container">
-    <div class="content">
+  <section class="why-og-section">
+    <header class="why-og-section__header">
+      <p class="why-og-eyebrow">What sets us apart</p>
+      <h2>Built for energy professionals</h2>
+    </header>
+    <div class="why-og-grid why-og-grid--differentiators">
+      @for (item of differentiators; track item.title) {
+        <article class="why-og-diff">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
+  <section class="why-og-section why-og-section--testimonials">
+    <header class="why-og-section__header">
+      <p class="why-og-eyebrow">Customer proof</p>
+      <h2>Trusted by leading operators &amp; EPCs</h2>
+    </header>
+    <div class="why-og-testimonials">
+      @for (story of testimonials; track story.author) {
+        <article class="why-og-testimonial">
+          <p class="why-og-testimonial__quote">{{ story.quote }}</p>
+          <p class="why-og-testimonial__author">{{ story.author }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
+  <section class="why-og-section why-og-section--cta">
+    <div class="why-og-cta">
+      <div>
+        <p class="why-og-eyebrow">Ready to partner?</p>
+        <h2>Co-create your learning roadmap</h2>
+        <p>Share your competency goals, locations, and timelines. We’ll craft a proposal covering curriculum, delivery format, and investment.</p>
+      </div>
+      <a class="btn-primary" href="mailto:hello@oilandgasclub.com">Schedule a discovery session</a>
+    </div>
+  </section>
+</div>
 
-      <article class="post-listing post post-6572 page type-page status-publish has-post-thumbnail hentry">
-        <div class="post-inner">
-          <p class="post-meta"></p>
-          <div class="clear"></div>
-          <div class="entry">
-
-            <div class="cour-offer">
-              <h2>WHY OILANDGASCLUB</h2>
-              <div class="cour-offer-cont-sub">
-                <div class="cour-offer-list-sub">
-                  <span class="corp-pri-img"></span><br>
-                  <h6 class="cour-offer-text-sub">Corporate Pricing</h6>
-                  <p>How customized course reduced the corporate training cost. Please get in touch with our corporate
-                    training team.</p>
-                </div>
-                <div class="cour-offer-list-sub">
-                  <span class="cus-cour-img"></span><br>
-                  <h6 class="cour-offer-text-sub">Customized Course</h6>
-                  <p>We know that one size does not fit all. That’s why we deliver high quality customized course. All
-                    courses can be customized.</p>
-                </div>
-                <div class="cour-offer-list-sub">
-                  <span class="suport-img"></span><br>
-                  <h6 class="cour-offer-text-sub">Support</h6>
-                  <p>Need on-site as customized training for you or your team. We are always just a call away.</p>
-                </div>
-              </div>
-            </div>
-          </div>

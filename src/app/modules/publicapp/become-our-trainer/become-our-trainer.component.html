@@ -1,212 +1,198 @@
-<!-- ✅ HYDRATION OPTIMIZATION: Skip hydration for static content sections -->
-<!-- Note: Meta tags are handled in component.ts via Meta service -->
-
-<!-- ✅ HYDRATION: Skip hydration for static banner section -->
-<div class="background-cover be-train-cover" ngSkipHydration>
-  <nav id="training-nav">
-  </nav>
-  <div class="container">
-    <div class="banner-content d-flex align-items-center">
-      <div class="w-50">
-        <h1>Teach<span></span> Create<span></span> Earn</h1>
+<!-- ✅ HYDRATION OPTIMIZATION: Page is static content -->
+<div class="trainer-page" ngSkipHydration>
+  <section class="trainer-hero">
+    <div class="trainer-hero__copy">
+      <p class="trainer-eyebrow">Instructors · Remote · Paid per cohort</p>
+      <h1>Teach oil &amp; gas professionals <span>from anywhere</span></h1>
+      <p>
+        If you’re passionate about your discipline and want to mentor engineers globally, you’re in the right place.
+        Oilandgasclub instructors design hands-on simulations, live labs, and certification prep that change careers.
+      </p>
+      <ul class="trainer-checklist">
+        @for (item of trainerChecklist; track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+      <div class="trainer-hero__actions">
+        <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Talk to our instructor team</a>
+        <a class="btn-link" href="https://www.oilandgasclub.com/courses">Preview our catalog →</a>
       </div>
-      <div class="w-50">
-        <h1 class="name post-title entry-title">
-          <span itemprop="name">
-            <b>BECOME A </b><br />
-            <b>INSTRUCTOR</b>
-            <br>ON OILANDGASCLUB</span></h1>
+      <div class="trainer-hero__benefits">
+        <div class="trainer-stat">
+          <span class="trainer-stat__value">100%</span>
+          <span class="trainer-stat__label">Remote delivery</span>
+        </div>
+        <div class="trainer-stat">
+          <span class="trainer-stat__value">Top-tier</span>
+          <span class="trainer-stat__label">Learner reviews</span>
+        </div>
+        <div class="trainer-stat">
+          <span class="trainer-stat__value">Global</span>
+          <span class="trainer-stat__label">engineering audience</span>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
-
-
-<div class="become-our-trainer-cont">
-  <div class="container customWidth">
-    <div class="row">
-      <div class="be-an-trainer col-lg-12 col-md-12 col-sm-12 px-3">
-        <p>If you love your field want to share your knowledge and passionate about teaching? You have come to the right
-          place. Come join with us on our journey.</p>
-      </div>
-
-      <div class="inst-earning row px-3" style="padding: 40px 0px; width: 1000px;">
-        <div class="earning-calculator-contente col-lg-6 col-md-6 col-sm-6">
-          <span class="earn-img"></span>
-          <div>
-            <p><b>Earning Potential</b></p>
-            <p>See the approximate amount you can earn</p>
-            <div class="btn-group">
-              <button class="btn btn-default dropdown-toggle hour-dropdown d-flex align-items-center p-0" type="button"
-                data-toggle="dropdown">
-                <span class="selected-dropdown"><b>{{dropdownTitle}}hrs</b>/day</span>
-                <span class="caret pull-right"></span><br>
-              </button>
-              <ul class="dropdown-menu hour-dropdown-list">
-                <li (click)="setDropdown(2, 21000, $event)"><b>2hrs</b>/day</li>
-                <li (click)="setDropdown(4, 42000, $event)"><b>4hrs</b>/day</li>
-                <li (click)="setDropdown(8, 84000, $event)"><b>8hrs</b>/day</li>
-              </ul>
-            </div>
-          </div>
+    <div class="trainer-hero__calculator">
+      <div class="trainer-earn-card">
+        <p class="trainer-eyebrow">Earning potential</p>
+        <h2>₹{{ dropdownValue | number }}<small>/month</small></h2>
+        <p class="trainer-earn-note">Based on minimum hours taught</p>
+        <div class="trainer-dropdown">
+          <label>Choose daily teaching time</label>
+          <button class="trainer-dropdown__toggle" type="button">
+            <span>{{ dropdownTitle }} hrs / day</span>
+          </button>
+          <ul class="trainer-dropdown__list">
+            <li (click)="setDropdown(2, 21000, $event)">2 hrs/day</li>
+            <li (click)="setDropdown(4, 42000, $event)">4 hrs/day</li>
+            <li (click)="setDropdown(8, 84000, $event)">8 hrs/day</li>
+          </ul>
         </div>
-
-        <div class="earning-amount-container text-center col-lg-6 col-md-6 col-sm-6">
-          <p id="my-income"><span>₹</span>{{dropdownValue}}</p>
-          <p>per month</p>
-          <p>(Minimum earning based on hours taught)</p>
-        </div>
-      </div>
-
-      <!-- ✅ HYDRATION: Skip hydration for static reasons section -->
-      <div class="reason-choose-box col-lg-12 col-md-12 col-sm-12" ngSkipHydration>
-        <div class="reason-head">
-          <h4>Why teach with oilandgasclub.com</h4>
-        </div>
-        <div class="row text-center" style="padding: 40px 0px;">
-          <div class="reason col-12 col-md-4">
-            <span style="background-position: -387px -77px;"></span><br>
-            <h6>Anytime Anywhere Online</h6>
-            <p class="reason-text">If you have got technical knowledge and experience in a core subject, and you
-              would enjoy helping professionals.</p>
-          </div>
-          <div class="reason col-12 col-md-4">
-            <span style="background-position: -490px -78px;"></span><br>
-            <h6>Find Purpose</h6>
-            <p class="reason-text">Learn through internet. Connect with your student from wherever you are and
-              whenever you want.</p>
-          </div>
-          <div class="reason col-12 col-md-4">
-            <span style="background-position: -431px -78px;"></span><br>
-            <h6>Awesome Community</h6>
-            <p class="reason-text">Be a part of a large technical community, make friends and learn from each other.
-            </p>
-          </div>
-        </div>
-      </div>
-      <!-- ✅ HYDRATION: Skip hydration for static benefits section -->
-      <div class="benefits-container container" ngSkipHydration>
-        <div class="row">
-          <div class="col-12">
-            <h2>Benefits of live online tutoring</h2>
-          </div>
-          <div class="col-12">
-            <div class="container">
-              <div class="row">
-                <div class="col-12 col-md-4 d-flex align-items-start p-3">
-                  <img src="assets/tv-solid.svg" alt="Live Teaching" width="48" height="48" loading="lazy">
-                  <div>
-                    <h6>PERSONALIZED LIVE TEACHING</h6>
-                    <ul class="benefits-points1">
-                      <li>Dedicated teacher, 100% personal attention</li>
-                      <li>Teaching at student’s pace</li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 d-flex align-items-start p-3">
-                  <!-- <span style="background-position: -14px -591px;"></span> -->
-                  <img src="assets/tv-solid.svg" alt="Live Teaching" width="48" height="48" loading="lazy">
-                  <div>
-                    <h6>BETTER THAN RECORDED LECTURES</h6>
-                    <ul class="benefits-points1">
-                      <li>2 way interaction</li>
-                      <li>Monitoring &amp; counseling</li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 d-flex align-items-start p-3">
-                  <!-- <span style="background-position: -198px -587px;"></span> -->
-                  <img src="assets/search-location-solid.svg" alt="Location" width="48" height="48" loading="lazy">
-                  <div>
-                    <h6>ANYTIME ANYWHERE LEARNING</h6>
-                    <ul class="benefits-points1">
-                      <li>Choice of web and mobile platform</li>
-                      <li>Choose your own topic/time &amp; pace</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="container">
-              <div class="row">
-                <div class="col-12 col-md-2"></div>
-                <div class="col-12 col-md-4 d-flex align-items-start p-3">
-                  <img src="assets/globe-americas-solid.svg" alt="Globe" width="48" height="48" loading="lazy">
-                  <div>
-                    <h6>SAVE ON TIME</h6>
-                    <ul class="benefits-points1">
-                      <li>No commuting</li>
-                      <li>No looking for the right teacher</li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 d-flex align-items-start p-3">
-                  <img src="assets/connectdevelop-brands.svg" alt="Connect" width="48" height="48" loading="lazy">
-                  <div>
-                    <h6>SAFETY</h6>
-                    <ul class="benefits-points1">
-                      <li>Learn [at] safety of home</li>
-                      <li>No traffic annoyance</li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="col-12 col-md-2"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="instrcutor-query-form">
-        <h4>DROP US A QUERY</h4>
-        <iframe id="hiddenIframe" name="hiddenIframe" (load)="onIframeLoad()" style="display: none;"></iframe>
-        <!-- Optional if you want to give a completion feedback! -->
-        <div id="completion-msg" style="display: none;">
-          Thank you for completing this form!
-        </div>
-        <form
-          action="https://docs.google.com/forms/d/e/1FAIpQLSdBzPd2kQvC66l3WWj3gqokfzPMjiIdyZXmHozK3sI2LXqeqA/formResponse"
-          (submit)="onFormSubmit()" target="hiddenIframe" method="POST">
-
-          <div class="form-group">
-            <label for="name">Name *</label>
-            <input type="text" class="form-control" id="name" name="entry.1240380496" required placeholder="Name">
-          </div>
-
-          <div class="form-group">
-            <label for="email">Email Address *</label>
-            <input type="email" class="form-control" id="email" name="entry.1616702479" required placeholder="Email">
-          </div>
-          <div class="form-group">
-            <label for="course">Select Course *</label>
-            <select name="entry.2052152614" class="form-control" id="course" required>
-              <option value="Choose">Choose</option>
-              <option value="Piping">piping</option>
-              <option value="Instrumentation">Instrumentation</option>
-              <option value="Electrical">Electrical</option>
-              <option value="Civil">Civil</option>
-              <option value="Process">Process</option>
-              <option value="Safety">Safety</option>
-              <option value="Welding">Welding</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="phone">Phone Number *</label>
-            <input type="text" class="form-control" id="phone" name="entry.1429337558" required
-              placeholder="Phone Number">
-          </div>
-
-          <div class="form-group">
-            <label for="LinkedIn">Linkedin URL *</label>
-            <input type="url" class="form-control" id="LinkedIn" name="entry.914762180" required
-              placeholder="Linkedin URL">
-          </div>
-
-          <button type="submit" class="btn btn-primary mb-2 float-right">Submit</button>
-        </form>
-        <div class="p-5"></div>
+        <p class="trainer-earn-note">Join, teach, and get paid for every learner you inspire.</p>
       </div>
     </div>
-  </div>
+  </section>
+
+  <section class="trainer-section">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">Why partner with us</p>
+      <h2>What you’ll love about teaching here</h2>
+    </header>
+    <div class="trainer-grid">
+      @for (perk of trainerPerks; track perk.title) {
+        <article class="trainer-card">
+          <h3>{{ perk.title }}</h3>
+          <p>{{ perk.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="trainer-section">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">Areas we’re hiring for</p>
+      <h2>High-demand domains</h2>
+      <p>We’re looking for SMEs who can translate plant-floor experience into actionable lessons.</p>
+    </header>
+    <div class="trainer-grid trainer-grid--domains">
+      @for (domain of trainerDomains; track domain.title) {
+        <article class="trainer-domain">
+          <h3>{{ domain.title }}</h3>
+          <ul>
+            @for (item of domain.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="trainer-section">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">How to get started</p>
+      <h2>Three simple steps</h2>
+    </header>
+    <div class="trainer-steps">
+      @for (step of trainerSteps; track step.step) {
+        <article class="trainer-step">
+          <span class="trainer-step__index">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="trainer-section trainer-section--highlight">
+    <div class="trainer-highlight">
+      <div>
+        <p class="trainer-eyebrow">Instructor spotlight</p>
+        <h2>Launch faster with our production squad</h2>
+        <p>We help storyboard every lesson, prepare labs, set up LMS assets, send learner nudges, and collect feedback loops so you can focus on delivery.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Schedule a discovery call</a>
+    </div>
+  </section>
+
+  <section class="trainer-section trainer-section--testimonials">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">Instructor love</p>
+      <h2>What our trainers say</h2>
+    </header>
+    <div class="trainer-testimonials">
+      @for (story of trainerTestimonials; track story.author) {
+        <article class="trainer-testimonial">
+          <p class="trainer-testimonial__quote">{{ story.quote }}</p>
+          <p class="trainer-testimonial__author">{{ story.author }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="trainer-section trainer-section--faq">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">FAQs</p>
+      <h2>Everything you need to know</h2>
+    </header>
+    <div class="trainer-faq">
+      @for (faq of trainerFaqs; track faq.question) {
+        <details>
+          <summary>{{ faq.question }}</summary>
+          <p>{{ faq.answer }}</p>
+        </details>
+      }
+    </div>
+  </section>
+
+  <section class="trainer-section trainer-section--form">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">Drop us a query</p>
+      <h2>Ready to instruct?</h2>
+      <p>Tell us a bit about you and we’ll get in touch within 2–3 business days.</p>
+    </header>
+    <div class="trainer-form">
+      <iframe id="hiddenIframe" name="hiddenIframe" (load)="onIframeLoad()" style="display: none;"></iframe>
+      <form
+        action="https://docs.google.com/forms/d/e/1FAIpQLSdBzPd2kQvC66l3WWj3gqokfzPMjiIdyZXmHozK3sI2LXqeqA/formResponse"
+        (submit)="onFormSubmit()" target="hiddenIframe" method="POST">
+
+        <label>
+          <span>Name *</span>
+          <input type="text" name="entry.1240380496" required placeholder="Your full name">
+        </label>
+
+        <label>
+          <span>Email *</span>
+          <input type="email" name="entry.1616702479" required placeholder="you@example.com">
+        </label>
+
+        <label>
+          <span>Domain expertise *</span>
+          <select name="entry.2052152614" required>
+            <option value="" disabled selected>Select a primary discipline</option>
+            <option value="Piping">Piping</option>
+            <option value="Instrumentation">Instrumentation</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Civil">Civil</option>
+            <option value="Process">Process</option>
+            <option value="Safety">Safety</option>
+            <option value="Welding">Welding</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Phone *</span>
+          <input type="tel" name="entry.1429337558" required placeholder="+1 234 567 8901">
+        </label>
+
+        <label>
+          <span>LinkedIn URL *</span>
+          <input type="url" name="entry.914762180" required placeholder="https://linkedin.com/in/yourprofile">
+        </label>
+
+        <button type="submit" class="btn-primary">Submit application</button>
+      </form>
+    </div>
+  </section>
 </div>

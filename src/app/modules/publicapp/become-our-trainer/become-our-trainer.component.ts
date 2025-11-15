@@ -19,6 +19,102 @@ export class BecomeOurTrainerComponent implements OnInit {
     {title: 4, value: 42000},
     {title: 8, value: 84000},
   ];
+
+  readonly trainerChecklist = [
+    'Design outcome-focused cohorts and micro-learning paths',
+    'Get full instructional design + production support',
+    'Earn reliable payouts for every learner you mentor'
+  ];
+
+  readonly trainerPerks = [
+    {
+      title: 'Dedicated producer pod',
+      description: 'Storyboard writers, editors, and learner success partners help polish every cohort you launch.'
+    },
+    {
+      title: 'Global distribution',
+      description: 'Reach engineers across 30+ countries with built-in marketing, webinars, and partner newsletters.'
+    },
+    {
+      title: 'Flexible formats',
+      description: 'Teach live, async, or hybrid formats. Host AMAs, office hours, code reviews, or plant walk-throughs.'
+    },
+    {
+      title: 'Lifetime royalties',
+      description: 'Earn revenue on replays, on-demand packs, and enterprise licensing without additional work.'
+    }
+  ];
+
+  readonly trainerDomains = [
+    {
+      title: 'Process & Simulation',
+      items: ['HYSYS', 'HTRI', 'Aspen', 'Relief systems']
+    },
+    {
+      title: 'Piping & Mechanical',
+      items: ['PVElite', 'SP3D', 'Stress analysis', 'Layout']
+    },
+    {
+      title: 'Inspection & QA',
+      items: ['API 510/570/653', 'CSWIP', 'ASNT', 'Asset integrity']
+    },
+    {
+      title: 'Controls & Electrical',
+      items: ['PLC/DCS', 'SIS', 'Instrumentation', 'Functional safety']
+    },
+    {
+      title: 'Operations & Safety',
+      items: ['HAZOP', 'LOPA', 'Process safety', 'Digital twins']
+    },
+    {
+      title: 'Software & Data',
+      items: ['Python for engineers', 'AVEVA', 'AVEVA P&ID', 'Power BI']
+    }
+  ];
+
+  readonly trainerSteps = [
+    {
+      step: '01',
+      title: 'Share your expertise',
+      detail: 'Submit your domain focus, teaching samples, or project portfolio so we understand your style.'
+    },
+    {
+      step: '02',
+      title: 'Co-design the experience',
+      detail: 'Work with our curriculum squad to map outcomes, labs, assessments, and cohort cadence.'
+    },
+    {
+      step: '03',
+      title: 'Launch & iterate',
+      detail: 'Deliver sessions, host feedback circles, and iterate with real-time learner analytics.'
+    }
+  ];
+
+  readonly trainerTestimonials = [
+    {
+      quote: '“Oilandgasclub handled the heavy lifting—from marketing to learner success—so I focused purely on teaching.”',
+      author: 'Priya Iyer · Lead Process Engineer'
+    },
+    {
+      quote: '“My recorded labs continue to earn revenue every month, and I still mentor alumni in the community.”',
+      author: 'Carlos Mendes · API Inspector'
+    }
+  ];
+
+  readonly trainerFaqs = [
+    {
+      question: 'Do I need prior teaching experience?',
+      answer: 'Not necessarily. We look for real-world experience, storytelling ability, and a willingness to co-create with our instructional designers.'
+    },
+    {
+      question: 'How are payouts structured?',
+      answer: 'You receive a baseline for every confirmed learner plus performance bonuses on course ratings, completion, and enterprise licenses.'
+    },
+    {
+      question: 'Can I keep my current job?',
+      answer: 'Yes. Most instructors teach 2–8 hours per week alongside their primary roles. We offer flexible scheduling across time zones.'
+    }
+  ];
   
   // ✅ SSR: Browser check for DOM operations
   private readonly isBrowser: boolean;

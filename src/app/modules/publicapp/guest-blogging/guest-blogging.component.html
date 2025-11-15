@@ -1,77 +1,101 @@
 
-<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<div class="container" ngSkipHydration>
-<html>
-<head>
-  <meta name="robots" content="index, follow">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="twitter:card" content="summary_large_image">
-
-  
-  <meta property="og:site_name" content="Oilandgasclub">
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="Guest Blog: Mastering Oil & Gas Certifications | Oilandgasclub">
-  <meta property="og:description" content="Discover comprehensive guidance for professionals looking to advance their careers in oil and gas through industry-recognized certifications.">
-  <meta property="og:author" content="Oilandgasclub Team">
-  <meta property="og:image" content="https://www.oilandgasclub.com/images/blog-header.jpg">
-  <meta property="og:image:width" content="600">
-  <meta property="og:image:height" content="500">
-  <meta property="og:url" content="https://blog.oilandgasclub.com/guest-blog-oil-and-gas-certifications">
-
-  <!-- Article Meta Tags -->
-  <meta property="article:published_time" content="2023-12-26T06:18:55">
-  <meta property="article:modified_time" content="2023-12-26T06:43:07">
-  <meta property="article:tag" content="Oil and Gas, Certification Training, API, ASNT, CSWIP, NDT, Career Growth, Exam Preparation">
-  <meta property="article:publisher" content="https://www.oilandgasclub.com">
-
-  <!-- Twitter Meta Tags -->
-  <meta name="twitter:title" content="Guest Blog: Mastering Oil & Gas Certifications | Oilandgasclub">
-  <meta name="twitter:description" content="Learn how to ace API, ASNT, and CSWIP certifications with our expert tips. Perfect for professionals in the oil and gas industry.">
-  <meta name="twitter:label1" content="Category">
-  <meta name="twitter:data1" content="Oil and Gas Certifications">
-  <meta name="twitter:label2" content="Published Date">
-  <meta name="twitter:data2" content="Dec 26, 2023">
-  <meta name="twitter:site" content="@oilandgasclub">
-  <meta name="twitter:creator" content="@Oilandgasclub">
-  <meta name="twitter:url" content="https://blog.oilandgasclub.com/guest-blog-oil-and-gas-certifications">
-</head>
-</html>
-
-
-<!-- <div class="background-cover be-train-cover" style="background: url( https://www.oilandgasclub.com/wp-content/uploads/2016/08/become-instructor-banner.jpg )no-repeat;position:relative;display:inline-block;height: 200px;background-size: 100% 100%;">	
-	<nav id="training-nav">
-	</nav>
-	<div class="container">
-	<div class="banner-content">
-	     <div class="blog-guest-head">
-		     <h1 class="name post-title entry-title"><span itemprop="name">Blog as Guest</span></h1>
-		 </div>
-	</div>
-	</div>
-</div> -->
-
-<div class="guest-blog">
-
-    We invite you to be a part of our mission that helps professionals. Readers are allowed to make contributions to this site by writing on tiny topic related to oil and gas, power, pharmaceutical, petrochemical engineering in most precise and self explanatory way with the aid of figures, videos or flowchart. The contributors name and other details will be highlighted at the bottom of his post and will be appreciated by people all around the globe.
-    
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
+<div class="guest-blog-page" ngSkipHydration>
+  <section class="guest-hero">
+    <div class="guest-hero__copy">
+      <p class="guest-eyebrow">Guest blogging · Paid features · Global reach</p>
+      <h1>Share your oil &amp; gas insights with <span>250K+ professionals</span></h1>
+      <p>
+        Publish practical lessons, field stories, or certification playbooks that help engineers, inspectors, and operators
+        thrive. We handle editing, design, and promotion so your ideas shine.
+      </p>
+      <ul class="guest-checklist">
+        @for (item of heroChecklist; track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+      <div class="guest-hero__actions">
+        <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Pitch your article</a>
+        <a class="btn-link" href="https://blog.oilandgasclub.com">Browse recent features →</a>
+      </div>
     </div>
-    <div class="guest-benfits">
-        <div class="guest-con">
-       <h2>BENEFITS</h2>
-       <div class="benfits-content">
-       <div class="ben-con-sub">
-       <span class="knoled-img"></span><p></p>
-       <p>If you would like to share your knowledge, we have the audience. We strongly believe in sharing knowledge across all boundaries and levels.</p>
-       </div>
-       <div class="ben-con-sub">
-       <span class="speci-img"></span><p></p>
-       <p>You may choose to write an any topic in the area of your specialization self explanatory way with the aid of figures, videos or flowchart. The contributors names and details will be highlighted at the bottom of this posts.</p>
-       </div>
-       <div class="ben-con-sub">
-       <span class="passion-img"></span><p></p>
-       <p>Blog to express your passion. We understand the effort it takes to write a blog-post, therefore we pay writes who contribute to our blog. More details anushatoilandgasclub.com</p>
-       </div>
-       </div>
-       </div>
-       </div>
-                    
+    <div class="guest-hero__card">
+      <h3>Pitch checklist</h3>
+      <ol>
+        <li>Send 2–3 sentences describing the challenge.</li>
+        <li>Share 3 key takeaways or frameworks.</li>
+        <li>Add links to diagrams, dashboards, or data.</li>
+      </ol>
+      <p class="guest-note">Email us at <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> with the subject “Guest Blog Pitch”.</p>
+    </div>
+  </section>
+
+  <section class="guest-section">
+    <header class="guest-section__header">
+      <p class="guest-eyebrow">Why contribute</p>
+      <h2>Benefits for guest authors</h2>
+    </header>
+    <div class="guest-grid">
+      @for (card of benefitCards; track card.title) {
+        <article class="guest-card">
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="guest-section">
+    <header class="guest-section__header">
+      <p class="guest-eyebrow">How it works</p>
+      <h2>Simple publishing flow</h2>
+    </header>
+    <div class="guest-steps">
+      @for (step of processSteps; track step.step) {
+        <article class="guest-step">
+          <span class="guest-step__index">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="guest-section guest-section--ideas">
+    <header class="guest-section__header">
+      <p class="guest-eyebrow">Need inspiration?</p>
+      <h2>Topics we love</h2>
+    </header>
+    <ul class="guest-ideas">
+      @for (idea of contributionIdeas; track idea) {
+        <li>{{ idea }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="guest-section guest-section--cta">
+    <div class="guest-cta">
+      <div>
+        <p class="guest-eyebrow">Ready to write?</p>
+        <h2>Let’s create something useful together</h2>
+        <p>Send your outline, supporting visuals, and a short bio. we’ll respond within 2 business days with editorial guidance and next steps.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Submit your pitch</a>
+    </div>
+  </section>
+
+  <section class="guest-section guest-section--faq">
+    <header class="guest-section__header">
+      <p class="guest-eyebrow">FAQs</p>
+      <h2>Everything you need to know</h2>
+    </header>
+    <div class="guest-faq">
+      @for (faq of faqList; track faq.question) {
+        <details>
+          <summary>{{ faq.question }}</summary>
+          <p>{{ faq.answer }}</p>
+        </details>
+      }
+    </div>
+  </section>
+</div>

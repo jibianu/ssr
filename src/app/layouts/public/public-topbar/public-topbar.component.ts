@@ -9,6 +9,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
 // ✅ HYDRATION: SSR-safe - menu visibility state handled in browser only
 @Component({
     selector: 'app-public-topbar',
+    standalone: true,
     templateUrl: './public-topbar.component.html',
     styleUrls: ['./public-topbar.component.scss'],
     imports: [

@@ -1,261 +1,444 @@
-element.style {
-    background: url(https://www.oilandgasclub.com/wp-content/uploads/2016/08/become-instructor-banner.jpg)no-repeat;
-    position: relative;
-    display: inline-block;
-    height: 200px;
-    background-size: 100% 100%;
-}
-.banner-content {
-    height: 180px;
-    margin: 0px 50px;
-    color: white;
-}
-.background-cover {
-    // background: url(https://www.oilandgasclub.com/wp-content/uploads/2016/08/become-instructor-banner.jpg) no-repeat;
-    background: linear-gradient(90deg, #153E7C 0.26%, #147FA0 100%);
-    position: relative;
-    /* display: inline-block; */
-    height: 180px;
-    /* width: 100%; */
-    background-size: cover;
-    margin: 0 -119px;
-    // /* background-position-y: -85px;
-}
-.hour-dropdown {
-    width: 190px;
-}
-.selected-dropdown {
-    width: 100%;
-    text-align: left;
+@use 'sass:color';
+
+$trainer-bg: #f7f9fc;
+$trainer-primary: #0f172a;
+$trainer-muted: #64748b;
+$trainer-border: rgba(15, 23, 42, 0.12);
+$trainer-accent: #f02c00;
+
+.trainer-page {
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  background: $trainer-bg;
+  color: $trainer-primary;
 }
 
-.be-a-train-head h1 {
-    font-size: 38px;
-    line-height: 46px;
-}
+.trainer-hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: center;
 
-.be-a-train-head {
-    float: left;
-    margin-top: 50px;
-    width: 50%;
-}
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 
-.be-an-inst-head h1 {
-    color: #fff;
-}
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 800;
 
-.be-an-inst-head {
-    text-align: left;
-    float: left;
-    width: 300px;
-    padding-left: 70px;
-    color: #fff;
-    margin-top: 25px;
-}
-.post-title {
-    margin-bottom: 0px;
-    font-size: 28px;
-}
-.container-instructor {
-    background: #f5f5f5;
-}
+      span {
+        color: $trainer-accent;
+      }
+    }
 
-.be-an-trainer {
-    // width: 950px;
-    // margin: 20px auto;
-    padding: 20px 0px;
-}
+    p {
+      margin: 0;
+      color: $trainer-muted;
+      line-height: 1.6;
+    }
+  }
 
-// .inst-earning {
-    // height: 240px;
-    // padding: 0px 220px;
-    // margin: 20px 0px;
-    // margin: 0px 50px;
-// }
-
-// span.earn-img {
-//     display: inline-block;
-//     // margin-top: 60px;
-//     // float: left;
-//     background: url(https://www.oilandgasclub.com/wp-content/uploads/2017/08/ONGC-icons.png) no-repeat;
-//     background-position: -468px -140px;
-//     min-width: 130px;
-//     width: 130px;
-//     height: 128px;
-//     margin-right: 25px;
-// }
-
-.btn-group {
-    position: relative;
-    display: inline-block;
-    vertical-align: middle;
-}
-.post-listing.post {
-    margin-bottom: 20px;
-}
-
-.entry {
-    line-height: 1.5;
-}
-
-#my-income {
-    font-size: 55px;
-    margin-bottom: 0px;
-    // padding-bottom: 0px;
-    // width: 200px;
-    // float: left;
-}
-.earning-calculator-content {
-    float: left;
-    margin-top: 50px;
-    margin-left: 20px;
-}
-// .earning-amount-container {
-//    // float: left;
-//     // margin-top: 35px;
-//     // margin-left: 500px;
-//     p {
-//         margin-bottom: 0px;
-//     }
-// }
-
-.earning-calculator-content p:first-child {
-    font-size: 30px;
-    color: #333333;
-    line-height: 1.2;
-    margin-bottom: 0;
-    padding-bottom: 0px;
-}
-
-.earning-calculator-content p:nth-child(2) {
-    font-size: 16px;
-    color: rgba(51, 51, 51, 0.65);
-    padding-left: 2px;
-    font-weight: 100;
-    padding-bottom: 10px;
-}
-
-.earning-amount-container p:nth-child(3) {
-    font-size: 18px;
-    // position: relative;
-    // top: -14px;
-    // left: 52px;
-    color: rgba(50,50,50,0.7);
-    // padding-bottom: 0px;
-}
-
-.earning-amount-container p:nth-child(4) {
-    font-size: 12px;
-    letter-spacing: 0.25px;
-    padding-bottom: 0px;
-}
-.reason-choose {
+  &__benefits {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-}
-.reason-choose-box {
-    // max-width: 950px;
-    // width: 950px;
-    // height: 260px;
-    // margin: 20px auto;
-}
-.reason {
-    // float: left;
-    width: 263px;
-    // margin-right: 80px;
-    // display: flex;
-    // flex-wrap: wrap;
-    // justify-content: space-between;
+    gap: 1rem;
+  }
 }
 
-span.reason-icon-1 {
-    background-position: -387px -76px;
+.trainer-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.78rem;
+  color: $trainer-accent;
 }
-.reason span {
-    background: url(https://www.oilandgasclub.com/wp-content/uploads/2017/08/ONGC-icons.png) no-repeat;
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    border: 1px solid #BABBC0;
+
+.trainer-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  li {
+    position: relative;
+    padding-left: 1.75rem;
+    color: $trainer-primary;
+    font-weight: 600;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.35rem;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      border: 2px solid $trainer-accent;
+    }
+  }
+}
+
+.trainer-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin: 1rem 0 0.5rem;
+
+  .btn-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: $trainer-primary;
+  }
+}
+
+.trainer-stat {
+  flex: 1 1 150px;
+  min-width: 150px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.2rem;
+  border: 1px solid $trainer-border;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.07);
+
+  &__value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: $trainer-accent;
+  }
+
+  &__label {
+    color: $trainer-muted;
+  }
+}
+
+.trainer-hero__calculator {
+  display: flex;
+  justify-content: center;
+}
+
+.trainer-earn-card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 24px;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid $trainer-border;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+  text-align: center;
+
+  h2 {
+    margin: 0.3rem 0;
+    font-size: 2.4rem;
+
+    small {
+      font-size: 1rem;
+      font-weight: 400;
+      margin-left: 0.25rem;
+      color: $trainer-muted;
+    }
+  }
+
+  .trainer-earn-note {
+    margin: 0.4rem 0 0;
+    color: $trainer-muted;
+    font-size: 0.95rem;
+  }
+}
+
+.trainer-dropdown {
+  margin: 1rem 0;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+}
+
+.trainer-dropdown__toggle {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid $trainer-border;
+  background: #fff;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.trainer-dropdown__list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  border: 1px solid $trainer-border;
+  border-radius: 12px;
+  background: #fff;
+
+  li {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.05);
+    }
+  }
+}
+
+.trainer-section {
+  background: #fff;
+  border-radius: 24px;
+  padding: clamp(1.6rem, 4vw, 2.4rem);
+  border: 1px solid $trainer-border;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.07);
+}
+
+.trainer-section__header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto clamp(1rem, 3vw, 1.6rem);
+
+  h2 {
+    margin: 0.3rem 0 0.6rem;
+    font-size: clamp(2rem, 3vw, 2.4rem);
+  }
+
+  p {
+    margin: 0;
+    color: $trainer-muted;
+  }
+}
+
+.trainer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.4rem);
+
+  &--domains {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+.trainer-card,
+.trainer-domain {
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.4rem;
+  border: 1px solid $trainer-border;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+
+  h3 {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0;
+    color: $trainer-muted;
+  }
+
+  ul {
+    margin: 0.6rem 0 0;
+    padding-left: 1.1rem;
+    color: $trainer-primary;
+
+    li {
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+.trainer-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.trainer-step {
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.4rem;
+  border: 1px solid $trainer-border;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+
+  &__index {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
-    // padding: 9px 8px;
-}
-.reason:last-child {
-    margin-right: 0px;
+    background: rgba(240, 44, 0, 0.12);
+    color: $trainer-accent;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  h3 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+    color: $trainer-muted;
+  }
 }
 
-.reason-text {
-    font-size: 14px;
-    color: #737477;
-    letter-spacing: 0.50px;
+.trainer-section--form {
+  .trainer-form {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  form {
+    display: grid;
+    gap: 1rem;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-weight: 600;
+
+      input,
+      select {
+        border-radius: 14px;
+        border: 1px solid $trainer-border;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+      }
+    }
+
+    button {
+      justify-self: center;
+      margin-top: 0.5rem;
+      width: 100%;
+      max-width: 280px;
+      padding: 0.85rem 1.5rem;
+      border-radius: 999px;
+      border: none;
+      background: $trainer-accent;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  }
 }
 
-.reason-head h4 {
-    color: #303030;
-    font-size: 40px !important;
-    text-align: center;
-    margin-right: 50px;
-    margin-bottom: 30px !important;
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.8rem;
+  border-radius: 999px;
+  border: none;
+  background: $trainer-accent;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px rgba(240, 44, 0, 0.35);
+  }
 }
 
-.benefits-container h2 {
-    text-align: center;
-    padding: 30px 0px 50px 0px ;
+.trainer-section--highlight {
+  background: linear-gradient(120deg, #fff, #fef4f1);
 }
 
-.benefits-content {
-    width: 1053px;
-    margin: 0px auto;
+.trainer-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+
+  p {
+    margin: 0;
+    color: $trainer-muted;
+    max-width: 640px;
+  }
 }
 
-.benefits-head {
-    padding: 40px 0px;
-    text-align: center;
+.trainer-section--testimonials {
+  background: #0f172a;
+  color: #fff;
+
+  .trainer-section__header p,
+  .trainer-section__header h2 {
+    color: #fff;
+  }
 }
 
-.benefits-container ul li {
-    font-size: 14px;
-    color: black;
-}
-.benefits-container h6 {
-    color: #E6632F;
-    font-size: 20px !important;
-    margin-bottom: 10px;
-    font-weight: 400;
+.trainer-testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
 }
 
-.benefits-container img {
-    // background: url(https://www.oilandgasclub.com/wp-content/uploads/2017/08/ONGC-icons.png) no-repeat;
-    // display: inline-block;
-    // height: 70px;
-    width: 60px;
-    margin-right: 10px;
+.trainer-testimonial {
+  padding: 1.6rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &__quote {
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  &__author {
+    margin: 0;
+    font-weight: 600;
+    color: #f8fafc;
+  }
 }
-.benefits-content-card > div > div {
-    max-width: 240px;
-}
-.benefits-content-card {
+
+.trainer-section--faq {
+  .trainer-faq {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    details {
+      border: 1px solid $trainer-border;
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: $trainer-primary;
+      }
+
+      p {
+        margin: 0.75rem 0 0;
+        color: $trainer-muted;
+      }
+    }
+  }
 }
 
-.instrcutor-query-form {
-    // text-align: center;
-    padding-top: 20px;
-    max-width: 400px;
-    width: 100%;
-    // font-size: larger;
-    margin: 0px auto;
-}
-.instrcutor-query-form button {
-    width: 100px;
-}
-.instrcutor-query-form h4 {
-    text-align: center;
+@media (max-width: 768px) {
+  .trainer-hero__benefits {
+    flex-direction: column;
+  }
+
+  .trainer-dropdown__list {
+    position: relative;
+  }
 }
 
-.customWidth{
-    max-width: 62.5rem!important;
-}

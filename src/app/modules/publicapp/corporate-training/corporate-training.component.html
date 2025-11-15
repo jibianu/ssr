@@ -1,93 +1,123 @@
-<!DOCTYPE html>
-<html>
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
+<div class="corp-page" ngSkipHydration>
+  <section class="corp-hero">
+    <div class="corp-hero__copy">
+      <p class="corp-eyebrow">Enterprise upskilling · Hybrid delivery · API/ASNT/CSWIP experts</p>
+      <h1>Build high-performing oil &amp; gas teams with <span>custom corporate academies</span></h1>
+      <p>
+        Tailored programs for process, mechanical, inspection, and digital teams with live labs, project simulations,
+        and global instructor networks.
+      </p>
+      <div class="corp-stats">
+        @for (stat of heroStats; track stat.label) {
+          <div class="corp-stat">
+            <span class="corp-stat__value">{{ stat.value }}</span>
+            <span class="corp-stat__label">{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="corp-hero__actions">
+        <a class="btn-primary" href="mailto:enterprise@oilandgasclub.com">Request a custom program</a>
+        <a class="btn-link" href="https://www.oilandgasclub.com/courses">Download full catalog →</a>
+      </div>
+    </div>
+    <div class="corp-hero__card">
+      <h3>Design a learning sprint</h3>
+      <ol>
+        <li>Pick target roles (process, mechanical, inspection, digital)</li>
+        <li>Choose format: cohort, hybrid, or on-site</li>
+        <li>Align on KPIs, labs, and certification goals</li>
+      </ol>
+      <p class="corp-note">Most customers launch their first cohort in 3–4 weeks.</p>
+    </div>
+  </section>
 
-<div class="background-cover corp-cover" style="background: url( https://www.oilandgasclub.com/wp-content/uploads/2016/08/corporate-training-banner.jpg ) no-repeat scroll center center / cover #1E3133;position:relative;display:inline-block;height:625px;">	
-<div class="test" style="height: 625px;
-background: rgba(26, 53, 64, 0.84) none repeat scroll 0% 0%;">
-	
-	<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<div class="container" ngSkipHydration>
-	<div class="banner-content">
-	     <div class="training-head">
+  <section class="corp-section">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Solutions</p>
+      <h2>What we deliver</h2>
+    </header>
+    <div class="corp-grid">
+      @for (solution of solutions; track solution.title) {
+        <article class="corp-card">
+          <h3>{{ solution.title }}</h3>
+          <p>{{ solution.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
+  <section class="corp-section">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Delivery modes</p>
+      <h2>We adapt to your rhythm</h2>
+    </header>
+    <div class="corp-grid corp-grid--modes">
+      @for (mode of deliveryModes; track mode.mode) {
+        <article class="corp-mode">
+          <h3>{{ mode.mode }}</h3>
+          <p>{{ mode.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
-			<head>
-				<meta name="robots" content="index, follow">
-				<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-				<meta name="twitter:card" content="summary_large_image">
-				<link rel="canonical" href="https://www.oilandgasclub.com/corporate-training" />
-			  
-				<!-- Open Graph Meta Tags -->
-				<meta property="og:site_name" content="Oilandgasclub">
-				<meta property="og:type" content="website">
-				<meta property="og:title" content="Corporate Training Programs | Oilandgasclub - Professional Development for Oil & Gas Industry">
-				<meta property="og:description" content="Empower your workforce with Oilandgasclub's Corporate Training Programs. Expert-led courses in API, ASNT, CSWIP, NDT, and HTRI for oil and gas professionals. Flexible and industry-focused training solutions.">
-				<meta property="og:author" content="Oilandgasclub Team">
-				<meta property="og:image" content="https://www.oilandgasclub.com/assets/images/corporate-training-banner.jpg">
-				<meta property="og:image:width" content="600">
-				<meta property="og:image:height" content="500">
-				<meta property="og:url" content="https://www.oilandgasclub.com/corporate-training">
-			  
-				<!-- Article Meta Tags -->
-				<meta property="article:published_time" content="2023-12-26T06:18:55.5419129">
-				<meta property="article:modified_time" content="2023-12-26T06:43:07.881401">
-				<meta property="article:tag" content="Corporate Training, Oil and Gas Certification, API Courses, ASNT Training, CSWIP Programs, NDT Certification, Workforce Development">
-				<meta property="article:publisher" content="https://www.oilandgasclub.com">
-			  
-				<!-- Twitter Meta Tags -->
-				<meta name="twitter:title" content="Corporate Training Programs | Oilandgasclub - Empower Your Workforce with Expert-Led Courses">
-				<meta name="twitter:description" content="Boost your team's skills with Oilandgasclub's Corporate Training Programs. Learn API, ASNT, CSWIP, NDT, and HTRI from industry experts.">
-				<meta name="twitter:label1" content="Training Programs">
-				<meta name="twitter:data1" content="API, ASNT, CSWIP, NDT, and HTRI Certifications">
-				<meta name="twitter:label2" content="Flexible Learning">
-				<meta name="twitter:data2" content="Online and In-House Options">
-				<meta name="twitter:site" content="@oilandgasclub">
-				<meta name="twitter:creator" content="@Oilandgasclub">
-				<meta name="twitter:url" content="https://www.oilandgasclub.com/corporate-training">
-			  
-				<title>Corporate Training Programs | Oilandgasclub - Professional Development for Oil & Gas Industry</title>
-			 </head>
+  <section class="corp-section">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">How it works</p>
+      <h2>Partnering with us</h2>
+    </header>
+    <div class="corp-steps">
+      @for (step of trainingSteps; track step.step) {
+        <article class="corp-step">
+          <span class="corp-step__index">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
 
- <div class="header-section" style="padding: 40px; text-align: center;">
-	<h1 style="font-family: 'Poppins', sans-serif; font-size: 36px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-	   Boost your team’s skills with expert-led, self-paced corporate training from Oilandgasclub!
-	</h1>
-	<p class="sub-training-head" style="font-size: 18px;">
-	   <b style="color: #ffa500;">30+</b> corporates 
-	   <b style="color: #ffa500;">40+</b> courses 
-	   <b style="color: #ffa500;">7+</b> locations
-	</p>
-  </div>
-  
-  <div class="train-form" style="text-align: center; margin: 20px;">
-	<button class="btn" style="background-color: #00c6ff; color: white; padding: 10px 20px; border-radius: 25px; border: none; font-size: 16px;">
-	  <i class="fas fa-clipboard-list"></i> REQUEST A CUSTOM QUOTE
-	</button>
-  </div>
-  
-  <div class="training-content" style="padding: 20px; text-align: center;">
-	<p class="experts_heading" style="font-size: 24px; font-weight: bold;">Experts in</p>
-	<div class="top_course" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+  <section class="corp-section corp-section--highlight">
+    <div class="corp-highlight">
+      <div>
+        <p class="corp-eyebrow">Insight</p>
+        <h2>Upskilling that sticks</h2>
+        <p>Live labs, cohort communities, and project reviews keep engineers accountable. We embed your assets,
+          vendors, and compliance frameworks for seamless adoption.</p>
+      </div>
+      <a class="btn-primary" href="mailto:enterprise@oilandgasclub.com">Book a discovery call</a>
+    </div>
+  </section>
 
-	  <div class="course-card" style="background: #f0f0f0; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-		 Design of Industrial Piping Systems Specialization
-	  </div>
-	  <div class="course-card" style="background: #f0f0f0; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-		 PIPENET Transient Module, Spray/Sprinkler Module ,Standard Module
-	  </div>
-	  <div class="course-card" style="background: #f0f0f0; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-		 Storage Tank Design as per API 650
-	  </div>
-	  <div class="course-card" style="background: #f0f0f0; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-		Static Equipment Design
-	  </div>
-	  <div class="course-card" style="background: #f0f0f0; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-		 Dynamic Stress Analysis of Industrial Piping Systems
-	  </div>
-	  <div class="course-card" style="background: #f0f0f0; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-		 Heat Exchangers: Fundamentals And Design Analysis
-	  </div>
-	  
-	  <!-- Add more course cards here -->
-	</div>
-  </div>
+  <section class="corp-section corp-section--testimonials">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Customer stories</p>
+      <h2>Leaders trust Oilandgasclub</h2>
+    </header>
+    <div class="corp-testimonials">
+      @for (story of testimonials; track story.author) {
+        <article class="corp-testimonial">
+          <p class="corp-testimonial__quote">{{ story.quote }}</p>
+          <p class="corp-testimonial__author">{{ story.author }}</p>
+        </article>
+      }
+    </div>
+    <div class="corp-logos">
+      @for (logo of logos; track logo) {
+        <img [src]="logo" alt="Trusted partner logo" loading="lazy" />
+      }
+    </div>
+  </section>
+
+  <section class="corp-section corp-section--cta">
+    <div class="corp-cta">
+      <div>
+        <p class="corp-eyebrow">Ready to get started?</p>
+        <h2>Co-create a learning roadmap</h2>
+        <p>Send us your skill matrix, competency goals, or certification requirements. Our team will respond within 48 hours with a proposal.</p>
+      </div>
+      <a class="btn-primary" href="mailto:enterprise@oilandgasclub.com">Request proposal</a>
+    </div>
+  </section>
+</div>
