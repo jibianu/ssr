@@ -1,0 +1,112 @@
+@use 'sass:map';
+@use '../public-course/public-course-common' as course;
+
+$public-max-width: course.$course-max-width;
+$public-horizontal-padding: clamp(1.5rem, 5vw, 2.5rem);
+$public-vertical-spacing: clamp(2rem, 5vw, 3.5rem);
+$public-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
+$public-card-radius: course.$course-radius-md;
+$public-card-shadow: course.$course-shadow-card;
+$public-card-border: course.$course-color-card-border;
+
+:root {
+  --public-max-width: #{$public-max-width};
+  --public-horizontal-padding: #{$public-horizontal-padding};
+  --public-vertical-spacing: #{$public-vertical-spacing};
+  --public-section-spacing: #{$public-section-spacing};
+}
+
+.public-main-wrapper {
+  width: 100%;
+  padding-block: $public-vertical-spacing;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), #ffffff);
+  overflow-x: hidden;
+}
+
+.public-container {
+  width: min(100%, $public-max-width);
+  margin: 0 auto;
+  padding-inline: $public-horizontal-padding;
+}
+
+.public-section {
+  padding-block: $public-section-spacing;
+
+  & + & {
+    margin-top: $public-section-spacing;
+  }
+}
+
+.public-stack {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.public-grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.public-grid--auto-fit {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.public-card {
+  border-radius: $public-card-radius;
+  border: 1px solid $public-card-border;
+  background: course.$course-color-surface;
+  box-shadow: $public-card-shadow;
+}
+
+.public-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.78rem;
+  color: course.$course-color-accent-orange;
+}
+
+.public-heading {
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 800;
+  color: course.$course-color-heading;
+  margin: 0;
+}
+
+.public-subtitle {
+  color: course.$course-color-text-secondary;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.public-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.8rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fbbf24, #f97316);
+  color: #0f172a;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px rgba(249, 115, 22, 0.35);
+  }
+}
+
+@media (max-width: 768px) {
+  .public-main-wrapper {
+    padding-block: clamp(1.5rem, 5vw, 2.2rem);
+  }
+
+  .public-container {
+    padding-inline: clamp(1rem, 6vw, 1.5rem);
+  }
+}
+

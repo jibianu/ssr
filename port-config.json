@@ -6,7 +6,7 @@
       "configLocation": "angular.json -> serve.options.port"
     },
     "backend": {
-      "default": 52056,
+      "default": 7080,
       "protocol": "http",
       "description": ".NET Core API backend port",
       "configLocation": "proxy.conf.json -> target, src/server.ts -> backendUrl"
@@ -19,7 +19,7 @@
   },
   "urls": {
     "frontend": "http://localhost:4200",
-    "backend": "http://localhost:52056",
+    "backend": "http://localhost:7080",
     "ssr": "http://localhost:4000"
   },
   "notes": {

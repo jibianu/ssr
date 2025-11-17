@@ -7,10 +7,9 @@
 export const environment = {
   production: false,
   // Local backend URL - matches backend launchSettings.json
-  // Backend exposes: HTTP on port 52056, HTTPS on port 52055
+  // Backend exposes: HTTP on port 7080
   // Using HTTP to avoid SSL certificate issues in development
-  // To use HTTPS: change to 'https://localhost:52055/'
-  apiUrl: 'http://localhost:52056/',
+  apiUrl: 'http://localhost:7080/',
   seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300'
 };

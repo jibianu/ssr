@@ -20,19 +20,29 @@ export class WhyOilandgasclubComponent implements OnInit {
 
   readonly pillars = [
     {
-      icon: 'assets/icons/corporate-pricing.svg',
-      title: 'Corporate pricing',
-      description: 'Volume-based licenses, bundled cohorts, and enterprise dashboards keep training ROI measurable.'
+      icon: 'handshake',
+      title: 'Partnership-first model',
+      description: 'Joint planning cadences, transparent milestones, and success metrics that align to your competency roadmap.'
     },
     {
-      icon: 'assets/icons/custom-course.svg',
-      title: 'Custom curriculum',
-      description: 'Blend your assets, procedures, and tool stack so every module feels native to your workflows.'
+      icon: 'growth',
+      title: 'Measurable ROI',
+      description: 'Volume-based licenses, bundled cohorts, and dashboards that tie completions to productivity gains.'
     },
     {
-      icon: 'assets/icons/support.svg',
-      title: 'Always-on support',
-      description: 'Dedicated learning managers for scheduling, reporting, and on-site coordination worldwide.'
+      icon: 'collaboration',
+      title: 'Specialist community',
+      description: 'Practitioner mentors, peer-to-peer lounges, and cohort pods that sustain engagement across regions.'
+    },
+    {
+      icon: 'promotion',
+      title: 'Signal your expertise',
+      description: 'Co-branded spotlights, badge kits, and internal campaigns that help you promote learning wins.'
+    },
+    {
+      icon: 'workflow',
+      title: 'Connected delivery',
+      description: 'APIs, LMS integrations, and automation hooks so enrollments, tracking, and reports stay in sync.'
     }
   ];
 

@@ -32,8 +32,7 @@ const errorPages = [PageNotFoundComponent];
         SkeletonCourseCardComponent,
         SkeletonCourseListComponent,
         SkeletonEventCardComponent,
-        SkeletonRelatedCourseComponent,
-        ...errorPages
+        SkeletonRelatedCourseComponent
     ],
     imports: [
         CommonModule,
@@ -46,6 +45,8 @@ const errorPages = [PageNotFoundComponent];
         NgxSpinnerModule,
         NgMultiSelectDropDownModule,
         CarouselModule,
+        // ✅ FIX: PageNotFoundComponent is standalone - must be imported, not declared
+        ...errorPages
     ], 
     exports: [
         ToasterComponent,

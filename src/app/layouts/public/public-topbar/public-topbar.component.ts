@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { PublicappRoutingModule } from 'src/app/modules/publicapp/publicapp-routing.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 
 // ✅ PERFORMANCE: OnPush change detection for faster change detection (30-50% improvement)
@@ -15,7 +14,6 @@ import { SharedModule } from 'src/app/shared/shared.module';
     imports: [
       CommonModule,
       RouterLink,
-      PublicappRoutingModule,
       SharedModule
     ],
     changeDetection: ChangeDetectionStrategy.OnPush

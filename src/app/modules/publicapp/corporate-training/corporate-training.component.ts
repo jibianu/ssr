@@ -126,10 +126,10 @@ export class CorporateTrainingComponent implements OnInit {
   ];
 
   readonly logos = [
-    'assets/logos/company1.svg',
-    'assets/logos/company2.svg',
-    'assets/logos/company3.svg',
-    'assets/logos/company4.svg'
+    { icon: 'orbit', label: 'Energy Alliance' },
+    { icon: 'shield', label: 'Integrity Group' },
+    { icon: 'pulse', label: 'Reliability Partners' },
+    { icon: 'circuit', label: 'Digital Twin Lab' }
   ];
 
   constructor(

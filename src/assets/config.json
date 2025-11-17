@@ -1,5 +1,5 @@
 {
-  "apiUrl": "http://localhost:52056/",
-  "apiBaseUrl": "http://localhost:52056/",
+  "apiUrl": "http://localhost:7080/",
+  "apiBaseUrl": "http://localhost:7080/",
   "environment": "development"
 }

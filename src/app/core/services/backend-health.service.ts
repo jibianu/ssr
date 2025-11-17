@@ -213,7 +213,19 @@ export class BackendHealthService {
       console.error(`   2. Check if backend is running on port 52056 (HTTP) or 52055 (HTTPS)`);
       console.error(`   3. Verify CORS is configured on backend`);
       console.error(`   4. Check backend logs for errors`);
-      throw error;
+      throw this.normalizeError(error);
     }
+  }
+
+  private normalizeError(error: unknown): Error {
+    if (error instanceof Error) {
+      return error;
+    }
+    if (error && typeof error === 'object') {
+      const message = 'message' in error ? String((error as { message?: unknown }).message ?? 'Unexpected error') : 'Unexpected error';
+      const normalized = new Error(message);
+      return Object.assign(normalized, error);
+    }
+    return new Error('Unexpected error');
   }
 }

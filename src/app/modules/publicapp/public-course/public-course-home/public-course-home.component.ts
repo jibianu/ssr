@@ -106,7 +106,16 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       catchError(error => {
         // ✅ ERROR HANDLING: Graceful fallback on timeout/error
         console.error('Error loading dashboard categories:', error);
-        this.error = error?.error?.message || 'Failed to load categories. Please refresh the page.';
+        
+        // If backend health check also failed, show detailed backend unavailable message
+        if (!this.backendAvailable) {
+          const actualApiUrl = this.backendHealthService.getActualBackendUrl();
+          this.error = `Unable to connect to API server. Please ensure the backend is running at ${actualApiUrl}`;
+        } else {
+          // Backend is available but API call failed - show generic error
+          this.error = error?.error?.message || 'Failed to load categories. Please refresh the page.';
+        }
+        
         return of([] as HomeCategorySection[]); // Return empty array instead of breaking
       }),
       shareReplay(1) // ✅ Cache for multiple subscriptions/renders
@@ -126,16 +135,16 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
   
   /**
    * ✅ BACKEND HEALTH: Check if backend API is available
-   * Shows user-friendly message when backend is offline
+   * Only logs to console - doesn't show UI error unless actual API calls fail
+   * This prevents false positives when backend is slow to respond to health checks
    */
   private checkBackendHealth(): void {
     this.backendHealthService.checkHealthWithTimeout(5000).subscribe(available => {
       this.backendAvailable = available;
-      if (!available && !this.error) {
-        // Only show backend unavailable message if there's no other error
-        // Use the actual backend URL for error message (not the proxy path)
-        const actualApiUrl = this.backendHealthService.getActualBackendUrl();
-        this.error = `Unable to connect to API server. Please ensure the backend is running at ${actualApiUrl}`;
+      // Don't show error immediately - only show if actual API calls also fail
+      // This prevents false positives when backend is slow to start or temporarily unavailable
+      if (!available) {
+        console.warn('⚠️ Backend health check failed, but waiting for actual API call to confirm');
       }
     });
   }
@@ -183,7 +192,16 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       }),
       catchError(error => {
         console.error('Error loading dashboard categories:', error);
-        this.error = error?.error?.message || 'Failed to load categories. Please refresh the page.';
+        
+        // If backend health check also failed, show detailed backend unavailable message
+        if (!this.backendAvailable) {
+          const actualApiUrl = this.backendHealthService.getActualBackendUrl();
+          this.error = `Unable to connect to API server. Please ensure the backend is running at ${actualApiUrl}`;
+        } else {
+          // Backend is available but API call failed - show generic error
+          this.error = error?.error?.message || 'Failed to load categories. Please refresh the page.';
+        }
+        
         return of([] as HomeCategorySection[]);
       }),
       shareReplay(1)
