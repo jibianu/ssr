@@ -24,7 +24,7 @@
       <p>No categories available at the moment.</p>
     </div>
 
-    <section class="course-section container" *ngFor="let item of items; trackBy: trackByItemIndex">
+    <section class="course-section public-container" *ngFor="let item of items; trackBy: trackByItemIndex">
       <header class="course-section__header">
         <div>
           <h2 class="course-section__title">{{ item.categoryName }}</h2>
@@ -82,7 +82,7 @@
   </ng-container>
 
   <ng-template #loadingTemplate>
-    <div class="course-home__loading container">
+    <div class="course-home__loading public-container">
       <p class="text-center">Loading categories...</p>
     </div>
   </ng-template>

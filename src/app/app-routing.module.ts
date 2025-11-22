@@ -9,7 +9,8 @@ const routerOptions: ExtraOptions = {
     scrollPositionRestoration: 'enabled',
     anchorScrolling: 'enabled',
     scrollOffset: [0, 64],
-    initialNavigation: 'enabledBlocking'
+    initialNavigation: 'enabledBlocking',
+    enableTracing: true // ✅ DEBUG: Enable router tracing to see route matching
 };
 
 export const routes: Routes = [
@@ -17,13 +18,21 @@ export const routes: Routes = [
         path: '',
         component: PublicLayoutComponent,
         children: [
-            {
-                path: '',
-                loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule)
-            },
+            // ✅ CRITICAL: Auth route MUST come before empty path to ensure /auth/login is matched correctly
             {
                 path: 'auth',
                 loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+            },
+                {
+        path: 'app',
+        component: AdminLayoutComponent,
+        loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule),
+        canActivate: [AuthGuard]
+    },
+            // Public app routes (empty path matches everything else)
+            {
+                path: '',
+                loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule)
             }
         ]
     },
@@ -36,16 +45,10 @@ export const routes: Routes = [
                 path: '',
                 loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule)
             }
+            
         ]
     },
-    { 
-        path: 'page-not-found', 
-        component: PageNotFoundComponent 
-    },
-    { 
-        path: '**', 
-        redirectTo: 'page-not-found' 
-    }
+    
 ];
 
 @NgModule({

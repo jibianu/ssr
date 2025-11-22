@@ -7,11 +7,6 @@
   min-height: 100vh;
 }
 
-.container {
-  width: min(1120px, 92vw);
-  margin: 0 auto;
-}
-
 .events-hero {
   position: relative;
   min-height: clamp(340px, 50vw, 420px);

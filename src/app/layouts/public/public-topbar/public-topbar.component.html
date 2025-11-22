@@ -1,45 +1,52 @@
 <header id="theme-header" class="theme-header inner-header course-page-header">
-  <div class="container">
-  <div class="d-flex justify-space-between custom-mobile-css">
-   
-
-    <div class="logo" routerLink="/"> 
-       <span >
-        <img src="assets/s3/oilandgas_club.svg" width="100" height="50" alt="">   
-      </span>  
-    </div>
-     
-        <nav class="w-100 hidemobile">
-          <div class="menu-header-menu-container">
-            <ul id="menu-header-menu" class="nav-menu m-0">
-              <li id="menu-item-5969" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5969">
-                <a [routerLink]="'/courses'">Courses</a></li>
-              <li id="menu-item-5970" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5970"><a
-                  [routerLink]="'/events'">Events</a></li>
-              <li id="menu-item-5971" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5971"><a
-                  href="https://elearn.oilandgasclub.com/auth/login/">Login</a></li>
-            </ul>
-          </div>
-        </nav>
-        
-    <nav class="w-100"  *ngIf="isVisible">
-      <button type="button" class="close" (click)="toggleinVisibility($event)" aria-label="Close menu"></button>
-      <div class="menu-header-menu-container">
-        <ul id="menu-header-menu" class="nav-menu m-0">
-          <li id="menu-item-5969" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5969">
-            <a [routerLink]="'/courses'">Courses</a></li>
-          <li id="menu-item-5970" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5970"><a
-              [routerLink]="'/events'">Events</a></li>
-          <li id="menu-item-5971" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5971"><a
-            href="https://elearn.oilandgasclub.com/auth/login/">Login</a></li>
-        </ul>
+  <div class="public-container">
+    <div class="topbar-inner">
+      <div class="logo" routerLink="/">
+        <span>
+          <img src="assets/s3/oilandgas_club.svg" width="120" height="54" alt="Oilandgasclub logo">
+        </span>
       </div>
-    </nav>
 
-    <button class="mobile-nav" (click)="toggleVisibility()">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+      <nav class="topbar-nav topbar-nav--desktop">
+        <ul class="nav-menu">
+          <li class="menu-item">
+            <a [routerLink]="'/courses'">Courses</a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="'/events'">Events</a>
+          </li>
+          <li class="menu-item">
+            <a href="https://elearn.oilandgasclub.com/auth/login/">Login</a>
+          </li>
+        </ul>
+      </nav>
+
+      <button class="mobile-nav" (click)="toggleVisibility()" type="button" aria-label="Open navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <nav class="topbar-nav topbar-nav--mobile" *ngIf="isVisible">
+      <div class="topbar-nav__header">
+        <p>Browse Oilandgasclub</p>
+        <button type="button" class="close" (click)="toggleinVisibility($event)" aria-label="Close navigation">
+          ✕
+        </button>
+      </div>
+      <ul class="nav-menu">
+        <li class="menu-item">
+          <a [routerLink]="'/courses'" (click)="toggleinVisibility()">Courses</a>
+        </li>
+        <li class="menu-item">
+          <a [routerLink]="'/events'" (click)="toggleinVisibility()">Events</a>
+        </li>
+        <li class="menu-item">
+          <a href="https://elearn.oilandgasclub.com/auth/login/" (click)="toggleinVisibility()">Login</a>
+        </li>
+      </ul>
+    </nav>
   </div>
-</div>
+</header>
+

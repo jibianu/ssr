@@ -97,12 +97,112 @@ export class AuthenticationService {
   }
 
   /**
+   * ✅ CHANGED: Return the authentication token issued by our backend
+   * The backend now returns (and expects) a custom JWT token.
+   * This method is used by JwtInterceptor to attach tokens to requests.
+   * It returns the token even if it's close to expiry (backend will validate).
+   * Use currentToken() for validation checks that require a valid token.
+   */
+  public getToken(): string | null {
+    return this.getIdToken();
+  }
+
+  /**
+   * ✅ CHANGED: Get token for backward compatibility
+   * This method is kept for backward compatibility but now returns the custom JWT via getIdToken()
+   */
+  public getAccessToken(): string | null {
+    // ✅ CHANGED: Return the custom JWT token
+    return this.getIdToken();
+  }
+
+  /**
+   * ✅ NEW: Get authentication token explicitly
+   * Returns the custom JWT token for API authentication.
+   */
+  public getIdToken(): string | null {
+    // ✅ CRITICAL: Use custom JWT for API authentication
+    // The custom JWT contains the local user ID plus permission flags.
+    
+    // ✅ DIAGNOSTIC: Enhanced logging to debug token retrieval
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log('[AuthService] getIdToken() called');
+      console.log(`[AuthService]   In-memory idToken: ${this.idToken ? `YES (length: ${this.idToken.length})` : 'NO'}`);
+    }
+    
+    // Ensure auth token is loaded from storage
+    const loaded = this.ensureIdTokenLoaded();
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log(`[AuthService]   ensureIdTokenLoaded() returned: ${loaded}`);
+      console.log(`[AuthService]   After load - idToken: ${this.idToken ? `YES (length: ${this.idToken.length})` : 'NO'}`);
+    }
+    
+    if (!loaded) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.warn('[AuthService] ❌ Auth token not available after loading from storage');
+        console.warn('[AuthService]   Access token present:', !!this.accessToken);
+        console.warn('[AuthService]   Refresh token present:', !!this.refreshToken);
+        console.warn('[AuthService]   This means user is not logged in or token was cleared');
+      }
+      return null;
+    }
+
+    // ✅ VERIFY: Log token structure so we can confirm whether it's custom JWT or Cognito
+    if (typeof ngDevMode === 'undefined' || ngDevMode && this.idToken) {
+      try {
+        const tokenParts = this.idToken.split('.');
+        if (tokenParts.length >= 2) {
+          const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          const tokenUse = payload.token_use;
+          console.debug('[AuthService] getIdToken() - Inspecting auth token', {
+            tokenUse: tokenUse || 'not-specified',
+            hasIdToken: !!this.idToken,
+            hasAccessToken: !!this.accessToken,
+            tokenLength: this.idToken.length,
+            issuer: payload.iss,
+            audience: payload.aud
+          });
+
+          if (!tokenUse) {
+            console.log('[AuthService] ✅ Custom JWT detected (no token_use claim present)');
+          } else if (tokenUse === 'id') {
+            console.warn('[AuthService] ⚠️ Cognito ID token detected. Backend expects custom JWT tokens now.');
+          } else {
+            console.warn('[AuthService] ⚠️ Unexpected token_use claim:', tokenUse);
+          }
+        }
+      } catch (e) {
+        // Token parsing failed - continue anyway
+      }
+    }
+
+    // Return auth token even if expired - let backend handle validation
+    // This ensures the interceptor always attaches the token if it exists
+    return this.idToken;
+  }
+
+  /**
    * Convenience helper for guards & components that need to gate behaviour.
    */
   public hasValidAccessToken(): boolean {
     const isValid = this.hasValidAccessTokenInternal();
     this.updateAuthState(isValid);
     return isValid;
+  }
+
+  /**
+   * ✅ NEW: Force load tokens from storage into memory
+   * Useful before navigation to ensure guard can validate tokens
+   */
+  public ensureTokensLoaded(): void {
+    this.ensureAccessTokenLoaded();
+    this.ensureIdTokenLoaded();
+    
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      console.log('[AuthService] 🔄 Force loaded tokens:');
+      console.log('[AuthService]   accessToken in memory:', !!this.accessToken);
+      console.log('[AuthService]   idToken in memory:', !!this.idToken);
+    }
   }
 
   /**
@@ -115,14 +215,105 @@ export class AuthenticationService {
       { withCredentials: true }
     ).pipe(
       map(response => {
+        // ✅ CRITICAL: Log the raw response to see what backend is returning
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.log('\n╔══════════════════════════════════════════════════════════════╗');
+          console.log('║     LOGIN RESPONSE RECEIVED                                  ║');
+          console.log('╚══════════════════════════════════════════════════════════════╝');
+          console.log('[AuthService] 🔍 Raw login response:', JSON.stringify(response, null, 2));
+          console.log('[AuthService]   Response keys:', Object.keys(response || {}));
+          console.log('[AuthService]   hasToken property:', !!(response?.token));
+          console.log('[AuthService]   hasIsSuccess property:', !!(response?.isSuccess));
+          if (response?.token) {
+            console.log('[AuthService]   Token length:', response.token.length);
+            // Try to parse token to check type
+            try {
+              const tokenParts = response.token.split('.');
+              if (tokenParts.length >= 2) {
+                const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const tokenUse = payload.token_use;
+                const issuer = payload.iss;
+                console.log('[AuthService]   Token type (token_use):', tokenUse || 'custom JWT (none)');
+                console.log('[AuthService]   Token issuer (iss):', issuer || 'not specified');
+                if (!tokenUse) {
+                  console.log('[AuthService]   ✅ Custom JWT detected (expected)');
+                } else {
+                  console.warn('[AuthService]   ⚠️  WARNING: Token includes token_use claim (value:', tokenUse, ')');
+                  console.warn('[AuthService]   Backend is expected to return custom JWT tokens.');
+                }
+              }
+            } catch (e) {
+              console.error('[AuthService]   Could not parse token:', e);
+            }
+          }
+          console.log('╚══════════════════════════════════════════════════════════════╝\n');
+        }
+        
         const tokens = this.parseAuthResponse(response);
         if (!tokens.accessToken) {
-          throw new Error('Login response did not include a Cognito access token');
+          console.error('[AuthService] ❌ Login response did not include a token');
+          console.error('[AuthService] Response keys:', Object.keys(response || {}));
+          console.error('[AuthService] Full response:', JSON.stringify(response, null, 2));
+          throw new Error('Login response did not include a token');
         }
 
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.log('[AuthService] ✅ Login successful - storing tokens');
+          console.log(`[AuthService]   AccessToken slot: ${tokens.accessToken ? `YES (length: ${tokens.accessToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   AuthToken (idToken slot): ${tokens.idToken ? `YES (length: ${tokens.idToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   RefreshToken: ${tokens.refreshToken ? `YES (length: ${tokens.refreshToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   ✅ Custom JWT will be used for API authentication`);
+        }
+
+        // ✅ CRITICAL: Clear any old Cognito tokens before storing new token
+        // This ensures we don't accidentally use old Cognito tokens
+        this.clearTokens();
+        
         this.storeTokens(tokens);
         this.userInfoCache$ = null; // force refetch of user profile
         this.updateAuthState(true);
+        
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.log('[AuthService] ✅ Tokens stored successfully');
+          console.log(`[AuthService]   In-memory accessToken: ${this.accessToken ? `YES (length: ${this.accessToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   In-memory auth token (idToken slot): ${this.idToken ? `YES (length: ${this.idToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   In-memory refreshToken: ${this.refreshToken ? `YES (length: ${this.refreshToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   ✅ Custom JWT will be used for API authentication`);
+          
+          // ✅ CRITICAL: Verify auth token is actually stored in localStorage
+          const storage = this.getStorage();
+          if (storage) {
+            const storedIdToken = storage.getItem(this.storageKeys.idToken);
+            console.log(`[AuthService]   localStorage auth token: ${storedIdToken ? `YES (length: ${storedIdToken.length})` : 'NO'}`);
+            if (!storedIdToken) {
+              console.error('[AuthService] ❌ CRITICAL: Auth token was NOT stored in localStorage!');
+              console.error('[AuthService]   This will cause 401 errors on subsequent requests!');
+            } else {
+              // Inspect stored token metadata
+              try {
+                const tokenParts = storedIdToken.split('.');
+                if (tokenParts.length >= 2) {
+                  const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                  const tokenUse = payload.token_use;
+                  const issuer = payload.iss;
+                  if (!tokenUse) {
+                    console.log('[AuthService] ✅ Stored token is custom JWT (expected)');
+                    console.log('[AuthService]   Token issuer:', issuer ?? 'N/A');
+                  } else {
+                    // Only warn if token_use is present (Cognito token) - custom JWTs don't have this
+                    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+                      console.warn('[AuthService] ⚠️  Stored token contains token_use claim:', tokenUse);
+                      console.warn('[AuthService]   Backend should be returning custom JWT tokens.');
+                    }
+                  }
+                }
+              } catch (e) {
+                console.error('[AuthService] Could not verify stored token type:', e);
+              }
+            }
+          }
+        }
+        
         return tokens.accessToken;
       }),
       catchError(error => {
@@ -147,32 +338,93 @@ export class AuthenticationService {
 
   /**
    * Fetches the authenticated user profile from the backend.
+   * ✅ FIXED: Uses custom JWT Token for authentication.
+   * The interceptor will automatically refresh expired tokens before making the request.
    */
   public getUserInfo(): Observable<any> {
-    const token = this.currentToken();
+    // ✅ FIXED: Use custom JWT Token for API authentication
+    const token = this.getAccessToken();
 
-    if (!token || isPlatformServer(this.platformId)) {
+    // ✅ Only skip on server-side rendering
+    if (isPlatformServer(this.platformId)) {
       return of(null);
     }
 
+    // ✅ If no token at all, return null immediately (user not logged in)
+    if (!token) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.warn('[AuthService] getUserInfo() - No token available. User may not be logged in.');
+      }
+      return of(null);
+    }
+
+    // ✅ Always make the request - let interceptor handle token refresh if needed
     if (!this.userInfoCache$) {
+      // ✅ FIX: Use consistent URL casing - backend route is case-insensitive but be explicit
+      const getInfoUrl = `${this.apiUrl}page/Account/getinfo`;
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.log(`[AuthService] getUserInfo() - Making request to: ${getInfoUrl}`);
+        console.log(`[AuthService]   Token available: ${!!token}`);
+        console.log(`[AuthService]   Token length: ${token?.length ?? 0}`);
+        
+        // ✅ CHANGED: Verify auth token format and content
+        if (token) {
+          try {
+            const tokenParts = token.split('.');
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+              const tokenUse = payload.token_use;
+              const userId = payload.sub || payload['cognito:username'] || payload.email;
+              console.log(`[AuthService]   Token type (token_use): ${tokenUse || 'not-specified (custom JWT)'}`);
+              console.log(`[AuthService]   Token issuer (iss): ${payload.iss || 'not-specified'}`);
+              console.log(`[AuthService]   Token subject/user ID: ${userId || 'not-specified'}`);
+              console.log(`[AuthService]   Token expiry (exp): ${payload.exp ? new Date(payload.exp * 1000).toISOString() : 'not-specified'}`);
+              const isExpired = payload.exp && payload.exp * 1000 < Date.now();
+              if (isExpired) {
+                console.warn(`[AuthService]   ⚠️  Auth token is EXPIRED!`);
+              }
+              // ✅ CHANGED: Custom JWTs don't have token_use claim - this is expected
+              if (!tokenUse) {
+                // Custom JWT - no warning needed, this is expected
+                if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+                  console.debug('[AuthService]   ✅ Custom JWT detected (expected - no token_use claim)');
+                }
+              } else {
+                // Only warn if token_use is present (Cognito token)
+                console.warn(`[AuthService]   ⚠️  Token includes token_use claim "${tokenUse}". Backend should return custom JWT tokens.`);
+              }
+            } else {
+              console.error(`[AuthService]   ❌ Token format is invalid! Expected 3 parts, got ${tokenParts.length}`);
+            }
+          } catch (e) {
+            console.error(`[AuthService]   ❌ Could not parse auth token:`, e);
+          }
+        }
+      }
+      
       this.userInfoCache$ = this.http.get(
-        `${this.apiUrl}page/Account/getinfo`,
+        getInfoUrl,
         { withCredentials: true }
       ).pipe(
         map(user => {
           if (user) {
             this.storeUser(user);
+            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+              console.log('[AuthService] ✅ getUserInfo() - User info loaded successfully');
+            }
           }
           return user;
         }),
         shareReplay({ bufferSize: 1, refCount: true }),
         catchError(error => {
           if (error?.status === 401) {
-            console.warn('Unauthorized while fetching user info. Clearing cached credentials.');
+            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+              console.warn('[AuthService] ❌ getUserInfo() - 401 Unauthorized. Token may be invalid or expired.');
+              console.warn('[AuthService]   Clearing cached credentials and user info cache.');
+            }
             this.logout();
           } else {
-            console.error('Error fetching user info:', error);
+            console.error('[AuthService] ❌ getUserInfo() - Error fetching user info:', error);
           }
 
           this.userInfoCache$ = null;
@@ -321,32 +573,131 @@ export class AuthenticationService {
     }
   }
 
-  private ensureAccessTokenLoaded(): boolean {
-    if (this.accessToken) {
+  private ensureIdTokenLoaded(): boolean {
+    if (this.idToken) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.debug('[AuthService] ensureIdTokenLoaded() - Token already in memory');
+      }
       return true;
     }
 
     if (!isPlatformBrowser(this.platformId)) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.debug('[AuthService] ensureIdTokenLoaded() - Not in browser, skipping');
+      }
       return false;
     }
 
     const storage = this.getStorage();
-    const storedToken = storage?.getItem(this.storageKeys.accessToken);
+    if (!storage) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.warn('[AuthService] ensureIdTokenLoaded() - No storage available');
+      }
+      return false;
+    }
+
+    const storedToken = storage.getItem(this.storageKeys.idToken);
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log(`[AuthService] ensureIdTokenLoaded() - Checking localStorage`);
+      console.log(`[AuthService]   Storage key: ${this.storageKeys.idToken}`);
+      console.log(`[AuthService]   Stored token: ${storedToken ? `YES (length: ${storedToken.length})` : 'NO'}`);
+    }
 
     if (storedToken) {
       const normalizedToken = this.normalizeTokenString(storedToken);
-      this.accessToken = this.isLikelyToken(normalizedToken) ? normalizedToken : null;
+      const isToken = this.isLikelyToken(normalizedToken);
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.log(`[AuthService]   Normalized token: ${normalizedToken ? `YES (length: ${normalizedToken.length})` : 'NO'}`);
+        console.log(`[AuthService]   Is valid token format: ${isToken}`);
+      }
+      this.idToken = isToken ? normalizedToken : null;
+    }
+
+    if (!this.idToken) {
+      const cookieToken = this.cookieService.getCookie('idToken');
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.log(`[AuthService]   Checking cookie 'idToken': ${cookieToken ? `YES (length: ${cookieToken.length})` : 'NO'}`);
+      }
+      if (cookieToken) {
+        const normalizedToken = this.normalizeTokenString(cookieToken);
+        const isToken = this.isLikelyToken(normalizedToken);
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.log(`[AuthService]   Cookie token normalized: ${normalizedToken ? `YES (length: ${normalizedToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   Cookie token is valid format: ${isToken}`);
+        }
+        this.idToken = isToken ? normalizedToken : null;
+      }
+    }
+
+    const result = !!this.idToken;
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log(`[AuthService] ensureIdTokenLoaded() - Result: ${result ? 'SUCCESS' : 'FAILED'}`);
+    }
+    return result;
+  }
+
+  // ✅ FIXED: Properly load Access Token from storage
+  private ensureAccessTokenLoaded(): boolean {
+    if (this.accessToken) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.debug('[AuthService] ensureAccessTokenLoaded() - Token already in memory');
+      }
+      return true;
+    }
+
+    if (!isPlatformBrowser(this.platformId)) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.debug('[AuthService] ensureAccessTokenLoaded() - Not in browser, skipping');
+      }
+      return false;
+    }
+
+    const storage = this.getStorage();
+    if (!storage) {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.warn('[AuthService] ensureAccessTokenLoaded() - No storage available');
+      }
+      return false;
+    }
+
+    const storedToken = storage.getItem(this.storageKeys.accessToken);
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log(`[AuthService] ensureAccessTokenLoaded() - Checking localStorage`);
+      console.log(`[AuthService]   Storage key: ${this.storageKeys.accessToken}`);
+      console.log(`[AuthService]   Stored token: ${storedToken ? `YES (length: ${storedToken.length})` : 'NO'}`);
+    }
+
+    if (storedToken) {
+      const normalizedToken = this.normalizeTokenString(storedToken);
+      const isToken = this.isLikelyToken(normalizedToken);
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.log(`[AuthService]   Normalized token: ${normalizedToken ? `YES (length: ${normalizedToken.length})` : 'NO'}`);
+        console.log(`[AuthService]   Is valid token format: ${isToken}`);
+      }
+      this.accessToken = isToken ? normalizedToken : null;
     }
 
     if (!this.accessToken) {
       const cookieToken = this.cookieService.getCookie('token');
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.log(`[AuthService]   Checking cookie 'token': ${cookieToken ? `YES (length: ${cookieToken.length})` : 'NO'}`);
+      }
       if (cookieToken) {
         const normalizedToken = this.normalizeTokenString(cookieToken);
-        this.accessToken = this.isLikelyToken(normalizedToken) ? normalizedToken : null;
+        const isToken = this.isLikelyToken(normalizedToken);
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.log(`[AuthService]   Cookie token normalized: ${normalizedToken ? `YES (length: ${normalizedToken.length})` : 'NO'}`);
+          console.log(`[AuthService]   Cookie token is valid format: ${isToken}`);
+        }
+        this.accessToken = isToken ? normalizedToken : null;
       }
     }
 
-    return !!this.accessToken;
+    const result = !!this.accessToken;
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log(`[AuthService] ensureAccessTokenLoaded() - Result: ${result ? 'SUCCESS' : 'FAILED'}`);
+    }
+    return result;
   }
 
   private hasValidAccessTokenInternal(): boolean {
@@ -404,8 +755,14 @@ export class AuthenticationService {
       }
     }
 
+    // ✅ FIXED: Store Access Token in cookie for API authentication
     if (isPlatformBrowser(this.platformId) && this.accessToken) {
+      // Store Access Token in 'token' cookie for backward compatibility
       this.cookieService.setCookie('token', this.accessToken, { path: '/', sameSite: 'Lax' });
+    }
+    // Also store the auth token in cookie if available (for other uses)
+    if (isPlatformBrowser(this.platformId) && this.idToken) {
+      this.cookieService.setCookie('idToken', this.idToken, { path: '/', sameSite: 'Lax' });
     }
   }
 
@@ -422,7 +779,7 @@ export class AuthenticationService {
     }
   }
 
-  private clearTokens(): void {
+  public clearTokens(): void {
     this.accessToken = null;
     this.refreshToken = null;
     this.idToken = null;
@@ -438,6 +795,7 @@ export class AuthenticationService {
     }
 
     this.cookieService.deleteCookie('token');
+    this.cookieService.deleteCookie('idToken');
   }
 
   private clearUser(): void {
@@ -450,10 +808,84 @@ export class AuthenticationService {
   }
 
   private parseAuthResponse(response: any): CognitoTokens {
-    const directToken = this.extractDirectToken(response);
-    const accessToken = directToken ?? this.fetchTokenFromResponse(response, ['accesstoken', 'access_token'], false, ['token']);
-    const idToken = this.fetchTokenFromResponse(response, ['idtoken', 'id_token'], false, []);
+    // ✅ DIAGNOSTIC: Log the raw response to see what we're getting
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.log('[AuthService] 🔍 Parsing login response:', {
+        responseKeys: Object.keys(response || {}),
+        hasAccessToken: !!(response?.AccessToken || response?.accessToken || response?.access_token),
+        hasIdToken: !!(response?.IdToken || response?.idToken || response?.id_token),
+        responsePreview: JSON.stringify(response).substring(0, 200) + '...'
+      });
+    }
+
+    // ✅ CHANGED: Backend now returns a custom JWT in 'token' property
+    // The backend returns { isSuccess: true, token: "<custom_jwt>" }
+    // This token should be stored and used for API authentication
+    let idTokenFromResponse: string | null = null;
+    
+    // ✅ CRITICAL: Check response.token directly first (backend returns the auth token here)
+    if (response && typeof response === 'object' && response.token && typeof response.token === 'string') {
+      const normalized = this.normalizeTokenString(response.token);
+      if (this.isLikelyToken(normalized)) {
+        idTokenFromResponse = normalized;
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.log('[AuthService] ✅ Found auth token in response.token property');
+        }
+      }
+    }
+    
+    // Fallback to search methods if direct access didn't work
+    if (!idTokenFromResponse) {
+      idTokenFromResponse = this.fetchTokenFromResponse(response, ['token', 'Token', 'TOKEN', 'idtoken', 'id_token'], false, []);
+      if (idTokenFromResponse && typeof ngDevMode !== 'undefined' && ngDevMode) {
+        console.log('[AuthService] ✅ Found auth token via fetchTokenFromResponse');
+      }
+    }
+    
+    // ✅ CHANGED: Store auth token as both idToken and accessToken (for backward compatibility)
+    const idToken = idTokenFromResponse;
+    const accessToken = idTokenFromResponse; // Store auth token as accessToken too for backward compatibility
     const refreshToken = this.fetchTokenFromResponse(response, ['refreshtoken', 'refresh_token'], true, []);
+
+    // ✅ CHANGED: Validate auth token
+    // Custom JWTs will NOT include a token_use claim. Cognito tokens will.
+    if (idToken && typeof ngDevMode !== 'undefined' && ngDevMode) {
+      try {
+        const tokenParts = idToken.split('.');
+        if (tokenParts.length >= 2) {
+          const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          
+          const tokenUse = payload.token_use;
+          const issuer = payload.iss;
+          const userId = payload.sub || payload['cognito:username'] || payload.email;
+          const hasExp = !!payload.exp;
+          
+          if (!tokenUse) {
+            console.log('[AuthService] ✅ Custom JWT detected (no token_use claim)');
+            console.log('[AuthService]   Issuer:', issuer ?? 'N/A');
+            if (userId) {
+              console.log('[AuthService]   User ID (custom claim or Name):', userId);
+            }
+          } else if (tokenUse === 'id') {
+            console.warn('[AuthService] ⚠️  Cognito ID Token detected (token_use: "id"). Backend is expected to return a custom JWT. Using response as-is.');
+          } else {
+            console.warn('[AuthService] ⚠️  Unexpected token_use claim:', tokenUse);
+          }
+          
+          if (hasExp) {
+            const expiryDate = new Date(payload.exp * 1000);
+            const now = new Date();
+            const isExpired = expiryDate < now;
+            console.log('[AuthService]   Token expires:', expiryDate.toISOString());
+            if (isExpired) {
+              console.warn('[AuthService]   ⚠️  Token is EXPIRED!');
+            }
+          }
+        }
+      } catch (e) {
+        console.error('[AuthService] Could not validate token structure:', e);
+      }
+    }
 
     const expiresIn = this.findNumericValue(response, ['expiresin', 'expires_in', 'tokenexpiresin']);
     const expiresAt = this.determineExpiry(accessToken, expiresIn);

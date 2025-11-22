@@ -7,10 +7,65 @@ html {
     scroll-behavior: smooth;
   }
 
+// ✅ LAYOUT: Ensure body and html can scroll normally
+html,
+html.h-100,
+body,
+body.h-100 {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  position: relative !important;
+}
+
+// ✅ LAYOUT: Ensure app-root doesn't constrain scrolling
+app-root,
+app-root.d-flex,
+app-root.flex-column,
+app-root.h-100 {
+  height: auto !important;
+  min-height: 100vh;
+  position: relative !important;
+  overflow: visible !important;
+}
+
 // ✅ MOBILE: Prevent horizontal scrolling on mobile
 body {
   overflow-x: hidden;
   width: 100%;
+}
+
+// ✅ LAYOUT: Force header and footer to scroll with page (never fixed)
+// Maximum specificity to override any conflicting styles
+app-public-topbar,
+app-public-topbar:host,
+app-public-topbar :host,
+app-public-topbar header,
+app-public-topbar header#theme-header,
+app-public-topbar header#theme-header.theme-header,
+app-public-topbar header#theme-header.inner-header,
+app-public-topbar header#theme-header.course-page-header,
+app-public-topbar header#theme-header.theme-header.inner-header,
+app-public-topbar header#theme-header.theme-header.course-page-header,
+app-public-topbar header#theme-header.inner-header.course-page-header,
+app-public-topbar header#theme-header.theme-header.inner-header.course-page-header,
+app-public-topbar header.theme-header,
+app-public-topbar header.inner-header,
+app-public-topbar header.course-page-header,
+app-public-footer,
+app-public-footer:host,
+app-public-footer :host,
+app-public-footer footer {
+  position: static !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  inset: auto auto auto auto !important;
+  z-index: auto !important;
+  transform: none !important;
+  will-change: auto !important;
 }
 
 // ✅ MOBILE: Ensure minimum font size for iOS (prevents auto-zoom)

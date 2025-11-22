@@ -42,7 +42,8 @@ export class CourseListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log('course list component init')
+    console.log('[CourseListComponent] ✅ ngOnInit() called - component initialized successfully');
+    console.log('[CourseListComponent]   Current router URL:', window.location.pathname);
     // ✅ SSR: Safe sessionStorage access with platform check
     if (this.isBrowser) {
       StorageUtil.clearSession();

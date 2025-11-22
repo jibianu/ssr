@@ -55,8 +55,18 @@ export class AppComponent implements OnDestroy {
 
     private handleNavigationEvent(event: any): void {
         if (event instanceof NavigationStart) {
+            console.log('[AppComponent] 🔄 NavigationStart:', event.url);
+            console.log('[AppComponent]   Navigation ID:', event.id);
             this.isLoading = true;
-        } else if (event instanceof NavigationCancel || event instanceof NavigationError) {
+        } else if (event instanceof NavigationCancel) {
+            console.warn('[AppComponent] ⚠️  NavigationCancel:', event.url);
+            console.warn('[AppComponent]   Reason:', event.reason);
+            console.warn('[AppComponent]   Navigation ID:', event.id);
+            this.isLoading = false;
+        } else if (event instanceof NavigationError) {
+            console.error('[AppComponent] ❌ NavigationError:', event.url);
+            console.error('[AppComponent]   Error:', event.error);
+            console.error('[AppComponent]   Navigation ID:', event.id);
             this.isLoading = false;
         }
     }

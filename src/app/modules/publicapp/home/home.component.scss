@@ -144,12 +144,6 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
   padding: clamp(2.2rem, 5.5vw, 3.2rem) 0;
 }
   
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-  
   h1 {
     font-size: 2.5rem;
     font-weight: 700;
@@ -799,12 +793,6 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
   &--events {
     background: #ffffff;
   }
-
-  > .container {
-    max-width: $course-max-width;
-    margin: 0 auto;
-    padding: 0 clamp(1.5rem, 5vw, 2.5rem);
-  }
 }
 
 .home-section__container {
@@ -1257,7 +1245,6 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
 
 @media (max-width: 768px) {
   .home-page,
-  .home-page .container,
   .home-page .row,
   .home-page .course,
   .home-page .cour-feature-card {
@@ -1268,11 +1255,6 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
   .home-page {
     width: 100%;
   }
-
-  .home-page .container {
-    padding-inline: 1rem;
-  }
-
   .home-wrapper {
     padding: 2rem 1rem;
   }
@@ -1471,12 +1453,6 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
 
 
   /* General Styles   */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  
   h2 {
     font-size: 2.5rem; /* Large font size for desktop */
     font-weight: 700;

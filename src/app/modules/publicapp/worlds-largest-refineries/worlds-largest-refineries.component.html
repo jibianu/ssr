@@ -1,157 +1,99 @@
-<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="robots" content="index, follow">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="title" content="worlds largest refineries">
-  <meta name="description" content="List of Refineries,In this article we have discussed about World Largest Refineries">
-  <meta name="author" content="Anush">
-  <meta property="og:site_name" content="Oilandgasclub">
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="worlds largest refineries">
-  <meta property="og:description" content="List of Refineries,In this article we have discussed about World Largest Refineries">
-  <meta property="og:author" content="Anush">
-  <meta property="og:image:width" content="600">
-  <meta property="og:image:height" content="500">
-  <meta property="og:url" content="https://www.oilandgasclub.com/worlds-largest-refineries">
-  <meta property="article:published_time" content="2021-09-01T06:18:55.5419129">
-  <meta property="article:modified_time" content="2023-07-08T06:43:07.881401">
-  <meta property="article:tag" content="List of Refineries">
-  <meta property="article:publisher" content="">
-  <meta name="twitter:title" content="List of Refineries ">
-  <meta name="twitter:description" content="List of Refineries,In this article we have discussed about World Largest Refineries">
-  <meta name="twitter:label1" content="Anush">
-  <meta name="twitter:data1" content="Oilandgasclub">
-  <meta name="twitter:label2" content="Filed under">
-  <meta name="twitter:data2" content="Oilandgasclub">
-  <meta name="twitter:site" content="@oilandgasclub">
-  <meta name="twitter:creator" content="@Anush">
-  <meta name="twitter:url" content="https://www.oilandgasclub.com/worlds-largest-refineries">
-<style>
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing content -->
+<div class="refineries-page public-container" ngSkipHydration>
+  <section class="refineries-hero">
+    <div class="refineries-hero__content">
+      <p class="refineries-eyebrow">Global Infrastructure · 2025 Edition</p>
+      <h1>World’s Largest Refineries</h1>
+      <p class="refineries-lead">
+        A snapshot of the mega complexes that keep global supply chains moving. These facilities combine cutting-edge
+        conversion technology, deep-water logistics, and relentless optimisation to deliver reliable fuels and feedstocks.
+      </p>
+      <div class="refineries-hero__cta">
+        <a class="refineries-btn" [routerLink]="'/courses'">Explore downstream courses</a>
+        <a class="refineries-link" href="mailto:anush@oilandgasclub.com">Talk to an expert →</a>
+      </div>
+    </div>
 
-td, th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 5px;
-}
+    <div class="refineries-hero__stats">
+      <article class="refineries-stat" *ngFor="let stat of heroStats">
+        <span class="refineries-stat__value">{{ stat.value }}</span>
+        <span class="refineries-stat__label">{{ stat.label }}</span>
+        <p>{{ stat.detail }}</p>
+      </article>
+    </div>
+  </section>
 
-tr:nth-child(even) {
-  background-color: #dddddd;
-}
-</style>
-</head>
-<body ngSkipHydration>
+  <section class="refineries-insights">
+    <header>
+      <p class="refineries-eyebrow">Field notes</p>
+      <h2>What differentiates these complexes?</h2>
+    </header>
+    <ul>
+      @for (item of insights; track item) {
+        <li>
+          <span class="bullet"></span>
+          {{ item }}
+        </li>
+      }
+    </ul>
+  </section>
 
-<h1>List of Refineries</h1>
-<h4>In this article we have discussed about World Largest Refineries</h4>
+  <section class="refineries-table">
+    <header>
+      <div>
+        <p class="refineries-eyebrow">Capacity leaderboard</p>
+        <h2>Top 15 refineries by throughput</h2>
+      </div>
+      <p class="refineries-table__note">
+        Capacities shown in barrels per day. Figures represent nameplate capability and may vary with maintenance or crude slate.
+      </p>
+    </header>
 
-<table>
-  <tr>
-    <th>No.</th>
-    <th>Name of Refinery</th>
-    <th>Location</th>
-    <th>Barrels per Day</th>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td>Jamnagar Refinery (Reliance Industries Ltd.)</td>
-    <td>Gujarat, India</td>
-    <td>1,240,000</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>Paraguana Refinery Complex (PDVSA)</td>
-    <td>Paraguana, Falcon, Venezuela</td>
-    <td>940,000</td>
-  </tr>
-  <tr>
-    <td>3</td>
-    <td>SK energy Co.,Ltd. Ulsan Refinery (SK Energy)</td>
-    <td>Ulsan, South Korea</td>
-    <td>850,000</td>
-  </tr>
-  <tr>
-    <td>4</td>
-    <td>Ruwais Refinery (Abu Dhabi Oil Refining Company)</td>
-    <td>Ruwais, UAE</td>
-    <td>817,000</td>
-  </tr>
-  <tr>
-    <td>5</td>
-    <td>GS Caltex Yeosu Refinery (GS Caltex)</td>
-    <td>Yeosu, South Korea</td>
-    <td>730,000</td>
-  </tr>
-  <tr>
-    <td>6</td>
-    <td>S-Oil Onsan Refinery (S-Oil)</td>
-    <td>Ulson, South Korea</td>
-    <td>670,000</td>
-  </tr>
-  <tr>
-    <td>7</td>
-    <td>ExxonMobil</td>
-    <td>Singapore</td>
-    <td>605,000</td>
-  </tr>
-  <tr>
-    <td>8</td>
-    <td>Port Arthur Refinery (Motiva Enterprises)</td>
-    <td>Port Arthur, Texas, USA</td>
-    <td>600,250</td>
-  </tr>
-  <tr>
-    <td>9</td>
-    <td>Baytown Refinery (ExxonMobil)</td>
-    <td>Baytown, TX, USA</td>
-    <td>560,500</td>
-  </tr>
-  <tr>
-    <td>10</td>
-    <td>Ras Tanura Refinery (Saudi Aramco)</td>
-    <td>Saudi Arabia</td>
-    <td>550,000</td>
-  </tr>
-  <tr>
-    <td>11</td>
-    <td>Garyville Refinery (Marathon Petroleum)</td>
-    <td>Garyville, LA, USA</td>
-    <td>539,000</td>
-  </tr>
-  <tr>
-    <td>12</td>
-    <td>Baton Rouge Refinery (ExxonMobil)</td>
-    <td>Baton Rouge, LA, USA</td>
-    <td>502,500</td>
-  </tr>
-  <tr>
-    <td>13</td>
-    <td>Abadan Refinery (NIOC)</td>
-    <td>Abadan, Iran</td>
-    <td>450,000</td>
-  </tr>
-  <tr>
-    <td>14</td>
-    <td>SAMREF (Aramco Mobil Refinery)</td>
-    <td>Yanbu, Saudi Arabia</td>
-    <td>405,000</td>
-  </tr>
-  <tr>
-    <td>15</td>
-    <td>Shell pernis (Royal dutch Shell)</td>
-    <td>Rotterdam, The Netherlands</td>
-    <td>416,000</td>
-  </tr>
-  
-</table>
+    <div class="refineries-table__wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Facility</th>
+            <th>Location</th>
+            <th>Capacity (bpd)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (refinery of refineries; track refinery.rank) {
+            <tr>
+              <td>{{ refinery.rank | number:'2.0-0' }}</td>
+              <td>
+                <strong>{{ refinery.name }}</strong>
+              </td>
+              <td>{{ refinery.location }}</td>
+              <td>
+                <span class="capacity">{{ refinery.capacity }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-</body>
-</html>
-
+  <section class="refineries-footer">
+    <div>
+      <h3>How we curate this list</h3>
+      <p>
+        We track publicly available filings, operator briefings, and energy analytics to maintain the benchmark for mega-refinery capacity.
+        Each site listed here processes more than 400,000 barrels per day and is undergoing continuous upgrades to meet low-carbon mandates.
+      </p>
+    </div>
+    <div>
+      <h3>Need tailored insights?</h3>
+      <p>
+        Oilandgasclub supports operators and service providers with curated learning paths on refining economics, digital twins,
+        and energy transition roadmaps.
+      </p>
+      <a class="refineries-btn refineries-btn--ghost" href="mailto:anush@oilandgasclub.com">
+        Request a custom session
+      </a>
+    </div>
+  </section>
+</div>

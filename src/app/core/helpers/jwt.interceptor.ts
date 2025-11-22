@@ -83,29 +83,164 @@ export class JwtInterceptor implements HttpInterceptor {
         return !this.excludedEndpoints.some(endpoint => url.includes(endpoint));
     }
 
+    /**
+     * ✅ PRODUCTION-READY: Enhanced token attachment with comprehensive checks
+     * - Skips SSR (server-side rendering)
+     * - Gets token from auth service (with fallback to direct storage access)
+     * - Only attaches to API requests (excludes public assets)
+     * - Adds Bearer token format
+     * - Includes debug logging in development mode
+     */
     private addAuthHeader(request: HttpRequest<any>, tokenOverride?: string): HttpRequest<any> {
+        // ✅ SSR: Skip token attachment on server-side
         if (!this.isBrowser) {
+            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                console.debug('[JwtInterceptor] Skipping token attachment - server-side rendering');
+            }
             return request;
         }
         
-        const token = tokenOverride ?? this.authenticationService.currentToken();
+        // ✅ Get ID Token - use override if provided, otherwise get from service
+        const token = tokenOverride ?? this.authenticationService.getIdToken();
         
-        if (!token) {
+        // ✅ DIAGNOSTIC: Enhanced logging to debug token attachment issues
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+            const isAuthRequest = request.url.includes('/account/login') || request.url.includes('/account/register');
+            if (!isAuthRequest) {
+                console.log(`[JwtInterceptor] 🔍 Processing request: ${request.method} ${request.url}`);
+                console.log(`[JwtInterceptor]   Token override provided: ${!!tokenOverride}`);
+                console.log(`[JwtInterceptor]   Token from service: ${token ? `YES (length: ${token.length})` : 'NO'}`);
+                
+                if (!token) {
+                    console.warn(`[JwtInterceptor] ⚠️  NO TOKEN AVAILABLE for ${request.url}`);
+                    console.warn(`[JwtInterceptor]   This will cause 401 Unauthorized!`);
+                    console.warn(`[JwtInterceptor]   Check if user is logged in and token is stored correctly.`);
+                }
+            }
+        }
+        
+        // ✅ Skip if no token available
+        if (!token || typeof token !== 'string' || token.trim().length === 0) {
+            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                // Only log in dev mode to avoid console spam
+                const isAuthRequest = request.url.includes('/account/login') || request.url.includes('/account/register');
+                if (!isAuthRequest) {
+                    console.warn('[JwtInterceptor] ❌ No token available for request', {
+                        url: request.url,
+                        method: request.method,
+                        hasTokenOverride: !!tokenOverride,
+                        tokenFromService: !!this.authenticationService.getIdToken()
+                    });
+                }
+            }
             return request;
         }
 
+        // ✅ CRITICAL: Inspect auth token metadata
+        try {
+            const tokenParts = token.split('.');
+            if (tokenParts.length >= 2) {
+                const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const exp = payload.exp;
+                const tokenUse = payload.token_use;
+                const issuer = payload.iss;
+                
+                // ✅ CHANGED: Custom JWTs don't have token_use claim - this is expected
+                // Only warn if token_use is present (Cognito token) or has unexpected value
+                if (!tokenUse) {
+                    // Custom JWT - no warning needed, this is expected
+                    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+                        console.debug('[JwtInterceptor] ✅ Custom JWT detected (no token_use claim) - expected');
+                    }
+                } else if (tokenUse === 'id') {
+                    console.warn('[JwtInterceptor] ⚠️  Cognito ID token detected. Backend now issues custom JWT tokens.');
+                    console.warn('[JwtInterceptor]   This request may fail if backend rejects Cognito tokens.');
+                } else {
+                    console.warn('[JwtInterceptor] ⚠️  Unexpected token_use value:', tokenUse);
+                }
+                
+                if (exp) {
+                    const expiryDate = new Date(exp * 1000);
+                    const now = new Date();
+                    const isExpired = expiryDate < now;
+                    const timeUntilExpiry = expiryDate.getTime() - now.getTime();
+                    
+                    const userId = payload.sub || payload['cognito:username'] || payload.email;
+                    
+                    console.debug('[JwtInterceptor] Auth token expiry check', {
+                        expiresAt: expiryDate.toISOString(),
+                        currentTime: now.toISOString(),
+                        isExpired,
+                        timeUntilExpiryMs: timeUntilExpiry,
+                        timeUntilExpiryMinutes: Math.round(timeUntilExpiry / 60000),
+                        issuer: payload.iss,
+                        subject: payload.sub,
+                        tokenUse: payload.token_use
+                    });
+                    
+                    console.log('[JwtInterceptor] 🔍 TOKEN ISSUER (iss claim):', payload.iss);
+                    console.log('[JwtInterceptor] 🔍 TOKEN SUBJECT (sub claim):', payload.sub);
+
+                    if (isExpired) {
+                        console.warn('[JwtInterceptor] ⚠️ Auth token is EXPIRED! This will cause 401 Unauthorized.', {
+                            expiredAt: expiryDate.toISOString(),
+                            currentTime: now.toISOString()
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            // Token parsing failed - not a critical error, continue with request
+            console.error('[JwtInterceptor] ❌ Could not parse ID Token for expiry check', e);
+            console.error('[JwtInterceptor] Token preview:', token.substring(0, 50) + '...');
+        }
+
+        // ✅ Skip token attachment for public endpoints that don't require auth
+        const publicEndpoints = ['/account/login', '/account/register', '/assets/', '/api/public'];
+        const isPublicEndpoint = publicEndpoints.some(endpoint => request.url.toLowerCase().includes(endpoint.toLowerCase()));
+        if (isPublicEndpoint) {
+            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                console.debug('[JwtInterceptor] Skipping token attachment for public endpoint:', request.url);
+            }
+            return request;
+        }
+
+        // ✅ Clone request and add Authorization header
+        // ✅ CRITICAL: Ensure proper Bearer token format (capital B, single space, trimmed token)
+        const cleanToken = token.trim();
+        const authHeaderValue = `Bearer ${cleanToken}`;
+        
         const authRequest = request.clone({
             setHeaders: {
-                Authorization: `Bearer ${token}`
+                Authorization: authHeaderValue
             }
         });
+
+        // ✅ CRITICAL: Enhanced debug logging to verify token attachment
         if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            console.debug('[JwtInterceptor] Attached Authorization header', {
+            console.log('[JwtInterceptor] ✅ Attached Authorization header', {
                 url: request.url,
+                method: request.method,
                 hasToken: !!token,
-                tokenPreview: token.substring(0, Math.min(token.length, 20)) + '...'
+                tokenLength: token.length,
+                tokenPreview: token.substring(0, Math.min(token.length, 50)) + '...',
+                headerValue: authHeaderValue.substring(0, Math.min(authHeaderValue.length, 60)) + '...'
             });
+            
+            // ✅ CRITICAL: Verify the header is actually set on the cloned request
+            const clonedHeader = authRequest.headers.get('Authorization');
+            if (clonedHeader) {
+                console.log('[JwtInterceptor] ✅ VERIFIED: Authorization header is set on request:', {
+                    headerLength: clonedHeader.length,
+                    headerPreview: clonedHeader.substring(0, Math.min(clonedHeader.length, 60)) + '...',
+                    startsWithBearer: clonedHeader.startsWith('Bearer ')
+                });
+            } else {
+                console.error('[JwtInterceptor] ❌ CRITICAL ERROR: Authorization header is NOT set on cloned request!');
+                console.error('[JwtInterceptor]   This means the token will NOT be sent to the backend!');
+            }
         }
+
         return authRequest;
     }
 }

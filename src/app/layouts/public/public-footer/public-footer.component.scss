@@ -202,6 +202,27 @@ span.linked-in:hover{
 .copy-right .no-padding.new-footer-end {
     width: 100%;
 }
+:host {
+  position: static !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+  display: block;
+  width: 100%;
+}
+
+footer {
+  position: static !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+  width: 100%;
+}
+
 .copy-right {
     width: 100%;
     padding: 0px 15px;

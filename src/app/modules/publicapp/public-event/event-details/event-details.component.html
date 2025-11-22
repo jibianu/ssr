@@ -1,7 +1,7 @@
 <div class="event-details" *ngIf="event">
   <section class="event-hero" [style.background-image]="'url(' + bgImage + ')'">
     <div class="event-hero__overlay">
-      <div class="container hero-container">
+      <div class="hero-container">
         <div class="hero-grid">
           <div class="hero-main">
             <span class="hero-badge" *ngIf="event?.badge">{{ event.badge }}</span>
@@ -52,7 +52,7 @@
   </section>
 
   <section class="event-summary">
-    <div class="container summary-container">
+    <div class="summary-container">
       <ng-container *ngIf="(getInfo('organized') || []) as hostList">
         <article class="summary-card" *ngIf="hostList.length > 0; else whyAttend">
           <h2>Meet your host</h2>
@@ -137,7 +137,7 @@
     </div>
   </section>
 
-  <div class="container event-body">
+  <div class="event-body">
     <main class="event-main">
       <section class="event-card" id="about">
         <header>

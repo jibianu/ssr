@@ -312,22 +312,54 @@ const routes: Routes = [
     path: 'category/:name',
     component: PublicCategoryComponent
   },
-  // ✅ Course detail routes moved to root level (must be after all static routes)
-  // These routes match course slugs directly at root: /{course-slug}
-  // IMPORTANT: These must come AFTER all static routes but BEFORE the wildcard
-  // ✅ FIX: Use matcher-only routes (no path) to exclude /assets/ paths from course routing
+  // ✅ Course detail routes - dynamic matchers for course slugs
+  // CRITICAL: These matchers MUST exclude all system paths to prevent route conflicts
+  // Route order: Static routes → Category → Dynamic matchers → Wildcard
   {
-    // No path property - matcher handles all matching
-    matcher: (segments) => {
-      // ✅ FIX: Exclude /assets/ paths - they should not be routed as courses
-      if (segments.length >= 1 && segments[0].path === 'assets') {
-        return null; // Don't match this route
+    // Matcher-only route (no path property) - handles :url/:location pattern
+    matcher: (segments, group, route) => {
+      // ✅ PRODUCTION-SAFE: Comprehensive system path exclusion
+      // This ensures /auth, /app, /assets, and other system routes are NEVER matched
+      if (segments.length >= 1) {
+        const firstSegment = segments[0].path.toLowerCase();
+        
+        // Comprehensive exclusion list - EXACT matches only (allows course slugs like "authentication-course")
+        const systemPaths = [
+          'assets',           // Static assets
+          'auth',             // Authentication routes (handled at parent level) - CRITICAL
+          'app',              // Admin app routes
+          'page-not-found',   // 404 page
+          'api',              // API endpoints (if any)
+          'admin',            // Admin routes (if any)
+          'login',            // Direct login (should use /auth/login)
+          'register',         // Direct register (should use /auth/register)
+          'logout',           // Logout route
+          'reset-password',   // Password reset
+          'forgot-password',  // Forgot password
+          'verify-email',     // Email verification
+          'callback',         // OAuth callbacks
+          'oauth'             // OAuth routes
+        ];
+        
+        // Reject ONLY if first segment is an EXACT match to a system path
+        // This allows course slugs like "authentication-course" or "api-basics"
+        if (systemPaths.includes(firstSegment)) {
+          return null; // Explicitly reject - don't match this route
+        }
       }
-      // Match :url/:location pattern (2 segments)
+      
+      // Match :url/:location pattern (exactly 2 segments)
       if (segments.length === 2) {
-        return { consumed: segments, posParams: { url: segments[0], location: segments[1] } };
+        return { 
+          consumed: segments, 
+          posParams: { 
+            url: segments[0], 
+            location: segments[1] 
+          } 
+        };
       }
-      return null;
+      
+      return null; // Don't match if not exactly 2 segments
     },
     loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
     data: {
@@ -335,24 +367,61 @@ const routes: Routes = [
     }
   },
   {
-    // No path property - matcher handles all matching
-    matcher: (segments) => {
-      // ✅ FIX: Exclude /assets/ paths - they should not be routed as courses
-      if (segments.length >= 1 && segments[0].path === 'assets') {
-        return null; // Don't match this route
+    // Matcher-only route (no path property) - handles :url pattern
+    matcher: (segments, group, route) => {
+      // ✅ PRODUCTION-SAFE: Comprehensive system path exclusion
+      // This ensures /auth, /app, /assets, and other system routes are NEVER matched
+      if (segments.length >= 1) {
+        const firstSegment = segments[0].path.toLowerCase();
+        
+        // Comprehensive exclusion list - EXACT matches only (allows course slugs like "authentication-course")
+        const systemPaths = [
+          'assets',           // Static assets
+          'auth',             // Authentication routes (handled at parent level) - CRITICAL
+          'app',              // Admin app routes
+          'page-not-found',   // 404 page
+          'api',              // API endpoints (if any)
+          'admin',            // Admin routes (if any)
+          'login',            // Direct login (should use /auth/login)
+          'register',         // Direct register (should use /auth/register)
+          'logout',           // Logout route
+          'reset-password',   // Password reset
+          'forgot-password',  // Forgot password
+          'verify-email',     // Email verification
+          'callback',         // OAuth callbacks
+          'oauth'             // OAuth routes
+        ];
+        
+        // Reject ONLY if first segment is an EXACT match to a system path
+        // This allows course slugs like "authentication-course" or "api-basics"
+        if (systemPaths.includes(firstSegment)) {
+          return null; // Explicitly reject - don't match this route
+        }
       }
-      // Match :url pattern (1 segment)
+      
+      // Match :url pattern (exactly 1 segment)
       if (segments.length === 1) {
-        return { consumed: segments, posParams: { url: segments[0] } };
+        return { 
+          consumed: segments, 
+          posParams: { 
+            url: segments[0] 
+          } 
+        };
       }
-      return null;
+      
+      return null; // Don't match if not exactly 1 segment
     },
     loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
     data: {
       skipRouteLocalization: true // Prevent i18n from trying to localize course URLs
     }
   },
-  { path: '**', redirectTo: 'page-not-found' }
+  // ✅ Wildcard route - MUST be last, only catches unmatched public routes
+  // This will NOT catch /auth routes because they're handled at parent level
+  { 
+    path: '**', 
+    redirectTo: 'page-not-found' 
+  }
 ];
 
 @NgModule({
