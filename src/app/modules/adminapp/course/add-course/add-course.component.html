@@ -566,8 +566,11 @@
                 </div>
             </div>
             <div class="form-group">
-                <button class="btn btn-primary" type="submit">{{btntext}}</button>
-                <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
+                <button class="btn btn-primary" type="submit" [disabled]="loading || courseForm.invalid">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+                    {{btntext}}
+                </button>
+                <button type="button" class="btn btn-danger ml-1" [disabled]="loading" (click)="goBack()">Cancel</button>
             </div>
         </form>
     </div>

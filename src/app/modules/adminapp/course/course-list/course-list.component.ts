@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { CookieService } from 'src/app/core/services/cookie.service';
@@ -36,6 +37,8 @@ export class CourseListComponent implements OnInit, OnDestroy {
     private toasterService: ToasterService,
     private cookieService: CookieService,
     private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: For manual change detection trigger
+    private route: ActivatedRoute,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -48,6 +51,19 @@ export class CourseListComponent implements OnInit, OnDestroy {
     if (this.isBrowser) {
       StorageUtil.clearSession();
     }
+    
+    // ✅ FIX: Check for refresh query parameter and remove it after processing
+    this.route.queryParams.subscribe(params => {
+      if (params['refresh']) {
+        // Remove refresh parameter from URL
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { refresh: null },
+          queryParamsHandling: 'merge'
+        });
+      }
+    });
+    
     // FIXED: Add error handling for cookie parsing
     try {
       const userCookie = this.cookieService.getCookie('currentUser');
@@ -71,6 +87,13 @@ export class CourseListComponent implements OnInit, OnDestroy {
       pageSize: this.tableSize,
       pageNumber: this.page,
     }
+    
+    // ✅ FIX: Add cache-busting parameter if refresh query param exists
+    const refreshParam = this.route.snapshot.queryParams['refresh'];
+    if (refreshParam) {
+      obj['_refresh'] = refreshParam; // Add timestamp to bust cache
+    }
+    
     this.subscription.add(this.appService.getCourses(obj)
       .subscribe(
         response => {

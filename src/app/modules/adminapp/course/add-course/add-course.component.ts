@@ -35,6 +35,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   courseId: string;
   courseForm: UntypedFormGroup;
   submitted = false;
+  loading = false; // ✅ FIX: Track loading state to prevent double submissions
   categories = [];
   locations = [];
   subscription: Subscription = new Subscription();
@@ -70,13 +71,12 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   guid = '00000000-0000-0000-0000-000000000000'
   //formBuilder: any;
   //activatedRoute: any;
-  router: any;
 
   constructor(
    
     private appService: AdminAppService,
     private toasterService: ToasterService,
-   
+    private router: Router,
     private location: Location,
     private modalService: NgbModal,
     private cookieService: CookieService,
@@ -278,6 +278,21 @@ export class AddCourseComponent implements OnInit, OnDestroy {
         this.setvalue(res);
       }
     }));
+  }
+
+  // ✅ FIX: Reload course data after update to show fresh data immediately
+  reloadCourseData() {
+    if (this.courseId) {
+      // Add cache-busting parameter to ensure we get fresh data
+      this.subscription.add(
+        this.appService.getCourseByIdWithCacheBust(this.courseId).subscribe((res: any) => {
+          if (res) {
+            this.setvalue(res);
+            console.log('[AddCourseComponent] Course data reloaded successfully after update');
+          }
+        })
+      );
+    }
   }
 
   getIcons() {
@@ -521,10 +536,18 @@ export class AddCourseComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     this.submitted = true;
+    
+    // ✅ FIX: Prevent double submission
+    if (this.loading) {
+      console.warn('[AddCourseComponent] Submission already in progress, ignoring duplicate submit');
+      return;
+    }
+    
     // stop here if form is invalid
     if (this.courseForm.invalid) {
       return;
     }
+    
     if (this.courseData && this.courseData.courseLocations && this.courseData.courseLocations.length > 0) {
       this.locationArray.forEach((element, index) => {
         if (this.courseData.courseLocations[index] && this.courseData.courseLocations[index].id) {
@@ -536,15 +559,38 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     }
     const FormArray: UntypedFormArray = this.formBuilder.array(this.locationArray);
     this.courseForm.setControl('courseLocations', FormArray);
+    
+    // ✅ FIX: Set loading state before making request
+    this.loading = true;
+    
     if (this.courseId) {
-      this.subscription.add(this.appService.updateCourse(this.courseForm.value, this.courseId).subscribe(() => {
-        this.toasterService.showSuccess('Course updated successfully');
-        this.goBack();
+      this.subscription.add(this.appService.updateCourse(this.courseForm.value, this.courseId).subscribe({
+        next: () => {
+          this.loading = false; // ✅ FIX: Reset loading state on success
+          this.submitted = false; // ✅ FIX: Reset submitted state to clear validation errors
+          this.toasterService.showSuccess('Course updated successfully');
+          // ✅ FIX: Reload course data to show updated values immediately without navigation
+          this.reloadCourseData();
+        },
+        error: (err) => {
+          this.loading = false; // ✅ FIX: Reset loading state on error
+          console.error('[AddCourseComponent] Error updating course:', err);
+          // Error message will be shown by error interceptor
+        }
       }));
     } else {
-      this.subscription.add(this.appService.addCourse(this.courseForm.value).subscribe(() => {
-        this.toasterService.showSuccess('Course created successfully');
-        this.goBack();
+      this.subscription.add(this.appService.addCourse(this.courseForm.value).subscribe({
+        next: () => {
+          this.loading = false; // ✅ FIX: Reset loading state on success
+          this.toasterService.showSuccess('Course created successfully');
+          // ✅ FIX: Navigate to course list with refresh flag to ensure data refreshes
+          this.router.navigate(['/admin/course/list'], { queryParams: { refresh: Date.now() } });
+        },
+        error: (err) => {
+          this.loading = false; // ✅ FIX: Reset loading state on error
+          console.error('[AddCourseComponent] Error adding course:', err);
+          // Error message will be shown by error interceptor
+        }
       }));
     }
   }

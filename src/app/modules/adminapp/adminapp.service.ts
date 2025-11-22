@@ -65,6 +65,18 @@ export class AdminAppService {
         );
     }
 
+    // ✅ FIX: Get course by ID with cache-busting to fetch fresh data after updates
+    getCourseByIdWithCacheBust(id: string): Observable<any> {
+        // Add timestamp parameter to bypass cache
+        const timestamp = Date.now();
+        return this.http.get<any>(this.apiUrl + `page/course/id/${id}?_refresh=${timestamp}`).pipe(
+            catchError(error => {
+                console.error(`Error fetching course ${id} with cache bust:`, error);
+                return of(null); // ✅ ERROR HANDLING: Return null on error
+            })
+        );
+    }
+
     getBlogByCanonicalURL(url): Observable<any> {
         return this.http.get<any>(this.apiUrl + `page/course/course/` + url).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
