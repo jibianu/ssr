@@ -1,5 +1,271 @@
+// ✅ FULL WIDTH: Admin layout styles for full-width pages
+// Override any global wrapper styles to ensure full width
+:host {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    // Note: Content spacing handled by admin-content-wrapper margin-top
+}
+
+// ✅ STEP 1: Fix the WRAPPER - Full width with overflow fix
 .wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh;
+    overflow-x: hidden !important; // ✅ FIX: Changed from visible to hidden to prevent horizontal scroll
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative;
+    
+    // ✅ CRITICAL: Override global wrapper styles that limit width (app.component.scss)
+    @media screen and (min-width: 1200px) {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    // ✅ FULL WIDTH: Ensure wrapper is truly full width at all breakpoints
+    @media screen and (max-width: 1199px) {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+// ✅ RIGHT SIDE FIXED: Content area extends to right edge of browser window (no right sidebar)
+.admin-content-wrapper {
+    flex: 1;
+    width: calc(100vw - 260px) !important; // ✅ RIGHT EDGE: Full viewport width minus left sidebar - extends to right edge
+    max-width: calc(100vw - 260px) !important; // ✅ RIGHT EDGE: No max-width restriction - extends fully to right edge
+    min-width: 0; // Allows flex item to shrink below content size
+    background: #f5f7fa;
     display: flex;
-    flex-direction: row;
-  }
+    flex-direction: column;
+    overflow-x: hidden !important; // ✅ FIX: Prevent horizontal scroll
+    margin-left: 260px; // Sidebar width (260px) - Always applied since sidebar is always visible
+    margin-top: 64px; // Topbar height (64px desktop) - Always applied since topbar is always visible
+    margin-right: 0 !important; // ✅ RIGHT EDGE: No right margin - touches browser edge (no right sidebar)
+    margin-bottom: 0 !important;
+    min-height: calc(100vh - 64px); // Full height minus topbar
+    position: fixed; // ✅ RIGHT EDGE: Fixed positioning to ensure it reaches right edge
+    left: 260px; // ✅ LEFT: Position after sidebar
+    right: 0 !important; // ✅ RIGHT EDGE: Explicitly extend to right edge of browser
+    top: 64px; // ✅ TOP: Position after topbar
+    bottom: 0 !important; // ✅ BOTTOM: Extend to bottom edge
+    padding: 0 !important; // ✅ RIGHT EDGE: No padding at all
+    padding-right: 0 !important; // ✅ RIGHT EDGE: Explicitly no right padding
+
+    @media (max-width: 768px) {
+        width: calc(100vw - 260px) !important; // ✅ RIGHT EDGE: Full viewport width minus sidebar
+        max-width: calc(100vw - 260px) !important; // ✅ RIGHT EDGE: Extends to right edge
+        position: fixed !important; // ✅ RIGHT EDGE: Fixed positioning
+        left: 260px !important; // ✅ LEFT: After sidebar
+        right: 0 !important; // ✅ RIGHT EDGE: Extends to right edge
+        top: 64px !important;
+        bottom: 0 !important; // ✅ BOTTOM: Extends to bottom
+        margin: 0 !important; // ✅ RIGHT EDGE: No margins
+        padding: 0 !important;
+        padding-right: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    @media (max-width: 576px) {
+        width: calc(100vw - 260px) !important; // ✅ RIGHT EDGE: Full viewport width minus sidebar
+        max-width: calc(100vw - 260px) !important; // ✅ RIGHT EDGE: Extends to right edge
+        position: fixed !important; // ✅ RIGHT EDGE: Fixed positioning
+        left: 260px !important; // ✅ LEFT: After sidebar
+        right: 0 !important; // ✅ RIGHT EDGE: Extends to right edge
+        top: 56px !important; // Smaller topbar on mobile
+        bottom: 0 !important; // ✅ BOTTOM: Extends to bottom
+        margin: 0 !important; // ✅ RIGHT EDGE: No margins
+        padding: 0 !important;
+        padding-right: 0 !important;
+        min-height: calc(100vh - 56px);
+        overflow-x: hidden !important;
+    }
+}
+
+.admin-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important; // ✅ RIGHT EDGE: No padding - content touches edges
+    padding-right: 0 !important; // ✅ RIGHT EDGE: Explicitly no right padding
+    margin: 0 !important; // ✅ RIGHT EDGE: No margins - content touches edges
+    margin-left: 0 !important; // ✅ LEFT: No left margin
+    margin-right: 0 !important; // ✅ RIGHT EDGE: No right margin - touches browser edge
+    margin-top: 0 !important; // ✅ TOP: No top margin - touches topbar
+    margin-bottom: 0 !important; // ✅ BOTTOM: No bottom margin
+    flex: 1;
+    box-sizing: border-box;
+    position: relative;
+    right: 0 !important; // ✅ RIGHT EDGE: Explicitly position at right edge
+    overflow-x: hidden !important; // ✅ RIGHT EDGE: Prevent horizontal scroll
+    
+    // ✅ STEP 2-5: Ensure all child components use full width
+    ::ng-deep {
+        // ✅ STEP 3: Override any container constraints
+        .container,
+        .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        // Override any component-specific max-width constraints
+        .event-form-container,
+        .form-container,
+        .page-container,
+        .content-container,
+        [class*="container"],
+        [class*="max-width"],
+        [style*="max-width"] {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        // ✅ STEP 4: Stretch cards to full width - NO RIGHT SPACE
+        .admin-card,
+        .list-card,
+        .page-card,
+        .card,
+        .admin-list-table-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-right: 0 !important; // ✅ NO RIGHT: No right padding on cards
+        }
+
+        // ✅ STEP 5: Remove center alignment
+        .main-content {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            text-align: left !important;
+        }
+
+        // ✅ FULL WIDTH: Ensure admin list containers use full width
+        .admin-list-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        // Ensure all child elements respect full width
+        * {
+            box-sizing: border-box;
+        }
+
+        // Allow tables and content to expand fully
+        table {
+            width: 100%;
+        }
+    }
+}
+
+// ✅ STEP 2: Global content area fixes - Remove ALL max-width restrictions
+::ng-deep {
+    // ✅ NO FOOTER: Hide public footer completely in admin layout
+    app-public-footer,
+    app-public-footer footer,
+    footer,
+    .public-footer,
+    app-public-footer::ng-deep footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    // Override global wrapper styles from app.component.scss
+    .wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        
+        @media screen and (min-width: 1200px) {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    }
+    
+    // ✅ STEP 2: Apply full-width fix globally to all content areas
+    .admin-content-wrapper,
+    .admin-content,
+    .page-content,
+    .page-wrapper,
+    .content-area {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    // ✅ STEP 3: Fix container classes - Remove max-width restrictions
+    .container,
+    .container-fluid {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    // ✅ STEP 4: Stretch cards to full width - NO RIGHT SPACE
+    .admin-card,
+    .list-card,
+    .page-card,
+    .card,
+    .admin-list-table-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-right: 0 !important; // ✅ NO RIGHT: No right padding on cards
+    }
+    
+    // ✅ STEP 5: Remove center alignment
+    .main-content {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .admin-content {
+        .container,
+        .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        // Ensure admin list containers are truly full width
+        .admin-list-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+    }
+}
   

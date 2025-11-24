@@ -1,0 +1,393 @@
+// ✅ BEAUTIFUL DESIGN: Modern Fixed Topbar Styles
+// Clean, professional design with smooth animations and modern aesthetics
+
+// Color Variables
+$topbar-bg: #ffffff;
+$topbar-bg-gradient: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+$topbar-border: #e9ecef;
+$topbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+$topbar-text: #2d3748;
+$topbar-text-secondary: #718096;
+$topbar-hover: #f7fafc;
+$topbar-primary: #5e72e4;
+$topbar-danger: #f5365c;
+$topbar-height: 64px;
+$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Host Styles
+:host {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1030; // Above sidebar (1000) but below modals
+  box-shadow: $topbar-shadow;
+}
+
+// Main Topbar Container
+.admin-topbar {
+  width: 100%;
+  height: $topbar-height;
+  background: $topbar-bg-gradient;
+  border-bottom: 1px solid $topbar-border;
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: $transition;
+
+  .topbar-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    margin: 0;
+    
+    @media (max-width: 768px) {
+      padding: 0 1rem;
+    }
+  }
+}
+
+// Left Section: Brand
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: $topbar-text;
+    font-weight: 700;
+    font-size: 1.15rem;
+    text-decoration: none;
+    transition: $transition;
+
+    i {
+      font-size: 1.5rem;
+      color: $topbar-primary;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      // ✅ FIX: Ensure icon displays properly with Font Awesome 6
+      font-style: normal;
+      font-weight: 900; // Font Awesome Solid weight
+    }
+
+    .brand-text {
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      
+      @media (max-width: 576px) {
+        display: none; // Hide on very small screens
+      }
+    }
+
+    &:hover {
+      text-decoration: none;
+      color: $topbar-primary;
+    }
+  }
+}
+
+// Right Section: User Menu & Actions
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  // Icon Button (for notifications, etc.)
+  .topbar-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: $topbar-text-secondary;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: $transition;
+    outline: none;
+
+    i {
+      font-size: 1.125rem;
+    }
+
+    .badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: $topbar-danger;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 10px;
+      min-width: 16px;
+      text-align: center;
+    }
+
+    &:hover {
+      background: $topbar-hover;
+      color: $topbar-primary;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($topbar-primary, 0.2);
+    }
+  }
+
+  // User Menu
+  .user-menu {
+    position: relative;
+
+    .user-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: $transition;
+      outline: none;
+      color: $topbar-text;
+
+      &:hover {
+        background: $topbar-hover;
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba($topbar-primary, 0.2);
+      }
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $topbar-primary 0%, #7c8ef1 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba($topbar-primary, 0.3);
+
+        i {
+          // ✅ FIX: Ensure icon displays properly
+          font-style: normal;
+          font-weight: 900; // Font Awesome Solid weight
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.125rem;
+        min-width: 0;
+
+        @media (max-width: 576px) {
+          display: none; // Hide user info on small screens
+        }
+
+        .user-name {
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: $topbar-text;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 150px;
+        }
+
+        .user-role {
+          font-size: 0.75rem;
+          color: $topbar-text-secondary;
+          white-space: nowrap;
+        }
+      }
+
+      .dropdown-icon {
+        font-size: 0.75rem;
+        color: $topbar-text-secondary;
+        transition: $transition;
+        flex-shrink: 0;
+
+        @media (max-width: 576px) {
+          display: none;
+        }
+      }
+
+      &[aria-expanded="true"] {
+        background: $topbar-hover;
+
+        .dropdown-icon {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+}
+
+// Modern Dropdown Menu
+::ng-deep {
+  .dropdown-menu-modern {
+    min-width: 200px;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    background: white;
+    margin-top: 0.5rem !important;
+
+    .dropdown-item-modern {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      color: $topbar-text;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: $transition;
+      cursor: pointer;
+
+      i {
+        font-size: 1rem;
+        width: 18px;
+        text-align: center;
+        color: $topbar-text-secondary;
+        transition: $transition;
+        // ✅ FIX: Ensure icon displays properly
+        font-style: normal;
+        font-weight: 900; // Font Awesome Solid weight
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      span {
+        flex: 1;
+      }
+
+      &:hover {
+        background: $topbar-hover;
+        color: $topbar-primary;
+
+        i {
+          color: $topbar-primary;
+        }
+      }
+
+      &:focus {
+        background: $topbar-hover;
+        outline: none;
+      }
+
+      &.dropdown-item-danger {
+        color: $topbar-danger;
+
+        &:hover {
+          background: rgba($topbar-danger, 0.1);
+          color: $topbar-danger;
+
+          i {
+            color: $topbar-danger;
+          }
+        }
+      }
+    }
+
+    .dropdown-item-modern:not(:last-child) {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  // NgbDropdown positioning
+  .dropdown-menu {
+    &.show {
+      animation: fadeInDown 0.2s ease-out;
+    }
+  }
+}
+
+// Animation
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .admin-topbar {
+    .topbar-container {
+      .topbar-left {
+        gap: 0.75rem;
+
+        .topbar-brand {
+          font-size: 1rem;
+
+          i {
+            font-size: 1.25rem;
+          }
+        }
+      }
+
+      .topbar-right {
+        gap: 0.5rem;
+
+        .user-menu {
+          .user-menu-btn {
+            padding: 0.5rem;
+
+            .user-avatar {
+              width: 32px;
+              height: 32px;
+              font-size: 0.875rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-topbar {
+    height: 56px;
+
+    .topbar-container {
+      padding: 0 0.75rem;
+    }
+  }
+}
+
+// Print Styles
+@media print {
+  .admin-topbar {
+    display: none;
+  }
+}
+

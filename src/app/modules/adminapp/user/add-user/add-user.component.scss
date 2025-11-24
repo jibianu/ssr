@@ -1,0 +1,21 @@
+// ✅ COMMON ADMIN: Import shared styles
+@import '../../../../shared/admin-common/admin-common.scss';
+
+// User-specific customizations (if needed)
+.add-user-container {
+  @extend .admin-page-wrapper;
+  
+  .add-user-content {
+    @extend .admin-page-content;
+  }
+  
+  .add-user-card {
+    @extend .admin-card;
+    @extend .admin-card-centered;
+  }
+  
+  .add-user-form {
+    @extend .admin-form;
+    @extend .admin-form-full-width;
+  }
+}

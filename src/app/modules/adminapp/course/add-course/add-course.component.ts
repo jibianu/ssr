@@ -1,14 +1,12 @@
 import { environment } from './../../../../../environments/environment';
-import { CoursePreviewComponent } from './../course-preview/course-preview.component';
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { AdminAppService } from './../../adminapp.service';
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MyUploadAdapter } from './UploadAdapter';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { StorageUtil } from 'src/app/core/utils/storage.util';
@@ -47,6 +45,16 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   toggleDragArray = [];
   selectedItems = [];
   locationArray: any = [];
+  // ✅ FIX: Track accordion section states
+  accordionStates: { [key: string]: boolean } = {
+    'collapse5': false,  // Course Title Summaries
+    'collapse3': true,   // Course About Information (default open)
+    'collapse7': false,  // Course Curriculum
+    'collapse1': false,  // Become Course
+    'collapse2': false,  // Frequently Asked Questions
+    'collapse6': false,  // Course Trainers
+    'collapse4': false   // Course Features
+  };
   // ✅ FIX: Initialize dropdown settings with default values to prevent undefined errors
   dropdownSettings: any = {
     singleSelection: false,
@@ -73,16 +81,61 @@ export class AddCourseComponent implements OnInit, OnDestroy {
   //activatedRoute: any;
 
   constructor(
-   
     private appService: AdminAppService,
     private toasterService: ToasterService,
     private router: Router,
     private location: Location,
-    private modalService: NgbModal,
     private cookieService: CookieService,
     private formBuilder: FormBuilder,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) { }
+
+  // ✅ FIX: Toggle accordion sections manually - CRITICAL FIX
+  toggleCollapse(targetId: string, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // ✅ SSR: Only execute DOM operations in browser
+    if (typeof document === 'undefined') {
+      return;
+    }
+    
+    // Toggle state
+    this.accordionStates[targetId] = !this.accordionStates[targetId];
+    const isExpanded = this.accordionStates[targetId];
+    
+    // Update DOM
+    setTimeout(() => {
+      const collapseElement = document.getElementById(targetId);
+      if (!collapseElement) {
+        return;
+      }
+      
+      const button = event ? (event.target as HTMLElement).closest('button') : null;
+      
+      if (isExpanded) {
+        collapseElement.classList.add('show');
+        if (button) {
+          button.setAttribute('aria-expanded', 'true');
+          button.classList.remove('collapsed');
+        }
+      } else {
+        collapseElement.classList.remove('show');
+        if (button) {
+          button.setAttribute('aria-expanded', 'false');
+          button.classList.add('collapsed');
+        }
+      }
+    }, 10);
+  }
+  
+  // ✅ FIX: Check if accordion section is expanded
+  isExpanded(targetId: string): boolean {
+    return this.accordionStates[targetId] || false;
+  }
 
   ngOnInit(): void {
     // ✅ FIX: Initialize form FIRST before any async operations that might use it
@@ -134,6 +187,7 @@ export class AddCourseComponent implements OnInit, OnDestroy {
       canonicalUrl: ['', Validators.required],
       metaDescription: ['', [Validators.required]],
       categoryId: ['', Validators.required],
+      iconId: [''],
       showOnDashboard: [false],
       amount: 0,
       becomeCourse: this.formBuilder.group({
@@ -280,19 +334,167 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     }));
   }
 
-  // ✅ FIX: Reload course data after update to show fresh data immediately
-  reloadCourseData() {
-    if (this.courseId) {
-      // Add cache-busting parameter to ensure we get fresh data
-      this.subscription.add(
-        this.appService.getCourseByIdWithCacheBust(this.courseId).subscribe((res: any) => {
-          if (res) {
-            this.setvalue(res);
-            console.log('[AddCourseComponent] Course data reloaded successfully after update');
-          }
-        })
-      );
+  // ✅ FIX: Update form immediately with submitted data (optimistic update)
+  // This provides instant visual feedback while server reload completes
+  updateFormWithSubmittedData(formData: any) {
+    try {
+      // Update basic form fields immediately for instant UI feedback
+      this.courseForm.patchValue({
+        title: formData.title || '',
+        canonicalUrl: formData.canonicalUrl || '',
+        metaDescription: formData.metaDescription || '',
+        categoryId: formData.categoryId || '',
+        iconId: formData.iconId || '',
+        amount: formData.amount || 0,
+        showOnDashboard: formData.showOnDashboard || false,
+        titleImageUrl: formData.titleImageUrl || ''
+      }, { emitEvent: false }); // Don't trigger validation events
+
+      // Update becomeCourse if exists
+      if (formData.becomeCourse) {
+        const becomeCourseGroup = this.courseForm.get('becomeCourse') as UntypedFormGroup;
+        if (becomeCourseGroup) {
+          becomeCourseGroup.patchValue({
+            title: formData.becomeCourse.title || '',
+            description: formData.becomeCourse.description || ''
+          }, { emitEvent: false });
+        }
+      }
+
+      // Update selected course icon immediately
+      if (formData.iconId && this.iconList && this.iconList.length > 0) {
+        this.selectedCourseIcon = this.iconList.find(icon => icon.id === formData.iconId);
+      }
+
+      // Update location selection if provided
+      if (formData.courseLocations && Array.isArray(formData.courseLocations)) {
+        this.selectedItems = formData.courseLocations.map(loc => ({
+          id: loc.locationId || loc.id,
+          name: loc.name
+        }));
+        this.locationArray = formData.courseLocations;
+      }
+
+      // Force change detection to update UI immediately
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('[AddCourseComponent] Error updating form with submitted data:', error);
     }
+  }
+
+  // ✅ FIX: Reload course data after update with retry mechanism
+  // Uses exponential backoff to handle cache/backend delays
+  reloadCourseDataWithRetry(maxRetries: number = 3, initialDelay: number = 200) {
+    if (!this.courseId) return;
+
+    let attempt = 0;
+    const attemptReload = () => {
+      attempt++;
+      // Exponential backoff: 0ms (first), 200ms, 400ms, 800ms
+      const delay = attempt === 1 ? 0 : initialDelay * Math.pow(2, attempt - 2);
+      
+      const performReload = () => {
+        // Use cache-busting to ensure fresh data from server
+        this.subscription.add(
+          this.appService.getCourseByIdWithCacheBust(this.courseId).subscribe({
+            next: (res: any) => {
+              if (res && res.id) {
+                // Successfully received data
+                this.courseData = res;
+                
+                // Reset form arrays to prevent duplicate data
+                this.resetFormArrays();
+                
+                // Re-populate form with fresh data from server
+                this.setvalue(res);
+                
+                // Update selected items for location dropdown
+                if (res.courseLocations && res.courseLocations.length > 0) {
+                  this.selectedItems = res.courseLocations.map(loc => ({
+                    id: loc.locationId || loc.id,
+                    name: loc.name
+                  }));
+                  this.locationArray = res.courseLocations;
+                }
+                
+                // Update selected course icon
+                if (res.iconId && this.iconList && this.iconList.length > 0) {
+                  this.selectedCourseIcon = this.iconList.find(icon => icon.id === res.iconId);
+                }
+                
+                // Mark form as pristine since we just updated it with fresh data
+                this.courseForm.markAsPristine();
+                this.submitted = false;
+                
+                // Force change detection to update UI immediately
+                this.cdr.detectChanges();
+                console.log(`[AddCourseComponent] Course data reloaded successfully after update (attempt ${attempt})`);
+              } else if (attempt < maxRetries) {
+                // Retry if no valid data received
+                console.log(`[AddCourseComponent] No data received, retrying (attempt ${attempt}/${maxRetries})...`);
+                attemptReload();
+              } else {
+                console.warn('[AddCourseComponent] Failed to reload course data after all retries');
+              }
+            },
+            error: (err) => {
+              console.error(`[AddCourseComponent] Error reloading course data (attempt ${attempt}):`, err);
+              if (attempt < maxRetries) {
+                attemptReload();
+              } else {
+                console.error('[AddCourseComponent] Failed to reload course data after all retries');
+              }
+            }
+          })
+        );
+      };
+
+      if (delay === 0) {
+        // First attempt: execute immediately
+        performReload();
+      } else {
+        // Subsequent attempts: use delay
+        setTimeout(performReload, delay);
+      }
+    };
+
+    // Start first attempt
+    attemptReload();
+  }
+
+  // ✅ FIX: Legacy method - kept for backward compatibility
+  reloadCourseData() {
+    this.reloadCourseDataWithRetry(1, 500);
+  }
+
+  // Helper method to reset form arrays before reloading
+  resetFormArrays() {
+    // Clear all form arrays to prevent duplicate data
+    while (this.frequentlyAskedQuestionsArray.length > 0) {
+      this.frequentlyAskedQuestionsArray.removeAt(0);
+    }
+    while (this.courseFeaturesArray.length > 0) {
+      this.courseFeaturesArray.removeAt(0);
+    }
+    while (this.courseInformationArray.length > 0) {
+      this.courseInformationArray.removeAt(0);
+    }
+    while (this.courseSummariesArray.length > 0) {
+      this.courseSummariesArray.removeAt(0);
+    }
+    while (this.courseTeachersArray.length > 0) {
+      this.courseTeachersArray.removeAt(0);
+    }
+    while (this.courseContentsArray.length > 0) {
+      this.courseContentsArray.removeAt(0);
+    }
+    while (this.courseLocationsArray.length > 0) {
+      this.courseLocationsArray.removeAt(0);
+    }
+    // Reset selected items arrays
+    this.selectedfeatureitems = [];
+    this.selectedItems = [];
+    this.locationArray = [];
   }
 
   getIcons() {
@@ -335,8 +537,13 @@ export class AddCourseComponent implements OnInit, OnDestroy {
       amount: res.amount ? res.amount : 0,
       metaDescription: res.metaDescription ? res.metaDescription : '',
       categoryId: (res.category && res.category.id) ? res.category.id : (res.categoryId ? res.categoryId : ''),
+      iconId: res.iconId ? res.iconId : '',
       showOnDashboard: res.showOnDashboard ? res.showOnDashboard : false,
     });
+    // Set selected course icon if iconId exists
+    if (res.iconId && this.iconList && this.iconList.length > 0) {
+      this.selectedCourseIcon = this.iconList.find(icon => icon.id === res.iconId);
+    }
     this.uploadedFilePath = res.titleImageUrl ? res.titleImageUrl : environment.imgUrl;
     this.setLocationMetaData(res.title);
     if (res.becomeCourse && (res.becomeCourse.title || res.becomeCourse.description)) {
@@ -564,18 +771,30 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     this.loading = true;
     
     if (this.courseId) {
-      this.subscription.add(this.appService.updateCourse(this.courseForm.value, this.courseId).subscribe({
-        next: () => {
-          this.loading = false; // ✅ FIX: Reset loading state on success
-          this.submitted = false; // ✅ FIX: Reset submitted state to clear validation errors
+      // ✅ FIX: Ensure form data includes courseId for update
+      const formData = {
+        ...this.courseForm.value,
+        id: this.courseId
+      };
+      
+      this.subscription.add(this.appService.updateCourse(formData, this.courseId).subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.submitted = false;
           this.toasterService.showSuccess('Course updated successfully');
-          // ✅ FIX: Reload course data to show updated values immediately without navigation
-          this.reloadCourseData();
+          
+          // ✅ FIX: Immediately update form with submitted data as a fallback
+          // This ensures UI reflects changes even before re-fetch completes
+          this.updateFormWithSubmittedData(formData);
+          
+          // ✅ FIX: Reload course data from server to get complete updated data
+          // Use multiple attempts with increasing delays to handle cache/backend delays
+          this.reloadCourseDataWithRetry(3, 300);
         },
         error: (err) => {
-          this.loading = false; // ✅ FIX: Reset loading state on error
+          this.loading = false;
           console.error('[AddCourseComponent] Error updating course:', err);
-          // Error message will be shown by error interceptor
+          this.toasterService.showError(err?.error?.message || 'Failed to update course. Please try again.');
         }
       }));
     } else {
@@ -583,8 +802,8 @@ export class AddCourseComponent implements OnInit, OnDestroy {
         next: () => {
           this.loading = false; // ✅ FIX: Reset loading state on success
           this.toasterService.showSuccess('Course created successfully');
-          // ✅ FIX: Navigate to course list with refresh flag to ensure data refreshes
-          this.router.navigate(['/admin/course/list'], { queryParams: { refresh: Date.now() } });
+          // ✅ FIX: Navigate to course list with refresh flag - use correct path /app/course/list
+          this.router.navigate(['/app/course/list'], { queryParams: { refresh: Date.now() } });
         },
         error: (err) => {
           this.loading = false; // ✅ FIX: Reset loading state on error
@@ -607,33 +826,53 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     StorageUtil.clearSession();
   }
 
-  previewCourse() {
-    const modalRef = this.modalService.open(CoursePreviewComponent, { size: 'xl', scrollable: true });
-    modalRef.componentInstance.blogDetails = this.courseForm.value;
-  }
-
   fileProgress(fileInput: any) {
     this.fileData = <File>fileInput.target.files[0];
+    if (!this.fileData) {
+      return;
+    }
+    
+    // Reset progress
+    this.fileUploadProgress = '0';
+    
     // FIXED: Add subscription to cleanup on destroy
     this.subscription.add(
-      this.appService.uploadTitleImage(this.fileData).subscribe(res => {
-        this.uploadedFilePath = res.url;
-        this.courseForm.patchValue({
-          titleImageUrl: this.uploadedFilePath
-        })
+      this.appService.uploadTitleImage(this.fileData).subscribe({
+        next: (res) => {
+          this.uploadedFilePath = res.url;
+          this.courseForm.patchValue({
+            titleImageUrl: this.uploadedFilePath
+          });
+          this.fileUploadProgress = null; // Clear progress on success
+        },
+        error: (err) => {
+          console.error('Error uploading image:', err);
+          this.fileUploadProgress = null;
+          this.toasterService.showError('Failed to upload image. Please try again.');
+        }
       })
     );
   }
 
   teacherFileProgress(fileInput: any, i) {
     let fileData = <File>fileInput.target.files[0];
+    if (!fileData) {
+      return;
+    }
+    
     // FIXED: Add subscription to cleanup on destroy
     this.subscription.add(
-      this.appService.uploadTeacherImage(fileData).subscribe(res => {
-        let uploadedFilePath = res.url;
-        this.courseTeachersArray.at(i).patchValue({
-          imageUrl: uploadedFilePath
-        })
+      this.appService.uploadTeacherImage(fileData).subscribe({
+        next: (res) => {
+          let uploadedFilePath = res.url;
+          this.courseTeachersArray.at(i).patchValue({
+            imageUrl: uploadedFilePath
+          });
+        },
+        error: (err) => {
+          console.error('Error uploading teacher image:', err);
+          this.toasterService.showError('Failed to upload teacher image. Please try again.');
+        }
       })
     );
   }
@@ -863,6 +1102,189 @@ export class AddCourseComponent implements OnInit, OnDestroy {
     this.CourseSubSubContent(i, j).at(k).patchValue({
       iconId: item.id
     })
+  }
+
+  // New methods for compact icon dropdown
+  selectedCourseIcon: any = null;
+
+  onCourseIconChange(event: any) {
+    const iconId = event.target.value;
+    if (iconId) {
+      this.selectedCourseIcon = this.iconList.find(icon => icon.id === iconId);
+      this.courseForm.patchValue({ iconId: iconId });
+    } else {
+      this.selectedCourseIcon = null;
+      this.courseForm.patchValue({ iconId: null });
+    }
+  }
+
+  onIconSelectChange(event: any, i: number) {
+    const iconId = event.target.value;
+    if (iconId) {
+      const icon = this.iconList.find(icon => icon.id === iconId);
+      this.onIconSelect(icon, i);
+    } else {
+      this.courseContentsArray.at(i).patchValue({ iconId: null });
+    }
+  }
+
+  onSubIconSelectChange(event: any, i: number, j: number) {
+    const iconId = event.target.value;
+    if (iconId) {
+      const icon = this.iconList.find(icon => icon.id === iconId);
+      this.onSubIconSelect(icon, i, j);
+    } else {
+      this.CourseSubContent(i).at(j).patchValue({ iconId: null });
+    }
+  }
+
+  onChildIconSelectChange(event: any, i: number, j: number, k: number) {
+    const iconId = event.target.value;
+    if (iconId) {
+      const icon = this.iconList.find(icon => icon.id === iconId);
+      this.onChildIconSelect(icon, i, j, k);
+    } else {
+      this.CourseSubSubContent(i, j).at(k).patchValue({ iconId: null });
+    }
+  }
+
+  onFeatureIconSelectChange(event: any, i: number) {
+    const iconId = event.target.value;
+    if (iconId) {
+      const icon = this.iconList.find(icon => icon.id === iconId);
+      this.onFeatureIconSelect(icon, i);
+    } else {
+      this.courseFeaturesArray.at(i).patchValue({ iconId: null });
+    }
+  }
+
+  getSelectedIconForContent(i: number): any {
+    const iconId = this.courseContentsArray.at(i).get('iconId')?.value;
+    if (iconId && this.iconList) {
+      return this.iconList.find(icon => icon.id === iconId);
+    }
+    return null;
+  }
+
+  getSelectedIconForSubContent(i: number, j: number): any {
+    const iconId = this.CourseSubContent(i).at(j).get('iconId')?.value;
+    if (iconId && this.iconList) {
+      return this.iconList.find(icon => icon.id === iconId);
+    }
+    return null;
+  }
+
+  getSelectedIconForChildContent(i: number, j: number, k: number): any {
+    const iconId = this.CourseSubSubContent(i, j).at(k).get('iconId')?.value;
+    if (iconId && this.iconList) {
+      return this.iconList.find(icon => icon.id === iconId);
+    }
+    return null;
+  }
+
+  getSelectedIconForFeature(i: number): any {
+    const iconId = this.courseFeaturesArray.at(i).get('iconId')?.value;
+    if (iconId && this.iconList) {
+      return this.iconList.find(icon => icon.id === iconId);
+    }
+    return null;
+  }
+
+  resetForm() {
+    if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+      this.submitted = false;
+      this.loading = false;
+      this.uploadedFilePath = null;
+      this.fileUploadProgress = null;
+      this.selectedCourseIcon = null;
+      this.courseForm.reset();
+      this.formInit();
+    }
+  }
+
+  // Helper methods to check if sections have data
+  hasCourseSummaries(): boolean {
+    if (!this.courseSummariesArray || this.courseSummariesArray.length === 0) {
+      return false;
+    }
+    // Check if any summary has actual content
+    return this.courseSummariesArray.controls.some(control => {
+      const formGroup = control as UntypedFormGroup;
+      const summary = formGroup.get('summary')?.value;
+      return summary && summary.trim().length > 0;
+    });
+  }
+
+  hasCourseInformation(): boolean {
+    if (!this.courseInformationArray || this.courseInformationArray.length === 0) {
+      return false;
+    }
+    // Check if any information has actual content
+    return this.courseInformationArray.controls.some(control => {
+      const formGroup = control as UntypedFormGroup;
+      const title = formGroup.get('title')?.value;
+      const summary = formGroup.get('summary')?.value;
+      return (title && title.trim().length > 0) || (summary && summary.trim().length > 0);
+    });
+  }
+
+  hasCourseContents(): boolean {
+    if (!this.courseContentsArray || this.courseContentsArray.length === 0) {
+      return false;
+    }
+    // Check if any content has actual title
+    return this.courseContentsArray.controls.some(control => {
+      const formGroup = control as UntypedFormGroup;
+      const title = formGroup.get('title')?.value;
+      return title && title.trim().length > 0;
+    });
+  }
+
+  hasBecomeCourse(): boolean {
+    if (!this.courseForm) return false;
+    const becomeCourse = this.courseForm.get('becomeCourse') as UntypedFormGroup;
+    if (!becomeCourse) return false;
+    const title = becomeCourse.get('title')?.value;
+    const description = becomeCourse.get('description')?.value;
+    return (title && title.trim().length > 0) || (description && description.trim().length > 0);
+  }
+
+  hasFrequentlyAskedQuestions(): boolean {
+    if (!this.frequentlyAskedQuestionsArray || this.frequentlyAskedQuestionsArray.length === 0) {
+      return false;
+    }
+    // Check if any FAQ has actual content
+    return this.frequentlyAskedQuestionsArray.controls.some(control => {
+      const formGroup = control as UntypedFormGroup;
+      const question = formGroup.get('question')?.value;
+      const answer = formGroup.get('answer')?.value;
+      return (question && question.trim().length > 0) || (answer && answer.trim().length > 0);
+    });
+  }
+
+  hasCourseTeachers(): boolean {
+    if (!this.courseTeachersArray || this.courseTeachersArray.length === 0) {
+      return false;
+    }
+    // Check if any teacher has actual content
+    return this.courseTeachersArray.controls.some(control => {
+      const formGroup = control as UntypedFormGroup;
+      const name = formGroup.get('name')?.value;
+      const description = formGroup.get('description')?.value;
+      return (name && name.trim().length > 0) || (description && description.trim().length > 0);
+    });
+  }
+
+  hasCourseFeatures(): boolean {
+    if (!this.courseFeaturesArray || this.courseFeaturesArray.length === 0) {
+      return false;
+    }
+    // Check if any feature has actual content
+    return this.courseFeaturesArray.controls.some(control => {
+      const formGroup = control as UntypedFormGroup;
+      const description = formGroup.get('description')?.value;
+      return description && description.trim().length > 0;
+    });
   }
 
   ngOnDestroy() {

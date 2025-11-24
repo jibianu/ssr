@@ -1,10 +1,12 @@
 import { Location } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import {FormGroup,FormBuilder, Validators, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from '../../adminapp.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 
 
@@ -21,6 +23,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
     eventId: string;
     eventForm: FormGroup;
     submitted = false;
+    loading = false;
     subscription: Subscription = new Subscription();
     fileUploadProgress: string = null;
   uploadedFilePath: string = null;
@@ -30,12 +33,16 @@ export class AddEventComponent implements OnInit, OnDestroy {
    
   ]
 
+    private apiUrl = environment.apiUrl;
+
     constructor(
         private formBuilder: FormBuilder,
         private appService: AdminAppService,
         private toasterService: ToasterService,
         private activatedRoute: ActivatedRoute,
         private location: Location,
+        private cdr: ChangeDetectorRef,
+        private http: HttpClient,
     ) { }
 
     ngOnInit(): void {
@@ -151,22 +158,72 @@ export class AddEventComponent implements OnInit, OnDestroy {
 
     onSubmit() {
         this.submitted = true;
-        // stop here if form is invalid
+        
+        // Mark all form controls as touched to show validation messages
         if (this.eventForm.invalid) {
+            Object.keys(this.eventForm.controls).forEach(key => {
+                const control = this.eventForm.get(key);
+                if (control) {
+                    control.markAsTouched();
+                }
+            });
+            // Mark form array controls as touched
+            const eventDetailsArray = this.eventForm.get('eventDetails') as FormArray;
+            eventDetailsArray.controls.forEach(control => {
+                if (control instanceof FormGroup) {
+                    Object.keys(control.controls).forEach(key => {
+                        control.get(key)?.markAsTouched();
+                    });
+                }
+            });
             return;
         }
+        
+        // Prevent double submission
+        if (this.loading) {
+            return;
+        }
+        
+        this.loading = true;
         if (this.eventId && !this.isNew) {
-            this.subscription.add(this.appService.updateEvent(this.eventId,this.eventForm.value).subscribe(() => {
-                this.toasterService.showSuccess('Event updated successfully');
-                this.goBack();
+            // Update event
+            const formData = {
+                ...this.eventForm.value,
+                id: this.eventId
+            };
+            this.subscription.add(this.appService.updateEvent(this.eventId, formData).subscribe({
+                next: (response) => {
+                    this.loading = false;
+                    this.submitted = false;
+                    this.toasterService.showSuccess('Event updated successfully');
+                    
+                    // Update form immediately with submitted data (optimistic update)
+                    this.updateFormWithSubmittedData(formData);
+                    
+                    // Reload event data from server to get complete updated data
+                    this.reloadEventDataWithRetry(3, 300);
+                },
+                error: (err) => {
+                    this.loading = false;
+                    console.error('[AddEventComponent] Error updating event:', err);
+                    this.toasterService.showError(err?.error?.message || 'Failed to update event. Please try again.');
+                }
             }));
         } else {
+            // Create new event
             if(this.isNew){
                 this.eventForm.patchValue({id:''})
             }
-            this.subscription.add(this.appService.createEvent(this.eventForm.value).subscribe(() => {
-                this.toasterService.showSuccess('Event created successfully');
-                this.goBack();
+            this.subscription.add(this.appService.createEvent(this.eventForm.value).subscribe({
+                next: () => {
+                    this.loading = false;
+                    this.toasterService.showSuccess('Event created successfully');
+                    this.goBack();
+                },
+                error: (err) => {
+                    this.loading = false;
+                    this.toasterService.showError(err?.error?.message || 'Failed to create event. Please try again.');
+                }
             }));
         }
     }
@@ -257,6 +314,160 @@ export class AddEventComponent implements OnInit, OnDestroy {
         }
         return '';
     }
+    
+    getProgressPercentage(): number {
+        if (!this.fileUploadProgress) {
+            return 0;
+        }
+        // Remove % sign if present and parse to number
+        const progress = this.fileUploadProgress.toString().replace('%', '');
+        return parseInt(progress, 10) || 0;
+    }
+
+    // ✅ FIX: Update form immediately with submitted data (optimistic update)
+    updateFormWithSubmittedData(formData: any) {
+        try {
+            // Update basic form fields immediately for instant UI feedback
+            this.eventForm.patchValue({
+                title: formData.title || '',
+                canonicalUrl: formData.canonicalUrl || '',
+                eventInfo: formData.eventInfo || '',
+                metaDescription: formData.metaDescription || '',
+                language: formData.language || '',
+                badge: formData.badge || '',
+                amount: formData.amount || '0',
+                location: formData.location || '',
+                discount: formData.discount || '0',
+                startDate: formData.startDate || '',
+                endDate: formData.endDate || '',
+                duration: formData.duration || '',
+                timeing: formData.timeing || '',
+                aboutEvent: formData.aboutEvent || '',
+                registrationCompleted: formData.registrationCompleted || false,
+                showOnDashboard: formData.showOnDashboard || false
+            }, { emitEvent: false });
+
+            // Update uploaded file path if exists
+            if (formData.titleImageUrl) {
+                this.uploadedFilePath = formData.titleImageUrl;
+            }
+
+            // Force change detection to update UI immediately
+            this.cdr.detectChanges();
+        } catch (error) {
+            console.error('[AddEventComponent] Error updating form with submitted data:', error);
+        }
+    }
+
+    // ✅ FIX: Reload event data after update with retry mechanism
+    reloadEventDataWithRetry(maxRetries: number = 3, initialDelay: number = 200) {
+        if (!this.eventId) return;
+
+        let attempt = 0;
+        const attemptReload = () => {
+            attempt++;
+            // Exponential backoff: 0ms (first), 200ms, 400ms, 800ms
+            const delay = attempt === 1 ? 0 : initialDelay * Math.pow(2, attempt - 2);
+            
+            const performReload = () => {
+                // Use cache-busting by adding timestamp to ensure fresh data
+                const cacheBustUrl = `${this.apiUrl}page/event/${this.eventId}?_refresh=${Date.now()}`;
+                this.subscription.add(
+                    this.http.get(cacheBustUrl).subscribe({
+                        next: (res: any) => {
+                            if (res && res.id) {
+                                // Successfully received data - reuse getEventById logic
+                                this.resetFormArrays();
+                                this.eventForm.patchValue(res);
+                                
+                                // Handle date formatting
+                                try {
+                                    if (res.startDate) {
+                                        this.eventForm.patchValue({
+                                            startDate: new Date(res.startDate).toISOString().split('T')[0]
+                                        });
+                                    }
+                                    if (res.endDate) {
+                                        this.eventForm.patchValue({
+                                            endDate: new Date(res.endDate).toISOString().split('T')[0]
+                                        });
+                                    }
+                                } catch (e) {
+                                    console.log('[AddEventComponent] Error formatting dates:', e);
+                                }
+                                
+                                // Update eventDetails FormArray
+                                if (res.eventDetails && res.eventDetails.length > 0) {
+                                    this.eventForm.setControl('eventDetails', this.formBuilder.array(
+                                        res.eventDetails.map((item: any) => {
+                                            return this.formBuilder.group({
+                                                section: item.section,
+                                                imageUrl: item.imageUrl,
+                                                sortOrder: item.sortOrder,
+                                                title: item.title,
+                                                description: item.description,
+                                                tag: item.tag,
+                                                amount: item.amount,
+                                                count: item.count
+                                            });
+                                        })
+                                    ));
+                                }
+                                
+                                // Re-add initial values
+                                this.addInitialValue();
+                                
+                                // Update uploaded file path
+                                this.uploadedFilePath = res.eventDetails?.find((item: any) => item.section === 'image')?.imageUrl || '';
+                                
+                                // Mark form as pristine since we just updated it with fresh data
+                                this.eventForm.markAsPristine();
+                                this.submitted = false;
+                                
+                                // Force change detection to update UI immediately
+                                this.cdr.detectChanges();
+                                console.log(`[AddEventComponent] Event data reloaded successfully after update (attempt ${attempt})`);
+                            } else if (attempt < maxRetries) {
+                                // Retry if no valid data received
+                                console.log(`[AddEventComponent] No data received, retrying (attempt ${attempt}/${maxRetries})...`);
+                                attemptReload();
+                            } else {
+                                console.warn('[AddEventComponent] Failed to reload event data after all retries');
+                            }
+                        },
+                        error: (err) => {
+                            console.error(`[AddEventComponent] Error reloading event data (attempt ${attempt}):`, err);
+                            if (attempt < maxRetries) {
+                                attemptReload();
+                            } else {
+                                console.error('[AddEventComponent] Failed to reload event data after all retries');
+                            }
+                        }
+                    })
+                );
+            };
+
+            if (delay === 0) {
+                // First attempt: execute immediately
+                performReload();
+            } else {
+                // Subsequent attempts: use delay
+                setTimeout(performReload, delay);
+            }
+        };
+
+        // Start first attempt
+        attemptReload();
+    }
+
+    // Helper method to reset form arrays before reloading
+    resetFormArrays() {
+        const eventDetailsArray = this.eventForm.get('eventDetails') as FormArray;
+        while (eventDetailsArray.length > 0) {
+            eventDetailsArray.removeAt(0);
+        }
+    }
+
     fileProgress(fileInput: any) {
         this.fileData = <File>fileInput.target.files[0];
         this.appService.eventUploadTitleImage(this.fileData).subscribe(res => {
@@ -282,6 +493,25 @@ export class AddEventComponent implements OnInit, OnDestroy {
           }
         })
       }
+
+    // Accordion toggle functionality
+    expandedSections: Set<string> = new Set();
+
+    toggleCollapse(sectionId: string, event?: Event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (this.expandedSections.has(sectionId)) {
+            this.expandedSections.delete(sectionId);
+        } else {
+            this.expandedSections.add(sectionId);
+        }
+    }
+
+    isExpanded(sectionId: string): boolean {
+        return this.expandedSections.has(sectionId);
+    }
 
     ngOnDestroy() {
         if (this.subscription) {

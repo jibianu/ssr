@@ -1,86 +1,203 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Course List</h1>
-    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm" *ngIf="(currentUser.canAdd || currentUser.isAdmin)"
-      [routerLink]="['/app/course/add']"><i class="fa fa-plus fa-sm text-white-50"></i> Add Course</a>
+<!-- ✅ COMMON ADMIN LIST: Modern Admin Panel Course List -->
+<div class="admin-list-container">
+  <!-- Header Section with Title and Add Button -->
+  <div class="admin-list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="fas fa-book-open"></i>
+          Course Management
+        </h1>
+        <p class="page-subtitle">Manage and organize your course catalog</p>
+      </div>
+      <a *ngIf="(currentUser.canAdd || currentUser.isAdmin)" 
+         class="btn-add-item" 
+         [routerLink]="['/app/course/add']">
+        <i class="fas fa-plus"></i>
+        <span>Add New Course</span>
+      </a>
+    </div>
   </div>
-  
-  <div *ngIf="currentUser.isAdmin">
-    <div class="form-group pull-right">
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Search" name="search" [(ngModel)]="searchTitle"
-          (ngModelChange)="dataChanged($event)">
-        <div class="input-group-append">
-          <!-- ✅ FIX: Use correct method name fetchCourses instead of fetchBlogs -->
-          <button class="input-group-text" (click)="fetchCourses()">
-            <i class="fa fa-search"></i>
+
+  <!-- Admin View: Course List with Search and Filters -->
+  <div *ngIf="currentUser.isAdmin" class="course-list-content">
+    <!-- Search and Filter Bar -->
+    <div class="admin-list-search-bar">
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search courses by title..." 
+            [(ngModel)]="searchTitle"
+            (ngModelChange)="dataChanged($event)"
+            (keyup.enter)="fetchCourses()">
+          <button class="search-btn" (click)="fetchCourses()" title="Search">
+            <i class="fas fa-search"></i>
           </button>
         </div>
       </div>
+      <div class="stats-badge" *ngIf="count !== undefined">
+        <i class="fas fa-chart-line"></i>
+        <span>{{ count }} {{ count === 1 ? 'Course' : 'Courses' }}</span>
+      </div>
     </div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col" style="width:20%">
-            <a href="javascript:void(0)" (click)="sortByHeading('Title')">Title
-              <span *ngIf="sortBy == 'Title'" class="fa"
-                [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
-            </a>
-          </th>
-          <th scope="col" style="width:15%">
-            <a href="javascript:void(0)" (click)="sortByHeading('Category')">Category
-              <span *ngIf="sortBy == 'Category'" class="fa"
-                [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
-            </a>
-          </th>
-          <th scope="col" style="width:15%">
-            <a href="javascript:void(0)" (click)="sortByHeading('CanonicalUrl')">Canonical Url
-              <span *ngIf="sortBy == 'CanonicalUrl'" class="fa"
-                [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
-            </a>
-          </th>
-          <th scope="col" style="width:15%">
-            Author
-          </th>
-          <th scope="col" style="width:15%">
-            Created Date
-          </th>
-          <th scope="col" *ngIf="(currentUser.canEdit || currentUser.canDelete ||  currentUser.isAdmin)"
-            style="width:20%">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of course | paginate : { itemsPerPage : tableSize,currentPage : page,totalItems : count }; trackBy: trackByCourseId">
-          <td>{{item.title}}</td>
-          <td>{{item?.category?.name}}</td>
-          <td>{{item?.canonicalUrl}}</td>
-          <td>
-            {{item?.updatedByUser?.firstName }} {{item?.updatedByUser?.lastName}}
-          </td>
-          <td>
-            {{item?.createdOn | date: 'short'}}
-          </td>
-          <td *ngIf="(currentUser.canEdit || currentUser.canDelete ||  currentUser.isAdmin)">
-            <button type="button" *ngIf="(currentUser.canEdit || currentUser.isAdmin)" class="btn btn-success"
-              [routerLink]="['/app/course/edit',item.id]"><i class="fa fa-edit"></i></button>
-            <button type="button" *ngIf="(currentUser.canDelete || currentUser.isAdmin)" class="btn btn-danger ml-1"
-              (click)="deleteCourse(item.id)"><i class="fa fa-trash"></i></button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  
-    <div class="d-flex bd-highlight mb-3">
-      <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
-      <div class="ml-auto p-2 bd-highlight">
-        <select (change)="onTableSizeChange($event)" class="custom-select">
-          <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">
-            {{ size }}
-          </option>
-        </select>
+
+    <!-- Course Table Card -->
+    <div class="admin-list-table-card">
+      <div class="table-responsive">
+        <table class="admin-list-table">
+          <thead>
+            <tr>
+              <th class="sortable" (click)="sortByHeading('Title')">
+                <span class="th-content">
+                  Title
+                  <span class="sort-icon" *ngIf="sortBy === 'Title'">
+                    <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+                  </span>
+                  <span class="sort-icon-placeholder" *ngIf="sortBy !== 'Title'">
+                    <i class="fas fa-sort"></i>
+                  </span>
+                </span>
+              </th>
+              <th class="sortable" (click)="sortByHeading('Category')">
+                <span class="th-content">
+                  Category
+                  <span class="sort-icon" *ngIf="sortBy === 'Category'">
+                    <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+                  </span>
+                  <span class="sort-icon-placeholder" *ngIf="sortBy !== 'Category'">
+                    <i class="fas fa-sort"></i>
+                  </span>
+                </span>
+              </th>
+              <th class="sortable" (click)="sortByHeading('CanonicalUrl')">
+                <span class="th-content">
+                  URL
+                  <span class="sort-icon" *ngIf="sortBy === 'CanonicalUrl'">
+                    <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+                  </span>
+                  <span class="sort-icon-placeholder" *ngIf="sortBy !== 'CanonicalUrl'">
+                    <i class="fas fa-sort"></i>
+                  </span>
+                </span>
+              </th>
+              <th>
+                <span class="th-content">Author</span>
+              </th>
+              <th>
+                <span class="th-content">Created Date</span>
+              </th>
+              <th *ngIf="(currentUser.canEdit || currentUser.canDelete || currentUser.isAdmin)" class="actions-column">
+                <span class="th-content">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of course | paginate : { itemsPerPage : tableSize, currentPage : page, totalItems : count }; trackBy: trackByCourseId"
+                class="course-row">
+              <td class="course-title-cell">
+                <div class="course-title-content">
+                  <strong>{{ item.title }}</strong>
+                </div>
+              </td>
+              <td class="category-cell">
+                <span class="category-badge">
+                  {{ item?.category?.name || 'N/A' }}
+                </span>
+              </td>
+              <td class="url-cell">
+                <span class="url-text" [title]="item?.canonicalUrl">
+                  {{ item?.canonicalUrl || 'N/A' }}
+                </span>
+              </td>
+              <td class="author-cell">
+                <div class="author-info">
+                  <i class="fas fa-user-circle"></i>
+                  <span>{{ item?.updatedByUser?.firstName }} {{ item?.updatedByUser?.lastName }}</span>
+                </div>
+              </td>
+              <td class="date-cell">
+                <div class="date-info">
+                  <i class="far fa-calendar-alt"></i>
+                  <span>{{ item?.createdOn | date: 'MMM dd, yyyy' }}</span>
+                </div>
+              </td>
+              <td *ngIf="(currentUser.canEdit || currentUser.canDelete || currentUser.isAdmin)" class="actions-cell">
+                <div class="action-buttons">
+                  <button 
+                    *ngIf="(currentUser.canEdit || currentUser.isAdmin)" 
+                    class="btn-action btn-edit" 
+                    [routerLink]="['/app/course/edit', item.id]"
+                    title="Edit Course">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button 
+                    *ngIf="(currentUser.canDelete || currentUser.isAdmin)" 
+                    class="btn-action btn-delete" 
+                    (click)="deleteCourse(item.id)"
+                    title="Delete Course">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Empty State -->
+            <tr *ngIf="course.length === 0" class="empty-row">
+              <td [attr.colspan]="(currentUser.canEdit || currentUser.canDelete || currentUser.isAdmin) ? 6 : 5" class="empty-state">
+                <div class="empty-state-content">
+                  <i class="fas fa-inbox empty-icon"></i>
+                  <p class="empty-title">No courses found</p>
+                  <p class="empty-description">Get started by creating your first course</p>
+                  <a *ngIf="(currentUser.canAdd || currentUser.isAdmin)" 
+                     class="btn-empty-action" 
+                     [routerLink]="['/app/course/add']">
+                    <i class="fas fa-plus"></i>
+                    Add Course
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination and Page Size Controls -->
+      <div class="admin-list-table-footer">
+        <div class="pagination-wrapper">
+          <pagination-controls 
+            (pageChange)="pageChanged($event)"
+            [autoHide]="false"
+            [responsive]="true"
+            previousLabel=""
+            nextLabel=""
+            screenReaderPaginationLabel="Pagination"
+            screenReaderPageLabel="page"
+            screenReaderCurrentLabel="You're on page">
+          </pagination-controls>
+        </div>
+        <div class="page-size-control">
+          <label for="pageSize" class="page-size-label">
+            <i class="fas fa-list-ol"></i>
+            Items per page:
+          </label>
+          <select 
+            id="pageSize"
+            (change)="onTableSizeChange($event)" 
+            class="page-size-select"
+            [value]="tableSize">
+            <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [value]="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
-  
+
+  <!-- Non-Admin View: User Course Component -->
   <div *ngIf="!currentUser.isAdmin">
-  <app-user-course></app-user-course>
+    <app-user-course></app-user-course>
   </div>
+</div>

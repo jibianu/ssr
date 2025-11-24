@@ -1,32 +1,159 @@
 .dropdown-option {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-  }
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  margin: 0.25rem;
   
-  .option-icon {
-    width: 18px;
-    margin: 0 1rem;
+  &:hover {
+    background: #f0f4ff;
+    transform: translateX(4px);
   }
-  
-  .option-label {
-    color: #333;
-    min-width: 130px;
+}
+
+.option-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.75rem;
+  object-fit: contain;
+  border-radius: 4px;
+  padding: 2px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.option-label {
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  min-width: 130px;
+}
+
+.selected-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.selected-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5rem;
+  object-fit: contain;
+  border-radius: 4px;
+  padding: 2px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.selected-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+// Custom styling for ng-multiselect-dropdown
+::ng-deep {
+  .multiselect-dropdown {
+    .dropdown-btn {
+      border: 2px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 0.75rem 1rem !important;
+      background: #fff !important;
+      font-size: 0.9375rem !important;
+      transition: all 0.2s ease !important;
+      min-height: 48px !important;
+      
+      &:hover {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+      }
+      
+      &:focus {
+        outline: none !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+      }
+      
+      .dropdown-multiselect__caret {
+        border-top-color: #64748b !important;
+      }
+      
+      .dropdown-multiselect__caret::before {
+        border-top-color: #64748b !important;
+      }
+    }
+    
+    .dropdown-list {
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+      margin-top: 0.5rem !important;
+      padding: 0.5rem !important;
+      max-height: 300px !important;
+      overflow-y: auto !important;
+      
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+        
+        &:hover {
+          background: #94a3b8;
+        }
+      }
+    }
+    
+    .filter-textbox {
+      border: 2px solid #e2e8f0 !important;
+      border-radius: 6px !important;
+      padding: 0.5rem 0.75rem !important;
+      margin: 0.5rem !important;
+      font-size: 0.875rem !important;
+      
+      &:focus {
+        outline: none !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+      }
+    }
+    
+    .item-container {
+      .item {
+        padding: 0.5rem !important;
+        border-radius: 6px !important;
+        margin: 0.25rem 0 !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: #f0f4ff !important;
+        }
+        
+        &.selected {
+          background: #eef2ff !important;
+          
+          .item-text {
+            color: #6366f1 !important;
+            font-weight: 600 !important;
+          }
+        }
+      }
+    }
   }
-  
-  .selected-option {
-    display: flex;
-    align-items: center;
-  }
-  
-  .selected-icon {
-    width: 18px;
-    margin-right: 0.5rem;
-  }
-  
-  .selected-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+}

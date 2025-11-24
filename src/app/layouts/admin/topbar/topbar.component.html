@@ -1,29 +1,60 @@
-<nav class="navbar  navbar-dark bg-dark">
-  <button  type="button" class="navbar-toggler" (click)="sideNavService.toggleSideNav()">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <!-- <a class="navbar-brand">Blog</a> -->
-  <ul class="navbar-nav ml-auto">
-    <li class="nav-item" ngbDropdown display="dynamic">
-      <a class="nav-link" tabindex="0" ngbDropdownToggle id="navbarDropdown1" role="button">
-        {{userName}}
-      </a>
-      <div ngbDropdownMenu aria-labelledby="navbarDropdown1" class="dropdown-menu">
-        <a ngbDropdownItem [routerLink]="['/app/user/profile']">Profile</a>
-        <a ngbDropdownItem href="javascript:void(0)"  (click)="logout()">Logout</a>
+<!-- ✅ BEAUTIFUL DESIGN: Modern Fixed Topbar -->
+<header class="admin-topbar">
+  <div class="topbar-container">
+    <!-- Left Section: Brand -->
+    <div class="topbar-left">
+      <div class="topbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        <span class="brand-text">Course Management</span>
       </div>
-    </li>
-  </ul>
-  <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="true" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button> -->
-  <!-- <div class="navbar-collapse collapse" id="navbarCollapse">
-    <ul class="navbar-nav mr-auto">
-     
-    </ul>
-    <form class="form-inline mt-2 mt-md-0">
-      <a class="nav-link">Logout</a>
-      <button class="btn btn-outline-success my-2 my-sm-0">Logout</button>
-    </form>
-  </div> -->
-</nav>
+    </div>
+
+    <!-- Right Section: User Menu & Actions -->
+    <div class="topbar-right">
+      <!-- Notifications (Optional - can be added later) -->
+      <!-- <button class="topbar-icon-btn" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge">3</span>
+      </button> -->
+
+      <!-- User Dropdown -->
+      <div class="user-menu" ngbDropdown display="dynamic" placement="bottom-right">
+        <button 
+          class="user-menu-btn" 
+          ngbDropdownToggle 
+          id="userDropdown" 
+          aria-label="User menu"
+          type="button">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ userName || 'User' }}</span>
+            <span class="user-role">Administrator</span>
+          </div>
+          <i class="fas fa-chevron-down dropdown-icon"></i>
+        </button>
+        <div 
+          ngbDropdownMenu 
+          aria-labelledby="userDropdown" 
+          class="dropdown-menu-modern">
+          <a 
+            ngbDropdownItem 
+            [routerLink]="['/app/user/profile']" 
+            class="dropdown-item-modern">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </a>
+          <a 
+            ngbDropdownItem 
+            href="javascript:void(0)" 
+            (click)="logout()" 
+            class="dropdown-item-modern dropdown-item-danger">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

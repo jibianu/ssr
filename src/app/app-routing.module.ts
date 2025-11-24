@@ -14,28 +14,7 @@ const routerOptions: ExtraOptions = {
 };
 
 export const routes: Routes = [
-    {
-        path: '',
-        component: PublicLayoutComponent,
-        children: [
-            // ✅ CRITICAL: Auth route MUST come before empty path to ensure /auth/login is matched correctly
-            {
-                path: 'auth',
-                loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
-            },
-                {
-        path: 'app',
-        component: AdminLayoutComponent,
-        loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule),
-        canActivate: [AuthGuard]
-    },
-            // Public app routes (empty path matches everything else)
-            {
-                path: '',
-                loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule)
-            }
-        ]
-    },
+    // ✅ ADMIN ROUTES: Admin routes with AdminLayoutComponent (no footer)
     {
         path: 'app',
         component: AdminLayoutComponent,
@@ -45,10 +24,25 @@ export const routes: Routes = [
                 path: '',
                 loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule)
             }
-            
         ]
     },
-    
+    // ✅ PUBLIC ROUTES: Public routes with PublicLayoutComponent (includes footer)
+    {
+        path: '',
+        component: PublicLayoutComponent,
+        children: [
+            // ✅ CRITICAL: Auth route MUST come before empty path to ensure /auth/login is matched correctly
+            {
+                path: 'auth',
+                loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+            },
+            // Public app routes (empty path matches everything else)
+            {
+                path: '',
+                loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule)
+            }
+        ]
+    }
 ];
 
 @NgModule({

@@ -19,7 +19,8 @@ export class IconListComponent implements OnInit,OnDestroy {
   tableSizes = [5, 10, 25, 50];
   subscription: Subscription = new Subscription();
   term = '';
-  icons = []
+  icons = [];
+  filteredIcons = []; // ✅ FIX: Add filtered array for search
   sortDir = 1;
   constructor(
     private appService: AdminAppService,
@@ -45,12 +46,31 @@ export class IconListComponent implements OnInit,OnDestroy {
       .subscribe(
         response => {
           this.icons = response;
+          this.applyFilter(); // ✅ FIX: Apply filter after fetching
           this.sortArr('name');
           this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
         }));
+  }
+
+  // ✅ FIX: Add filter method for search functionality
+  applyFilter(): void {
+    if (!this.term || this.term.trim() === '') {
+      this.filteredIcons = this.icons;
+    } else {
+      const searchTerm = this.term.toLowerCase();
+      this.filteredIcons = this.icons.filter(item => {
+        return (item.name && item.name.toLowerCase().includes(searchTerm)) ||
+               (item.url && item.url.toLowerCase().includes(searchTerm));
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  onSearchChange(): void {
+    this.applyFilter();
   }
 
   pageChanged(event) {
@@ -101,7 +121,7 @@ export class IconListComponent implements OnInit,OnDestroy {
   }
 
   sortArr(colName: any) {
-    this.icons.sort((a, b) => {
+    this.filteredIcons.sort((a, b) => {
       a = a[colName].toLowerCase();
       b = b[colName].toLowerCase();
       if (a < b) {
@@ -114,6 +134,7 @@ export class IconListComponent implements OnInit,OnDestroy {
         return 0;
       }
     });
+    this.cdr.markForCheck();
   }
 
   // ✅ PERFORMANCE: Add trackBy function for ngFor optimization

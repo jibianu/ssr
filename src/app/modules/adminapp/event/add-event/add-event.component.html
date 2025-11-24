@@ -1,1142 +1,787 @@
-<!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
-</div>
+<div class="add-event-wrapper">
+  <!-- Main Form -->
+  <form [formGroup]="eventForm" (ngSubmit)="onSubmit()" class="event-form">
+    
+    <!-- Section 1: Event Basic Details -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-info-circle"></i>
+        <h2>Event Basic Details</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="form-label">
+              Event Title <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="title" 
+              class="form-input"
+              placeholder="Enter event title"
+              [ngClass]="{ 'input-error': (submitted || f.title.touched) && f.title.errors }" />
+            <div *ngIf="(submitted || f.title.touched) && f.title.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-                <label>Title</label>
-                <input type="text" formControlName="title" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
-                <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
-                    <div *ngIf="f.title.errors.required">title is required</div>
-                </div>
+          <div class="form-group">
+            <label class="form-label">
+              Canonical URL <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="canonicalUrl" 
+              class="form-input"
+              placeholder="event-title-url"
+              [ngClass]="{ 'input-error': (submitted || f.canonicalUrl.touched) && f.canonicalUrl.errors }" />
+            <div *ngIf="(submitted || f.canonicalUrl.touched) && f.canonicalUrl.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
             </div>
+          </div>
 
-            <div class="form-group">
-                <label>Title Image</label>
-                <br>
-                <input type="file" name="image" accept="image/*" (change)="fileProgress($event)" />
+          <div class="form-group">
+            <label class="form-label">
+              Language <span class="required">*</span>
+            </label>
+            <select 
+              formControlName="language" 
+              class="form-input"
+              [ngClass]="{ 'input-error': (submitted || f.language.touched) && f.language.errors }">
+              <option value="">Select Language</option>
+              <option value="English">English</option>
+            </select>
+            <div *ngIf="(submitted || f.language.touched) && f.language.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
             </div>
-            <div *ngIf="fileUploadProgress">
-                Upload progress: {{ fileUploadProgress }}
-            </div>
-            <div class="image-preview mb-3" *ngIf="uploadedFilePath">
-                <img [src]="uploadedFilePath" height="200" />
-            </div>
+          </div>
 
-            <div class="mb-3" *ngIf="uploadedFilePath">
-                {{uploadedFilePath}}
-            </div>
-            <div class="form-group">
-                <label>Canonical URL</label>
-                <input type="text" formControlName="canonicalUrl" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.canonicalUrl.errors }" />
-                <div *ngIf="submitted && f.canonicalUrl.errors" class="invalid-feedback">
-                    <div *ngIf="f.canonicalUrl.errors.required">Canonical Url is required</div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Offer Info</label>
-                <input class="form-control" formControlName="eventInfo"/>
-                <div *ngIf="submitted && f.eventInfo.errors" class="invalid">
-                    <div *ngIf="f.eventInfo.errors?.required">Summary is
-                        required
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                    <div class="form-group col-6">
-                        <label>Badge</label>
-                        <input class="form-control" formControlName="badge" type="text"
-                            />
-                        <div *ngIf="submitted && f.badge.errors" class="invalid">
-                            <div *ngIf="f.badge.errors?.required">Summary is
-                                required
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Language</label>
-                        <select class="form-control" formControlName="language">
-                            <option value="English">English</option>
-                          </select>
-                       
-                        <div *ngIf="submitted && f.language.errors" class="invalid">
-                            <div *ngIf="f.language.errors?.required">Summary is
-                                required
-                            </div>
-                        </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group col-6">
-                    <label>Start Date</label>
-                    <input class="form-control" formControlName="startDate" type="date"
-                        />
-                    <div *ngIf="submitted && f.startDate.errors" class="invalid">
-                        <div *ngIf="f.startDate.errors?.required">Summary is
-                            required
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group col-6">
-                    <label>End Date</label>
-                    <input class="form-control" formControlName="endDate" type="date"/>
-                    <div *ngIf="submitted && f.endDate.errors" class="invalid">
-                        <div *ngIf="f.endDate.errors?.required">Summary is
-                            required
-                        </div>
-                    </div>
-            </div>
+          <div class="form-group">
+            <label class="form-label">Badge</label>
+            <input 
+              type="text" 
+              formControlName="badge" 
+              class="form-input"
+              placeholder="Enter badge" />
+          </div>
         </div>
-        <div class="row">
-            <div class="form-group col-6">
-                <label>Duration</label>
-                <input class="form-control" formControlName="duration" type="text"
-                    />
-                <div *ngIf="submitted && f.duration.errors" class="invalid">
-                    <div *ngIf="f.duration.errors?.required">Summary is
-                        required
-                    </div>
-                </div>
-            </div>
-            <div class="form-group col-6">
-                <label>Timing</label>
-                <input class="form-control" formControlName="timeing" type="text"/>
-                <div *ngIf="submitted && f.timeing.errors" class="invalid">
-                    <div *ngIf="f.timeing.errors?.required">Summary is
-                        required
-                    </div>
-                </div>
-        </div>
+      </div>
     </div>
 
-            <div class="form-group">
-                <label>About</label>
-                <textarea class="form-control" formControlName="aboutEvent"
-                    rows="5"></textarea>
-                <div *ngIf="submitted && f.aboutEvent.errors" class="invalid">
-                    <div *ngIf="f.aboutEvent.errors?.required">Summary is
-                        required
-                    </div>
-                </div>
+    <!-- Section 2: Event Media -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-image"></i>
+        <h2>Event Media</h2>
+      </div>
+      <div class="section-content">
+        <div class="upload-container">
+          <label class="form-label">
+            Title Image <span class="required">*</span>
+          </label>
+          <div class="upload-wrapper">
+            <div class="file-upload-area" [class.has-image]="uploadedFilePath">
+              <input 
+                type="file" 
+                name="image" 
+                accept="image/*" 
+                (change)="fileProgress($event)"
+                id="titleImageUpload"
+                class="file-input" />
+              <label for="titleImageUpload" class="upload-label">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span *ngIf="!uploadedFilePath">Click to upload or drag and drop</span>
+                <span *ngIf="uploadedFilePath">Change Image</span>
+                <small>PNG, JPG, GIF up to 10MB</small>
+              </label>
+              <div *ngIf="fileUploadProgress" class="upload-progress">
+                <div class="progress-bar" [style.width.%]="getProgressPercentage()"></div>
+                <span>{{fileUploadProgress}}</span>
+              </div>
             </div>
-
-           
-
-            
-
-            <div class="row">
-                <div class="form-group col-6">
-                    <label>Amount</label>
-                <input type="number" class="form-control" formControlName="amount" />
-                <div *ngIf="submitted && f.amount.errors" class="invalid">
-                    <div *ngIf="f.amount.errors.required">Amount is required</div>
-                </div>
-                </div>
-                <div class="form-group col-6">
-                    <label>Discount</label>
-                    <input type="number" class="form-control" formControlName="discount" />
-                    <div *ngIf="submitted && f.discount.errors" class="invalid">
-                        <div *ngIf="f.discount.errors.required">Amount is required</div>
-                    </div>
+            <div *ngIf="uploadedFilePath" class="image-preview-container">
+              <div class="image-preview">
+                <img [src]="uploadedFilePath" alt="Event title image" />
+                <button 
+                  type="button" 
+                  class="remove-image-btn"
+                  (click)="uploadedFilePath = null; fileUploadProgress = null">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
+          </div>
         </div>
-
-        <div class="form-group">
-            <label>Location</label>
-            <input type="text" class="form-control" formControlName="location" />
-            <div *ngIf="submitted && f.location.errors" class="invalid">
-                <div *ngIf="f.location.errors.required">Amount is required</div>
-            </div>
-        </div>
-
-            
-            <div class="card mt-2">
-                <div class="card-header">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_tags"
-                        aria-expanded="true" aria-controls="collapse3_tags">
-                        Event Tags
-                        <span class="toggle_bt"></span>
-                    </button>
-                </div>
-                <div id="collapse3_tags" class="custom_collapse collapse show" aria-labelledby="headingOne">
-                    <div class="card-body">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('tags'); index as i" class="mb-3">
-                                <div class="d-sm-flex align-items-center justify-content-between">
-                                    <h6>Tag Section {{i + 1}}</h6>
-                                    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
-                                        (click)="removeCurriculum(i,'tags')">
-                                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div [formGroupName]="getIndexOfCurriculum('tags',i)" class="h-100">
-                                        <div class="form-group col-12">
-                                            <label>Tag</label>
-                                            <input formControlName="tag" class="form-control"
-                                                [ngClass]="{ 'is-invalid': submitted && item.controls.tag.errors }" />
-                                            <div *ngIf="submitted && item.controls.tag.errors"
-                                                class="invalid-feedback">
-                                                <div *ngIf="item.controls.tag.errors?.required">Tag is
-                                                    required
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-success ml-2 mb-2"
-                                (click)="addCurriculumItem('tags')">Add
-                                Tag Info
-                                Section</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mt-2">
-                <div class="card-header">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_curriculum"
-                        aria-expanded="true" aria-controls="collapse3_curriculum">
-                        Event Curriculum Infomation
-                        <span class="toggle_bt"></span>
-                    </button>
-                </div>
-                <div id="collapse3_curriculum" class="custom_collapse collapse " aria-labelledby="headingOne">
-                    <div class="card-body">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('curriculum'); index as i" class="mb-3">
-                                <div class="d-sm-flex align-items-center justify-content-between">
-                                    <h6>Information Section {{i + 1}}</h6>
-                                    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
-                                        (click)="removeCurriculum(i,'curriculum')">
-                                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div [formGroupName]="getIndexOfCurriculum('curriculum',i)" class="h-100">
-                                        <div class="form-group col-12">
-                                            <label>Title</label>
-                                            <input formControlName="title" class="form-control"
-                                                [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }" />
-                                            <div *ngIf="submitted && item.controls.title.errors"
-                                                class="invalid-feedback">
-                                                <div *ngIf="item.controls.title.errors?.required">Title is
-                                                    required
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div class="form-group col-12">
-                                            <label>Description</label>
-                                            <textarea class="form-control" formControlName="description"
-                                                rows="5"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid">
-                                                <div *ngIf="item.controls.description.errors?.required">description is
-                                                    required
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-success ml-2 mb-2"
-                                (click)="addCurriculumItem('curriculum')">Add
-                                Curriculum Info
-                                Section</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            
-
-            <div class="card mt-2">
-                <div class="card-header">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_bonuse"
-                        aria-expanded="true" aria-controls="collapse3_bonuse">
-                        Event Bonuse Infomation
-                        <span class="toggle_bt"></span>
-                    </button>
-                </div>
-                <div id="collapse3_bonuse" class="custom_collapse collapse " aria-labelledby="headingOne">
-                    <div class="card-body">
-                        <div formArrayName="eventDetails">
-                            <div class="row">
-                                <div class="form-group col-6" *ngFor="let item of eventCurriculumArrayControls('bonuse-info'); index as i"
-                                 [formGroupName]="getIndexOfCurriculum('bonuse-info',i)">
-                                    <label>{{getValueOfCurriculum('bonuse-info',i,'title')}}</label>
-                                <input type="number" class="form-control" formControlName="count" />
-                                </div>
-                        </div>
-                        </div>
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('bonuse'); index as i" class="mb-3">
-                                <div class="d-sm-flex align-items-center justify-content-between">
-                                    <h6>Information Section {{i + 1}}</h6>
-                                    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
-                                        (click)="removeCurriculum(i,'bonuse')">
-                                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div [formGroupName]="getIndexOfCurriculum('bonuse',i)" class="h-100">
-                                        <div class="row col-12">
-                                            <div class="form-group col-6">
-                                                <label>Tag</label>
-                                                <input class="form-control" formControlName="tag" type="text"
-                                                    />
-                                                <div *ngIf="submitted && item.controls.tag.errors" class="invalid">
-                                                    <div *ngIf="item.controls.tag.errors?.required">Summary is
-                                                        required
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group col-6">
-                                                <label>Amount</label>
-                                                <input class="form-control" formControlName="amount" type="number"/>
-                                                <div *ngIf="submitted && item.controls.amount.errors" class="invalid">
-                                                    <div *ngIf="item.controls.amount.errors?.required">Summary is
-                                                        required
-                                                    </div>
-                                                </div>
-                                        </div>
-                                    </div>
-                                        <div class="form-group col-12">
-                                            <label>Description</label>
-                                            <textarea class="form-control" formControlName="description"
-                                                rows="5"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid">
-                                                <div *ngIf="item.controls.description.errors?.required">description is
-                                                    required
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-success ml-2 mb-2"
-                                (click)="addCurriculumItem('bonuse')">Add
-                                Bonuse Info
-                                Section</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mt-2">
-                <div class="card-header">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_slary"
-                        aria-expanded="true" aria-controls="collapse3_slary">
-                        Event Slary Infomation
-                        <span class="toggle_bt"></span>
-                    </button>
-                </div>
-                <div id="collapse3_slary" class="custom_collapse collapse " aria-labelledby="headingOne">
-                    <div class="card-body">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('slary'); index as i" class="mb-3">
-                                <div class="d-sm-flex align-items-center justify-content-between">
-                                    <h6>Slary Section {{i + 1}}</h6>
-                                    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
-                                        (click)="removeCurriculum(i,'slary')">
-                                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div [formGroupName]="getIndexOfCurriculum('slary',i)" class="h-100">
-                                        <div class="form-group">
-                                            <label>Salary</label>
-                                            <input class="form-control" formControlName="amount" type="number"/>
-                                            <div *ngIf="submitted && item.controls.amount.errors" class="invalid">
-                                                <div *ngIf="item.controls.amount.errors?.required">Summary is
-                                                    required
-                                                </div>
-                                            </div>
-                                    </div>
-                                        <div class="form-group ">
-                                            <label>Description</label>
-                                            <textarea class="form-control" formControlName="description"
-                                                rows="5"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid">
-                                                <div *ngIf="item.controls.description.errors?.required">description is
-                                                    required
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-success ml-2 mb-2"
-                                (click)="addCurriculumItem('slary')">Add
-                                Slary Info
-                                Section</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mt-2">
-                <div class="card-header">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_qa"
-                        aria-expanded="true" aria-controls="collapse3_qa">
-                        Event Quations & Answers
-                        <span class="toggle_bt"></span>
-                    </button>
-                </div>
-                <div id="collapse3_qa" class="custom_collapse collapse " aria-labelledby="headingOne">
-                    <div class="card-body">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('qa'); index as i" class="mb-3">
-                                <div class="d-sm-flex align-items-center justify-content-between">
-                                    <h6>Quation & Answer Section {{i + 1}}</h6>
-                                    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm"
-                                        (click)="removeCurriculum(i,'qa')">
-                                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</a>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div [formGroupName]="getIndexOfCurriculum('qa',i)" class="h-100">
-                                        <div class="form-group">
-                                            <label>Quation</label>
-                                            <input class="form-control" formControlName="title" type="text"/>
-                                            <div *ngIf="submitted && item.controls.title.errors" class="invalid">
-                                                <div *ngIf="item.controls.title.errors?.required">Summary is
-                                                    required
-                                                </div>
-                                            </div>
-                                    </div>
-                                        <div class="form-group ">
-                                            <label>Description</label>
-                                            <textarea class="form-control" formControlName="description"
-                                                rows="5"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid">
-                                                <div *ngIf="item.controls.description.errors?.required">description is
-                                                    required
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-success ml-2 mb-2"
-                                (click)="addCurriculumItem('qa')">Add
-                                Quation & Answer
-                                Section</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-           
-
-            <div class="card mt-2">
-                <div class="card-header">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#collapse3_organized"
-                        aria-expanded="true" aria-controls="collapse3_organized">
-                        Organized by
-                        <span class="toggle_bt"></span>
-                    </button>
-                </div>
-                <div id="collapse3_organized" class="custom_collapse collapse " aria-labelledby="headingOne">
-                    <div class="card-body">
-                       
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix" class="mb-3">
-                                
-
-                                <div class="mb-3">
-                                    <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="h-100">
-                                        <div class="row ">
-                                            <div class="col-4">
-                                                <div class="form-group">
-                                                    <label>Avatar</label>
-                                                    <br>
-                                                    <input type="file" name="image" accept="image/*" (change)="fileProgressIx($event,'organized',ix)" />
-                                                </div>
-                                              
-                                                <div class="image-preview mb-3" *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')">
-                                                    <img [src]="getValueOfCurriculum('organized',ix,'imageUrl')" height="200" />
-                                                </div>
-                                    
-                                                <div class="mb-3" *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')">
-                                                    {{getValueOfCurriculum('organized',ix,'imageUrl')}}
-                                                </div>
-                                            </div>
-                                            <div class="col-8">
-                                                <div class="row">
-                                                    <div class="form-group col-8">
-                                                        <label>Name</label>
-                                                        <input class="form-control" formControlName="title" type="text"/>
-                                                        
-                                                </div>
-                                                <div class="form-group col-4">
-                                                    <label>Tags</label>
-                                                    <input class="form-control" formControlName="tag" type="text"/>
-                                                   
-                                            </div>
-
-                                                </div>
-                                           
-                                          <div class="row">
-                                            <div class="form-group col-12">
-                                                <label>Description</label>
-                                                <textarea class="form-control" formControlName="description"
-                                                    rows="5"></textarea>
-                                               
-                                            </div>
-                                          </div>
- 
-
-                                            </div>
-                                    </div>
-                                        
-
-
-                                    </div>
-                                    <div class="row">
-                                         <div class="form-group col-6" *ngFor="let item of eventCurriculumArrayControls('organized_list'); index as i"
-                                                [formGroupName]="getIndexOfCurriculum('organized_list',i)">
-                                                    <label>{{getValueOfCurriculum('organized_list',i,'title')}}</label>
-                                                <input type="text" class="form-control" formControlName="description" />
-                                                </div>
-                                                <div class="col-6">
-                                                    <button type="button" class="btn btn-success ml-2 mb-2"
-                                                        (click)="addCurriculumItem('organized_soc')">Add Social Link</button>
-                                                </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class=" col-12" *ngFor="let item1 of eventCurriculumArrayControls('organized_soc'); index as i">
-                                            <div class="row" [formGroupName]="getIndexOfCurriculum('organized_soc',i)" >
-                                                <div class="form-group col-4">
-                                                    <select class="form-control" formControlName="tag" >
-                                                        <option *ngFor="let si of socailMedias" [value]="si">{{si}}</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group col-8">
-                                                    <input type="text" class="form-control" formControlName="title" placeholder="link" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                        </div>
-                       
-                    </div>
-                </div>
-            </div>
-           
-            <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" formControlName="registrationCompleted" type="checkbox" value=""
-                        id="invalidCheck">
-                    <label class="form-check-label" for="invalidCheck">
-                        Registration is completed?
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" formControlName="showOnDashboard" type="checkbox" value=""
-                        id="invalidCheck">
-                    <label class="form-check-label" for="invalidCheck">
-                        Show On Dashboard?
-                    </label>
-                </div>
-            </div>
-           
-            <div class="form-group">
-                <button class="btn btn-primary" type="submit">{{btntext}}</button>
-                <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div> -->
-
-
-<div class="event-form-container">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-primary">{{pageTitle}}</h1>
-        <button type="button" class="btn btn-outline-secondary" (click)="goBack()">
-            <i class="fas fa-arrow-left mr-2"></i>Back
-        </button>
+      </div>
     </div>
 
-    <div class="card shadow">
-        <div class="card-body">
-            <form [formGroup]="eventForm"  (ngSubmit)="onSubmit()">
-                <!-- Basic Information Section -->
-                <div class="form-section">
-                    <h5 class="section-title">Basic Information</h5>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group">
-                                <label class="form-label">Title*</label>
-                                <input type="text" formControlName="title" class="form-control"
-                                   />
-                                <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
-                                    Title is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label">Badge</label>
-                                <input class="form-control" formControlName="badge" type="text"/>
-                                <div *ngIf="submitted && f.badge.errors" class="invalid-feedback">
-                                    Badge is required
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Section 3: Event Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-align-left"></i>
+        <h2>Event Information</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="form-label">
+              About Event <span class="required">*</span>
+            </label>
+            <textarea 
+              class="form-input" 
+              formControlName="aboutEvent"
+              rows="5"
+              placeholder="Enter event description"
+              [ngClass]="{ 'input-error': (submitted || f.aboutEvent.touched) && f.aboutEvent.errors }"></textarea>
+            <div *ngIf="(submitted || f.aboutEvent.touched) && f.aboutEvent.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Canonical URL*</label>
-                                <input type="text" formControlName="canonicalUrl" class="form-control"
-                                     />
-                                <div *ngIf="submitted && f.canonicalUrl.errors" class="invalid-feedback">
-                                    Canonical URL is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Language</label>
-                                <select class="form-control" formControlName="language">
-                                    <option value="English">English</option>
-                                </select>
-                                <div *ngIf="submitted && f.language.errors" class="invalid-feedback">
-                                    Language is required
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+          <div class="form-group full-width">
+            <label class="form-label">
+              Offer Info <span class="required">*</span>
+            </label>
+            <input 
+              class="form-input" 
+              formControlName="eventInfo"
+              placeholder="Enter offer information"
+              [ngClass]="{ 'input-error': (submitted || f.eventInfo.touched) && f.eventInfo.errors }" />
+            <div *ngIf="(submitted || f.eventInfo.touched) && f.eventInfo.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
 
+          <div class="form-group full-width">
+            <label class="form-label">Meta Description</label>
+            <textarea 
+              class="form-input" 
+              formControlName="metaDescription"
+              rows="3"
+              placeholder="Enter meta description for SEO"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Event Timing -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-calendar-alt"></i>
+        <h2>Event Timing</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              Start Date <span class="required">*</span>
+            </label>
+            <input 
+              class="form-input" 
+              formControlName="startDate" 
+              type="date"
+              [ngClass]="{ 'input-error': (submitted || f.startDate.touched) && f.startDate.errors }" />
+            <div *ngIf="(submitted || f.startDate.touched) && f.startDate.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              End Date <span class="required">*</span>
+            </label>
+            <input 
+              class="form-input" 
+              formControlName="endDate" 
+              type="date"
+              [ngClass]="{ 'input-error': (submitted || f.endDate.touched) && f.endDate.errors }" />
+            <div *ngIf="(submitted || f.endDate.touched) && f.endDate.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Duration</label>
+            <input 
+              class="form-input" 
+              formControlName="duration" 
+              type="text"
+              placeholder="e.g., 2 days" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Timing</label>
+            <input 
+              class="form-input" 
+              formControlName="timeing" 
+              type="text"
+              placeholder="e.g., 9:00 AM - 5:00 PM" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Pricing & Location -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-dollar-sign"></i>
+        <h2>Pricing & Location</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              Amount <span class="required">*</span>
+            </label>
+            <div class="input-with-icon">
+              <i class="fas fa-dollar-sign input-icon"></i>
+              <input 
+                type="number" 
+                class="form-input" 
+                formControlName="amount"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                [ngClass]="{ 'input-error': (submitted || f.amount.touched) && f.amount.errors }" />
+            </div>
+            <div *ngIf="(submitted || f.amount.touched) && f.amount.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Discount</label>
+            <div class="input-with-icon">
+              <i class="fas fa-percent input-icon"></i>
+              <input 
+                type="number" 
+                class="form-input" 
+                formControlName="discount"
+                placeholder="0"
+                min="0"
+                max="100" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Location <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              class="form-input" 
+              formControlName="location"
+              placeholder="Enter event location"
+              [ngClass]="{ 'input-error': (submitted || f.location.touched) && f.location.errors }" />
+            <div *ngIf="(submitted || f.location.touched) && f.location.errors" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>This field is required</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Event Curriculum Information -->
+    <div class="form-section">
+      <div class="section-header accordion-header" (click)="toggleCollapse('curriculumSection', $event)">
+        <div class="accordion-title">
+          <i class="fas fa-book-open"></i>
+          <span>Event Curriculum Information</span>
+        </div>
+        <i class="fas fa-chevron-down accordion-icon" [class.rotated]="isExpanded('curriculumSection')"></i>
+      </div>
+      <div id="curriculumSection" class="accordion-content" [class.show]="isExpanded('curriculumSection')">
+        <div formArrayName="eventDetails">
+          <div *ngFor="let item of eventCurriculumArrayControls('curriculum'); index as i" class="dynamic-item curriculum-item">
+            <div class="dynamic-item-header">
+              <h6>Information Section {{i + 1}}</h6>
+              <button 
+                type="button" 
+                class="btn-remove"
+                (click)="removeCurriculum(i,'curriculum')"
+                [disabled]="loading">
+                <i class="fas fa-trash"></i>
+                Remove
+              </button>
+            </div>
+            <div [formGroupName]="getIndexOfCurriculum('curriculum',i)" class="dynamic-item-content">
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Title <span class="required">*</span>
+                  </label>
+                  <input 
+                    formControlName="title" 
+                    class="form-input"
+                    placeholder="Enter curriculum title"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.title.touched) && item.controls.title.errors }" />
+                  <div *ngIf="(submitted || item.controls.title.touched) && item.controls.title.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Description <span class="required">*</span>
+                  </label>
+                  <textarea 
+                    class="form-input" 
+                    formControlName="description"
+                    rows="5"
+                    placeholder="Enter curriculum description"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.description.touched) && item.controls.description.errors }"></textarea>
+                  <div *ngIf="(submitted || item.controls.description.touched) && item.controls.description.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            class="btn-add-item"
+            (click)="addCurriculumItem('curriculum')"
+            [disabled]="loading">
+            <i class="fas fa-plus"></i>
+            Add Curriculum Section
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7: Event Bonuses -->
+    <div class="form-section">
+      <div class="section-header accordion-header" (click)="toggleCollapse('bonusesSection', $event)">
+        <div class="accordion-title">
+          <i class="fas fa-gift"></i>
+          <span>Event Bonuses</span>
+        </div>
+        <i class="fas fa-chevron-down accordion-icon" [class.rotated]="isExpanded('bonusesSection')"></i>
+      </div>
+      <div id="bonusesSection" class="accordion-content" [class.show]="isExpanded('bonusesSection')">
+        <div formArrayName="eventDetails">
+          <div class="form-grid" style="margin-bottom: 1.5rem;">
+            <div class="form-group" *ngFor="let item of eventCurriculumArrayControls('bonuse-info'); index as i"
+              [formGroupName]="getIndexOfCurriculum('bonuse-info',i)">
+              <label class="form-label">{{getValueOfCurriculum('bonuse-info',i,'title')}}</label>
+              <input 
+                type="number" 
+                class="form-input" 
+                formControlName="count"
+                placeholder="0" />
+            </div>
+          </div>
+          
+          <div *ngFor="let item of eventCurriculumArrayControls('bonuse'); index as i" class="dynamic-item bonus-item">
+            <div class="dynamic-item-header">
+              <h6>Bonus Section {{i + 1}}</h6>
+              <button 
+                type="button" 
+                class="btn-remove"
+                (click)="removeCurriculum(i,'bonuse')"
+                [disabled]="loading">
+                <i class="fas fa-trash"></i>
+                Remove
+              </button>
+            </div>
+            <div [formGroupName]="getIndexOfCurriculum('bonuse',i)" class="dynamic-item-content">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">
+                    Tag <span class="required">*</span>
+                  </label>
+                  <input 
+                    class="form-input" 
+                    formControlName="tag" 
+                    type="text"
+                    placeholder="Enter bonus tag"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.tag.touched) && item.controls.tag.errors }" />
+                  <div *ngIf="(submitted || item.controls.tag.touched) && item.controls.tag.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">
+                    Amount <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-dollar-sign input-icon"></i>
+                    <input 
+                      class="form-input" 
+                      formControlName="amount" 
+                      type="number"
+                      placeholder="0.00"
+                      [ngClass]="{ 'input-error': (submitted || item.controls.amount.touched) && item.controls.amount.errors }" />
+                  </div>
+                  <div *ngIf="(submitted || item.controls.amount.touched) && item.controls.amount.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Description <span class="required">*</span>
+                  </label>
+                  <textarea 
+                    class="form-input" 
+                    formControlName="description"
+                    rows="3"
+                    placeholder="Enter bonus description"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.description.touched) && item.controls.description.errors }"></textarea>
+                  <div *ngIf="(submitted || item.controls.description.touched) && item.controls.description.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            class="btn-add-item"
+            (click)="addCurriculumItem('bonuse')"
+            [disabled]="loading">
+            <i class="fas fa-plus"></i>
+            Add Bonus Section
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 8: Salary Information -->
+    <div class="form-section">
+      <div class="section-header accordion-header" (click)="toggleCollapse('salarySection', $event)">
+        <div class="accordion-title">
+          <i class="fas fa-money-bill-wave"></i>
+          <span>Salary Information</span>
+        </div>
+        <i class="fas fa-chevron-down accordion-icon" [class.rotated]="isExpanded('salarySection')"></i>
+      </div>
+      <div id="salarySection" class="accordion-content" [class.show]="isExpanded('salarySection')">
+        <div formArrayName="eventDetails">
+          <div *ngFor="let item of eventCurriculumArrayControls('slary'); index as i" class="dynamic-item salary-item">
+            <div class="dynamic-item-header">
+              <h6>Salary Section {{i + 1}}</h6>
+              <button 
+                type="button" 
+                class="btn-remove"
+                (click)="removeCurriculum(i,'slary')"
+                [disabled]="loading">
+                <i class="fas fa-trash"></i>
+                Remove
+              </button>
+            </div>
+            <div [formGroupName]="getIndexOfCurriculum('slary',i)" class="dynamic-item-content">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">
+                    Salary <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <i class="fas fa-dollar-sign input-icon"></i>
+                    <input 
+                      class="form-input" 
+                      formControlName="amount" 
+                      type="number"
+                      placeholder="0.00"
+                      [ngClass]="{ 'input-error': (submitted || item.controls.amount.touched) && item.controls.amount.errors }" />
+                  </div>
+                  <div *ngIf="(submitted || item.controls.amount.touched) && item.controls.amount.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Description <span class="required">*</span>
+                  </label>
+                  <textarea 
+                    class="form-input" 
+                    formControlName="description"
+                    rows="3"
+                    placeholder="Enter salary description"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.description.touched) && item.controls.description.errors }"></textarea>
+                  <div *ngIf="(submitted || item.controls.description.touched) && item.controls.description.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            class="btn-add-item"
+            (click)="addCurriculumItem('slary')"
+            [disabled]="loading">
+            <i class="fas fa-plus"></i>
+            Add Salary Information
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Questions & Answers -->
+    <div class="form-section">
+      <div class="section-header accordion-header" (click)="toggleCollapse('qaSection', $event)">
+        <div class="accordion-title">
+          <i class="fas fa-question-circle"></i>
+          <span>Questions & Answers</span>
+        </div>
+        <i class="fas fa-chevron-down accordion-icon" [class.rotated]="isExpanded('qaSection')"></i>
+      </div>
+      <div id="qaSection" class="accordion-content" [class.show]="isExpanded('qaSection')">
+        <div formArrayName="eventDetails">
+          <div *ngFor="let item of eventCurriculumArrayControls('qa'); index as i" class="dynamic-item qa-item">
+            <div class="dynamic-item-header">
+              <h6>Q&A Section {{i + 1}}</h6>
+              <button 
+                type="button" 
+                class="btn-remove"
+                (click)="removeCurriculum(i,'qa')"
+                [disabled]="loading">
+                <i class="fas fa-trash"></i>
+                Remove
+              </button>
+            </div>
+            <div [formGroupName]="getIndexOfCurriculum('qa',i)" class="dynamic-item-content">
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Question <span class="required">*</span>
+                  </label>
+                  <input 
+                    class="form-input" 
+                    formControlName="title" 
+                    type="text"
+                    placeholder="Enter question"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.title.touched) && item.controls.title.errors }" />
+                  <div *ngIf="(submitted || item.controls.title.touched) && item.controls.title.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label class="form-label">
+                    Answer <span class="required">*</span>
+                  </label>
+                  <textarea 
+                    class="form-input" 
+                    formControlName="description"
+                    rows="3"
+                    placeholder="Enter answer"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.description.touched) && item.controls.description.errors }"></textarea>
+                  <div *ngIf="(submitted || item.controls.description.touched) && item.controls.description.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            class="btn-add-item"
+            (click)="addCurriculumItem('qa')"
+            [disabled]="loading">
+            <i class="fas fa-plus"></i>
+            Add Q&A Section
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 10: Organized By -->
+    <div class="form-section">
+      <div class="section-header accordion-header" (click)="toggleCollapse('organizedSection', $event)">
+        <div class="accordion-title">
+          <i class="fas fa-users"></i>
+          <span>Organized By</span>
+        </div>
+        <i class="fas fa-chevron-down accordion-icon" [class.rotated]="isExpanded('organizedSection')"></i>
+      </div>
+      <div id="organizedSection" class="accordion-content" [class.show]="isExpanded('organizedSection')">
+        <div formArrayName="eventDetails">
+          <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix" class="dynamic-item organized-item">
+            <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="dynamic-item-content">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Avatar</label>
+                  <div class="upload-wrapper">
+                    <div class="file-upload-area" [class.has-image]="getValueOfCurriculum('organized',ix,'imageUrl')">
+                      <input 
+                        #orgFileInput
+                        type="file" 
+                        name="image" 
+                        accept="image/*" 
+                        (change)="fileProgressIx($event,'organized',ix)"
+                        class="file-input" />
+                      <label (click)="orgFileInput.click()" class="upload-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span *ngIf="!getValueOfCurriculum('organized',ix,'imageUrl')">Click to upload</span>
+                        <span *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')">Change Image</span>
+                        <small>PNG, JPG, GIF</small>
+                      </label>
+                    </div>
+                    <div *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')" class="image-preview-container">
+                      <div class="image-preview">
+                        <img [src]="getValueOfCurriculum('organized',ix,'imageUrl')" alt="Avatar" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group flex-grow">
+                  <label class="form-label">
+                    Name <span class="required">*</span>
+                  </label>
+                  <input 
+                    class="form-input" 
+                    formControlName="title" 
+                    type="text"
+                    placeholder="Enter organizer name"
+                    [ngClass]="{ 'input-error': (submitted || item.controls.title.touched) && item.controls.title.errors }" />
+                  <div *ngIf="(submitted || item.controls.title.touched) && item.controls.title.errors" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>This field is required</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tags</label>
+                  <input 
+                    class="form-input" 
+                    formControlName="tag" 
+                    type="text"
+                    placeholder="Enter tags" />
+                </div>
+                <div class="form-group full-width">
+                  <label class="form-label">Description</label>
+                  <textarea 
+                    class="form-input" 
+                    formControlName="description"
+                    rows="3"
+                    placeholder="Enter organizer description"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Organized List - Separate from organized form group -->
+          <div class="form-row" style="margin-top: 1.5rem;" *ngIf="eventCurriculumArrayControls('organized_list').length > 0">
+            <div class="form-group" *ngFor="let item of eventCurriculumArrayControls('organized_list'); index as i">
+              <div [formGroupName]="getIndexOfCurriculum('organized_list',i)">
+                <label class="form-label">{{getValueOfCurriculum('organized_list',i,'title')}}</label>
+                <input 
+                  type="text" 
+                  class="form-input" 
+                  formControlName="description"
+                  placeholder="Enter value" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Social Links - Separate from organized form group -->
+          <div class="social-links-section" style="margin-top: 1.5rem;" *ngIf="eventCurriculumArrayControls('organized_soc').length > 0">
+            <h6 class="section-subtitle">Social Links</h6>
+            <div class="form-row">
+              <div class="form-group full-width" *ngFor="let item1 of eventCurriculumArrayControls('organized_soc'); index as i">
+                <div [formGroupName]="getIndexOfCurriculum('organized_soc',i)">
+                  <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Title Image*</label>
-                        <div class="image-upload-container">
-                            <div class="upload-area" (click)="fileInput.click()">
-                                <input #fileInput type="file" name="image" accept="image/*" (change)="fileProgress($event)" style="display: none;" />
-                                <div *ngIf="!uploadedFilePath" class="upload-placeholder">
-                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
-                                    <p>Click to upload or drag and drop</p>
-                                    <small class="text-muted">Recommended size: 1200x630px</small>
-                                </div>
-                                <div *ngIf="uploadedFilePath" class="image-preview">
-                                    <img [src]="uploadedFilePath" alt="Preview" />
-                                    <div class="overlay">
-                                        <button type="button" class="btn btn-sm btn-light" (click)="fileInput.click()">
-                                            <i class="fas fa-edit"></i> Change
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div *ngIf="fileUploadProgress" class="progress mt-2">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                    [style.width]="fileUploadProgress"></div>
-                            </div>
-                        </div>
+                      <label class="form-label">Platform</label>
+                      <select 
+                        class="form-input" 
+                        formControlName="tag">
+                        <option *ngFor="let si of socailMedias" [value]="si">{{si}}</option>
+                      </select>
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label">About Event*</label>
-                        <textarea class="form-control" formControlName="aboutEvent" rows="5"></textarea>
-                        <div *ngIf="submitted && f.aboutEvent.errors" class="invalid-feedback">
-                            About event is required
-                        </div>
+                    <div class="form-group flex-grow">
+                      <label class="form-label">URL</label>
+                      <div class="input-with-icon">
+                        <i class="fas fa-link input-icon"></i>
+                        <input 
+                          type="text" 
+                          class="form-input" 
+                          formControlName="title" 
+                          placeholder="https://..." />
+                      </div>
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Offer Info</label>
-                        <input class="form-control" formControlName="eventInfo"/>
-                        <div *ngIf="submitted && f.eventInfo.errors" class="invalid-feedback">
-                            Offer info is required
-                        </div>
-                    </div>
+                  </div>
                 </div>
-
-                <!-- Event Timing Section -->
-                <div class="form-section">
-                    <h5 class="section-title">Event Timing</h5>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="form-label">Start Date*</label>
-                                <input class="form-control" formControlName="startDate" type="date"/>
-                                <div *ngIf="submitted && f.startDate.errors" class="invalid-feedback">
-                                    Start date is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="form-label">End Date*</label>
-                                <input class="form-control" formControlName="endDate" type="date"/>
-                                <div *ngIf="submitted && f.endDate.errors" class="invalid-feedback">
-                                    End date is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="form-label">Duration</label>
-                                <input class="form-control" formControlName="duration" type="text"/>
-                                <div *ngIf="submitted && f.duration.errors" class="invalid-feedback">
-                                    Duration is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="form-label">Timing</label>
-                                <input class="form-control" formControlName="timeing" type="text"/>
-                                <div *ngIf="submitted && f.timeing.errors" class="invalid-feedback">
-                                    Timing is required
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pricing Section -->
-                <div class="form-section">
-                    <h5 class="section-title">Pricing Information</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label">Amount*</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
-                                    </div>
-                                    <input type="number" class="form-control" formControlName="amount" />
-                                </div>
-                                <div *ngIf="submitted && f.amount.errors" class="invalid-feedback">
-                                    Amount is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label">Discount</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                    <input type="number" class="form-control" formControlName="discount" />
-                                </div>
-                                <div *ngIf="submitted && f.discount.errors" class="invalid-feedback">
-                                    Discount is required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label">Location*</label>
-                                <input type="text" class="form-control" formControlName="location" />
-                                <div *ngIf="submitted && f.location.errors" class="invalid-feedback">
-                                    Location is required
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tags Section -->
-                <div class="form-section">
-                    <div class="section-header" data-toggle="collapse" data-target="#tagsSection">
-                        <h5 class="section-title">Event Tags</h5>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="tagsSection" class="collapse show">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('tags'); index as i" class="tag-item">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="item-title">Tag Section {{i + 1}}</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        (click)="removeCurriculum(i,'tags')">
-                                        <i class="fas fa-trash-alt"></i> Remove
-                                    </button>
-                                </div>
-                                <div [formGroupName]="getIndexOfCurriculum('tags',i)" class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label class="form-label">Tag*</label>
-                                            <input formControlName="tag" class="form-control"
-                                                [ngClass]="{ 'is-invalid': submitted && item.controls.tag.errors }" />
-                                            <div *ngIf="submitted && item.controls.tag.errors"
-                                                class="invalid-feedback">
-                                                Tag is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary mt-2"
-                                (click)="addCurriculumItem('tags')">
-                                <i class="fas fa-plus"></i> Add Tag
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Curriculum Section -->
-                <div class="form-section">
-                    <div class="section-header" data-toggle="collapse" data-target="#curriculumSection">
-                        <h5 class="section-title">Event Curriculum Information</h5>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="curriculumSection" class="collapse">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('curriculum'); index as i" class="curriculum-item">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="item-title">Information Section {{i + 1}}</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        (click)="removeCurriculum(i,'curriculum')">
-                                        <i class="fas fa-trash-alt"></i> Remove
-                                    </button>
-                                </div>
-                                <div [formGroupName]="getIndexOfCurriculum('curriculum',i)" class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label class="form-label">Title*</label>
-                                            <input formControlName="title" class="form-control"
-                                                [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }" />
-                                            <div *ngIf="submitted && item.controls.title.errors"
-                                                class="invalid-feedback">
-                                                Title is required
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Description*</label>
-                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
-                                                Description is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary mt-2"
-                                (click)="addCurriculumItem('curriculum')">
-                                <i class="fas fa-plus"></i> Add Curriculum Section
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bonuses Section -->
-                <div class="form-section">
-                    <div class="section-header" data-toggle="collapse" data-target="#bonusesSection">
-                        <h5 class="section-title">Event Bonuses</h5>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="bonusesSection" class="collapse">
-                        <div formArrayName="eventDetails">
-                            <div class="row">
-                                <div class="form-group col-md-6" *ngFor="let item of eventCurriculumArrayControls('bonuse-info'); index as i"
-                                    [formGroupName]="getIndexOfCurriculum('bonuse-info',i)">
-                                    <label class="form-label">{{getValueOfCurriculum('bonuse-info',i,'title')}}</label>
-                                    <input type="number" class="form-control" formControlName="count" />
-                                </div>
-                            </div>
-                            
-                            <div *ngFor="let item of eventCurriculumArrayControls('bonuse'); index as i" class="bonus-item">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="item-title">Bonus Section {{i + 1}}</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        (click)="removeCurriculum(i,'bonuse')">
-                                        <i class="fas fa-trash-alt"></i> Remove
-                                    </button>
-                                </div>
-                                <div [formGroupName]="getIndexOfCurriculum('bonuse',i)" class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Tag*</label>
-                                            <input class="form-control" formControlName="tag" type="text"/>
-                                            <div *ngIf="submitted && item.controls.tag.errors" class="invalid-feedback">
-                                                Tag is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Amount*</label>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text">$</span>
-                                                </div>
-                                                <input class="form-control" formControlName="amount" type="number"/>
-                                            </div>
-                                            <div *ngIf="submitted && item.controls.amount.errors" class="invalid-feedback">
-                                                Amount is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label class="form-label">Description*</label>
-                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
-                                                Description is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary mt-2"
-                                (click)="addCurriculumItem('bonuse')">
-                                <i class="fas fa-plus"></i> Add Bonus
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Salary Section -->
-                <div class="form-section">
-                    <div class="section-header" data-toggle="collapse" data-target="#salarySection">
-                        <h5 class="section-title">Salary Information</h5>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="salarySection" class="collapse">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('slary'); index as i" class="salary-item">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="item-title">Salary Section {{i + 1}}</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        (click)="removeCurriculum(i,'slary')">
-                                        <i class="fas fa-trash-alt"></i> Remove
-                                    </button>
-                                </div>
-                                <div [formGroupName]="getIndexOfCurriculum('slary',i)" class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Salary*</label>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text">$</span>
-                                                </div>
-                                                <input class="form-control" formControlName="amount" type="number"/>
-                                            </div>
-                                            <div *ngIf="submitted && item.controls.amount.errors" class="invalid-feedback">
-                                                Salary is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label class="form-label">Description*</label>
-                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
-                                                Description is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary mt-2"
-                                (click)="addCurriculumItem('slary')">
-                                <i class="fas fa-plus"></i> Add Salary Information
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Q&A Section -->
-                <div class="form-section">
-                    <div class="section-header" data-toggle="collapse" data-target="#qaSection">
-                        <h5 class="section-title">Questions & Answers</h5>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="qaSection" class="collapse">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('qa'); index as i" class="qa-item">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="item-title">Q&A Section {{i + 1}}</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        (click)="removeCurriculum(i,'qa')">
-                                        <i class="fas fa-trash-alt"></i> Remove
-                                    </button>
-                                </div>
-                                <div [formGroupName]="getIndexOfCurriculum('qa',i)" class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label class="form-label">Question*</label>
-                                            <input class="form-control" formControlName="title" type="text"/>
-                                            <div *ngIf="submitted && item.controls.title.errors" class="invalid-feedback">
-                                                Question is required
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Answer*</label>
-                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
-                                            <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback">
-                                                Answer is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary mt-2"
-                                (click)="addCurriculumItem('qa')">
-                                <i class="fas fa-plus"></i> Add Q&A
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Organized By Section -->
-                <div class="form-section">
-                    <div class="section-header" data-toggle="collapse" data-target="#organizedSection">
-                        <h5 class="section-title">Organized By</h5>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div id="organizedSection" class="collapse">
-                        <div formArrayName="eventDetails">
-                            <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix" class="organized-item">
-                                <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Avatar</label>
-                                            <div class="image-upload-container">
-                                                <div class="upload-area" (click)="orgFileInput.click()">
-                                                    <input #orgFileInput type="file" name="image" accept="image/*" 
-                                                        (change)="fileProgressIx($event,'organized',ix)" style="display: none;" />
-                                                    <div *ngIf="!getValueOfCurriculum('organized',ix,'imageUrl')" class="upload-placeholder">
-                                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
-                                                        <p>Click to upload</p>
-                                                    </div>
-                                                    <div *ngIf="getValueOfCurriculum('organized',ix,'imageUrl')" class="image-preview">
-                                                        <img [src]="getValueOfCurriculum('organized',ix,'imageUrl')" alt="Preview" />
-                                                        <div class="overlay">
-                                                            <button type="button" class="btn btn-sm btn-light" 
-                                                                (click)="orgFileInput.click()">
-                                                                <i class="fas fa-edit"></i> Change
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <div class="row">
-                                            <div class="form-group col-md-8">
-                                                <label class="form-label">Name*</label>
-                                                <input class="form-control" formControlName="title" type="text"/>
-                                                <div *ngIf="submitted && item.controls.title.errors" class="invalid-feedback">
-                                                    Name is required
-                                                </div>
-                                            </div>
-                                            <div class="form-group col-md-4">
-                                                <label class="form-label">Tags</label>
-                                                <input class="form-control" formControlName="tag" type="text"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Description</label>
-                                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mt-3">
-                                    <div class="col-md-6" *ngFor="let item of eventCurriculumArrayControls('organized_list'); index as i"
-                                        [formGroupName]="getIndexOfCurriculum('organized_list',i)">
-                                        <div class="form-group">
-                                            <label class="form-label">{{getValueOfCurriculum('organized_list',i,'title')}}</label>
-                                            <input type="text" class="form-control" formControlName="description" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="social-links-section">
-                                    <h6 class="section-subtitle">Social Links</h6>
-                                    <div class="row">
-                                        <div class="col-md-12" *ngFor="let item1 of eventCurriculumArrayControls('organized_soc'); index as i">
-                                            <div class="row" [formGroupName]="getIndexOfCurriculum('organized_soc',i)">
-                                                <div class="form-group col-md-3">
-                                                    <select class="form-control" formControlName="tag">
-                                                        <option *ngFor="let si of socailMedias" [value]="si">{{si}}</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group col-md-9">
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text"><i class="fas fa-link"></i></span>
-                                                        </div>
-                                                        <input type="text" class="form-control" formControlName="title" placeholder="https://..." />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn btn-outline-primary mt-2"
-                                        (click)="addCurriculumItem('organized_soc')">
-                                        <i class="fas fa-plus"></i> Add Social Link
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Options Section -->
-                <div class="form-section">
-                    <h5 class="section-title">Options</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="registrationCompleted" 
-                                    formControlName="registrationCompleted">
-                                <label class="form-check-label" for="registrationCompleted">
-                                    Registration is completed?
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="showOnDashboard" 
-                                    formControlName="showOnDashboard">
-                                <label class="form-check-label" for="showOnDashboard">
-                                    Show On Dashboard?
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="form-actions mt-4">
-                    <button class="btn btn-primary btn-lg" type="submit">
-                        <i class="fas fa-save mr-2"></i>{{btntext}}
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-lg ml-2" (click)="goBack()">
-                        <i class="fas fa-times mr-2"></i>Cancel
-                    </button>
-                </div>
-            </form>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              class="btn-add-item"
+              (click)="addCurriculumItem('organized_soc')"
+              [disabled]="loading">
+              <i class="fas fa-plus"></i>
+              Add Social Link
+            </button>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- Section 11: Options -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-cog"></i>
+        <h2>Options</h2>
+      </div>
+      <div class="section-content">
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              formControlName="registrationCompleted"
+              class="checkbox-input" />
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">Registration is completed?</span>
+          </label>
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              formControlName="showOnDashboard"
+              class="checkbox-input" />
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">Show On Dashboard?</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Sticky Footer Actions -->
+  <div class="form-actions-footer">
+    <div class="form-actions">
+      <button 
+        class="btn-primary" 
+        type="button" 
+        [disabled]="loading || eventForm.invalid"
+        (click)="onSubmit()">
+        <span *ngIf="loading" class="spinner"></span>
+        <i class="fas fa-save" *ngIf="!loading"></i>
+        {{btntext}}
+      </button>
+      <button 
+        type="button" 
+        class="btn-secondary" 
+        [disabled]="loading" 
+        (click)="goBack()">
+        <i class="fas fa-times"></i>
+        Cancel
+      </button>
+    </div>
+  </div>
 </div>

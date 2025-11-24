@@ -19,6 +19,7 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   tableSizes = [5, 10, 25, 50];
   subscription: Subscription = new Subscription();
   categories = new Array<Category>();
+  filteredCategories = new Array<Category>(); // ✅ FIX: Add filtered array for search
   term = '';
   sortDir = 1;
   constructor(
@@ -45,12 +46,31 @@ export class CategoryListComponent implements OnInit, OnDestroy {
       .subscribe(
         response => {
           this.categories = response;
+          this.applyFilter(); // ✅ FIX: Apply filter after fetching
           this.sortArr('name');
           this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
         },
         error => {
           console.log(error);
         }));
+  }
+
+  // ✅ FIX: Add filter method for search functionality
+  applyFilter(): void {
+    if (!this.term || this.term.trim() === '') {
+      this.filteredCategories = this.categories;
+    } else {
+      const searchTerm = this.term.toLowerCase();
+      this.filteredCategories = this.categories.filter(item => {
+        return (item.name && item.name.toLowerCase().includes(searchTerm)) ||
+               (item.appsName && item.appsName.toLowerCase().includes(searchTerm));
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  onSearchChange(): void {
+    this.applyFilter();
   }
 
   pageChanged(event) {
@@ -101,7 +121,7 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   }
 
   sortArr(colName: any) {
-    this.categories.sort((a, b) => {
+    this.filteredCategories.sort((a, b) => {
       a = a[colName].toLowerCase();
       b = b[colName].toLowerCase();
       if (a < b) {
@@ -114,6 +134,7 @@ export class CategoryListComponent implements OnInit, OnDestroy {
         return 0;
       }
     });
+    this.cdr.markForCheck();
   }
 
   // ✅ PERFORMANCE: Add trackBy function for ngFor optimization

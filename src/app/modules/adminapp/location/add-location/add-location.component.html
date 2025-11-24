@@ -1,22 +1,36 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <form [formGroup]="locationForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-                <label>Name</label>
-                <input type="text" formControlName="name" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.name.errors }" />
-                <div *ngIf="submitted && f.name.errors" class="invalid-feedback">
-                    <div *ngIf="f.name.errors.required">Name is required</div>
+<div class="admin-page-wrapper">
+    <div class="admin-page-content">
+        <div class="admin-card admin-card-centered">
+            <div class="admin-card-header">
+                <div>
+                    <h1 class="admin-card-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{pageTitle}}
+                    </h1>
                 </div>
             </div>
-            <div class="form-group">
-                <button class="btn btn-primary" type="submit">{{btntext}}</button>
-                <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
-            </div>
-        </form>
+            
+            <form [formGroup]="locationForm" (ngSubmit)="onSubmit()" class="admin-form admin-form-full-width">
+                <div class="admin-form-group">
+                    <label class="admin-form-label required">Name</label>
+                    <input type="text" formControlName="name" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.name.errors }" />
+                    <div *ngIf="submitted && f.name.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.name.errors.required">Name is required</div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-actions">
+                    <button class="admin-btn admin-btn-primary" type="submit">
+                        <i class="fas fa-save"></i>
+                        {{btntext}}
+                    </button>
+                    <button type="button" class="admin-btn admin-btn-secondary" (click)="goBack()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

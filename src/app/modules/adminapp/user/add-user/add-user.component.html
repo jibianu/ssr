@@ -1,79 +1,99 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-                <label>First Name</label>
-                <input type="text" formControlName="firstName" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
-                <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
-                    <div *ngIf="f.firstName.errors.required">First Name is required</div>
+<div class="admin-page-wrapper">
+    <div class="admin-page-content">
+        <div class="admin-card admin-card-centered">
+            <div class="admin-card-header">
+                <div>
+                    <h1 class="admin-card-title">
+                        <i class="fas fa-user"></i>
+                        {{pageTitle}}
+                    </h1>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Last Name</label>
-                <input type="text" formControlName="lastName" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
-                <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
-                    <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+            
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="admin-form admin-form-full-width">
+                <div class="admin-form-group">
+                    <label class="admin-form-label required">First Name</label>
+                    <input type="text" formControlName="firstName" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.firstName.errors }" />
+                    <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.firstName.errors.required">First Name is required</div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <!-- ✅ FIX: Use [disabled] binding instead of disabled attribute for proper type -->
-                <input type="text" formControlName="email" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.email.errors }" [disabled]="true" />
-                <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
-                    <div *ngIf="f.email.errors.required">Email is required</div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label required">Last Name</label>
+                    <input type="text" formControlName="lastName" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.lastName.errors }" />
+                    <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Username</label>
-                <!-- ✅ FIX: Use [disabled] binding instead of disabled attribute -->
-                <input type="text" formControlName="userName" class="form-control"
-                    [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" [disabled]="true"/>
-                <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
-                    <div *ngIf="f.userName.errors.required">Username is required</div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Email</label>
+                    <input type="text" formControlName="email" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.email.errors }" [disabled]="true" />
+                    <div *ngIf="submitted && f.email.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.email.errors.required">Email is required</div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <div class="form-check">
-                  <!-- ✅ FIX: Use [disabled] binding instead of disabled attribute -->
-                  <input class="form-check-input" formControlName="isAdmin" type="checkbox" value="" id="invalidCheck1" [disabled]="true">
-                  <label class="form-check-label" for="invalidCheck1">
-                    isAdmin?
-                  </label>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Username</label>
+                    <input type="text" formControlName="userName" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.userName.errors }" [disabled]="true"/>
+                    <div *ngIf="submitted && f.userName.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.userName.errors.required">Username is required</div>
+                    </div>
                 </div>
-              </div>
-              <div class="form-group">
-                <div class="form-check">
-                  <input class="form-check-input" formControlName="isActive"  type="checkbox" value="" id="invalidCheck2">
-                  <label class="form-check-label" for="invalidCheck2">
-                    isActive?
-                  </label>
+                
+                <div class="admin-form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" formControlName="isAdmin" type="checkbox" value="" id="isAdmin" [disabled]="true">
+                        <label class="form-check-label" for="isAdmin" style="font-weight: 500; cursor: pointer;">
+                            isAdmin?
+                        </label>
+                    </div>
                 </div>
-              </div>
-              <div class="form-group">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" formControlName="canAdd">
-                    <label class="form-check-label" for="inlineCheckbox1">Can Add</label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="inlineCheckbox2" formControlName="canEdit">
-                    <label class="form-check-label" for="inlineCheckbox2">Can Edit</label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="inlineCheckbox3" formControlName="canDelete">
-                    <label class="form-check-label" for="inlineCheckbox3">Can Delete</label>
-                  </div>
-            </div>
-            <div class="form-group">
-                <button class="btn btn-primary" type="submit">{{btntext}}</button>
-                <button type="button" class="btn btn-danger ml-1" (click)="goBack()">Cancel</button>
-            </div>
-        </form>
+                
+                <div class="admin-form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" formControlName="isActive" type="checkbox" value="" id="isActive">
+                        <label class="form-check-label" for="isActive" style="font-weight: 500; cursor: pointer;">
+                            isActive?
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Permissions</label>
+                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="canAdd" formControlName="canAdd">
+                            <label class="form-check-label" for="canAdd" style="font-weight: 500; cursor: pointer;">Can Add</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="canEdit" formControlName="canEdit">
+                            <label class="form-check-label" for="canEdit" style="font-weight: 500; cursor: pointer;">Can Edit</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="canDelete" formControlName="canDelete">
+                            <label class="form-check-label" for="canDelete" style="font-weight: 500; cursor: pointer;">Can Delete</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-actions">
+                    <button class="admin-btn admin-btn-primary" type="submit">
+                        <i class="fas fa-save"></i>
+                        {{btntext}}
+                    </button>
+                    <button type="button" class="admin-btn admin-btn-secondary" (click)="goBack()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

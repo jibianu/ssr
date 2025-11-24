@@ -3,9 +3,141 @@
 /* Importing Bootstrap SCSS file. */
 @use 'bootstrap/scss/bootstrap' as *;
 
+// ✅ FIX: Font Awesome 6 Global Icon Styles
+// Ensure all Font Awesome icons display properly across the application
+.fas, .far, .fab, .fal, .fad {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  line-height: 1;
+}
+
+.fas, .fa-solid {
+  font-weight: 900; // Font Awesome Solid
+}
+
+.far, .fa-regular {
+  font-weight: 400; // Font Awesome Regular
+}
+
+.fab, .fa-brands {
+  font-weight: 400; // Font Awesome Brands
+}
+
+// ✅ Ensure icons in admin components display properly
+i[class^="fa-"], 
+i[class*=" fa-"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  
+  &.fas, &.fa-solid {
+    font-weight: 900;
+  }
+  
+  &.far, &.fa-regular {
+    font-weight: 400;
+  }
+  
+  &.fab, &.fa-brands {
+    font-weight: 400;
+  }
+}
+
 html {
     scroll-behavior: smooth;
   }
+
+// ✅ FULL WIDTH: Override global wrapper constraints for admin pages
+// Ensure admin layout wrapper is not constrained by app.component.scss wrapper styles
+app-admin-layout .wrapper,
+app-admin-layout .wrapper.wrapper,
+[class*="admin"] .wrapper,
+.admin-content-wrapper .wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    @media screen and (min-width: 1200px) {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+// ✅ NO FOOTER: Hide public footer in admin pages
+app-admin-layout app-public-footer,
+app-admin-layout footer,
+.admin-content-wrapper app-public-footer,
+.admin-content-wrapper footer,
+.admin-content app-public-footer,
+.admin-content footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+// ✅ STEP 2: Global content area fixes - Remove ALL max-width restrictions
+app-admin-layout .admin-content-wrapper,
+app-admin-layout .admin-content,
+app-admin-layout .page-content,
+app-admin-layout .page-wrapper,
+app-admin-layout .content-area,
+.admin-content-wrapper,
+.admin-content,
+.page-content,
+.page-wrapper,
+.content-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+// ✅ STEP 3: Fix container classes - Remove max-width restrictions globally
+app-admin-layout .container,
+app-admin-layout .container-fluid,
+.admin-content .container,
+.admin-content .container-fluid {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+// ✅ STEP 4: Stretch cards to full width globally
+app-admin-layout .admin-card,
+app-admin-layout .list-card,
+app-admin-layout .page-card,
+app-admin-layout .card,
+app-admin-layout .admin-list-table-card,
+.admin-card,
+.list-card,
+.page-card,
+.admin-list-table-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+// ✅ STEP 5: Remove center alignment globally
+app-admin-layout .main-content,
+.main-content {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+}
 
 // ✅ LAYOUT: Ensure body and html can scroll normally
 html,

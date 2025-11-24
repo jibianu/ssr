@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { SideNavService } from './../sidebar.service';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CookieService } from 'src/app/core/services/cookie.service';
@@ -29,7 +28,6 @@ export class SidebarComponent implements OnInit {
 
   constructor(
     private cookieService: CookieService,
-    public sideNavService: SideNavService,
     private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: Required for OnPush - manually trigger change detection
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
@@ -94,5 +92,18 @@ export class SidebarComponent implements OnInit {
   // ✅ PERFORMANCE: TrackBy function for ngFor optimization (if used in template)
   trackByMenuItemLink(index: number, item: MenuItem): string {
     return item.link;
+  }
+
+  // ✅ BEAUTIFUL DESIGN: Get icon for menu item
+  getMenuItemIcon(label: string): string {
+    const iconMap: { [key: string]: string } = {
+      'Course': 'fas fa-book-open',
+      'Category': 'fas fa-folder',
+      'Event': 'fas fa-calendar-alt',
+      'Location': 'fas fa-map-marker-alt',
+      'User': 'fas fa-users',
+      'Icon': 'fas fa-icons'
+    };
+    return iconMap[label] || 'fas fa-circle';
   }
 }
