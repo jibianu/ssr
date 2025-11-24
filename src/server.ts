@@ -9,6 +9,8 @@ import { dirname, resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, readFileSync } from 'fs';
 import { createHash } from 'crypto';
+import { EventEmitter } from 'events';
+import type { Socket } from 'net';
 import { getCacheConfig, isStaticRoute as checkStaticRoute } from './server.cache.config';
 import { createCacheAdapter, CacheAdapter } from './server.cache.adapter';
 import { performanceMonitor } from './server.performance';
@@ -67,12 +69,62 @@ function getCacheHeaders(path: string, etag: string): Record<string, string> {
   };
 }
 
-// ✅ CACHING: Get cache key for request
-function getCacheKey(req: express.Request): string {
-  // Include path, query params, and auth status in cache key
+// ✅ SAFETY: Normalize request/socket before SSR so Angular internals never access undefined properties
+function ensureSafeSocket(existing?: Socket): Socket {
+  if (existing) {
+    if (typeof (existing as any).encrypted === 'undefined') {
+      (existing as any).encrypted = false;
+    }
+    return existing;
+  }
+
+  const socket = new EventEmitter() as unknown as Socket;
+  (socket as any).encrypted = false;
+  (socket as any).remoteAddress = '127.0.0.1';
+  return socket;
+}
+
+function ensureSafeRequest(req?: Partial<express.Request>): express.Request {
+  const safeReq = (req ?? {
+    method: 'GET',
+    url: '/',
+    path: '/',
+    originalUrl: '/',
+    headers: {},
+    query: {},
+  }) as express.Request;
+
+  (safeReq as any).method = safeReq.method || 'GET';
+  const url = safeReq.url || safeReq.originalUrl || safeReq.path || '/';
+  (safeReq as any).url = url;
+  (safeReq as any).originalUrl = safeReq.originalUrl || url;
+  (safeReq as any).path = safeReq.path || url.split('?')[0] || '/';
+  (safeReq as any).headers = safeReq.headers || {};
+  (safeReq as any).query = safeReq.query || {};
+  (safeReq as any).socket = ensureSafeSocket(safeReq.socket as Socket | undefined);
+  if (!(safeReq as any).connection) {
+    (safeReq as any).connection = (safeReq as any).socket;
+  }
+
+  return safeReq;
+}
+
+function getCacheKey(request: express.Request | undefined): string {
+  const req = ensureSafeRequest(request);
   const userPart = req.headers.authorization ? 'auth' : 'guest';
   const queryPart = JSON.stringify(req.query || {});
   return `ssr:${req.path}:${queryPart}:${userPart}`;
+}
+
+function createWarmCacheRequest(route: string): express.Request {
+  return ensureSafeRequest({
+    method: 'GET',
+    url: route,
+    path: route,
+    originalUrl: route,
+    query: {},
+    headers: {},
+  });
 }
 
 // 1️⃣ Serve static assets
@@ -204,14 +256,15 @@ app.use(cdnCacheMiddleware);
 // 2️⃣ SSR with caching middleware
 app.get('*', async (req, res, next) => {
   // ✅ PERFORMANCE: Start performance measurement
+  const safeReq = ensureSafeRequest(req);
   const markId = performanceMonitor.startMeasure(
-    req.path,
-    req.method,
-    req.headers['user-agent']
+    safeReq.path,
+    safeReq.method,
+    safeReq.headers['user-agent']
   );
   
   try {
-    const cacheKey = getCacheKey(req);
+    const cacheKey = getCacheKey(safeReq);
     
     // ✅ PERFORMANCE: Mark cache check start
     performanceMonitor.markCacheStart(markId);
@@ -234,7 +287,7 @@ app.get('*', async (req, res, next) => {
       // ✅ CACHING: Handle conditional request (304 Not Modified)
       if (ifNoneMatch === cached.etag) {
         res.status(304);
-        Object.entries(getCacheHeaders(req.path, cached.etag)).forEach(([key, value]) => {
+        Object.entries(getCacheHeaders(safeReq.path, cached.etag)).forEach(([key, value]) => {
           res.setHeader(key, value);
         });
         res.end();
@@ -245,7 +298,7 @@ app.get('*', async (req, res, next) => {
       }
       
       // ✅ CACHING: Serve cached HTML
-      Object.entries(getCacheHeaders(req.path, cached.etag)).forEach(([key, value]) => {
+      Object.entries(getCacheHeaders(safeReq.path, cached.etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
       res.send(cached.html);
@@ -259,7 +312,7 @@ app.get('*', async (req, res, next) => {
     performanceMonitor.markRenderStart(markId);
     
     // ✅ CACHING: Render if not cached
-    const response = await angularApp.handle(req);
+    const response = await angularApp.handle(safeReq);
     
     if (response) {
       // Get HTML content for caching (Response may have text() method or we need to extract differently)
@@ -272,7 +325,7 @@ app.get('*', async (req, res, next) => {
           // Fallback: Use writeResponseToNodeResponse but capture output
           // For now, write response without caching HTML extraction
           // Cache will work on subsequent requests
-          Object.entries(getCacheHeaders(req.path, generateETag(''))).forEach(([key, value]) => {
+          Object.entries(getCacheHeaders(safeReq.path, generateETag(''))).forEach(([key, value]) => {
             res.setHeader(key, value);
           });
           writeResponseToNodeResponse(response, res);
@@ -288,14 +341,14 @@ app.get('*', async (req, res, next) => {
       const etag = generateETag(html);
       
       // ✅ CACHING: Store in cache with appropriate TTL (supports both sync and async)
-      const ttl = isStaticRoute(req.path) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
+      const ttl = isStaticRoute(safeReq.path) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
       const setResult = htmlCache.set(cacheKey, { html, etag }, ttl);
       if (setResult instanceof Promise) {
         await setResult;
       }
       
       // ✅ CACHING: Set cache headers and send HTML
-      Object.entries(getCacheHeaders(req.path, etag)).forEach(([key, value]) => {
+      Object.entries(getCacheHeaders(safeReq.path, etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
       res.send(html);
@@ -368,11 +421,7 @@ async function warmCache(): Promise<void> {
   
   for (const route of popularRoutes) {
     try {
-      const mockReq = {
-        path: route,
-        query: {},
-        headers: {}
-      } as express.Request;
+      const mockReq = createWarmCacheRequest(route);
       
       const response = await angularApp.handle(mockReq);
       if (response && typeof response.text === 'function') {
