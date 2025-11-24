@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use '../shared/public-common' as common;
 
 $guest-bg: #f5f7fb;
 $guest-primary: #0f172a;
@@ -7,12 +8,7 @@ $guest-border: rgba(15, 23, 42, 0.1);
 $guest-accent: #f04a00;
 
 .guest-blog-page {
-  padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem);
-  display: flex;
-  flex-direction: column;
-  gap: clamp(2rem, 4vw, 3.5rem);
-  background: $guest-bg;
-  color: $guest-primary;
+  @include common.page-shell($guest-bg);
 }
 
 .guest-eyebrow {
@@ -23,10 +19,12 @@ $guest-accent: #f04a00;
 }
 
 .guest-hero {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(1.5rem, 4vw, 2.5rem);
-  align-items: center;
+  @include common.hero-shell(
+    $background: #fff,
+    $text-color: $guest-primary,
+    $shadow: 0 24px 60px rgba(15, 23, 42, 0.08),
+    $border-color: $guest-border
+  );
 
   &__copy {
     display: flex;
@@ -84,23 +82,10 @@ $guest-accent: #f04a00;
   }
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85rem 1.8rem;
-  border-radius: 999px;
-  background: $guest-accent;
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-  border: none;
-  transition: transform 150ms ease, box-shadow 150ms ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 32px rgba(240, 74, 0, 0.3);
-  }
+.btn-primary--outline {
+  background: transparent;
+  color: $guest-accent;
+  border: 1px solid $guest-accent;
 }
 
 .btn-link {
@@ -110,11 +95,7 @@ $guest-accent: #f04a00;
 }
 
 .guest-hero__card {
-  background: #fff;
-  border-radius: 24px;
-  padding: clamp(1.4rem, 3vw, 2rem);
-  border: 1px solid $guest-border;
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+  @include common.surface-card($padding: clamp(1.4rem, 3vw, 2rem));
 
   h3 {
     margin-top: 0;
@@ -143,11 +124,7 @@ $guest-accent: #f04a00;
 }
 
 .guest-section {
-  background: #fff;
-  border-radius: 24px;
-  padding: clamp(1.6rem, 4vw, 2.4rem);
-  border: 1px solid $guest-border;
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.07);
+  @include common.surface-card($padding: clamp(1.6rem, 4vw, 2.4rem));
 
   &--ideas {
     background: linear-gradient(120deg, #fff, #fef4f0);
@@ -188,11 +165,7 @@ $guest-accent: #f04a00;
 }
 
 .guest-card {
-  border: 1px solid $guest-border;
-  border-radius: 18px;
-  padding: 1.4rem;
-  background: #fff;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+  @include common.surface-card($padding: 1.4rem);
 
   h3 {
     margin-top: 0;
@@ -211,10 +184,7 @@ $guest-accent: #f04a00;
 }
 
 .guest-step {
-  border: 1px solid $guest-border;
-  border-radius: 18px;
-  padding: 1.4rem;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+  @include common.surface-card($padding: 1.4rem);
 
   &__index {
     display: inline-flex;

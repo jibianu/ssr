@@ -2,12 +2,20 @@
 <div class="contact-page" ngSkipHydration>
   <section class="contact-hero">
     <div class="contact-hero__copy">
-      <p class="contact-eyebrow">📬 Talk to us</p>
-      <h1>We’re here to help you <span>launch, learn, and lead</span></h1>
-      <p class="contact-hero__lead">
+      <p class="contact-eyebrow contact-eyebrow--soft">📬 Talk to us</p>
+      <div class="contact-hero__badge-row">
+        <span class="contact-badge">Always-on mentors</span>
+        <span class="contact-badge contact-badge--soft">Avg. response 24h</span>
+      </div>
+      <h1 class="contact-hero__title">We’re here to help you <span>launch, learn, and lead</span></h1>
+      <p class="contact-hero__lead contact-hero__lead--muted">
         Oilandgasclub teams across India, GCC, and North America are available for course guidance, enterprise solutions,
         partnerships, and media queries.
       </p>
+      <div class="contact-hero__contact">
+        <a class="btn-primary btn-primary--ghost" href="mailto:anush@oilandgasclub.com">Email support</a>
+        <span>or call <strong>+91 98402 87919</strong></span>
+      </div>
       <div class="contact-hero__stats">
         @for (stat of heroStats; track stat.label) {
           <article class="contact-stat">

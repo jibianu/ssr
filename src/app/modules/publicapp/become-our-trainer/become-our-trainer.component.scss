@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use '../shared/public-common' as common;
 
 $trainer-bg: #f7f9fc;
 $trainer-primary: #0f172a;
@@ -7,19 +8,16 @@ $trainer-border: rgba(15, 23, 42, 0.12);
 $trainer-accent: #f02c00;
 
 .trainer-page {
-  padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem);
-  display: flex;
-  flex-direction: column;
-  gap: clamp(2rem, 4vw, 3.5rem);
-  background: $trainer-bg;
-  color: $trainer-primary;
+  @include common.page-shell($trainer-bg);
 }
 
 .trainer-hero {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(1.5rem, 4vw, 2.5rem);
-  align-items: center;
+  @include common.hero-shell(
+    $background: #fff,
+    $text-color: $trainer-primary,
+    $shadow: 0 22px 60px rgba(15, 23, 42, 0.08),
+    $border-color: $trainer-border
+  );
 
   &__copy {
     display: flex;
@@ -100,12 +98,8 @@ $trainer-accent: #f02c00;
 .trainer-stat {
   flex: 1 1 150px;
   min-width: 150px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 1.2rem;
-  border: 1px solid $trainer-border;
+  @include common.surface-card($padding: 1.2rem, $gap: 0.5rem);
   text-align: center;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.07);
 
   &__value {
     display: block;
@@ -127,11 +121,7 @@ $trainer-accent: #f02c00;
 .trainer-earn-card {
   width: 100%;
   max-width: 380px;
-  background: #fff;
-  border-radius: 24px;
-  padding: clamp(1.5rem, 3vw, 2rem);
-  border: 1px solid $trainer-border;
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+  @include common.surface-card($padding: clamp(1.5rem, 3vw, 2rem));
   text-align: center;
 
   h2 {
@@ -194,11 +184,7 @@ $trainer-accent: #f02c00;
 }
 
 .trainer-section {
-  background: #fff;
-  border-radius: 24px;
-  padding: clamp(1.6rem, 4vw, 2.4rem);
-  border: 1px solid $trainer-border;
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.07);
+  @include common.surface-card($padding: clamp(1.6rem, 4vw, 2.4rem));
 }
 
 .trainer-section__header {
@@ -229,11 +215,7 @@ $trainer-accent: #f02c00;
 
 .trainer-card,
 .trainer-domain {
-  background: #fff;
-  border-radius: 18px;
-  padding: 1.4rem;
-  border: 1px solid $trainer-border;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+  @include common.surface-card($padding: 1.4rem);
 
   h3 {
     margin-top: 0;
@@ -263,11 +245,7 @@ $trainer-accent: #f02c00;
 }
 
 .trainer-step {
-  background: #fff;
-  border-radius: 18px;
-  padding: 1.4rem;
-  border: 1px solid $trainer-border;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+  @include common.surface-card($padding: 1.4rem);
 
   &__index {
     display: inline-flex;
@@ -318,37 +296,12 @@ $trainer-accent: #f02c00;
     }
 
     button {
+      @extend .btn-primary;
       justify-self: center;
       margin-top: 0.5rem;
       width: 100%;
       max-width: 280px;
-      padding: 0.85rem 1.5rem;
-      border-radius: 999px;
-      border: none;
-      background: $trainer-accent;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
     }
-  }
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85rem 1.8rem;
-  border-radius: 999px;
-  border: none;
-  background: $trainer-accent;
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-  transition: transform 150ms ease, box-shadow 150ms ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 32px rgba(240, 44, 0, 0.35);
   }
 }
 

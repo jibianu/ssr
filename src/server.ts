@@ -85,35 +85,47 @@ function ensureSafeSocket(existing?: Socket): Socket {
 }
 
 function ensureSafeRequest(req?: Partial<express.Request>): express.Request {
-  const safeReq = (req ?? {
-    method: 'GET',
-    url: '/',
-    path: '/',
-    originalUrl: '/',
-    headers: {},
-    query: {},
-  }) as express.Request;
-
-  (safeReq as any).method = safeReq.method || 'GET';
-  const url = safeReq.url || safeReq.originalUrl || safeReq.path || '/';
-  (safeReq as any).url = url;
-  (safeReq as any).originalUrl = safeReq.originalUrl || url;
-  (safeReq as any).path = safeReq.path || url.split('?')[0] || '/';
-  (safeReq as any).headers = safeReq.headers || {};
-  (safeReq as any).query = safeReq.query || {};
-  (safeReq as any).socket = ensureSafeSocket(safeReq.socket as Socket | undefined);
-  if (!(safeReq as any).connection) {
-    (safeReq as any).connection = (safeReq as any).socket;
+  if (req) {
+    const socket = ensureSafeSocket(req.socket as Socket | undefined);
+    if (!(req as any).socket) {
+      (req as any).socket = socket;
+    } else if (req.socket !== socket) {
+      (req as any).socket = socket;
+    }
+    if (!(req as any).connection) {
+      (req as any).connection = socket;
+    }
+    return req as express.Request;
   }
 
+  const socket = ensureSafeSocket();
+  const safeReq = {
+    method: 'GET',
+    url: '/',
+    originalUrl: '/',
+    path: '/',
+    headers: {},
+    query: {},
+    socket,
+    connection: socket,
+  } as express.Request;
+
   return safeReq;
+}
+
+function getRequestPath(req: express.Request): string {
+  return req.path || req.url?.split('?')[0] || req.originalUrl || '/';
+}
+
+function getRequestUrl(req: express.Request): string {
+  return req.url || req.originalUrl || getRequestPath(req);
 }
 
 function getCacheKey(request: express.Request | undefined): string {
   const req = ensureSafeRequest(request);
   const userPart = req.headers.authorization ? 'auth' : 'guest';
   const queryPart = JSON.stringify(req.query || {});
-  return `ssr:${req.path}:${queryPart}:${userPart}`;
+  return `ssr:${getRequestPath(req)}:${queryPart}:${userPart}`;
 }
 
 function createWarmCacheRequest(route: string): express.Request {
@@ -257,8 +269,9 @@ app.use(cdnCacheMiddleware);
 app.get('*', async (req, res, next) => {
   // ✅ PERFORMANCE: Start performance measurement
   const safeReq = ensureSafeRequest(req);
+  const requestPath = getRequestPath(safeReq);
   const markId = performanceMonitor.startMeasure(
-    safeReq.path,
+    requestPath,
     safeReq.method,
     safeReq.headers['user-agent']
   );
@@ -287,7 +300,7 @@ app.get('*', async (req, res, next) => {
       // ✅ CACHING: Handle conditional request (304 Not Modified)
       if (ifNoneMatch === cached.etag) {
         res.status(304);
-        Object.entries(getCacheHeaders(safeReq.path, cached.etag)).forEach(([key, value]) => {
+        Object.entries(getCacheHeaders(requestPath, cached.etag)).forEach(([key, value]) => {
           res.setHeader(key, value);
         });
         res.end();
@@ -298,7 +311,7 @@ app.get('*', async (req, res, next) => {
       }
       
       // ✅ CACHING: Serve cached HTML
-      Object.entries(getCacheHeaders(safeReq.path, cached.etag)).forEach(([key, value]) => {
+      Object.entries(getCacheHeaders(requestPath, cached.etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
       res.send(cached.html);
@@ -325,7 +338,7 @@ app.get('*', async (req, res, next) => {
           // Fallback: Use writeResponseToNodeResponse but capture output
           // For now, write response without caching HTML extraction
           // Cache will work on subsequent requests
-          Object.entries(getCacheHeaders(safeReq.path, generateETag(''))).forEach(([key, value]) => {
+          Object.entries(getCacheHeaders(requestPath, generateETag(''))).forEach(([key, value]) => {
             res.setHeader(key, value);
           });
           writeResponseToNodeResponse(response, res);
@@ -341,14 +354,14 @@ app.get('*', async (req, res, next) => {
       const etag = generateETag(html);
       
       // ✅ CACHING: Store in cache with appropriate TTL (supports both sync and async)
-      const ttl = isStaticRoute(safeReq.path) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
+      const ttl = isStaticRoute(requestPath) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
       const setResult = htmlCache.set(cacheKey, { html, etag }, ttl);
       if (setResult instanceof Promise) {
         await setResult;
       }
       
       // ✅ CACHING: Set cache headers and send HTML
-      Object.entries(getCacheHeaders(safeReq.path, etag)).forEach(([key, value]) => {
+      Object.entries(getCacheHeaders(requestPath, etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
       res.send(html);

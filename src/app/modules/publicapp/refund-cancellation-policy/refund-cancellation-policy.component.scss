@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use '../shared/public-common' as common;
 
 $refund-bg: #f6f8fb;
 $refund-primary: #0f172a;
@@ -7,12 +8,7 @@ $refund-border: rgba(15, 23, 42, 0.1);
 $refund-accent: #f04a00;
 
 .refund-page {
-  padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem);
-  display: flex;
-  flex-direction: column;
-  gap: clamp(2rem, 4vw, 3.5rem);
-  background: $refund-bg;
-  color: $refund-primary;
+  @include common.page-shell($refund-bg);
 }
 
 .refund-eyebrow {
@@ -23,13 +19,13 @@ $refund-accent: #f04a00;
 }
 
 .refund-hero {
-  background: linear-gradient(135deg, #0f172a, #1f3b8a);
-  border-radius: clamp(22px, 5vw, 32px);
-  padding: clamp(2.5rem, 6vw, 4rem);
+  @include common.hero-shell(
+    $background: linear-gradient(135deg, #0f172a, #1f3b8a),
+    $text-color: #e2e8f0,
+    $shadow: 0 35px 70px rgba(15, 23, 42, 0.35),
+    $border-color: rgba(255, 255, 255, 0.15)
+  );
   color: #e2e8f0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(1.5rem, 4vw, 2.5rem);
 
   &__copy {
     display: flex;
@@ -96,23 +92,10 @@ $refund-accent: #f04a00;
   }
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85rem 1.8rem;
-  border-radius: 999px;
+.btn-primary--warm {
   background: linear-gradient(135deg, #fbbf24, #f97316);
   color: #0f172a;
-  font-weight: 700;
-  text-decoration: none;
-  border: none;
-  transition: transform 150ms ease, box-shadow 150ms ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 32px rgba(249, 115, 22, 0.35);
-  }
+  box-shadow: 0 18px 32px rgba(249, 115, 22, 0.35);
 }
 
 .btn-link {
@@ -122,11 +105,7 @@ $refund-accent: #f04a00;
 }
 
 .refund-section {
-  background: #fff;
-  border-radius: 24px;
-  padding: clamp(1.6rem, 4vw, 2.4rem);
-  border: 1px solid $refund-border;
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.07);
+  @include common.surface-card($padding: clamp(1.6rem, 4vw, 2.4rem));
 
   &--cta {
     background: #0f172a;
@@ -162,11 +141,7 @@ $refund-accent: #f04a00;
 }
 
 .refund-eligibility {
-  border: 1px solid $refund-border;
-  border-radius: 18px;
-  padding: 1.4rem;
-  background: #fff;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+  @include common.surface-card($padding: 1.4rem);
 
   h3 {
     margin-top: 0;
@@ -185,10 +160,7 @@ $refund-accent: #f04a00;
 }
 
 .refund-step {
-  border: 1px solid $refund-border;
-  border-radius: 18px;
-  padding: 1.4rem;
-  background: #fff;
+  @include common.surface-card($padding: 1.4rem);
 
   h3 {
     margin-top: 0;

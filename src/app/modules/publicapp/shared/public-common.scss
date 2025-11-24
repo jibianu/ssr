@@ -1,19 +1,86 @@
+@use 'sass:color';
 @use 'sass:map';
 @use '../public-course/public-course-common' as course;
 
 $public-max-width: course.$course-max-width;
 $public-horizontal-padding: clamp(1.5rem, 5vw, 2.5rem);
-$public-vertical-spacing: clamp(2rem, 5vw, 3.5rem);
-$public-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
+$public-vertical-spacing: clamp(2rem, 5vw, 4rem);
+$public-section-spacing: clamp(2rem, 5vw, 4rem);
 $public-card-radius: course.$course-radius-md;
 $public-card-shadow: course.$course-shadow-card;
 $public-card-border: course.$course-color-card-border;
+$public-page-bg: #f8fbff;
+$public-text: course.$course-color-text-primary;
+$public-muted: course.$course-color-text-secondary;
+$public-header-height: clamp(3.25rem, 4vw, 3.75rem);
 
 :root {
   --public-max-width: #{$public-max-width};
   --public-horizontal-padding: #{$public-horizontal-padding};
   --public-vertical-spacing: #{$public-vertical-spacing};
   --public-section-spacing: #{$public-section-spacing};
+}
+
+@mixin page-shell($background: $public-page-bg) {
+  background: $background;
+  padding-block: $public-vertical-spacing;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  color: $public-text;
+}
+
+@mixin hero-shell(
+  $background: linear-gradient(180deg, #ffffff, $public-page-bg),
+  $text-color: $public-text,
+  $shadow: 0 18px 50px rgba(15, 23, 42, 0.08),
+  $border-color: rgba(15, 23, 42, 0.06)
+) {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  min-height: clamp(3.75rem, 6vw, 4.5rem);
+  border-radius: clamp(1.25rem, 4vw, 1.8rem);
+  background: $background;
+  color: $text-color;
+  box-shadow: $shadow;
+  border: 1px solid $border-color;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+}
+
+@mixin surface-card(
+  $padding: clamp(1.25rem, 3vw, 1.75rem),
+  $gap: 0.75rem,
+  $background: course.$course-color-surface
+) {
+  @include course.course-card-shell(
+    $border-radius: $public-card-radius,
+    $border-color: $public-card-border,
+    $shadow: $public-card-shadow,
+    $hover-translate: -6px,
+    $hover-shadow: 0 25px 60px rgba(15, 23, 42, 0.12)
+  );
+  background: $background;
+  padding: $padding;
+  gap: $gap;
+}
+
+@mixin section-shell($align: center, $max-width: 720px) {
+  text-align: $align;
+  margin: 0 auto clamp(1.5rem, 4vw, 2rem);
+  max-width: $max-width;
+
+  .section-title {
+    margin-bottom: 0.75rem;
+  }
+}
+
+@mixin media-fluid {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: clamp(0.75rem, 2vw, 1rem);
 }
 
 .public-main-wrapper {
@@ -33,7 +100,7 @@ $public-card-border: course.$course-color-card-border;
   padding-block: $public-section-spacing;
 
   & + & {
-    margin-top: $public-section-spacing;
+    margin-top: clamp(1.5rem, 4vw, 2.5rem);
   }
 }
 
@@ -59,45 +126,131 @@ $public-card-border: course.$course-color-card-border;
   box-shadow: $public-card-shadow;
 }
 
-.public-eyebrow {
+.public-header {
+  min-height: $public-header-height;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  color: #f8fbff;
+  border-radius: clamp(0.5rem, 2vw, 0.85rem);
+  padding-inline: clamp(0.75rem, 3vw, 1.25rem);
+  padding-block: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+
+  nav {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+
+    a {
+      color: inherit;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity 150ms ease;
+
+      &:hover,
+      &:focus-visible {
+        opacity: 0.85;
+      }
+    }
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    svg,
+    img {
+      max-height: 2.4rem;
+      width: auto;
+    }
+  }
+}
+
+.section-eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.25em;
-  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  font-size: 0.75rem;
   color: course.$course-color-accent-orange;
+  margin-bottom: 0.35rem;
 }
 
-.public-heading {
-  font-size: clamp(2rem, 3vw, 2.6rem);
-  font-weight: 800;
-  color: course.$course-color-heading;
+.section-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem;
+  color: #1a1a1a;
+}
+
+.section-lead {
+  line-height: 1.7;
+  color: #555;
   margin: 0;
 }
 
-.public-subtitle {
-  color: course.$course-color-text-secondary;
-  font-size: 1rem;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.public-btn-primary {
+.btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.85rem 1.8rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #fbbf24, #f97316);
-  color: #0f172a;
-  font-weight: 700;
-  text-decoration: none;
+  background: #004aad;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  color: #fff;
+  transition: background 0.3s ease, transform 0.2s ease;
   border: none;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  text-decoration: none;
+  font-weight: 600;
 
   &:hover,
   &:focus-visible {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 32px rgba(249, 115, 22, 0.35);
+    background: #003b8b;
+    transform: translateY(-1px);
   }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(0, 74, 173, 0.25);
+  color: #004aad;
+  background: transparent;
+  transition: background 0.3s ease, color 0.3s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(0, 74, 173, 0.08);
+    color: #003b8b;
+  }
+}
+
+.cta-panel {
+  @include hero-shell(
+    $background: linear-gradient(135deg, #004aad, #002f6c),
+    $text-color: #f8fbff,
+    $shadow: 0 25px 60px rgba(0, 47, 108, 0.35),
+    $border-color: rgba(255, 255, 255, 0.1)
+  );
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+
+  .section-title {
+    color: #fff;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 @media (max-width: 768px) {
@@ -107,6 +260,27 @@ $public-card-border: course.$course-color-card-border;
 
   .public-container {
     padding-inline: clamp(1rem, 6vw, 1.5rem);
+  }
+
+  .public-header {
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: auto;
+    padding-block: 0.5rem;
+
+    nav {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  .public-section {
+    padding-block: clamp(1.5rem, 6vw, 2.5rem);
+  }
+
+  .public-grid,
+  .public-grid--auto-fit {
+    grid-template-columns: 1fr;
   }
 }
 
