@@ -1,42 +1,51 @@
-# Stage 1: Build Angular application
-FROM node:20-alpine AS builder
+# syntax=docker/dockerfile:1.7
 
-# Set working directory
+########################################
+# Stage 1: dependency download cache
+########################################
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Install dependencies
-COPY package.json ./
-COPY pnpm-lock.yaml ./
-COPY pnpm-workspace.yaml ./
+# Copy lock files only to maximize layer caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack enable pnpm \
+  && pnpm fetch
 
-RUN corepack enable pnpm
-RUN pnpm install --frozen-lockfile
+########################################
+# Stage 2: build Angular SSR bundle
+########################################
+FROM node:20-alpine AS builder
+WORKDIR /app
 
-# Copy application files
+COPY --from=deps /root/.local/share/pnpm/store /root/.local/share/pnpm/store
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack enable pnpm \
+  && pnpm install --frozen-lockfile --prefer-offline
+
 COPY . .
-
-# Build the Angular application
+ARG BUILD_ENV=production
+ENV NODE_ENV=$BUILD_ENV
 RUN pnpm run build:ssr
 
-# Stage 2: Set up Node.js server for SSR
-FROM node:20-alpine
-
-# Set working directory
+########################################
+# Stage 3: runtime image
+########################################
+FROM node:20-alpine AS runner
+ENV NODE_ENV=production \
+    PORT=4000
 WORKDIR /app
 
-# Copy built application from Stage 1
+# Create non-root user for security
+RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
+
+# Copy built artifacts only
 COPY --from=builder /app/dist/Course ./
 
-# Install dependencies for server
-# NOT NEEDED FOR ANGULAR
-# because angular is already compiled to JS
-# RUN pnpm install --omit=dev --legacy-peer-deps
-# RUN pnpm install --only=production
-
-# Expose port
+USER nodeuser
 EXPOSE 4000
 
-# Start the server
+# Basic health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:${PORT} || exit 1
+
 CMD ["node", "server/server.mjs"]
-
-
