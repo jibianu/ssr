@@ -29,7 +29,7 @@
     "verify:backend:cache": "ts-node scripts/verify-backend-cache-headers.ts",
     "monitor:dashboard": "node scripts/monitoring-dashboard.js",
     "docker:test:build": "docker build -t course-frontend-test .",
-    "docker:test:run": "docker run -d --name course-frontend-test --restart unless-stopped -p 4008:4000 course-frontend-test",
+    "docker:test:run": "docker run -d --name course-frontend-test --restart unless-stopped -p 4010:4000 course-frontend-test",
     "docker:test:remove": "docker rm -f course-frontend-test || true",
     "docker:test:deploy": "npm run docker:test:build && npm run docker:test:remove && npm run docker:test:run"
   },

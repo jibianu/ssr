@@ -20,4 +20,4 @@ services:
     container_name: course-frontend-test
     restart: unless-stopped
     ports:
-      - "4008:4000"
+      - "4010:4000"
