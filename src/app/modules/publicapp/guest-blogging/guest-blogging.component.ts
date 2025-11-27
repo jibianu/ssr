@@ -88,7 +88,7 @@ export class GuestBloggingComponent implements OnInit {
     },
     {
       question: 'What is the compensation?',
-      answer: 'Payments depend on depth, visuals, and originality. Typical range is $75–$200 USD per article, plus spotlight features.'
+      answer: 'Payments depend on depth, visuals, and originality. Typical range is $2–$20 USD per article, plus spotlight features.'
     }
   ];
 
