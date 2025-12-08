@@ -1,26 +1,41 @@
 <div class="events-page">
   <section class="events-hero">
-    <img
-      class="events-hero__image"
-      [src]="bgImage"
-      alt="Upcoming Oilandgasclub events"
-      loading="eager"
-      fetchpriority="high"
-    />
-    <div class="events-hero__overlay"></div>
-    <div class="events-hero__content">
-      <p class="events-hero__eyebrow">Oilandgasclub Events</p>
-      <h1 class="events-hero__title">Don’t Miss Our Regular Expert Sessions! 💡</h1>
-      <p class="events-hero__description">
-        At OilandGasClub, we regularly organize online workshops! 🚀
-Industry experts join us online to share their real-world experiences and insights. Follow us to catch our regular workshops and updates — don’t miss out!.
-      </p>
-      <div class="events-hero__actions">
-        <ng-container *ngTemplateOutlet="locationSelect"></ng-container>
-        <button class="events-hero__toggle" type="button" (click)="toggleMobileFilters()">
-          <i class="fa" [ngClass]="mobileFiltersOpen ? 'fa-times' : 'fa-filter'"></i>
-          <span>{{ mobileFiltersOpen ? 'Hide filters' : 'Show filters' }}</span>
-        </button>
+    <div class="events-hero__background">
+      <img
+        class="events-hero__image"
+        *ngIf="(events$ | async)?.[0] as firstEvent; else noHeroImage"
+        [src]="getEventImage(firstEvent)"
+        alt="Upcoming Oilandgasclub events"
+        loading="eager"
+        fetchpriority="high"
+      />
+      <ng-template #noHeroImage>
+        <div class="events-hero__image events-hero__image--placeholder"></div>
+      </ng-template>
+      <div class="events-hero__overlay"></div>
+    </div>
+    <div class="events-hero__container">
+      <div class="events-hero__content">
+        <div class="events-hero__badge">
+          <i class="fa fa-calendar-check-o"></i>
+          <span>Oilandgasclub Events</span>
+        </div>
+        <h1 class="events-hero__title">
+          Don't Miss Our Regular Expert Sessions!
+          <span class="events-hero__emoji">💡</span>
+        </h1>
+        <p class="events-hero__description">
+          At OilandGasClub, we regularly organize online workshops! 🚀
+          Industry experts join us online to share their real-world experiences and insights. 
+          Follow us to catch our regular workshops and updates — don't miss out!
+        </p>
+        <div class="events-hero__actions">
+          <ng-container *ngTemplateOutlet="locationSelect"></ng-container>
+          <button class="events-hero__toggle" type="button" (click)="toggleMobileFilters()">
+            <i class="fa" [ngClass]="mobileFiltersOpen ? 'fa-times' : 'fa-filter'"></i>
+            <span>{{ mobileFiltersOpen ? 'Hide filters' : 'Show filters' }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -49,12 +64,12 @@ Industry experts join us online to share their real-world experiences and insigh
             *ngFor="let event of eventsList; trackBy: trackByEventId"
           >
             <a class="event-card__link" [routerLink]="['/events', event.canonicalUrl]">
-              <div class="event-card__media">
-                <img
-                  [src]="event?.bannerImage || event?.imageUrl || bgImage"
-                  [alt]="event?.title"
-                  loading="lazy"
-                />
+              <div
+                class="event-card__media"
+                role="img"
+                [attr.aria-label]="event?.title || 'Event image'"
+                [style.background-image]="'url(' + getEventImage(event) + ')'"
+              >
                 <span class="event-card__badge" *ngIf="event?.badge">{{ event.badge }}</span>
               </div>
               <div class="event-card__content">

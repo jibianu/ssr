@@ -6,12 +6,14 @@ import { Subject, takeUntil } from 'rxjs';
 import {
   Router,
   NavigationStart,
+  NavigationEnd,
   NavigationCancel,
   NavigationError,
   RouterModule
 } from "@angular/router";
 import { isPlatformBrowser } from '@angular/common';
 import { BackendHealthService } from './core/services/backend-health.service';
+import { GtmService } from './services/gtm.service';
 
 @Component({
     selector: 'app-root',
@@ -35,6 +37,7 @@ export class AppComponent implements OnDestroy {
         private router: Router,
         private spinner: NgxSpinnerService,
         private backendHealthService: BackendHealthService,
+        private gtmService: GtmService,
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         this.setupNavigationInterceptor();
@@ -58,6 +61,12 @@ export class AppComponent implements OnDestroy {
             console.log('[AppComponent] 🔄 NavigationStart:', event.url);
             console.log('[AppComponent]   Navigation ID:', event.id);
             this.isLoading = true;
+        } else if (event instanceof NavigationEnd) {
+            console.log('[AppComponent] ✅ NavigationEnd:', event.url);
+            console.log('[AppComponent]   Navigation ID:', event.id);
+            // Track pageview in GTM using urlAfterRedirects
+            this.gtmService.pushPageView(event.urlAfterRedirects);
+            this.isLoading = false;
         } else if (event instanceof NavigationCancel) {
             console.warn('[AppComponent] ⚠️  NavigationCancel:', event.url);
             console.warn('[AppComponent]   Reason:', event.reason);

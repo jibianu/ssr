@@ -8,90 +8,210 @@
 
 // }
 
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
+import { PublicAppService } from "../../publicapp.service";
+import { first } from "rxjs/operators";
 
 @Component({
-    selector: "app-payment-success",
-    template: `
-      <section class="payment-status" ngSkipHydration>
-        <div class="payment-status__card">
-          <h1>{{ message }}!</h1>
-          <p>Thank you for your purchase. Your transaction was completed successfully.</p>
-          <div class="payment-status__actions">
-            <a routerLink="/" class="payment-status__btn">Go to Homepage</a>
-            <a routerLink="/contact-us" class="payment-status__btn">Contact Support</a>
+  selector: "app-payment-success",
+  template: `
+    <div class="container">
+      <div class="card">
+        <div *ngIf="isVerifying" class="verifying">
+          <i class="fa fa-spinner fa-spin"></i>
+          <p>Verifying payment status...</p>
+        </div>
+        <div *ngIf="!isVerifying">
+          <h1>{{message}}!</h1>
+          <p *ngIf="isPaymentVerified">{{successMessage}}</p>
+          <p *ngIf="!isPaymentVerified && !verificationError" class="warning">
+            Payment verification is pending. Please contact support if you have completed the payment.
+          </p>
+          <p *ngIf="verificationError" class="error">{{verificationError}}</p>
+          <div *ngIf="paymentDetails" class="payment-details">
+            <p><strong>Transaction ID:</strong> {{paymentDetails.paymentRefNo || 'N/A'}}</p>
+            <p><strong>Registration ID:</strong> {{paymentDetails.id}}</p>
+          </div>
+          <div class="buttons">
+            <a routerLink="/" class="btn">Go to Homepage</a>
+            <a routerLink="/contact-us" class="btn">Contact Support</a>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
   `,
-    styles: [
-        `
-      .payment-status {
+  styles: [
+    `
+      .container {
         display: flex;
-        align-items: center;
         justify-content: center;
-        min-height: 60vh;
-        padding: 2rem 0;
+        align-items: center;
+        min-height: 100vh;
+        padding: 2rem;
+        background-color: #f8f9fa;
       }
-      .payment-status__card {
-        background: #fff;
-        padding: clamp(1.5rem, 4vw, 2.5rem);
+      .card {
+        background: white;
+        padding: 2rem;
         text-align: center;
-        border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        max-width: 420px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
         width: 100%;
       }
-      .payment-status__card h1 {
-        color: #16a34a;
-        margin-bottom: 0.75rem;
+      .verifying {
+        padding: 2rem;
       }
-      .payment-status__card p {
-        margin: 0;
-        color: #475569;
-        line-height: 1.5;
+      .verifying i {
+        font-size: 2rem;
+        color: #007bff;
+        margin-bottom: 1rem;
       }
-      .payment-status__actions {
+      h1 {
+        color: #28a745;
+        margin-bottom: 1rem;
+      }
+      .warning {
+        color: #856404;
+        background-color: #fff3cd;
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+      }
+      .error {
+        color: #721c24;
+        background-color: #f8d7da;
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+      }
+      .payment-details {
+        text-align: left;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+      }
+      .payment-details p {
+        margin: 0.5rem 0;
+      }
+      .buttons {
         margin-top: 1.5rem;
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: 1rem;
         justify-content: center;
+        flex-wrap: wrap;
       }
-      .payment-status__btn {
+      .btn {
         text-decoration: none;
-        padding: 0.65rem 1.5rem;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #3b82f6, #6366f1);
-        color: #fff;
-        font-weight: 600;
-        transition: transform 150ms ease, box-shadow 150ms ease;
+        padding: 0.75rem 1.5rem;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        transition: background 0.3s;
+        display: inline-block;
       }
-      .payment-status__btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.35);
+      .btn:hover {
+        background: #0056b3;
       }
     `,
-    ],
-    standalone: false
+  ],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PaymentSuccessComponent implements OnInit {
+  message: string = 'Payment Successful';
+  successMessage: string = 'Thank you for your purchase. Your transaction was completed successfully.';
+  isVerifying: boolean = true;
+  isPaymentVerified: boolean = false;
+  verificationError: string = '';
+  paymentDetails: any = null;
+  entityId: string = '';
+  eventId: string = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private publicAppService: PublicAppService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
   ngOnInit(): void {
-    if(this.isLoaing){
-      this.message="processing"
-    }else{
-      if(this.isSuccess){
-        this.message="Payment Successful"
-      }else{
-        this.message="failed"
+    // Get query parameters
+    this.route.queryParams.pipe(first()).subscribe(params => {
+      this.entityId = params['entityId'] || '';
+      this.eventId = params['eventId'] || '';
+      
+      console.log('✅ Payment success page - Entity ID:', this.entityId);
+      console.log('✅ Payment success page - Event ID:', this.eventId);
+      
+      if (this.entityId) {
+        // Verify payment status with backend
+        this.verifyPayment();
+      } else {
+        this.verificationError = 'Registration ID is missing. Please contact support.';
+        this.isVerifying = false;
+        this.cdr.markForCheck();
       }
-    }
+    });
   }
 
-  isSuccess:boolean=true;
-  isLoaing:boolean=false;
-  message:string='';
- 
+  verifyPayment(): void {
+    // Try to get eventId from sessionStorage if not in URL
+    if (!this.eventId && this.entityId) {
+      const storedEventId = sessionStorage.getItem('lastEventId');
+      if (storedEventId) {
+        this.eventId = storedEventId;
+        console.log('✅ Retrieved eventId from sessionStorage:', this.eventId);
+      }
+    }
+    
+    if (!this.eventId) {
+      // Cannot verify without eventId - show warning but assume success
+      console.warn('⚠️ Event ID is missing. Payment verification may be incomplete.');
+      this.verificationError = 'Event ID is missing. Payment verification may be incomplete.';
+      this.isVerifying = false;
+      this.isPaymentVerified = true; // Assume success if redirected here by PhonePe
+      this.message = 'Payment Successful';
+      this.cdr.markForCheck();
+      return;
+    }
 
+    // Verify payment status with backend
+    this.publicAppService.verifyPaymentStatus(this.eventId, this.entityId)
+      .pipe(first())
+      .subscribe({
+        next: (paymentData) => {
+          this.isVerifying = false;
+          
+          if (paymentData && paymentData.isPaymentCompleted) {
+            this.isPaymentVerified = true;
+            this.message = 'Payment Successful';
+            this.paymentDetails = paymentData;
+            console.log('✅ Payment verified successfully:', paymentData);
+          } else if (paymentData) {
+            // Registration exists but payment not completed yet
+            this.isPaymentVerified = false;
+            this.message = 'Payment Verification Pending';
+            this.paymentDetails = paymentData;
+            console.warn('⚠️ Payment verification pending:', paymentData);
+          } else {
+            // Registration not found
+            this.verificationError = 'Registration not found. Please contact support with your registration details.';
+            this.isPaymentVerified = false;
+            console.error('❌ Registration not found for entityId:', this.entityId);
+          }
+          
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.isVerifying = false;
+          this.verificationError = 'Unable to verify payment status. Please contact support.';
+          this.isPaymentVerified = false;
+          console.error('❌ Error verifying payment:', error);
+          this.cdr.markForCheck();
+        }
+      });
+  }
 }

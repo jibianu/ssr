@@ -445,6 +445,8 @@ export class PublicAppService {
     }
 
     // ✅ PERFORMANCE: Cache events list - frequently accessed
+    // NOTE: This returns ALL events (no ShowOnDashboard filter). Use getDashboardEvents() when you only want public-visible events.
+    // DISABLED CACHING: Events cache disabled to ensure immediate visibility updates when admin changes checkbox
     getEvents(): Observable<any> {
         if (this.isServer) {
             return this.http.get<any>(`${this.apiUrl}page/event`).pipe(
@@ -455,17 +457,41 @@ export class PublicAppService {
             );
         }
 
-        if (!this.eventsCache$) {
-            this.eventsCache$ = this.http.get<any>(`${this.apiUrl}page/event`).pipe(
-                shareReplay({ bufferSize: 1, refCount: true }),
+        // ✅ NO CACHING: Always fetch fresh data to ensure checkbox updates reflect immediately
+        // This ensures when admin checks/unchecks "Show On Dashboard", changes appear immediately
+        return this.http.get<any>(`${this.apiUrl}page/event`).pipe(
+            catchError(error => {
+                console.error('Error fetching events:', error);
+                return of([]); // ✅ ERROR HANDLING: Return empty array instead of throwing
+            })
+        );
+    }
+
+    /**
+     * Get ONLY events that should be shown publicly (ShowOnDashboard == true).
+     * Uses the backend-filtered endpoint to avoid client-side drift.
+     * NO CACHING: Always fetch fresh data to ensure instant visibility updates.
+     */
+    getDashboardEvents(): Observable<any> {
+        const endpoint = `${this.apiUrl}page/event/dashboard`;
+
+        if (this.isServer) {
+            return this.http.get<any>(endpoint).pipe(
                 catchError(error => {
-                    console.error('Error fetching events:', error);
-                    this.eventsCache$ = null; // ✅ ERROR HANDLING: Clear cache on error
-                    return of([]); // ✅ ERROR HANDLING: Return empty array instead of throwing
+                    console.error('Error fetching dashboard events:', error);
+                    return of([]);
                 })
             );
         }
-        return this.eventsCache$;
+
+        // ✅ NO CACHING: Always fetch fresh data to ensure instant updates when admin changes checkbox
+        // Component polls every 5 seconds, so caching would prevent fresh data
+        return this.http.get<any>(endpoint).pipe(
+            catchError(error => {
+                console.error('Error fetching dashboard events:', error);
+                return of([]); // Fallback to empty array
+            })
+        );
     }
 
     getUpcomingEvents(eventId: string): Observable<any> {
@@ -490,13 +516,164 @@ export class PublicAppService {
         );
     }
 
+    // Verify payment status for a registration
+    verifyPaymentStatus(eventId: string, registrationId: string): Observable<any> {
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        });
+        
+        // Get event users and find the specific registration
+        return this.http.get(`${this.apiUrl}page/event/users/${eventId}`, { headers }).pipe(
+            map((users: any[]) => {
+                // Find the user with matching ID
+                const user = Array.isArray(users) 
+                    ? users.find(u => u.id === registrationId || u.Id === registrationId)
+                    : null;
+                
+                if (user) {
+                    return {
+                        id: user.id || user.Id,
+                        isPaymentCompleted: user.isPaymentCompleted || user.IsPaymentCompleted || false,
+                        paymentRefNo: user.paymentRefNo || user.PaymentRefNo,
+                        email: user.email || user.Email,
+                        name: user.name || user.Name
+                    };
+                }
+                return null;
+            }),
+            catchError(error => {
+                console.error(`Error verifying payment status for ${registrationId}:`, error);
+                return of(null);
+            })
+        );
+    }
+
     createEventUser(eventId: string, eventUser: any): Observable<any> {
         // ✅ PERFORMANCE: Invalidate events cache on mutation
         this.eventsCache$ = null;
-        return this.http.post(`${this.apiUrl}page/event/users/${eventId}`, eventUser).pipe(
+        
+        // Ensure proper headers and data format
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        });
+        
+        console.log('Creating event user:', {
+            url: `${this.apiUrl}page/event/users/${eventId}`,
+            eventId: eventId,
+            data: eventUser
+        });
+        
+        return this.http.post(`${this.apiUrl}page/event/users/${eventId}`, eventUser, { headers }).pipe(
+            map((response: any) => {
+                // ✅ Ensure we return the response body directly
+                // Angular HttpClient automatically extracts body, but ensure consistency
+                console.log('✅ createEventUser raw response:', response);
+                console.log('✅ createEventUser response type:', typeof response);
+                console.log('✅ createEventUser response keys:', response ? Object.keys(response) : 'null');
+                
+                // Handle different response structures
+                // Backend returns EventUserResponse directly, but check for wrapping
+                if (response && typeof response === 'object') {
+                    // Check if paymentRefNo exists and is valid
+                    const paymentRefNo = response.paymentRefNo || response.PaymentRefNo;
+                    
+                    if (paymentRefNo && paymentRefNo !== null && paymentRefNo !== 'null' && paymentRefNo.trim() !== '') {
+                        console.log('✅ Payment URL found in response:', paymentRefNo);
+                    } else if (paymentRefNo === null || paymentRefNo === 'null') {
+                        // PhonePe API failed - backend returned null paymentRefNo
+                        console.error('❌ PhonePe API failure detected - paymentRefNo is null');
+                        console.error('❌ Registration was saved but payment gateway failed');
+                        console.warn('⚠️ Available properties:', Object.keys(response));
+                    } else {
+                        console.warn('⚠️ PaymentRefNo not found in response');
+                        console.warn('⚠️ Available properties:', Object.keys(response));
+                    }
+                }
+                
+                return response;
+            }),
             catchError(error => {
-                console.error(`Error creating event user for ${eventId}:`, error);
+                console.error(`❌ Error creating event user for ${eventId}:`, {
+                    error: error,
+                    status: error?.status,
+                    statusText: error?.statusText,
+                    message: error?.error?.message || error?.message,
+                    errorBody: error?.error,
+                    url: `${this.apiUrl}page/event/users/${eventId}`,
+                    requestData: eventUser
+                });
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling
+            })
+        );
+    }
+
+    // Initiate payment for a registration (separate endpoint if paymentRefNo is missing)
+    initiatePayment(eventId: string, registrationId: string): Observable<any> {
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        });
+        
+        console.log('🔄 Initiating payment separately:', {
+            url: `${this.apiUrl}page/event/payment/initiate/${eventId}/${registrationId}`,
+            eventId: eventId,
+            registrationId: registrationId
+        });
+        
+        return this.http.post(`${this.apiUrl}page/event/payment/initiate/${eventId}/${registrationId}`, {}, { headers }).pipe(
+            map((response: any) => {
+                console.log('✅ initiatePayment raw response:', response);
+                console.log('✅ initiatePayment response type:', typeof response);
+                console.log('✅ initiatePayment response keys:', response ? Object.keys(response) : 'null');
+                
+                // Extract payment URL from response (handle both camelCase and PascalCase)
+                const paymentUrl = response?.paymentUrl || response?.PaymentUrl || response?.paymentRefNo || response?.PaymentRefNo;
+                
+                if (paymentUrl && paymentUrl !== null && paymentUrl !== 'null' && paymentUrl.trim() !== '') {
+                    console.log('✅ Payment URL found in initiatePayment response:', paymentUrl);
+                    return { paymentUrl: paymentUrl.trim(), paymentRefNo: paymentUrl.trim() };
+                } else {
+                    console.warn('⚠️ Payment URL not found in initiatePayment response');
+                    console.warn('⚠️ Available properties:', Object.keys(response || {}));
+                    return { paymentUrl: null, paymentRefNo: null };
+                }
+            }),
+            catchError(error => {
+                // Enhanced error logging
+                const errorDetails = {
+                    error: error,
+                    status: error?.status,
+                    statusText: error?.statusText,
+                    message: error?.error?.message || error?.message,
+                    errorBody: error?.error,
+                    errorType: error?.error?.errorType,
+                    eventId: error?.error?.eventId,
+                    registrationId: error?.error?.registrationId,
+                    url: `${this.apiUrl}page/event/payment/initiate/${eventId}/${registrationId}`,
+                    requestParams: {
+                        eventId: eventId,
+                        registrationId: registrationId
+                    }
+                };
+                
+                console.error(`❌ Error initiating payment for ${registrationId}:`, errorDetails);
+                
+                // Log specific error scenarios
+                if (error?.status === 400) {
+                    console.error(`❌ 400 Bad Request - Backend validation failed or PhonePe API error`);
+                    console.error(`   Error message: ${error?.error?.message || 'Unknown error'}`);
+                    console.error(`   Error type: ${error?.error?.errorType || 'N/A'}`);
+                } else if (error?.status === 404) {
+                    console.error(`❌ 404 Not Found - Registration or Event not found`);
+                } else if (error?.status === 500) {
+                    console.error(`❌ 500 Server Error - Internal server error`);
+                } else if (!error?.status) {
+                    console.error(`❌ Network Error - Unable to reach backend API`);
+                }
+                
+                return of({ paymentUrl: null, paymentRefNo: null, error: errorDetails });
             })
         );
     }
@@ -506,6 +683,12 @@ export class PublicAppService {
         this.categoriesCache$ = null;
         this.dashboardCategoriesCache$ = null;
         this.eventsCache$ = null;
+    }
+
+    // ✅ Clear events cache specifically (useful when events are updated in admin)
+    invalidateEventsCache(): void {
+        this.eventsCache$ = null;
+        console.log('[PublicAppService] Events cache invalidated');
     }
 }
 

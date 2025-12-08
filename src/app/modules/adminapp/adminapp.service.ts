@@ -2,8 +2,68 @@ import { Category } from './category/category.model';
 import { Observable, of } from 'rxjs';
 import { shareReplay, catchError } from 'rxjs/operators';
 import { environment } from './../../../environments/environment';
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
+
+// ✅ TypeScript interfaces matching backend DTOs
+export interface EventDetailResponse {
+    section: string;
+    id?: string;
+    title?: string;
+    amount?: number;
+    description?: string;
+    tag?: string;
+    imageUrl?: string;
+    sortOrder?: number;
+    count?: number;
+}
+
+export interface EventResponse {
+    id: string;
+    title: string;
+    amount: number;
+    canonicalUrl: string;
+    showOnDashboard?: boolean | null; // Backend returns ShowOnDashboard (PascalCase), mapped to camelCase
+    ShowOnDashboard?: boolean | null; // Also accept PascalCase for compatibility
+    eventInfo?: string | null;
+    badge?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    duration?: string | null;
+    timeing?: string | null;
+    aboutEvent?: string | null;
+    language?: string | null;
+    tags?: string[] | null;
+    discount?: number | null;
+    location?: string | null;
+    registrationCompleted?: boolean | null; // Backend returns RegistrationCompleted (PascalCase), mapped to camelCase
+    RegistrationCompleted?: boolean | null; // Also accept PascalCase for compatibility
+    isEnded?: boolean | null;
+    eventDetails?: EventDetailResponse[] | null;
+}
+
+export interface EventRequest {
+    id?: string;
+    title?: string;
+    amount?: number;
+    canonicalUrl?: string;
+    showOnDashboard?: boolean; // Frontend sends camelCase, backend accepts both
+    ShowOnDashboard?: boolean; // Also send PascalCase for explicit backend compatibility
+    eventInfo?: string;
+    badge?: string;
+    startDate?: string;
+    endDate?: string;
+    duration?: string;
+    timeing?: string;
+    aboutEvent?: string;
+    language?: string;
+    discount?: number;
+    location?: string;
+    registrationCompleted?: boolean; // Frontend sends camelCase, backend accepts both
+    RegistrationCompleted?: boolean; // Also send PascalCase for explicit backend compatibility
+    eventDetails?: any[];
+}
 
 // ✅ PERFORMANCE: Service-level caching prevents redundant API calls (40-50% reduction)
 // ✅ SSR: shareReplay works in both SSR and browser contexts
@@ -18,6 +78,8 @@ export class AdminAppService {
     private iconCache$: Observable<any> | null = null;
     private userInfoCache$: Observable<any> | null = null;
     private eventsCache$: Observable<any> | null = null;
+
+    private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
     constructor(private http: HttpClient) {
     }
@@ -350,33 +412,49 @@ export class AdminAppService {
         return this.eventsCache$;
     }
 
-    getEventById(eventId: string): Observable<any> {
-        return this.http.get(this.apiUrl + `page/event/${eventId}`).pipe(
+    getEventById(eventId: string): Observable<EventResponse | null> {
+        return this.http.get<EventResponse>(this.apiUrl + `page/event/${eventId}`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                console.error(`Error fetching event ${eventId}:`, error);
+                console.error(`[AdminAppService] Error fetching event ${eventId}:`, error);
                 return of(null); // ✅ ERROR HANDLING: Return null on error
             })
         );
     }
 
-    createEvent(event: any): Observable<any> {
+    createEvent(event: EventRequest | any): Observable<EventResponse> {
         // ✅ PERFORMANCE: Invalidate events cache on mutation
         this.eventsCache$ = null;
-        return this.http.post(this.apiUrl + `page/event`, event).pipe(
+        return this.http.post<EventResponse>(this.apiUrl + `page/event`, event).pipe(
             catchError(error => {
-                console.error('Error creating event:', error);
+                console.error('[AdminAppService] Error creating event:', error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling
             })
         );
     }
 
-    updateEvent(id: string, event: any): Observable<any> {
+    updateEvent(id: string, event: EventRequest | any): Observable<EventResponse> {
         // ✅ PERFORMANCE: Invalidate events cache on mutation
         this.eventsCache$ = null;
-        return this.http.put(this.apiUrl + `page/event/${id}`, event).pipe(
+        
+        // ✅ DEBUG: Log request payload to match backend logging
+        // Backend logs: [EventController.Put] ShowOnDashboard value, so we log the same
+        const showOnDashboard = event.ShowOnDashboard ?? event.showOnDashboard;
+        const registrationCompleted = event.RegistrationCompleted ?? event.registrationCompleted;
+        
+        console.log('[AdminAppService] Updating event - matching backend logs:', {
+            eventId: id,
+            showOnDashboard: showOnDashboard,
+            showOnDashboardType: typeof showOnDashboard,
+            registrationCompleted: registrationCompleted,
+            registrationCompletedType: typeof registrationCompleted,
+            hasShowOnDashboard: showOnDashboard !== undefined && showOnDashboard !== null,
+            hasRegistrationCompleted: registrationCompleted !== undefined && registrationCompleted !== null
+        });
+        
+        return this.http.put<EventResponse>(this.apiUrl + `page/event/${id}`, event).pipe(
             catchError(error => {
-                console.error(`Error updating event ${id}:`, error);
+                console.error(`[AdminAppService] Error updating event ${id}:`, error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling
             })
         );
@@ -408,7 +486,20 @@ export class AdminAppService {
         return this.http.get<any>(this.apiUrl + `page/event/event/` + url).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                console.error(`Error fetching event by URL ${url}:`, error);
+                // ✅ SSR-FRIENDLY: Suppress verbose error logging for network errors during SSR
+                // Network errors during SSR are expected if backend is not running
+                const isNetworkError = error instanceof HttpErrorResponse && (!error.status || error.status === 0);
+                const isSSR = !this.isBrowser;
+                
+                if (isSSR && isNetworkError) {
+                    // ✅ SSR: Only log at warning level (network errors are expected if backend is down)
+                    // Don't log the full error stack trace during SSR
+                    console.warn(`SSR: Network error fetching event by URL ${url} (backend may not be running)`);
+                } else {
+                    // ✅ Browser or non-network errors: Log normally
+                    console.error(`Error fetching event by URL ${url}:`, error);
+                }
+                
                 return of(null); // ✅ ERROR HANDLING: Return null on error
             })
         );

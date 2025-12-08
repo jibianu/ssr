@@ -1,14 +1,11 @@
 <div class="event-details" *ngIf="event">
-  <section class="event-hero" [style.background-image]="'url(' + bgImage + ')'">
+  <section class="event-hero" [style.background-image]="'url(' + getEventImage() + ')'" role="banner" aria-label="Event header">
     <div class="event-hero__overlay">
       <div class="hero-container">
         <div class="hero-grid">
           <div class="hero-main">
             <span class="hero-badge" *ngIf="event?.badge">{{ event.badge }}</span>
             <h1 class="hero-title">{{ event?.title }}</h1>
-            <p class="hero-subtitle">
-              {{ getValue('description', 'summary', 'description') || event?.subTitle || event?.aboutEvent }}
-            </p>
 
             <div class="hero-meta">
               <div class="hero-meta__item" *ngIf="event?.startDate">
@@ -345,46 +342,487 @@
       </div>
     </aside>
   </div>
+
+  <!-- Certificate Section -->
+  <section class="certificate-section">
+    <div class="certificate-container">
+      <div class="certificate-content">
+        <h2 class="certificate-title">Earn A Career Certificate</h2>
+        <ul class="certificate-benefits">
+          <li>
+            <i class="fa fa-check-circle"></i>
+            Add this credential to your LinkedIn profile, resume, or CV
+          </li>
+          <li>
+            <i class="fa fa-check-circle"></i>
+            Share it on social media and in your performance review
+          </li>
+        </ul>
+      </div>
+      <div class="certificate-preview">
+        <div class="certificate-sample">
+          <div class="certificate-watermark">SAMPLE</div>
+          <div class="certificate-header">
+            <div class="certificate-logo">
+              <img 
+                [src]="getLogoUrl()" 
+                alt="Oilandgas Club Logo" 
+                class="logo-image"
+                loading="lazy"
+                (error)="onLogoError($event)"
+              />
+            </div>
+          </div>
+          <div class="certificate-body">
+            <h3 class="certificate-main-title">CERTIFICATE</h3>
+            <p class="certificate-subtitle">of Completion</p>
+            <p class="certificate-text">This Certificate is Proudly Presented to the honorable achievement to</p>
+            <p class="certificate-name">PARTICIPANT NAME</p>
+            <p class="certificate-description">
+              Has successfully completed the training program of <strong>{{ event?.title || 'Event Training Program' }}</strong>.
+              The Program has Conducted during the period of {{ event?.startDate | date: 'dd MMM yyyy' }} to {{ event?.endDate ? (event.endDate | date: 'dd MMM yyyy') : 'Completion' }}.
+            </p>
+          </div>
+          <div class="certificate-footer">
+            <div class="certificate-seal">
+              <div class="seal-circle"></div>
+              <p class="seal-text">CENTER MANAGER</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <ng-template #longContent let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title">Register for {{ event?.title }}</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('close')"></button>
+  <!-- Checkout Header -->
+  <div class="checkout-header" *ngIf="event">
+    <button type="button" class="back-btn" aria-label="Go back" (click)="modal.dismiss('Back click')">
+      <i class="fa fa-arrow-left"></i>
+    </button>
+    <div class="checkout-title-section">
+      <h2 class="checkout-title">Checkout</h2>
+      <p class="checkout-timer" *ngIf="event?.startDate">
+        Time left {{ getTimeRemaining(event.startDate) }}
+      </p>
+    </div>
   </div>
-  <div class="modal-body">
-    <form [formGroup]="eventUserForm" (ngSubmit)="paymentProcess()">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Full name</label>
-          <input class="form-control" formControlName="name" type="text" placeholder="Jane Doe" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Email</label>
-          <input class="form-control" formControlName="email" type="email" placeholder="jane@email.com" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Mobile</label>
-          <input class="form-control" formControlName="mobile" type="tel" placeholder="+91 98765 43210" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Company</label>
-          <input class="form-control" formControlName="companyName" type="text" placeholder="Organisation name" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Designation</label>
-          <input class="form-control" formControlName="designation" type="text" placeholder="Role" />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Department</label>
-          <input class="form-control" formControlName="department" type="text" placeholder="Department" />
+
+  <div class="modal-body checkout-body" *ngIf="event">
+    <!-- Event Details Card -->
+    <div class="event-card-summary">
+      <div class="event-thumbnail">
+        <img [src]="getEventImage()" [alt]="event?.title" *ngIf="getEventImage(); else defaultThumbnail" />
+        <ng-template #defaultThumbnail>
+          <div class="default-thumbnail">
+            <i class="fa fa-calendar"></i>
+          </div>
+        </ng-template>
+      </div>
+      <div class="event-info">
+        <h3 class="event-title-truncated">{{ event?.title || 'Event Registration' }}</h3>
+        <p class="event-price">₹{{ (event?.amount || 0) | number: '1.2-2' }}</p>
+      </div>
+    </div>
+
+    <!-- Contact Information Section -->
+    <div class="contact-section">
+      <div class="section-header">
+        <h3 class="section-title">Contact information</h3>
+        <div class="header-actions">
+          <a href="#" class="login-link">Log in</a> for a faster experience.
+          <span class="required-indicator">* Required</span>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancel')">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="eventUserForm.invalid">Register</button>
+
+      <form class="checkout-form" [formGroup]="eventUserForm" id="eventRegistrationForm">
+        <!-- First Row: First Name and Surname -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-firstname">
+              First name<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-firstname" 
+              formControlName="firstName" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('firstName')?.invalid && eventUserForm.get('firstName')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('firstName')?.invalid && eventUserForm.get('firstName')?.touched">
+              First name is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-surname">
+              Surname<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-surname" 
+              formControlName="surname" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('surname')?.invalid && eventUserForm.get('surname')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('surname')?.invalid && eventUserForm.get('surname')?.touched">
+              Surname is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row: Email and Confirm Email -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-email">
+              Email address<span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="reg-email" 
+              formControlName="email" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched">
+              <span *ngIf="eventUserForm.get('email')?.errors?.['required']">Email is required</span>
+              <span *ngIf="eventUserForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-confirm-email">
+              Confirm email<span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="reg-confirm-email" 
+              formControlName="confirmEmail" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('confirmEmail')?.invalid && eventUserForm.get('confirmEmail')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('confirmEmail')?.invalid && eventUserForm.get('confirmEmail')?.touched">
+              <span *ngIf="eventUserForm.get('confirmEmail')?.errors?.['required']">Please confirm your email</span>
+              <span *ngIf="eventUserForm.get('confirmEmail')?.errors?.['emailMismatch']">Emails do not match</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Third Row: Mobile Number and Company Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-mobile">
+              Mobile Number<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-mobile" 
+              formControlName="mobile" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched">
+              Mobile number is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-company">
+              Company Name<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-company" 
+              formControlName="companyName" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched">
+              Company name is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Fourth Row: Designation and Department -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-designation">
+              Designation<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-designation" 
+              formControlName="designation" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched">
+              Designation is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-department">
+              Department<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-department" 
+              formControlName="department" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched">
+              Department is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Consent Checkboxes -->
+        <div class="consent-section">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="newsletterUpdates" checked />
+            <span>Keep me updated on more events and news from this event organiser.</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="nearbyEvents" />
+            <span>Send me emails about the best events happening nearby or online.</span>
+          </label>
+        </div>
+
+        <!-- Terms of Service -->
+        <div class="terms-section">
+          <p class="terms-text">
+            By selecting Register, I agree to the 
+            <a href="/terms-and-conditions" class="terms-link" (click)="openTermsAndConditions($event)">Terms of Service</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Button Footer -->
+  <div class="modal-footer checkout-footer" *ngIf="event">
+    <button 
+      type="button" 
+      class="btn-register" 
+      [disabled]="eventUserForm.invalid || isSubmitting"
+      (click)="paymentProcess()"
+    >
+      <span *ngIf="!isSubmitting">Register</span>
+      <span *ngIf="isSubmitting">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Processing...
+      </span>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #registrationsection>
+  <form class="form-wrapper" [formGroup]="eventUserForm" id="eventRegistrationForm">
+    <!-- Name Field -->
+    <div class="form-group">
+      <label for="reg-name">
+        <i class="fa fa-user"></i>
+        Full Name <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-name" 
+        formControlName="name" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('name')?.invalid && eventUserForm.get('name')?.touched"
+        placeholder="Enter your full name"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('name')?.invalid && eventUserForm.get('name')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Name is required
       </div>
-    </form>
+    </div>
+
+    <!-- Email Field -->
+    <div class="form-group">
+      <label for="reg-email">
+        <i class="fa fa-envelope"></i>
+        Work Email ID <span class="required">*</span>
+      </label>
+      <input 
+        type="email" 
+        id="reg-email" 
+        formControlName="email" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched"
+        placeholder="your.email@company.com"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched">
+        <i class="fa fa-exclamation-circle"></i>
+        <span *ngIf="eventUserForm.get('email')?.errors?.['required']">Email is required</span>
+        <span *ngIf="eventUserForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+      </div>
+    </div>
+
+    <!-- Mobile Number Field -->
+    <div class="form-group">
+      <label for="reg-mobile">
+        <i class="fa fa-phone"></i>
+        Mobile Number <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-mobile" 
+        formControlName="mobile" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched"
+        placeholder="+91 98765 43210"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Mobile number is required
+      </div>
+    </div>
+
+    <!-- Company Name Field -->
+    <div class="form-group">
+      <label for="reg-company">
+        <i class="fa fa-building"></i>
+        Company Name <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-company" 
+        formControlName="companyName" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched"
+        placeholder="Enter your company name"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Company name is required
+      </div>
+    </div>
+
+    <!-- Designation Field -->
+    <div class="form-group">
+      <label for="reg-designation">
+        <i class="fa fa-briefcase"></i>
+        Designation <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-designation" 
+        formControlName="designation" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched"
+        placeholder="Your job title"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Designation is required
+      </div>
+    </div>
+
+    <!-- Department Field -->
+    <div class="form-group">
+      <label for="reg-department">
+        <i class="fa fa-sitemap"></i>
+        Department <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-department" 
+        formControlName="department" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched"
+        placeholder="Your department"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Department is required
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #ticketDetails>
+  <div class="ticket-details-wrapper">
+    <div class="ticket-header">
+      <i class="fa fa-ticket"></i>
+      <h5>Ticket Details</h5>
+    </div>
+    <div class="ticket-info">
+      <div class="ticket-info-item">
+        <div class="ticket-icon">
+          <i class="fa fa-map-marker"></i>
+        </div>
+        <div class="ticket-text">
+          <span class="ticket-label">Location</span>
+          <span class="ticket-value">{{ getValue('location', 'city', 'description') || event?.locationName || 'Online' }}</span>
+        </div>
+      </div>
+      <div class="ticket-info-item">
+        <div class="ticket-icon">
+          <i class="fa fa-calendar"></i>
+        </div>
+        <div class="ticket-text">
+          <span class="ticket-label">Date</span>
+          <span class="ticket-value">{{ event?.startDate | date: 'dd MMMM, yyyy' }} Onwards</span>
+        </div>
+      </div>
+      <div class="ticket-info-item">
+        <div class="ticket-icon">
+          <i class="fa fa-users"></i>
+        </div>
+        <div class="ticket-text">
+          <span class="ticket-label">Attendees</span>
+          <span class="ticket-value"><strong>1</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #totalTemplate let-fromSide="fromSide">
+  <div class="ticket-details-wrapper">
+    <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+      <div>Gross Amount</div>
+      <div class="ticket-subtext">&#8377;{{ ((event?.amount || 0) + (event?.discount || 0)) | number: '1.2-2' }}</div>
+    </div>
+    <div class="ticket-subtext-md d-flex justify-content-between align-items-center" *ngIf="event?.discount">
+      <div>Discount</div>
+      <div class="ticket-subtext">- &#8377;{{ (event?.discount || 0) | number: '1.2-2' }}</div>
+    </div>
+    <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+      <div>Total Amount</div>
+      <div class="total-val">&#8377;{{ (event?.amount || 0) | number: '1.2-2' }}</div>
+    </div>
+    <button 
+      *ngIf="!fromSide" 
+      type="button" 
+      class="btn-payment" 
+      [disabled]="eventUserForm.invalid || isSubmitting"
+      (click)="paymentProcess()"
+    >
+      <span *ngIf="!isSubmitting">
+        <i class="fa fa-credit-card"></i>
+        Proceed to Payment
+      </span>
+      <span *ngIf="isSubmitting">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Processing...
+      </span>
+    </button>
+    <button 
+      *ngIf="fromSide && event?.isEnded != true" 
+      type="button" 
+      class="btn btn-light form-control mt-3" 
+      (click)="openRegisterModal(longContent)"
+    >
+      Register Now
+    </button>
   </div>
 </ng-template>
 

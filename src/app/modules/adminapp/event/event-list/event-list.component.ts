@@ -126,12 +126,18 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   sortArr(colName: any) {
     this.filteredCategories.sort((a, b) => {
-      a = a[colName].toLowerCase();
-      b = b[colName].toLowerCase();
-      if (a < b) {
+      // ✅ FIX: Handle null/undefined values and different data types
+      const aValue = a[colName];
+      const bValue = b[colName];
+      
+      // Handle null/undefined values - treat them as empty strings
+      const aStr = aValue == null ? '' : String(aValue).toLowerCase();
+      const bStr = bValue == null ? '' : String(bValue).toLowerCase();
+      
+      if (aStr < bStr) {
         return -1 * this.sortDir;
       }
-      else if (a > b) {
+      else if (aStr > bStr) {
         return 1 * this.sortDir;
       }
       else {

@@ -91,8 +91,9 @@ export class AddEventComponent implements OnInit, OnDestroy {
             duration: [''],
             timeing: [''],
             aboutEvent: [''],
-            registrationCompleted:false,
-            showOnDashboard: false,
+            // ✅ FIX: Use FormControl for checkboxes to ensure proper binding
+            registrationCompleted: [false],
+            showOnDashboard: [false], // ✅ Explicitly use FormControl array syntax
             eventDetails: new FormArray([
             ])
         });
@@ -122,7 +123,48 @@ export class AddEventComponent implements OnInit, OnDestroy {
     getEventById(id) {
         this.subscription.add(this.appService.getEventById(id).subscribe((res: any) => {
             if (res) {
-                this.eventForm.patchValue(res);
+                // ✅ FIX: Handle both camelCase and PascalCase for showOnDashboard
+                // Backend may return ShowOnDashboard (PascalCase), form expects showOnDashboard (camelCase)
+                const showOnDashboardValue = res.showOnDashboard !== undefined 
+                    ? res.showOnDashboard 
+                    : (res.ShowOnDashboard !== undefined ? res.ShowOnDashboard : false);
+                
+                const registrationCompletedValue = res.registrationCompleted !== undefined
+                    ? res.registrationCompleted
+                    : (res.RegistrationCompleted !== undefined ? res.RegistrationCompleted : false);
+                
+                // Convert to proper boolean (handle all possible formats)
+                const showOnDashboardBool = showOnDashboardValue === true || showOnDashboardValue === 'true' || showOnDashboardValue === 1 || showOnDashboardValue === '1';
+                const registrationCompletedBool = registrationCompletedValue === true || registrationCompletedValue === 'true' || registrationCompletedValue === 1 || registrationCompletedValue === '1';
+                
+                // ✅ DEBUG: Log loaded values
+                console.log('[AddEventComponent] Event loaded - checkbox values:', {
+                    rawShowOnDashboard: showOnDashboardValue,
+                    rawShowOnDashboardType: typeof showOnDashboardValue,
+                    convertedShowOnDashboard: showOnDashboardBool,
+                    rawRegistrationCompleted: registrationCompletedValue,
+                    convertedRegistrationCompleted: registrationCompletedBool
+                });
+                
+                // Patch form with normalized field names
+                this.eventForm.patchValue({
+                    ...res,
+                    showOnDashboard: showOnDashboardBool,
+                    registrationCompleted: registrationCompletedBool
+                });
+                
+                // ✅ CRITICAL FIX: Explicitly set form control values to ensure binding
+                // This ensures the checkbox UI reflects the correct state
+                const showOnDashboardControl = this.eventForm.get('showOnDashboard');
+                const registrationCompletedControl = this.eventForm.get('registrationCompleted');
+                if (showOnDashboardControl) {
+                    showOnDashboardControl.setValue(showOnDashboardBool, { emitEvent: false });
+                    console.log('[AddEventComponent] Set showOnDashboard control value:', showOnDashboardBool);
+                }
+                if (registrationCompletedControl) {
+                    registrationCompletedControl.setValue(registrationCompletedBool, { emitEvent: false });
+                }
+                
                 try {
                     this.eventForm.patchValue({
                         startDate: new Date(res.startDate).toISOString().split('T')[0],
@@ -132,6 +174,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 catch (e) {
                     console.log(e);
                 }
+                
+                // ✅ DEBUG: Log final form state
+                console.log('[AddEventComponent] Event loaded - final form state:', {
+                    id: res.id,
+                    showOnDashboard: this.eventForm.get('showOnDashboard')?.value,
+                    registrationCompleted: this.eventForm.get('registrationCompleted')?.value
+                });
                 if (res.eventDetails && res.eventDetails.length > 0) {
                     this.eventForm.setControl('eventDetails', this.formBuilder.array(
                         res.eventDetails.map((item) => {
@@ -187,15 +236,77 @@ export class AddEventComponent implements OnInit, OnDestroy {
         this.loading = true;
         if (this.eventId && !this.isNew) {
             // Update event
-            const formData = {
-                ...this.eventForm.value,
-                id: this.eventId
+            // ✅ CRITICAL FIX: Explicitly read checkbox value from form control
+            const showOnDashboardControl = this.eventForm.get('showOnDashboard');
+            const registrationCompletedControl = this.eventForm.get('registrationCompleted');
+            
+            // Get raw values from form controls
+            const showOnDashboardValue = showOnDashboardControl ? showOnDashboardControl.value : false;
+            const registrationCompletedValue = registrationCompletedControl ? registrationCompletedControl.value : false;
+            
+            // Convert to proper boolean (handle string 'true', number 1, etc.)
+            const showOnDashboardBool = showOnDashboardValue === true || showOnDashboardValue === 'true' || showOnDashboardValue === 1 || showOnDashboardValue === '1';
+            const registrationCompletedBool = registrationCompletedValue === true || registrationCompletedValue === 'true' || registrationCompletedValue === 1 || registrationCompletedValue === '1';
+            
+            // ✅ CRITICAL FIX: Build payload with explicit field mapping
+            const formValue = this.eventForm.value;
+            const formData: any = {
+                ...formValue,
+                id: this.eventId,
+                // ✅ CRITICAL: Backend expects PascalCase (ShowOnDashboard) as nullable bool
+                // Explicitly set to boolean value (not undefined/null) to ensure AutoMapper processes it
+                // TypeScript sends boolean, backend C# receives it as bool?
+                ShowOnDashboard: showOnDashboardBool,
+                // Also include camelCase for consistency (but backend uses PascalCase)
+                showOnDashboard: showOnDashboardBool,
+                // ✅ Also fix registrationCompleted
+                RegistrationCompleted: registrationCompletedBool,
+                registrationCompleted: registrationCompletedBool
             };
+            
+            // ✅ CRITICAL: Ensure ShowOnDashboard is always explicitly set (true or false, never null/undefined)
+            // This ensures the backend receives a clear boolean value
+            if (formData.ShowOnDashboard === undefined || formData.ShowOnDashboard === null) {
+                formData.ShowOnDashboard = false;
+            }
+            if (formData.RegistrationCompleted === undefined || formData.RegistrationCompleted === null) {
+                formData.RegistrationCompleted = false;
+            }
+            
+            // ✅ DEBUG: Log checkbox state before update
+            console.log('[AddEventComponent] Checkbox state before update:', {
+                showOnDashboardControl: showOnDashboardControl?.value,
+                showOnDashboardControlType: typeof showOnDashboardControl?.value,
+                showOnDashboardBool: showOnDashboardBool,
+                registrationCompletedControl: registrationCompletedControl?.value,
+                registrationCompletedBool: registrationCompletedBool
+            });
+            
+            // ✅ DEBUG: Log payload being sent
+            console.log('[AddEventComponent] Payload sent to backend:', {
+                id: formData.id,
+                showOnDashboard: formData.showOnDashboard,
+                ShowOnDashboard: formData.ShowOnDashboard,
+                registrationCompleted: formData.registrationCompleted,
+                RegistrationCompleted: formData.RegistrationCompleted,
+                allFormValues: formValue
+            });
+            
             this.subscription.add(this.appService.updateEvent(this.eventId, formData).subscribe({
                 next: (response) => {
                     this.loading = false;
                     this.submitted = false;
                     this.toasterService.showSuccess('Event updated successfully');
+                    
+                    // ✅ DEBUG: Log response to verify backend returned correct values
+                    console.log('[AddEventComponent] Event update response received:', {
+                        id: response?.id,
+                        showOnDashboard: response?.showOnDashboard ?? response?.ShowOnDashboard,
+                        ShowOnDashboard: response?.ShowOnDashboard,
+                        registrationCompleted: response?.registrationCompleted ?? response?.RegistrationCompleted,
+                        RegistrationCompleted: response?.RegistrationCompleted,
+                        fullResponse: response
+                    });
                     
                     // Update form immediately with submitted data (optimistic update)
                     this.updateFormWithSubmittedData(formData);
@@ -378,7 +489,36 @@ export class AddEventComponent implements OnInit, OnDestroy {
                             if (res && res.id) {
                                 // Successfully received data - reuse getEventById logic
                                 this.resetFormArrays();
-                                this.eventForm.patchValue(res);
+                                
+                                // ✅ FIX: Handle both camelCase and PascalCase for showOnDashboard
+                                const showOnDashboardValue = res.showOnDashboard !== undefined 
+                                    ? res.showOnDashboard 
+                                    : (res.ShowOnDashboard !== undefined ? res.ShowOnDashboard : false);
+                                
+                                const registrationCompletedValue = res.registrationCompleted !== undefined
+                                    ? res.registrationCompleted
+                                    : (res.RegistrationCompleted !== undefined ? res.RegistrationCompleted : false);
+                                
+                                // Convert to proper boolean
+                                const showOnDashboardBool = showOnDashboardValue === true || showOnDashboardValue === 'true' || showOnDashboardValue === 1 || showOnDashboardValue === '1';
+                                const registrationCompletedBool = registrationCompletedValue === true || registrationCompletedValue === 'true' || registrationCompletedValue === 1 || registrationCompletedValue === '1';
+                                
+                                // Patch form with normalized field names
+                                this.eventForm.patchValue({
+                                    ...res,
+                                    showOnDashboard: showOnDashboardBool,
+                                    registrationCompleted: registrationCompletedBool
+                                });
+                                
+                                // ✅ CRITICAL FIX: Explicitly set form control values after reload
+                                const showOnDashboardControl = this.eventForm.get('showOnDashboard');
+                                const registrationCompletedControl = this.eventForm.get('registrationCompleted');
+                                if (showOnDashboardControl) {
+                                    showOnDashboardControl.setValue(showOnDashboardBool, { emitEvent: false });
+                                }
+                                if (registrationCompletedControl) {
+                                    registrationCompletedControl.setValue(registrationCompletedBool, { emitEvent: false });
+                                }
                                 
                                 // Handle date formatting
                                 try {
