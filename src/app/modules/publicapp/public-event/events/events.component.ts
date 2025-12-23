@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, of, interval } from 'rxjs';
-import { catchError, tap, switchMap, startWith } from 'rxjs/operators';
+import { Observable, of, interval, Subscription } from 'rxjs';
+import { catchError, tap, switchMap, startWith, takeUntil } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 
 @Component({
@@ -21,6 +21,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   events$: Observable<any[]>;
   private readonly isBrowser: boolean;
   private visibilityChangeListener?: () => void;
+  private eventsSubscription?: Subscription;
 
   constructor(
     private publicAppService: PublicAppService,
@@ -38,17 +39,32 @@ export class EventsComponent implements OnInit, OnDestroy {
     // ✅ BACKEND FILTERING: Use getDashboardEvents() which filters on backend
     // Backend already filters by ShowOnDashboard = true, so no client-side filtering needed
     // Auto-refreshes every 5 seconds to catch admin updates instantly
+    // ✅ SSR FIX: Guard service calls to prevent injector destroyed errors
     this.events$ = refreshInterval$.pipe(
       switchMap(() => {
+        // ✅ SSR FIX: Only make service calls if not destroyed and in browser context
+        if (!this.isBrowser) {
+          // SSR: Return empty array immediately without service call
+          return of([]);
+        }
+        
+        // Browser: Make service call
+        if (this.isBrowser) {
         console.log('[EventsComponent] Refreshing events from backend...');
+        }
         return this.publicAppService.getDashboardEvents().pipe(
           catchError(error => {
+            // ✅ SSR FIX: Only log errors in browser
+            if (this.isBrowser) {
             console.error('[EventsComponent] Error fetching dashboard events:', error);
+            }
             return of([]); // Return empty array on error to keep polling
           })
         );
       }),
       tap((events: any[]) => {
+        // ✅ SSR FIX: Only log in browser context
+        if (this.isBrowser) {
         // Debug: Log events received from backend (already filtered)
         console.log(`[EventsComponent] Events received from backend (already filtered): ${events?.length || 0}`);
         if (events && events.length > 0) {
@@ -57,10 +73,14 @@ export class EventsComponent implements OnInit, OnDestroy {
             showOnDashboard: events[0].showOnDashboard,
             ShowOnDashboard: events[0].ShowOnDashboard
           });
+          }
         }
       }),
       catchError(error => {
+        // ✅ SSR FIX: Only log errors in browser
+        if (this.isBrowser) {
         console.error('[EventsComponent] Error loading events:', error);
+        }
         return of([]);
       })
     );
@@ -82,9 +102,17 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // ✅ SSR FIX: Clean up all subscriptions to prevent injector destroyed errors
+    // Note: async pipe handles unsubscription automatically, but we guard here for safety
+    if (this.eventsSubscription) {
+      this.eventsSubscription.unsubscribe();
+      this.eventsSubscription = undefined;
+    }
+    
     // Clean up visibility change listener
     if (this.isBrowser && this.visibilityChangeListener && typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.visibilityChangeListener);
+      this.visibilityChangeListener = undefined;
     }
   }
 

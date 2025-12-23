@@ -1,47 +1,63 @@
 <div class="event-details" *ngIf="event">
-  <section class="event-hero" [style.background-image]="'url(' + getEventImage() + ')'" role="banner" aria-label="Event header">
-    <div class="event-hero__overlay">
-      <div class="hero-container">
-        <div class="hero-grid">
-          <div class="hero-main">
-            <span class="hero-badge" *ngIf="event?.badge">{{ event.badge }}</span>
-            <h1 class="hero-title">{{ event?.title }}</h1>
+  <section class="event-hero" role="banner" aria-label="Event header">
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-header">
+          <span class="hero-badge" *ngIf="event?.badge">
+            <i class="fa fa-star"></i>
+            {{ event.badge }}
+          </span>
+          <h1 class="hero-title">{{ event?.title }}</h1>
+        </div>
 
-            <div class="hero-meta">
-              <div class="hero-meta__item" *ngIf="event?.startDate">
-                <div class="hero-meta__icon">
-                  <i class="fa fa-calendar"></i>
-                </div>
-                <div>
-                  <span class="label">Starts</span>
-                  <span class="value">
-                    {{ event.startDate | date: 'fullDate' }}
-                    <ng-container *ngIf="event?.startTime"> • {{ event.startTime }}</ng-container>
-                  </span>
-                </div>
-              </div>
-              <div class="hero-meta__item">
-                <div class="hero-meta__icon">
-                  <i class="fa fa-map-marker"></i>
-                </div>
-                <div>
-                  <span class="label">Location</span>
-                  <span class="value">
-                    {{ getValue('location', 'city', 'description') || event?.locationName || 'Online' }}
-                  </span>
-                </div>
-              </div>
-              <div class="hero-meta__item" *ngIf="event?.duration">
-                <div class="hero-meta__icon">
-                  <i class="fa fa-clock-o"></i>
-                </div>
-                <div>
-                  <span class="label">Duration</span>
-                  <span class="value">{{ event.duration }}</span>
-                </div>
-              </div>
+        <div class="hero-meta">
+          <div class="hero-meta__item" *ngIf="event?.startDate">
+            <div class="hero-meta__icon hero-meta__icon--calendar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="18" rx="2" fill="#3B82F6" opacity="0.2"/>
+                <path d="M3 8h18M7 3v5M17 3v5" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <rect x="7" y="12" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="12" y="12" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="17" y="12" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="7" y="17" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="12" y="17" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+              </svg>
             </div>
-
+            <div class="hero-meta__content">
+              <span class="label">Starts</span>
+              <span class="value">
+                {{ event.startDate | date: 'fullDate' }}
+                <ng-container *ngIf="event?.startTime"> • {{ event.startTime }}</ng-container>
+              </span>
+            </div>
+          </div>
+          <div class="hero-meta__item">
+            <div class="hero-meta__icon hero-meta__icon--location">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#10B981" opacity="0.2"/>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="9" r="3" fill="#10B981"/>
+              </svg>
+            </div>
+            <div class="hero-meta__content">
+              <span class="label">Location</span>
+              <span class="value">
+                {{ getValue('location', 'city', 'description') || event?.locationName || 'Online' }}
+              </span>
+            </div>
+          </div>
+          <div class="hero-meta__item" *ngIf="event?.duration">
+            <div class="hero-meta__icon hero-meta__icon--clock">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="#F59E0B" opacity="0.2"/>
+                <circle cx="12" cy="12" r="10" stroke="#F59E0B" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="hero-meta__content">
+              <span class="label">Duration</span>
+              <span class="value">{{ event.duration }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -50,35 +66,6 @@
 
   <section class="event-summary">
     <div class="summary-container">
-      <ng-container *ngIf="(getInfo('organized') || []) as hostList">
-        <article class="summary-card" *ngIf="hostList.length > 0; else whyAttend">
-          <h2>Meet your host</h2>
-          <div class="host-card">
-            <img
-              class="host-card__avatar"
-              [src]="hostList[0]?.imageUrl || 'assets/img/placeholder-avatar.png'"
-              [alt]="hostList[0]?.title || 'Host'"
-              loading="lazy"
-            />
-            <div class="host-card__content">
-              <h3 class="host-card__name">{{ hostList[0]?.title || 'Event Host' }}</h3>
-              <p class="host-card__role" *ngIf="hostList[0]?.tag">{{ hostList[0]?.tag }}</p>
-              <p class="host-card__bio" *ngIf="hostList[0]?.description">{{ hostList[0]?.description }}</p>
-              <div class="host-card__tags" *ngIf="getInfo('organized_soc')?.length">
-                <a
-                  class="host-card__tag"
-                  *ngFor="let social of getInfo('organized_soc'); trackBy: trackBySocialId"
-                  [href]="social.title"
-                  rel="noopener"
-                  target="_blank"
-                >
-                  {{ social.tag }}
-                </a>
-              </div>
-            </div>
-          </div>
-        </article>
-      </ng-container>
       <ng-template #whyAttend>
         <article class="summary-card">
           <h2>Why attend</h2>
@@ -114,6 +101,24 @@
           <div>
             <dt>Language</dt>
             <dd>{{ getValue('format', 'Language', 'description') || event?.language || 'English' }}</dd>
+          </div>
+        </dl>
+      </article>
+      <!-- ✅ NEW: Event Format Information Card -->
+      <article class="summary-card event-format-card">
+        <h2>Event Format</h2>
+        <dl class="snapshot">
+          <div>
+            <dt>Skill level</dt>
+            <dd>{{ getValue('format', 'Level', 'description') || 'All levels' }}</dd>
+          </div>
+          <div>
+            <dt>Certification</dt>
+            <dd>{{ getValue('format', 'Certification', 'description') || 'Included' }}</dd>
+          </div>
+          <div>
+            <dt>Mode</dt>
+            <dd>{{ getValue('format', 'Mode', 'description') || 'Hybrid' }}</dd>
           </div>
         </dl>
       </article>
@@ -168,22 +173,164 @@
         </ul>
       </section>
 
+      <!-- ✅ FIX: Meet your host - Full width event card (Multiple organizers support with slider) -->
+      <ng-container *ngIf="(getInfo('organized') || []) as hostList">
+        <section class="event-card" id="host" *ngIf="hostList.length > 0 || getInfo('organized_soc')?.length">
+          <header>
+            <div>
+              <h2>{{ hostList.length > 1 ? 'Meet your hosts' : 'Meet your host' }}</h2>
+            </div>
+            <div class="slider-controls" *ngIf="hostList.length >= 2">
+              <button
+                class="slider-btn"
+                type="button"
+                (click)="scrollHost(-1)"
+                [disabled]="!canScrollHostLeft"
+                aria-label="Previous host"
+              >
+                <i class="fa fa-chevron-left" aria-hidden="true"></i>
+              </button>
+              <button
+                class="slider-btn"
+                type="button"
+                (click)="scrollHost(1)"
+                [disabled]="!canScrollHostRight"
+                aria-label="Next host"
+              >
+                <i class="fa fa-chevron-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </header>
+          <!-- Slider layout when 2+ organizers -->
+          <div class="host-slider" #hostSlider (scroll)="updateHostControls()" *ngIf="hostList.length >= 2">
+            <div class="host-card" *ngFor="let host of hostList; trackBy: trackByOrganizerId; index as hostIndex">
+              <div class="host-card__top-row">
+                <div class="host-card__avatar-wrapper">
+                  <img
+                    class="host-card__avatar"
+                    [src]="host?.imageUrl || 'assets/img/placeholder-avatar.png'"
+                    [alt]="host?.title || 'Host'"
+                    loading="lazy"
+                  />
+                  <div class="host-card__avatar-badge">
+                    <i class="fa fa-check"></i>
+                  </div>
+                </div>
+                <div class="host-card__header">
+                  <h3 class="host-card__name">{{ host?.title || 'Event Host' }}</h3>
+                  <p class="host-card__role" *ngIf="host?.tag">
+                    <i class="fa fa-briefcase"></i>
+                    {{ host.tag }}
+                  </p>
+                </div>
+              </div>
+              <div class="host-card__content">
+                <p class="host-card__bio" *ngIf="host?.description">{{ host.description }}</p>
+              </div>
+              <!-- Social Links - Inside each host card (per organizer) -->
+              <div class="host-card__social" *ngIf="getOrganizerSocialLinks(hostIndex)?.length">
+                <span class="host-card__social-label">Connect:</span>
+                <div class="host-card__tags">
+                  <a
+                    class="host-card__tag"
+                    *ngFor="let social of getOrganizerSocialLinks(hostIndex); trackBy: trackBySocialId"
+                    [href]="getSocialUrl(social)"
+                    rel="noopener"
+                    target="_blank"
+                    [attr.aria-label]="'Follow on ' + (social.tag || 'Social link')"
+                  >
+                    <i class="fa" [ngClass]="getSocialIcon(social.tag)"></i>
+                    <span>{{ social.tag || 'Link' }}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Regular layout when only 1 organizer -->
+          <div class="hosts-container" *ngIf="hostList.length === 1">
+            <div class="host-card">
+              <div class="host-card__top-row">
+                <div class="host-card__avatar-wrapper">
+                  <img
+                    class="host-card__avatar"
+                    [src]="hostList[0]?.imageUrl || 'assets/img/placeholder-avatar.png'"
+                    [alt]="hostList[0]?.title || 'Host'"
+                    loading="lazy"
+                  />
+                  <div class="host-card__avatar-badge">
+                    <i class="fa fa-check"></i>
+                  </div>
+                </div>
+                <div class="host-card__header">
+                  <h3 class="host-card__name">{{ hostList[0]?.title || 'Event Host' }}</h3>
+                  <p class="host-card__role" *ngIf="hostList[0]?.tag">
+                    <i class="fa fa-briefcase"></i>
+                    {{ hostList[0].tag }}
+                  </p>
+                </div>
+              </div>
+              <div class="host-card__content">
+                <p class="host-card__bio" *ngIf="hostList[0]?.description">{{ hostList[0].description }}</p>
+              </div>
+              <!-- Social Links - Inside host card (for first organizer) -->
+              <div class="host-card__social" *ngIf="getOrganizerSocialLinks(0)?.length">
+                <span class="host-card__social-label">Connect:</span>
+                <div class="host-card__tags">
+                  <a
+                    class="host-card__tag"
+                    *ngFor="let social of getOrganizerSocialLinks(0); trackBy: trackBySocialId"
+                    [href]="getSocialUrl(social)"
+                    rel="noopener"
+                    target="_blank"
+                    [attr.aria-label]="'Follow on ' + (social.tag || 'Social link')"
+                  >
+                    <i class="fa" [ngClass]="getSocialIcon(social.tag)"></i>
+                    <span>{{ social.tag || 'Link' }}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Social Links - Display even if no organizers -->
+          <div class="host-card__social" *ngIf="hostList.length === 0 && getInfo('organized_soc')?.length">
+            <span class="host-card__social-label">Connect:</span>
+            <div class="host-card__tags">
+              <a
+                class="host-card__tag"
+                *ngFor="let social of getInfo('organized_soc'); trackBy: trackBySocialId"
+                [href]="social.title"
+                rel="noopener"
+                target="_blank"
+                [attr.aria-label]="'Follow on ' + social.tag"
+              >
+                <i class="fa" [ngClass]="getSocialIcon(social.tag)"></i>
+                <span>{{ social.tag }}</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </ng-container>
+
       <section class="event-card" id="learning" *ngIf="getInfo('curriculum')?.length">
         <header>
-          <h2>What you’ll learn</h2>
+          <h2>What you'll learn</h2>
           <p class="section-subtitle">Real-world playbooks, tools and frameworks.</p>
         </header>
         <div class="learning-grid">
-          <article class="learning-item" *ngFor="let item of getInfo('curriculum'); trackBy: trackByCurriculumId">
-            <div class="icon">
-              <i class="fa fa-check-circle"></i>
-            </div>
+          <article class="learning-item" *ngFor="let item of getLearningItems(); trackBy: trackByCurriculumId">
             <div>
               <h3>{{ item.title }}</h3>
               <p>{{ item.description }}</p>
             </div>
           </article>
         </div>
+        <button
+          class="btn-link learning-show-more"
+          type="button"
+          (click)="toggleLearningExpansion()"
+          *ngIf="hasMoreLearningItems()">
+          {{ learningExpanded ? 'Show less' : 'Show more' }}
+        </button>
       </section>
 
       <section class="event-card" *ngIf="getInfo('bonuse')?.length">
@@ -199,6 +346,58 @@
             <h3>{{ bonus.title }}</h3>
             <p>{{ bonus.description }}</p>
             <strong class="bonus-value" *ngIf="bonus.amount">₹{{ bonus.amount | number: '1.0-0' }}</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="event-card salary-section" *ngIf="getInfo('slary')?.length">
+        <header>
+          <div>
+            <h2>Salary Information</h2>
+            <p class="section-subtitle">
+              Expected salary ranges and career opportunities
+            </p>
+          </div>
+          <div class="slider-controls" *ngIf="getInfo('slary')?.length > 1">
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollSalary(-1)"
+              [disabled]="!canScrollSalaryLeft"
+              aria-label="Previous salary"
+            >
+              <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollSalary(1)"
+              [disabled]="!canScrollSalaryRight"
+              aria-label="Next salary"
+            >
+              <i class="fa fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <div class="salary-slider" #salarySlider (scroll)="updateSalaryControls()">
+          <article class="salary-card" *ngFor="let salary of getInfo('slary'); trackBy: trackBySalaryId">
+            <div class="salary-card__content">
+              <div class="salary-card__header">
+                <h3 class="salary-card__title">Salary Range</h3>
+                <div class="salary-card__amount" *ngIf="salary.amount">
+                  <span class="salary-currency">₹</span>
+                  <span class="salary-value">{{ salary.amount | number: '1.0-0' }}</span>
+                  <span class="salary-period">/year</span>
+                </div>
+              </div>
+              <p class="salary-card__description" *ngIf="salary.description">{{ salary.description }}</p>
+              <div class="salary-card__footer">
+                <span class="salary-badge">
+                  <i class="fa fa-chart-line"></i>
+                  <span>Competitive Package</span>
+                </span>
+              </div>
+            </div>
           </article>
         </div>
       </section>
@@ -278,8 +477,10 @@
     </main>
 
     <aside class="event-aside">
-      <div class="event-aside__sticky">
-        <section class="aside-card price-card">
+      <div class="sticky-top d-none d-sm-block" style="top: 50px;">
+        <div class="card box-shadow mb-3 mb-4">
+          <div class="p-0">
+            <section class="aside-card price-card">
           <header>
             <h3>Secure your seat</h3>
             <div class="price">
@@ -327,18 +528,8 @@
             Talk to an advisor
           </button>
         </section>
-
-        <section class="aside-card includes-card">
-          <header>
-            <h3>What’s included</h3>
-          </header>
-          <ul>
-            <li>Hands-on labs &amp; templates</li>
-            <li>Dedicated mentor feedback</li>
-            <li>1:1 career consultation</li>
-            <li>Access to recordings for 6 months</li>
-          </ul>
-        </section>
+          </div>
+        </div>
       </div>
     </aside>
   </div>

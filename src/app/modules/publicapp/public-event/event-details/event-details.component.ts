@@ -54,6 +54,8 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('viewMoreBtn', { static: false }) viewMoreBtn?: ElementRef<HTMLButtonElement>;
   @ViewChild('largeText', { static: false }) largeText?: ElementRef<HTMLParagraphElement>;
   @ViewChild('testimonialSlider', { static: false }) testimonialSlider?: ElementRef<HTMLDivElement>;
+  @ViewChild('salarySlider', { static: false }) salarySlider?: ElementRef<HTMLDivElement>;
+  @ViewChild('hostSlider', { static: false }) hostSlider?: ElementRef<HTMLDivElement>;
 
   event: any = null;
   events: any[] = [];
@@ -104,11 +106,17 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   canScrollLeft = false;
   canScrollRight = true;
+  canScrollSalaryLeft = false;
+  canScrollSalaryRight = true;
+  canScrollHostLeft = false;
+  canScrollHostRight = true;
 
   private readonly subscription = new Subscription();
   private readonly isBrowser: boolean;
   private expanded = false;
+  learningExpanded = false; // ✅ Public for template access
   private testimonialScrollTimeout: any = null;
+  private countdownInterval: any = null;
 
   openTermsAndConditions(event: Event): void {
     event.preventDefault();
@@ -131,14 +139,58 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
 
+    // ✅ Subscribe to route data (from resolver)
     this.subscription.add(
       this.route.data.subscribe((data) => {
         const resolvedEvent = data?.['event'] ?? null;
-        this.event = resolvedEvent;
-        this.events = resolvedEvent?.upcomingEvents ?? [];
+        
+        // ✅ FIX: Create new object reference to trigger change detection
+        // This ensures OnPush change detection detects the update
+        this.event = resolvedEvent ? { ...resolvedEvent } : null;
+        this.events = resolvedEvent?.upcomingEvents ? [...(resolvedEvent.upcomingEvents)] : [];
         this.eventId = resolvedEvent?.id ?? '';
+        
+        // ✅ DEBUG: Log metaDescription to verify it's being received
+        console.log('[EventDetailsComponent] Event loaded:', {
+          id: resolvedEvent?.id,
+          title: resolvedEvent?.title,
+          metaDescription: resolvedEvent?.metaDescription,
+          hasMetaDescription: !!resolvedEvent?.metaDescription,
+          allEventKeys: resolvedEvent ? Object.keys(resolvedEvent) : []
+        });
+        
+        // ✅ DEBUG: Log organizer data specifically
+        if (this.isBrowser && resolvedEvent?.eventDetails) {
+          const organizers = resolvedEvent.eventDetails.filter((d: EventDetail) => d.section === 'organized');
+          console.log('[EventDetailsComponent] Organizers data loaded:', {
+            organizerCount: organizers.length,
+            organizers: organizers.map((org: EventDetail) => ({
+              id: org.id,
+              title: org.title,
+              tag: org.tag,
+              description: org.description?.substring(0, 50) + '...',
+              imageUrl: org.imageUrl ? 'Has image' : 'No image',
+              section: org.section
+            })),
+            allEventDetailsSections: resolvedEvent.eventDetails.map((d: EventDetail) => d.section),
+            eventDetailsTotalCount: resolvedEvent.eventDetails.length,
+            timestamp: new Date().toISOString(),
+            // ✅ DEBUG: Show full eventDetails structure
+            eventDetails: resolvedEvent.eventDetails.filter((d: EventDetail) => d.section === 'organized')
+          });
+        }
+        
         this.setEventMetadata();
-        this.cdr.markForCheck();
+        this.startCountdownTimer();
+        // ✅ FIX: Mark for check to trigger OnPush change detection
+        // Use setTimeout to ensure this runs after Angular's change detection cycle
+        if (this.isBrowser) {
+          setTimeout(() => {
+            this.cdr.markForCheck();
+          }, 0);
+        } else {
+          this.cdr.markForCheck();
+        }
       })
     );
   }
@@ -184,19 +236,198 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (this.isBrowser) {
-      setTimeout(() => this.updateTestimonialControls(), 0);
+      setTimeout(() => {
+        this.updateTestimonialControls();
+        this.updateHostControls();
+        // #region agent log
+        // Delay to ensure DOM is fully rendered
+        setTimeout(() => this.debugStickyPositioning(), 100);
+        // #endregion
+      }, 0);
     }
   }
+
+  // #region agent log
+  private debugStickyPositioning(): void {
+    const stickyEl = document.querySelector('.event-aside__sticky') as HTMLElement;
+    const asideEl = document.querySelector('.event-aside') as HTMLElement;
+    const bodyEl = document.querySelector('.event-body') as HTMLElement;
+    const detailsEl = document.querySelector('.event-details') as HTMLElement;
+    
+    const logData = (msg: string, data: any, hypothesisId: string) => {
+      const logEntry = {location:'event-details.component.ts',message:msg,data,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId};
+      console.log(`[DEBUG ${hypothesisId}]`, msg, data);
+      fetch('http://127.0.0.1:7242/ingest/8c21d979-1bc5-4e5b-9b90-47d7e4f5fcd7',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logEntry)}).catch(()=>{});
+    };
+    
+    if (stickyEl) {
+      const stickyStyles = window.getComputedStyle(stickyEl);
+      const asideStyles = asideEl ? window.getComputedStyle(asideEl) : null;
+      const bodyStyles = bodyEl ? window.getComputedStyle(bodyEl) : null;
+      const detailsStyles = detailsEl ? window.getComputedStyle(detailsEl) : null;
+      
+      logData('Sticky element computed styles',{position:stickyStyles.position,top:stickyStyles.top,display:stickyStyles.display,visibility:stickyStyles.visibility,overflow:stickyStyles.overflow,height:stickyStyles.height,width:stickyStyles.width,zIndex:stickyStyles.zIndex,classes:stickyEl.className,inlineStyle:stickyEl.style.cssText,windowWidth:window.innerWidth},'A');
+      
+      if (asideEl) {
+        logData('Aside parent computed styles',{overflow:asideStyles?.overflow,position:asideStyles?.position,height:asideStyles?.height,display:asideStyles?.display},'B');
+      }
+      
+      if (bodyEl) {
+        logData('Event-body parent computed styles',{overflow:bodyStyles?.overflow,position:bodyStyles?.position,height:bodyStyles?.height,display:bodyStyles?.display,gridTemplateColumns:bodyStyles?.gridTemplateColumns},'C');
+      }
+      
+      if (detailsEl) {
+        logData('Event-details root computed styles',{overflow:detailsStyles?.overflow,position:detailsStyles?.position,height:detailsStyles?.height},'D');
+      }
+      
+      const rect = stickyEl.getBoundingClientRect();
+      logData('Sticky element bounding rect',{top:rect.top,left:rect.left,width:rect.width,height:rect.height,windowScrollY:window.scrollY,windowInnerHeight:window.innerHeight},'E');
+      
+      const isVisible = stickyEl.offsetParent !== null && stickyStyles.display !== 'none' && stickyStyles.visibility !== 'hidden';
+      logData('Sticky element visibility check',{isVisible,offsetParent:stickyEl.offsetParent !== null,display:stickyStyles.display,visibility:stickyStyles.visibility,hasDNone:stickyEl.classList.contains('d-none'),hasDLgBlock:stickyEl.classList.contains('d-lg-block'),windowWidth:window.innerWidth},'F');
+    } else {
+      logData('Sticky element not found',{},'G');
+    }
+    
+    let scrollCheckCount = 0;
+    const scrollCheck = () => {
+      if (scrollCheckCount++ < 5 && stickyEl) {
+        const rect = stickyEl.getBoundingClientRect();
+        const styles = window.getComputedStyle(stickyEl);
+        logData('Scroll check',{scrollY:window.scrollY,stickyTop:rect.top,computedPosition:styles.position,computedTop:styles.top,checkNumber:scrollCheckCount},'H');
+      }
+    };
+    window.addEventListener('scroll', scrollCheck, { once: false, passive: true });
+    setTimeout(() => window.removeEventListener('scroll', scrollCheck), 10000);
+  }
+  // #endregion
 
   ngOnDestroy(): void {
     if (this.testimonialScrollTimeout) {
       clearTimeout(this.testimonialScrollTimeout);
     }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
     this.subscription.unsubscribe();
   }
 
+  // ✅ FIX: Start countdown timer to update countdown every second
+  startCountdownTimer(): void {
+    // Clear existing interval if any
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+
+    // Only start timer if event has a start date and we're in browser
+    if (!this.isBrowser || !this.event?.startDate) {
+      return;
+    }
+
+    // Update countdown every second (1000ms) for real-time updates
+    this.countdownInterval = setInterval(() => {
+      // Check if event has passed
+      const startDate = new Date(this.event.startDate);
+      const now = new Date();
+      
+      // Stop timer if event has started
+      if (startDate <= now) {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+      }
+      
+      // Trigger change detection to update countdown display
+      this.cdr.markForCheck();
+    }, 1000); // Update every 1 second for real-time countdown
+
+    // Also update immediately for first render
+    this.cdr.markForCheck();
+  }
+
   getInfo(section: string): EventDetail[] {
-    return this.event?.eventDetails?.filter((detail: EventDetail) => detail.section === section) ?? [];
+    const result = this.event?.eventDetails?.filter((detail: EventDetail) => detail.section === section) ?? [];
+    // ✅ DEBUG: Log social links specifically
+    if (section === 'organized_soc' && this.isBrowser) {
+      console.log('[EventDetailsComponent] Social links debug:', {
+        section,
+        eventDetailsLength: this.event?.eventDetails?.length || 0,
+        allSections: this.event?.eventDetails?.map((d: EventDetail) => d.section) || [],
+        organizedSocItems: result,
+        resultLength: result.length,
+        eventId: this.event?.id,
+        // Show all eventDetails for debugging
+        allEventDetails: this.event?.eventDetails?.filter((d: EventDetail) => 
+          d.section?.toLowerCase().includes('soc') || 
+          d.section?.toLowerCase().includes('social') ||
+          d.section?.toLowerCase().includes('organiz')
+        ) || []
+      });
+    }
+    // ✅ DEBUG: Log organizers specifically
+    if (section === 'organized' && this.isBrowser) {
+      console.log('[EventDetailsComponent] Organizers debug:', {
+        section,
+        eventDetailsLength: this.event?.eventDetails?.length || 0,
+        allSections: this.event?.eventDetails?.map((d: EventDetail) => d.section) || [],
+        organizerItems: result,
+        resultLength: result.length,
+        eventId: this.event?.id,
+        organizerDetails: result.map((org: EventDetail) => ({
+          id: org.id,
+          title: org.title,
+          tag: org.tag,
+          description: org.description?.substring(0, 50) + '...',
+          imageUrl: org.imageUrl ? 'Has image' : 'No image'
+        }))
+      });
+    }
+    // ✅ FIX: Filter out empty social links (where both title and tag are empty)
+    if (section === 'organized_soc' || section?.startsWith('organized_soc_')) {
+      return result.filter((detail: EventDetail) => 
+        detail.title && detail.title.trim() !== '' && 
+        detail.tag && detail.tag.trim() !== ''
+      );
+    }
+    return result;
+  }
+
+  // ✅ NEW: Get social links for a specific organizer by index
+  getOrganizerSocialLinks(organizerIndex: number): EventDetail[] {
+    // Try new format first: organized_soc_0, organized_soc_1, etc.
+    const newFormatSection = `organized_soc_${organizerIndex}`;
+    const newFormatLinks = this.getInfo(newFormatSection);
+    
+    if (newFormatLinks.length > 0) {
+      return newFormatLinks;
+    }
+    
+    // Fallback to old format: organized_soc (shared across all organizers)
+    // Only return for first organizer to avoid duplication
+    if (organizerIndex === 0) {
+      return this.getInfo('organized_soc');
+    }
+    
+    return [];
+  }
+
+  // ✅ Get learning items - limit to 3 initially, show all when expanded
+  getLearningItems(): EventDetail[] {
+    const items = this.getInfo('curriculum');
+    if (items.length <= 3 || this.learningExpanded) {
+      return items;
+    }
+    return items.slice(0, 3);
+  }
+
+  // ✅ Check if there are more than 3 learning items
+  hasMoreLearningItems(): boolean {
+    return this.getInfo('curriculum').length > 3;
+  }
+
+  // ✅ Toggle learning items expansion
+  toggleLearningExpansion(): void {
+    this.learningExpanded = !this.learningExpanded;
+    this.cdr.markForCheck();
   }
 
   sumAmount(section: string): number {
@@ -437,8 +668,48 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     return item?.id ?? index.toString();
   }
 
+  // ✅ Helper method for tracking organizers (same as trackByOrganizerId but clearer name)
+  trackByHostId(index: number, host: EventDetail): string {
+    return host?.id ?? index.toString();
+  }
+
   trackBySocialId(index: number, item: EventDetail): string {
     return item?.id ?? index.toString();
+  }
+
+  // ✅ Helper method to get social media icon class
+  getSocialIcon(platform: string): string {
+    const platformLower = platform?.toLowerCase() || '';
+    if (platformLower.includes('linkedin')) {
+      return 'fa-linkedin';
+    } else if (platformLower.includes('twitter') || platformLower.includes('x')) {
+      return 'fa-twitter';
+    } else if (platformLower.includes('facebook')) {
+      return 'fa-facebook';
+    } else if (platformLower.includes('instagram')) {
+      return 'fa-instagram';
+    } else if (platformLower.includes('youtube')) {
+      return 'fa-youtube';
+    } else if (platformLower.includes('github')) {
+      return 'fa-github';
+    }
+    return 'fa-link'; // Default icon
+  }
+
+  // ✅ Helper method to format social link URL
+  getSocialUrl(social: EventDetail): string {
+    // Check multiple fields: title (URL field in admin form), description (fallback), or tag (if URL was mistakenly saved there)
+    const url = social?.title || social?.description || '';
+    if (!url || url.trim() === '') {
+      console.warn('[EventDetailsComponent] Social link URL is empty:', social);
+      return '#';
+    }
+    const trimmedUrl = url.trim();
+    // If URL doesn't start with http:// or https://, add https://
+    if (!trimmedUrl.match(/^https?:\/\//i)) {
+      return `https://${trimmedUrl}`;
+    }
+    return trimmedUrl;
   }
 
   trackByQaId(index: number, item: EventDetail): string {
@@ -487,6 +758,79 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     const maxScrollLeft = slider.scrollWidth - slider.clientWidth - 1;
     this.canScrollLeft = slider.scrollLeft > 1;
     this.canScrollRight = slider.scrollLeft < maxScrollLeft;
+    this.cdr.markForCheck();
+  }
+
+  scrollSalary(direction: 1 | -1): void {
+    if (!this.isBrowser || !this.salarySlider) {
+      return;
+    }
+
+    const slider = this.salarySlider.nativeElement;
+    const sampleCard = slider.querySelector<HTMLElement>('.salary-card');
+    const cardWidth = sampleCard ? sampleCard.offsetWidth : slider.clientWidth;
+    const gap = parseInt(getComputedStyle(slider).gap || '24', 10);
+    const distance = cardWidth + gap;
+
+    slider.scrollTo({
+      left: slider.scrollLeft + direction * distance,
+      behavior: 'smooth'
+    });
+
+    if (this.testimonialScrollTimeout) {
+      clearTimeout(this.testimonialScrollTimeout);
+    }
+
+    this.testimonialScrollTimeout = setTimeout(() => this.updateSalaryControls(), 320);
+  }
+
+  updateSalaryControls(): void {
+    if (!this.isBrowser || !this.salarySlider) {
+      this.canScrollSalaryLeft = false;
+      this.canScrollSalaryRight = false;
+      return;
+    }
+
+    const slider = this.salarySlider.nativeElement;
+    const maxScrollLeft = slider.scrollWidth - slider.clientWidth - 1;
+    this.canScrollSalaryLeft = slider.scrollLeft > 1;
+    this.canScrollSalaryRight = slider.scrollLeft < maxScrollLeft;
+    this.cdr.markForCheck();
+  }
+
+  // ✅ Host Slider Methods - Full width cards
+  scrollHost(direction: 1 | -1): void {
+    if (!this.isBrowser || !this.hostSlider) {
+      return;
+    }
+
+    const slider = this.hostSlider.nativeElement;
+    // For full-width cards, scroll by the full container width
+    const distance = slider.clientWidth;
+
+    slider.scrollTo({
+      left: slider.scrollLeft + direction * distance,
+      behavior: 'smooth'
+    });
+
+    if (this.testimonialScrollTimeout) {
+      clearTimeout(this.testimonialScrollTimeout);
+    }
+
+    this.testimonialScrollTimeout = setTimeout(() => this.updateHostControls(), 320);
+  }
+
+  updateHostControls(): void {
+    if (!this.isBrowser || !this.hostSlider) {
+      this.canScrollHostLeft = false;
+      this.canScrollHostRight = false;
+      return;
+    }
+
+    const slider = this.hostSlider.nativeElement;
+    const maxScrollLeft = slider.scrollWidth - slider.clientWidth - 1;
+    this.canScrollHostLeft = slider.scrollLeft > 1;
+    this.canScrollHostRight = slider.scrollLeft < maxScrollLeft;
     this.cdr.markForCheck();
   }
 
@@ -981,10 +1325,22 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     const eventTitle = titleSection?.title ?? this.event.title ?? 'Event - Oilandgasclub';
+    // ✅ FIX: Use metaDescription first (from admin form), then fallback to description section or default
+    // Check both camelCase and PascalCase for metaDescription (backend might return either)
+    const metaDesc = this.event.metaDescription ?? this.event.MetaDescription;
     const eventDescription =
+      metaDesc ??
       descriptionSection?.description ??
       this.event.description ??
       'Join our upcoming oil and gas industry event';
+    
+    // ✅ DEBUG: Log which description source is being used
+    console.log('[EventDetailsComponent] Meta description source:', {
+      metaDescription: metaDesc,
+      descriptionSection: descriptionSection?.description,
+      eventDescription: this.event.description,
+      finalDescription: eventDescription.substring(0, 100) + '...'
+    });
     // Use the same getEventImage method for consistency
     const eventImage = this.getEventImage();
 

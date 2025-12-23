@@ -115,9 +115,18 @@ export class AddEventComponent implements OnInit, OnDestroy {
         this.addCurriculumItemTitle('bonuse-info','Maximum Slot')
         this.addCurriculumItemTitle('bonuse-info','First Registrion Bonus Count')
         this.addCurriculumItemTitle('image','main')
-        this.addCurriculumItem("organized",true)
+        // ✅ FIX: Allow multiple organizers - remove isOnlyOne restriction
+        // If no organized items exist, add one by default
+        if (this.getIndexOfCurriculum('organized', 0) === -1) {
+            this.addCurriculumItem("organized", false)
+        }
         
         this.addCurriculumItemTitle('organized_list','Designation')
+        
+        // ✅ FIX: Initialize format items (Skill Level, Certification, Mode) if they don't exist
+        this.addCurriculumItemTitle('format', 'Level')
+        this.addCurriculumItemTitle('format', 'Certification')
+        this.addCurriculumItemTitle('format', 'Mode')
     }
 
     getEventById(id) {
@@ -182,25 +191,61 @@ export class AddEventComponent implements OnInit, OnDestroy {
                     registrationCompleted: this.eventForm.get('registrationCompleted')?.value
                 });
                 if (res.eventDetails && res.eventDetails.length > 0) {
+                    // ✅ DEBUG: Log loaded eventDetails
+                    const socialLinksLoaded = res.eventDetails.filter((item: any) => 
+                        item.section && item.section.startsWith('organized_soc_')
+                    );
+                    console.log('[AddEventComponent] Event loaded - social links found:', {
+                        totalEventDetails: res.eventDetails.length,
+                        socialLinksCount: socialLinksLoaded.length,
+                        socialLinks: socialLinksLoaded.map((item: any) => ({
+                            section: item.section,
+                            tag: item.tag,
+                            title: item.title
+                        }))
+                    });
+                    
                     this.eventForm.setControl('eventDetails', this.formBuilder.array(
                         res.eventDetails.map((item) => {
                             return this.formBuilder.group({
-                                section: item.section,
-                                imageUrl: item.imageUrl,
-                                sortOrder: item.sortOrder,
-                                title: item.title,
-                                description: item.description,
-                                tag: item.tag,
-                                amount: item.amount,
-                                count:item.count
+                                id: item.id || '',
+                                section: item.section || '',
+                                imageUrl: item.imageUrl || '',
+                                sortOrder: item.sortOrder || 0,
+                                title: item.title || '',
+                                description: item.description || '',
+                                tag: item.tag || '',
+                                amount: item.amount || 0,
+                                count: item.count || 0
                             });
                         }
-
                         )
                     ));
+                    
+                    // ✅ DEBUG: Verify social links are in form array after loading
+                    setTimeout(() => {
+                        const organizers = this.eventCurriculumArrayControls('organized');
+                        console.log('[AddEventComponent] After loading - Organizers count:', organizers.length);
+                        organizers.forEach((org: FormGroup, orgIndex: number) => {
+                            const socialSection = this.getOrganizerSocialSection(orgIndex);
+                            const socialLinks = this.eventCurriculumArrayControls(socialSection);
+                            console.log(`[AddEventComponent] Organizer ${orgIndex + 1} (${socialSection}) - Social links:`, socialLinks.length);
+                            socialLinks.forEach((social: FormGroup, socialIndex: number) => {
+                                console.log(`[AddEventComponent]   Social ${socialIndex + 1}:`, {
+                                    section: social.get('section')?.value,
+                                    tag: social.get('tag')?.value,
+                                    title: social.get('title')?.value
+                                });
+                            });
+                        });
+                    }, 100);
                 }
+                // ✅ FIX: Ensure format items exist even if not in database
                 this.addInitialValue();
-                this.uploadedFilePath = res.eventDetails.find((item) => item.section === 'image')?.imageUrl || '';
+                this.uploadedFilePath = res.eventDetails?.find((item) => item.section === 'image')?.imageUrl || '';
+                
+                // ✅ FIX: Trigger change detection to update UI
+                this.cdr.detectChanges();
             }
         }));
     }
@@ -250,9 +295,69 @@ export class AddEventComponent implements OnInit, OnDestroy {
             
             // ✅ CRITICAL FIX: Build payload with explicit field mapping
             const formValue = this.eventForm.value;
+            
+            // ✅ CRITICAL FIX: Explicitly ensure eventDetails are included
+            const eventDetailsArray = this.eventForm.get('eventDetails') as FormArray;
+            
+            // ✅ DEBUG: Log form array state before collection
+            console.log('[AddEventComponent] Form array controls before collection:', {
+                totalControls: eventDetailsArray.controls.length,
+                controls: eventDetailsArray.controls.map((control: AbstractControl, idx: number) => {
+                    if (control instanceof FormGroup) {
+                        return {
+                            index: idx,
+                            section: control.get('section')?.value,
+                            tag: control.get('tag')?.value,
+                            title: control.get('title')?.value,
+                            isValid: control.valid,
+                            isDirty: control.dirty,
+                            isTouched: control.touched
+                        };
+                    }
+                    return { index: idx, value: control.value };
+                })
+            });
+            
+            const allEventDetails = eventDetailsArray.controls.map((control: AbstractControl) => {
+                if (control instanceof FormGroup) {
+                    const detail = {
+                        id: control.get('id')?.value || '',
+                        section: control.get('section')?.value || '',
+                        imageUrl: control.get('imageUrl')?.value || '',
+                        sortOrder: control.get('sortOrder')?.value || 0,
+                        title: control.get('title')?.value || '',
+                        description: control.get('description')?.value || '',
+                        tag: control.get('tag')?.value || '',
+                        amount: control.get('amount')?.value || 0,
+                        count: control.get('count')?.value || 0
+                    };
+                    // ✅ DEBUG: Log social links being collected
+                    if (detail.section && detail.section.startsWith('organized_soc_')) {
+                        console.log('[AddEventComponent] Collecting social link:', detail);
+                    }
+                    return detail;
+                }
+                return control.value;
+            });
+            
+            // ✅ DEBUG: Verify all eventDetails including social links
+            const socialLinks = allEventDetails.filter((item: any) => 
+                item.section && item.section.startsWith('organized_soc_')
+            );
+            console.log('[AddEventComponent] All eventDetails before submission:', {
+                total: allEventDetails.length,
+                socialLinks: socialLinks.length,
+                socialLinksDetails: socialLinks.map((item: any) => ({
+                    section: item.section,
+                    tag: item.tag,
+                    title: item.title
+                }))
+            });
+            
             const formData: any = {
                 ...formValue,
                 id: this.eventId,
+                eventDetails: allEventDetails, // ✅ CRITICAL: Explicitly set eventDetails
                 // ✅ CRITICAL: Backend expects PascalCase (ShowOnDashboard) as nullable bool
                 // Explicitly set to boolean value (not undefined/null) to ensure AutoMapper processes it
                 // TypeScript sends boolean, backend C# receives it as bool?
@@ -282,6 +387,32 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 registrationCompletedBool: registrationCompletedBool
             });
             
+            // ✅ DEBUG: Log social links before submission (already collected above)
+            console.log('[AddEventComponent] Social links being submitted:', {
+                totalEventDetails: allEventDetails.length,
+                socialLinksCount: socialLinks.length,
+                socialLinks: socialLinks.map((item: any) => ({
+                    section: item.section,
+                    tag: item.tag,
+                    title: item.title,
+                    description: item.description,
+                    id: item.id
+                })),
+                // ✅ DEBUG: Show all sections to verify
+                allSections: allEventDetails.map((item: any) => item.section)
+            });
+            
+            // ✅ DEBUG: Verify form array state
+            const formArray = this.eventForm.get('eventDetails') as FormArray;
+            console.log('[AddEventComponent] Form array state:', {
+                formArrayLength: formArray.length,
+                formArraySections: formArray.controls.map((c: AbstractControl) => ({
+                    section: c.get('section')?.value,
+                    tag: c.get('tag')?.value,
+                    title: c.get('title')?.value
+                }))
+            });
+            
             // ✅ DEBUG: Log payload being sent
             console.log('[AddEventComponent] Payload sent to backend:', {
                 id: formData.id,
@@ -289,6 +420,8 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 ShowOnDashboard: formData.ShowOnDashboard,
                 registrationCompleted: formData.registrationCompleted,
                 RegistrationCompleted: formData.RegistrationCompleted,
+                eventDetailsCount: formData.eventDetails?.length || 0,
+                curriculumItems: formData.eventDetails?.filter((item: any) => item.section === 'curriculum') || [],
                 allFormValues: formValue
             });
             
@@ -305,14 +438,95 @@ export class AddEventComponent implements OnInit, OnDestroy {
                         ShowOnDashboard: response?.ShowOnDashboard,
                         registrationCompleted: response?.registrationCompleted ?? response?.RegistrationCompleted,
                         RegistrationCompleted: response?.RegistrationCompleted,
-                        fullResponse: response
+                        eventDetailsCount: response?.eventDetails?.length || 0
                     });
                     
-                    // Update form immediately with submitted data (optimistic update)
-                    this.updateFormWithSubmittedData(formData);
-                    
-                    // Reload event data from server to get complete updated data
-                    this.reloadEventDataWithRetry(3, 300);
+                    // ✅ FIX: Use response data directly instead of reloading (faster and more reliable)
+                    // Update form with response data from backend (includes all EventDetails)
+                    if (response && response.id) {
+                        // ✅ FIX: If response doesn't include eventDetails, do a quick reload
+                        if (!response.eventDetails || response.eventDetails.length === 0) {
+                            console.log('[AddEventComponent] Response missing eventDetails, doing quick reload...');
+                            // Quick reload without retry delays
+                            setTimeout(() => {
+                                this.getEventById(this.eventId);
+                            }, 100);
+                            return; // Exit early, reload will handle the rest
+                        }
+                        
+                        // Handle showOnDashboard and registrationCompleted
+                        const showOnDashboardValue = response.showOnDashboard !== undefined 
+                            ? response.showOnDashboard 
+                            : (response.ShowOnDashboard !== undefined ? response.ShowOnDashboard : false);
+                        const registrationCompletedValue = response.registrationCompleted !== undefined
+                            ? response.registrationCompleted
+                            : (response.RegistrationCompleted !== undefined ? response.RegistrationCompleted : false);
+                        
+                        const showOnDashboardBool = showOnDashboardValue === true || String(showOnDashboardValue) === 'true' || Number(showOnDashboardValue) === 1 || String(showOnDashboardValue) === '1';
+                        const registrationCompletedBool = registrationCompletedValue === true || String(registrationCompletedValue) === 'true' || Number(registrationCompletedValue) === 1 || String(registrationCompletedValue) === '1';
+                        
+                        // Update eventDetails FormArray with response data
+                        if (response.eventDetails && response.eventDetails.length > 0) {
+                            // ✅ DEBUG: Log social links in response
+                            const socialLinksInResponse = response.eventDetails.filter((item: any) => 
+                                item.section && item.section.startsWith('organized_soc_')
+                            );
+                            console.log('[AddEventComponent] Response - social links:', {
+                                totalEventDetails: response.eventDetails.length,
+                                socialLinksCount: socialLinksInResponse.length,
+                                socialLinks: socialLinksInResponse.map((item: any) => ({
+                                    section: item.section,
+                                    tag: item.tag,
+                                    title: item.title
+                                }))
+                            });
+                            
+                            this.eventForm.setControl('eventDetails', this.formBuilder.array(
+                                response.eventDetails.map((item: any) => {
+                                    return this.formBuilder.group({
+                                        id: item.id || '',
+                                        section: item.section || '',
+                                        imageUrl: item.imageUrl || '',
+                                        sortOrder: item.sortOrder || 0,
+                                        title: item.title || '',
+                                        description: item.description || '',
+                                        tag: item.tag || '',
+                                        amount: item.amount || 0,
+                                        count: item.count || 0
+                                    });
+                                })
+                            ));
+                            
+                            // ✅ DEBUG: Verify social links are in form after update
+                            setTimeout(() => {
+                                const organizers = this.eventCurriculumArrayControls('organized');
+                                console.log('[AddEventComponent] After update - Organizers count:', organizers.length);
+                                organizers.forEach((org: FormGroup, orgIndex: number) => {
+                                    const socialSection = this.getOrganizerSocialSection(orgIndex);
+                                    const socialLinks = this.eventCurriculumArrayControls(socialSection);
+                                    console.log(`[AddEventComponent] After update - Organizer ${orgIndex + 1} (${socialSection}) - Social links:`, socialLinks.length);
+                                });
+                            }, 50);
+                        }
+                        
+                        // Update other form fields
+                        this.eventForm.patchValue({
+                            showOnDashboard: showOnDashboardBool,
+                            registrationCompleted: registrationCompletedBool
+                        }, { emitEvent: false });
+                        
+                        // Update uploaded file path if exists
+                        const imageDetail = response.eventDetails?.find((item: any) => item.section === 'image');
+                        if (imageDetail?.imageUrl) {
+                            this.uploadedFilePath = imageDetail.imageUrl;
+                        }
+                        
+                        // Ensure format items exist
+                        this.addInitialValue();
+                        
+                        // ✅ FIX: Trigger change detection to update UI immediately
+                        this.cdr.detectChanges();
+                    }
                 },
                 error: (err) => {
                     this.loading = false;
@@ -357,19 +571,48 @@ export class AddEventComponent implements OnInit, OnDestroy {
         // }
         // // console.log(dt);
         // return dt;
-        return (<FormArray>this.eventForm.get('eventDetails')).
-            controls.filter((control: AbstractControl) => control.get('section').value === section) as FormGroup[];
+        const formArray = this.eventForm.get('eventDetails') as FormArray;
+        if (!formArray) {
+            return [];
+        }
+        const filtered = formArray.controls.filter((control: AbstractControl) => {
+            const sectionValue = control.get('section')?.value;
+            return sectionValue === section;
+        }) as FormGroup[];
+        
+        // ✅ DEBUG: Log social links filtering
+        if (section && section.startsWith('organized_soc_')) {
+            console.log(`[AddEventComponent] eventCurriculumArrayControls('${section}') - Found ${filtered.length} items`);
+            if (filtered.length === 0) {
+                // Log all sections to debug
+                const allSections = formArray.controls.map((c: AbstractControl) => c.get('section')?.value);
+                const socialSections = allSections.filter((s: string) => s && s.startsWith('organized_soc_'));
+                console.log(`[AddEventComponent] No items found for ${section}. Available social sections:`, socialSections);
+            }
+        }
+        
+        return filtered;
     }
     getIndexOfCurriculum(section: string, index: number): number {
         var x = (<FormArray>this.eventForm.get('eventDetails')).controls;
         var ix = 0;
         for (let i = 0; i < x.length; i++) {
-            if (x[i].value.section === section) {
+            const sectionValue = x[i].get('section')?.value || x[i].value?.section;
+            if (sectionValue === section) {
                 if (ix === index) {
+                    // ✅ DEBUG: Log when finding social link index
+                    if (section && section.startsWith('organized_soc_')) {
+                        console.log(`[AddEventComponent] getIndexOfCurriculum('${section}', ${index}) = ${i}`);
+                    }
                     return i;
                 }
                 ix++;
             }
+        }
+        // ✅ DEBUG: Log when not found
+        if (section && section.startsWith('organized_soc_')) {
+            console.warn(`[AddEventComponent] getIndexOfCurriculum('${section}', ${index}) = -1 (not found)`);
+            console.log('[AddEventComponent] Available sections:', x.map((c: AbstractControl) => c.get('section')?.value || c.value?.section));
         }
         return -1;
     }
@@ -378,11 +621,46 @@ export class AddEventComponent implements OnInit, OnDestroy {
     removeCurriculum(index: number, section: string) {
         var ix=this.getIndexOfCurriculum(section, index);
         (<FormArray>this.eventForm.get('eventDetails')).removeAt(ix);
+        
+        // ✅ FIX: If removing an organizer, also remove their associated social links
+        if (section === 'organized') {
+            const socialSection = `organized_soc_${index}`;
+            const socialLinks = this.eventCurriculumArrayControls(socialSection);
+            // Remove all social links for this organizer (in reverse order to maintain indices)
+            for (let i = socialLinks.length - 1; i >= 0; i--) {
+                this.removeCurriculum(i, socialSection);
+            }
+            
+            // ✅ FIX: Reindex remaining organizers' social links
+            // After removing organizer at index, all organizers after need their social links reindexed
+            const organizers = this.eventCurriculumArrayControls('organized');
+            for (let orgIndex = index; orgIndex < organizers.length; orgIndex++) {
+                const oldSection = `organized_soc_${orgIndex + 1}`;
+                const newSection = `organized_soc_${orgIndex}`;
+                const oldSocialLinks = this.eventCurriculumArrayControls(oldSection);
+                
+                // Update section name for each social link
+                oldSocialLinks.forEach((control: FormGroup, socialIndex: number) => {
+                    const globalIndex = this.getIndexOfCurriculum(oldSection, socialIndex);
+                    if (globalIndex !== -1) {
+                        (<FormArray>this.eventForm.get('eventDetails')).controls[globalIndex].patchValue({
+                            section: newSection
+                        });
+                    }
+                });
+            }
+        }
     }
     addCurriculumItem(section: string,isOnlyOne:boolean=false) {
         if(isOnlyOne &&  this.getIndexOfCurriculum(section, 0) !== -1){
             return;
         }
+        
+        // ✅ DEBUG: Log social link addition
+        if (section && section.startsWith('organized_soc_')) {
+            console.log('[AddEventComponent] Adding social link with section:', section);
+        }
+        
         (<FormArray>this.eventForm.get('eventDetails')).push(
             this.formBuilder.group({
                 id:'',
@@ -396,6 +674,14 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 count:0
             })
         );
+        
+        // ✅ DEBUG: Verify social link was added
+        if (section && section.startsWith('organized_soc_')) {
+            const addedItems = this.eventCurriculumArrayControls(section);
+            console.log('[AddEventComponent] Social links for section', section, ':', addedItems.length);
+            console.log('[AddEventComponent] All eventDetails sections:', 
+                (<FormArray>this.eventForm.get('eventDetails')).controls.map((c: AbstractControl) => c.get('section')?.value));
+        }
     }
     addCurriculumItemTitle(section: string,title: string) {
         var x = (<FormArray>this.eventForm.get('eventDetails'))
@@ -424,6 +710,42 @@ export class AddEventComponent implements OnInit, OnDestroy {
             return (<FormArray>this.eventForm.get('eventDetails')).controls[ix].get(key).value;
         }
         return '';
+    }
+    
+    // ✅ Helper method to get organizer social links section name
+    getOrganizerSocialSection(organizerIndex: number): string {
+        return `organized_soc_${organizerIndex}`;
+    }
+    
+    // ✅ TrackBy function for ngFor performance
+    trackByIndex(index: number, item: any): any {
+        return index;
+    }
+    
+    // ✅ FIX: Add method to update curriculum values from input fields
+    updateCurriculumValue(section: string, index: number, key: string, event: any): void {
+        const value = event.target.value;
+        const ix = this.getIndexOfCurriculum(section, index);
+        if (ix !== -1) {
+            (<FormArray>this.eventForm.get('eventDetails')).controls[ix].patchValue({
+                [key]: value
+            });
+        } else {
+            // If item doesn't exist, create it
+            const titles = ['Level', 'Certification', 'Mode'];
+            if (index < titles.length) {
+                this.addCurriculumItemTitle('format', titles[index]);
+                // Try again after adding
+                setTimeout(() => {
+                    const newIx = this.getIndexOfCurriculum(section, index);
+                    if (newIx !== -1) {
+                        (<FormArray>this.eventForm.get('eventDetails')).controls[newIx].patchValue({
+                            [key]: value
+                        });
+                    }
+                }, 0);
+            }
+        }
     }
     
     getProgressPercentage(): number {
@@ -538,21 +860,61 @@ export class AddEventComponent implements OnInit, OnDestroy {
                                 
                                 // Update eventDetails FormArray
                                 if (res.eventDetails && res.eventDetails.length > 0) {
+                                    // ✅ DEBUG: Log social links being reloaded
+                                    const socialLinksReloaded = res.eventDetails.filter((item: any) => 
+                                        item.section && item.section.startsWith('organized_soc_')
+                                    );
+                                    console.log('[AddEventComponent] Reload - social links found:', {
+                                        totalEventDetails: res.eventDetails.length,
+                                        socialLinksCount: socialLinksReloaded.length,
+                                        socialLinks: socialLinksReloaded.map((item: any) => ({
+                                            section: item.section,
+                                            tag: item.tag,
+                                            title: item.title
+                                        }))
+                                    });
+                                    
                                     this.eventForm.setControl('eventDetails', this.formBuilder.array(
                                         res.eventDetails.map((item: any) => {
                                             return this.formBuilder.group({
-                                                section: item.section,
-                                                imageUrl: item.imageUrl,
-                                                sortOrder: item.sortOrder,
-                                                title: item.title,
-                                                description: item.description,
-                                                tag: item.tag,
-                                                amount: item.amount,
-                                                count: item.count
+                                                id: item.id || '',
+                                                section: item.section || '',
+                                                imageUrl: item.imageUrl || '',
+                                                sortOrder: item.sortOrder || 0,
+                                                title: item.title || '',
+                                                description: item.description || '',
+                                                tag: item.tag || '',
+                                                amount: item.amount || 0,
+                                                count: item.count || 0
                                             });
                                         })
                                     ));
+                                    
+                                    // ✅ DEBUG: Verify social links are in form array after reload
+                                    setTimeout(() => {
+                                        const organizers = this.eventCurriculumArrayControls('organized');
+                                        console.log('[AddEventComponent] After reload - Organizers count:', organizers.length);
+                                        organizers.forEach((org: FormGroup, orgIndex: number) => {
+                                            const socialSection = this.getOrganizerSocialSection(orgIndex);
+                                            const socialLinks = this.eventCurriculumArrayControls(socialSection);
+                                            console.log(`[AddEventComponent] Reload - Organizer ${orgIndex + 1} (${socialSection}) - Social links:`, socialLinks.length);
+                                            socialLinks.forEach((social: FormGroup, socialIndex: number) => {
+                                                console.log(`[AddEventComponent] Reload - Social ${socialIndex + 1}:`, {
+                                                    section: social.get('section')?.value,
+                                                    tag: social.get('tag')?.value,
+                                                    title: social.get('title')?.value
+                                                });
+                                            });
+                                        });
+                                    }, 100);
                                 }
+                                
+                                // ✅ FIX: Ensure format items exist even if not in database
+                                this.addInitialValue();
+                                this.uploadedFilePath = res.eventDetails?.find((item) => item.section === 'image')?.imageUrl || '';
+                                
+                                // ✅ FIX: Trigger change detection to update UI
+                                this.cdr.detectChanges();
                                 
                                 // Re-add initial values
                                 this.addInitialValue();

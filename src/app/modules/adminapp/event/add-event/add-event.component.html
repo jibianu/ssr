@@ -169,6 +169,80 @@
       </div>
     </div>
 
+    <!-- Section 3.5: Event Format Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <i class="fas fa-info-circle"></i>
+        <h2>Event Format Information</h2>
+      </div>
+      <div class="section-content">
+        <div formArrayName="eventDetails" class="form-grid">
+          <!-- Skill Level -->
+          <div class="form-group" [formGroupName]="getIndexOfCurriculum('format', 0)" *ngIf="getIndexOfCurriculum('format', 0) !== -1">
+            <label class="form-label">Skill Level</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              formControlName="description"
+              placeholder="e.g., All levels, Beginner, Intermediate, Advanced" />
+            <small class="form-hint">This will be displayed in the "About this event" section</small>
+          </div>
+          <div class="form-group" *ngIf="getIndexOfCurriculum('format', 0) === -1">
+            <label class="form-label">Skill Level</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [value]="getValueOfCurriculum('format', 0, 'description')"
+              (input)="updateCurriculumValue('format', 0, 'description', $event)"
+              placeholder="e.g., All levels, Beginner, Intermediate, Advanced" />
+            <small class="form-hint">This will be displayed in the "About this event" section</small>
+          </div>
+
+          <!-- Certification -->
+          <div class="form-group" [formGroupName]="getIndexOfCurriculum('format', 1)" *ngIf="getIndexOfCurriculum('format', 1) !== -1">
+            <label class="form-label">Certification</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              formControlName="description"
+              placeholder="e.g., Included, Available, Not included" />
+            <small class="form-hint">This will be displayed in the "About this event" section</small>
+          </div>
+          <div class="form-group" *ngIf="getIndexOfCurriculum('format', 1) === -1">
+            <label class="form-label">Certification</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [value]="getValueOfCurriculum('format', 1, 'description')"
+              (input)="updateCurriculumValue('format', 1, 'description', $event)"
+              placeholder="e.g., Included, Available, Not included" />
+            <small class="form-hint">This will be displayed in the "About this event" section</small>
+          </div>
+
+          <!-- Mode -->
+          <div class="form-group" [formGroupName]="getIndexOfCurriculum('format', 2)" *ngIf="getIndexOfCurriculum('format', 2) !== -1">
+            <label class="form-label">Mode</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              formControlName="description"
+              placeholder="e.g., Hybrid, Online, In-person, Instructor-led, live" />
+            <small class="form-hint">This will be displayed in the "About this event" section</small>
+          </div>
+          <div class="form-group" *ngIf="getIndexOfCurriculum('format', 2) === -1">
+            <label class="form-label">Mode</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [value]="getValueOfCurriculum('format', 2, 'description')"
+              (input)="updateCurriculumValue('format', 2, 'description', $event)"
+              placeholder="e.g., Hybrid, Online, In-person, Instructor-led, live" />
+            <small class="form-hint">This will be displayed in the "About this event" section</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Section 4: Event Timing -->
     <div class="form-section">
       <div class="section-header">
@@ -612,12 +686,41 @@
         <i class="fas fa-chevron-down accordion-icon" [class.rotated]="isExpanded('organizedSection')"></i>
       </div>
       <div id="organizedSection" class="accordion-content" [class.show]="isExpanded('organizedSection')">
-        <div formArrayName="eventDetails">
-          <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix" class="dynamic-item organized-item">
-            <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="dynamic-item-content">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Avatar</label>
+        <div formArrayName="eventDetails" class="organizers-container">
+          <div *ngFor="let item of eventCurriculumArrayControls('organized'); index as ix; last as isLast" class="organizer-card">
+            <div class="organizer-card-header">
+              <div class="organizer-header-left">
+                <div class="organizer-number-badge">{{ix + 1}}</div>
+                <h6 class="organizer-title">Organizer {{ix + 1}}</h6>
+              </div>
+              <div class="header-actions">
+                <button 
+                  type="button" 
+                  class="btn-add-item btn-add-inline"
+                  (click)="addCurriculumItem('organized')"
+                  [disabled]="loading"
+                  *ngIf="isLast">
+                  <i class="fas fa-plus"></i>
+                  Add Organizer
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-remove"
+                  (click)="removeCurriculum(ix,'organized')"
+                  [disabled]="loading">
+                  <i class="fas fa-trash"></i>
+                  Remove
+                </button>
+              </div>
+            </div>
+            
+            <div [formGroupName]="getIndexOfCurriculum('organized',ix)" class="organizer-card-body">
+              <div class="organizer-main-info">
+                <div class="organizer-avatar-section">
+                  <label class="form-label">
+                    <i class="fas fa-user-circle"></i>
+                    Avatar
+                  </label>
                   <div class="upload-wrapper">
                     <div class="file-upload-area" [class.has-image]="getValueOfCurriculum('organized',ix,'imageUrl')">
                       <input 
@@ -641,36 +744,109 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-group flex-grow">
-                  <label class="form-label">
-                    Name <span class="required">*</span>
-                  </label>
-                  <input 
-                    class="form-input" 
-                    formControlName="title" 
-                    type="text"
-                    placeholder="Enter organizer name"
-                    [ngClass]="{ 'input-error': (submitted || item.controls.title.touched) && item.controls.title.errors }" />
-                  <div *ngIf="(submitted || item.controls.title.touched) && item.controls.title.errors" class="error-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>This field is required</span>
+                
+                <div class="organizer-details-section">
+                  <div class="form-row">
+                    <div class="form-group flex-grow">
+                      <label class="form-label">
+                        <i class="fas fa-user"></i>
+                        Name <span class="required">*</span>
+                      </label>
+                      <input 
+                        class="form-input" 
+                        formControlName="title" 
+                        type="text"
+                        placeholder="Enter organizer name"
+                        [ngClass]="{ 'input-error': (submitted || item.controls.title.touched) && item.controls.title.errors }" />
+                      <div *ngIf="(submitted || item.controls.title.touched) && item.controls.title.errors" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>This field is required</span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">
+                        <i class="fas fa-tags"></i>
+                        Tags
+                      </label>
+                      <input 
+                        class="form-input" 
+                        formControlName="tag" 
+                        type="text"
+                        placeholder="Enter tags" />
+                    </div>
+                  </div>
+                  <div class="form-group full-width">
+                    <label class="form-label">
+                      <i class="fas fa-align-left"></i>
+                      Description
+                    </label>
+                    <textarea 
+                      class="form-input" 
+                      formControlName="description"
+                      rows="4"
+                      placeholder="Enter organizer description"></textarea>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Tags</label>
-                  <input 
-                    class="form-input" 
-                    formControlName="tag" 
-                    type="text"
-                    placeholder="Enter tags" />
+              </div>
+              
+              <!-- Social Links - Per Organizer -->
+              <div class="social-links-section">
+                <div class="social-links-header">
+                  <div class="social-links-title">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Social Links</span>
+                  </div>
+                  <button 
+                    type="button" 
+                    class="btn-add-social"
+                    (click)="addCurriculumItem(getOrganizerSocialSection(ix))"
+                    [disabled]="loading">
+                    <i class="fas fa-plus"></i>
+                    Add Social Link
+                  </button>
                 </div>
-                <div class="form-group full-width">
-                  <label class="form-label">Description</label>
-                  <textarea 
-                    class="form-input" 
-                    formControlName="description"
-                    rows="3"
-                    placeholder="Enter organizer description"></textarea>
+                
+                <div class="social-links-list" *ngIf="eventCurriculumArrayControls(getOrganizerSocialSection(ix)).length > 0">
+                  <div class="social-link-item" *ngFor="let item1 of eventCurriculumArrayControls(getOrganizerSocialSection(ix)); index as i; trackBy: trackByIndex">
+                    <div [formGroupName]="getIndexOfCurriculum(getOrganizerSocialSection(ix), i)" class="social-link-form">
+                      <div class="social-link-platform">
+                        <label class="form-label">
+                          <i class="fas fa-globe"></i>
+                          Platform
+                        </label>
+                        <select 
+                          class="form-input" 
+                          formControlName="tag">
+                          <option *ngFor="let si of socailMedias" [value]="si">{{si}}</option>
+                        </select>
+                      </div>
+                      <div class="social-link-url">
+                        <label class="form-label">
+                          <i class="fas fa-link"></i>
+                          URL
+                        </label>
+                        <input 
+                          type="text" 
+                          class="form-input" 
+                          formControlName="title" 
+                          placeholder="https://..." />
+                      </div>
+                      <div class="social-link-actions">
+                        <button 
+                          type="button" 
+                          class="btn-remove-social"
+                          (click)="removeCurriculum(i, getOrganizerSocialSection(ix))"
+                          [disabled]="loading">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="social-links-empty" *ngIf="eventCurriculumArrayControls(getOrganizerSocialSection(ix)).length === 0">
+                  <i class="fas fa-share-alt"></i>
+                  <p>No social links added yet. Click "Add Social Link" to add one.</p>
                 </div>
               </div>
             </div>
@@ -688,46 +864,6 @@
                   placeholder="Enter value" />
               </div>
             </div>
-          </div>
-
-          <!-- Social Links - Separate from organized form group -->
-          <div class="social-links-section" style="margin-top: 1.5rem;" *ngIf="eventCurriculumArrayControls('organized_soc').length > 0">
-            <h6 class="section-subtitle">Social Links</h6>
-            <div class="form-row">
-              <div class="form-group full-width" *ngFor="let item1 of eventCurriculumArrayControls('organized_soc'); index as i">
-                <div [formGroupName]="getIndexOfCurriculum('organized_soc',i)">
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label class="form-label">Platform</label>
-                      <select 
-                        class="form-input" 
-                        formControlName="tag">
-                        <option *ngFor="let si of socailMedias" [value]="si">{{si}}</option>
-                      </select>
-                    </div>
-                    <div class="form-group flex-grow">
-                      <label class="form-label">URL</label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-link input-icon"></i>
-                        <input 
-                          type="text" 
-                          class="form-input" 
-                          formControlName="title" 
-                          placeholder="https://..." />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button 
-              type="button" 
-              class="btn-add-item"
-              (click)="addCurriculumItem('organized_soc')"
-              [disabled]="loading">
-              <i class="fas fa-plus"></i>
-              Add Social Link
-            </button>
           </div>
         </div>
       </div>

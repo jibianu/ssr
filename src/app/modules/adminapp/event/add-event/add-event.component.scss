@@ -244,6 +244,11 @@ textarea.form-input {
       font-weight: 700;
       color: #4f46e5;
     }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
     .btn-remove {
       @extend .admin-btn-remove;
       background: rgba(99,102,241,.1);
@@ -296,16 +301,299 @@ textarea.form-input {
   @extend .admin-form-row;
 }
 
-// Social Links Section
-.social-links-section {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid $b;
-  .section-subtitle {
-    font-size: 1rem;
+// Organizers Container
+.organizers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// Organizer Card - Modern Design
+.organizer-card {
+  background: $w;
+  border-radius: 12px;
+  border: 1px solid rgba(236, 72, 153, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.12);
+    border-color: rgba(236, 72, 153, 0.25);
+  }
+  
+  &:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.organizer-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+  border-bottom: 2px solid rgba(236, 72, 153, 0.15);
+  
+  .organizer-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .organizer-number-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: $w;
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+  }
+  
+  .organizer-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #db2777;
+    letter-spacing: -0.025em;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.organizer-card-body {
+  padding: 1.5rem;
+}
+
+.organizer-main-info {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.organizer-avatar-section {
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
     font-weight: 600;
     color: $tp;
-    margin-bottom: 1rem;
+    
+    i {
+      color: #ec4899;
+    }
+  }
+  
+  .upload-wrapper {
+    .file-upload-area {
+      border: 2px dashed rgba(236, 72, 153, 0.3);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      background: rgba(236, 72, 153, 0.02);
+      
+      &:hover {
+        border-color: rgba(236, 72, 153, 0.5);
+        background: rgba(236, 72, 153, 0.05);
+      }
+      
+      &.has-image {
+        border-color: rgba(236, 72, 153, 0.5);
+        background: rgba(236, 72, 153, 0.05);
+      }
+    }
+    
+    .image-preview-container {
+      margin-top: 1rem;
+      
+      .image-preview {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid rgba(236, 72, 153, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
+}
+
+.organizer-details-section {
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: $tp;
+    
+    i {
+      color: #ec4899;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Social Links Section - Enhanced Design
+.social-links-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(236, 72, 153, 0.1);
+  background: rgba(236, 72, 153, 0.02);
+  border-radius: 8px;
+  padding: 1.5rem;
+  
+  .social-links-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    
+    .social-links-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: $tp;
+      
+      i {
+        color: #ec4899;
+        font-size: 1.125rem;
+      }
+    }
+  }
+  
+  .btn-add-social {
+    @extend .admin-btn;
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: $w;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    border: none;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+    }
+    
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+  
+  .social-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .social-link-item {
+    background: $w;
+    border: 1px solid rgba(236, 72, 153, 0.15);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: rgba(236, 72, 153, 0.3);
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.1);
+    }
+    
+    .social-link-form {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 1rem;
+      align-items: end;
+      
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: $tp;
+        font-size: 0.875rem;
+        
+        i {
+          color: #ec4899;
+          font-size: 0.75rem;
+        }
+      }
+    }
+    
+    .social-link-actions {
+      display: flex;
+      align-items: center;
+      
+      .btn-remove-social {
+        @extend .admin-btn-remove;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        padding: 0.625rem;
+        min-width: auto;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:hover:not(:disabled) {
+          background: rgba(239, 68, 68, 0.2);
+          border-color: rgba(239, 68, 68, 0.3);
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+  
+  .social-links-empty {
+    text-align: center;
+    padding: 2rem;
+    color: $ts;
+    
+    i {
+      font-size: 2rem;
+      color: rgba(236, 72, 153, 0.3);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+    }
   }
 }
 
@@ -319,6 +607,12 @@ textarea.form-input {
     background: #059669;
     transform: translateY(-1px);
     box-shadow: $md;
+  }
+
+  &.btn-add-inline {
+    margin-top: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
   }
 }
 
