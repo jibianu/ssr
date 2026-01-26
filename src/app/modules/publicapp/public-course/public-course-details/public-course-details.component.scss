@@ -199,16 +199,678 @@
 
 
 
+// ✅ Old Design: Course Header Styles
+// ✅ Break out of public-container constraints to display full width
+.course-header-old {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background: #f8fafc;
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 5vw, 2.5rem);
+  margin-bottom: 2rem;
+  box-sizing: border-box;
+  // ✅ Ensure outer container doesn't cause overflow
+  overflow-x: hidden; // Prevent horizontal scroll
+  max-width: 100vw;
+}
+
+// ✅ Related Courses - Full Width Wrapper
+// ✅ Break out of public-container constraints to display full width
+.related-courses-wrapper {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  overflow-x: hidden;
+  max-width: 100vw;
+  // ✅ Consistent spacing (reduced to match page-section)
+  padding-top: 24px;
+  padding-bottom: 24px;
+  background: #ffffff; // ✅ White background for full-width section
+  box-sizing: border-box;
+  
+  // ✅ Tablet: 20px top & bottom
+  @media (max-width: 1024px) {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  
+  // ✅ Mobile: 16px top & bottom
+  @media (max-width: 768px) {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+}
+
+.related-courses-inner {
+  max-width: 1200px; // ✅ Match site max-width
+  margin: 0 auto;
+  padding-left: clamp(1rem, 4vw, 2rem);
+  padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+.course-header-card {
+  max-width: 1280px;
+  margin: 0 auto;
+  background-color: #e9ecef; // ✅ Changed from blue gradient to light gray
+  border-radius: 12px;
+  padding: clamp(2rem, 4vw, 3rem);
+  color: #1a1a1a; // ✅ Changed text color to dark for contrast on light background
+  width: 100%;
+  box-sizing: border-box;
+  // ✅ Ensure content stays within border
+  overflow: hidden; // Prevent content overflow
+}
+
+.course-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.badge-icon {
+  width: 32px;
+  height: 32px;
+  background: #dc2626;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  i {
+    color: #ffffff;
+    font-size: 1.2rem;
+  }
+}
+
+.badge-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1a1a1a; // ✅ Changed to dark for light background
+}
+
+.course-header-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1a1a1a; // ✅ Changed to dark for light background
+  margin: 0 0 1rem 0;
+  // ✅ Title width set to 75%
+  width: 75%;
+  max-width: 75%;
+  // ✅ Ensure title stays within border
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.course-header-subtitle {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: #333333; // ✅ Changed to dark for light background
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+  // ✅ Ensure subtitle stays within border
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.course-header-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  // ✅ Description content width set to 70%
+  width: 70%;
+  max-width: 70%;
+  
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    color: #333333; // ✅ Changed to dark for light background
+    line-height: 1.5;
+    // ✅ Ensure list items stay within border
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    
+    i {
+      color: #10b981; // ✅ Keep green checkmark color
+      font-size: 1rem;
+      margin-top: 0.25rem;
+      flex-shrink: 0;
+    }
+    
+    span {
+      flex: 1;
+      min-width: 0; // Allow text to wrap
+    }
+  }
+}
+
+.course-header-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.15); // ✅ Changed to dark border for light background
+  // ✅ Ensure footer stays within border
+  max-width: 100%;
+  
+  p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: #555555; // ✅ Changed to dark gray for light background
+    // ✅ Ensure footer text stays within border
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .course-header-card {
+    padding: 1.5rem;
+  }
+  
+  .course-header-title {
+    font-size: 1.75rem;
+  }
+  
+  .course-header-subtitle {
+    font-size: 1rem;
+  }
+}
+
 .post-title {
   font-size: 3.5rem;
   line-height: 4rem;
   color: #333;
 }
 
+// ✅ CONSISTENT SECTION SPACING - Utility Class
+// Apply to all major sections for uniform vertical spacing
+.page-section {
+  padding-top: 24px; // ✅ Desktop: 24px top & bottom (reduced further)
+  padding-bottom: 24px;
+  
+  // ✅ Tablet: 20px top & bottom
+  @media (max-width: 1024px) {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  
+  // ✅ Mobile: 16px top & bottom
+  @media (max-width: 768px) {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  
+  // ✅ Remove conflicting margins from first/last children
+  > *:first-child {
+    margin-top: 0 !important;
+  }
+  
+  > *:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+// ✅ UNIFIED SECTION TITLES - Same black color, width, thickness, no border
+.post-sub-title,
+.course-curriculum-title,
+.description-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000000 !important; // ✅ Same black color for all
+  margin-bottom: 1.5rem;
+  border-bottom: none !important; // ✅ No border line below
+  padding-bottom: 0;
+  display: block;
+  width: 100%; // ✅ Same width
+  
+  // ✅ Responsive font sizes
+  @media (max-width: 1024px) {
+    font-size: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+}
+
+// ✅ STEP 2: Sidebar column - must NOT scroll, allows sticky
+.sidebar-column {
+  position: relative;
+  overflow: visible !important; // ✅ CRITICAL: Must allow overflow for sticky
+  height: fit-content;
+  align-self: start; // ✅ Align to start for proper sticky behavior
+}
+
+// ✅ Ensure parent containers allow sticky positioning
+::ng-deep {
+  .public-container.course-details {
+    overflow: visible !important;
+    // ✅ Increase max-width and shift closer to right side
+    max-width: 1400px !important; // ✅ Increased from 1280px
+    width: min(100%, 1400px) !important;
+    margin-left: auto !important; // ✅ Push to right
+    margin-right: clamp(1rem, 3vw, 2rem) !important; // ✅ Smaller right margin to get closer to right edge
+    padding-left: clamp(1.5rem, 5vw, 2.5rem) !important; // ✅ Keep left padding
+    padding-right: clamp(1rem, 3vw, 1.5rem) !important; // ✅ Reduce right padding to get closer to right edge
+    
+    .row {
+      overflow: visible !important;
+      position: relative;
+    }
+    
+    .col-lg-4 {
+      overflow: visible !important;
+      position: relative;
+    }
+  }
+}
+
+// ✅ STEP 2: Sticky sidebar - Always visible, stops before Related Courses
+.sticky-sidebar {
+  width: 350px; // ✅ Fixed width for sidebar
+  height: fit-content; // ✅ Allow content to determine height
+  max-height: calc(100vh - 110px); // ✅ Prevent overflow viewport
+  z-index: 1000; // ✅ High z-index to stay above other content
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important;
+  
+  // ✅ Fixed position - always visible while scrolling
+  &.sidebar-fixed {
+    position: fixed !important;
+    top: 90px; // ✅ Position from top (accounts for site header ~80px + spacing)
+    
+    // ✅ Position calculation for centered container layout
+    right: max(calc((100vw - min(1280px, calc(100vw - 2 * clamp(1.5rem, 5vw, 2.5rem)))) / 2), clamp(1.5rem, 5vw, 2.5rem));
+    
+    // ✅ Simplified positioning for medium screens
+    @media (min-width: 1400px) {
+      right: calc((100vw - 1280px) / 2 + clamp(1.5rem, 5vw, 2.5rem));
+    }
+    
+    @media (max-width: 1399px) and (min-width: 992px) {
+      right: clamp(1.5rem, 5vw, 2.5rem); // ✅ Use container padding
+    }
+  }
+  
+  // ✅ Fixed position with bottom constraint - stops before Related Courses section
+  &.sidebar-absolute {
+    position: fixed !important; // ✅ Still fixed, but with bottom constraint
+    top: auto !important; // ✅ Remove top when using bottom
+    bottom: auto; // ✅ Will be set dynamically via JavaScript
+    
+    // ✅ Keep same right positioning
+    right: max(calc((100vw - min(1280px, calc(100vw - 2 * clamp(1.5rem, 5vw, 2.5rem)))) / 2), clamp(1.5rem, 5vw, 2.5rem));
+    
+    @media (min-width: 1400px) {
+      right: calc((100vw - 1280px) / 2 + clamp(1.5rem, 5vw, 2.5rem));
+    }
+    
+    @media (max-width: 1399px) and (min-width: 992px) {
+      right: clamp(1.5rem, 5vw, 2.5rem);
+    }
+  }
+  
+  // ✅ Disable fixed/absolute on mobile
+  @media (max-width: 991.98px) {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+  }
+}
+
+// ✅ Pricing Card Design (matching image)
+.pricing-card {
+  background: #ffffff;
+  border: 1px solid #14b8a6; // ✅ Teal border (matching image)
+  border-radius: 8px;
+  padding: 0; // ✅ Remove padding to allow image to touch edges
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex !important; // ✅ Ensure flex display
+  flex-direction: column;
+  overflow: visible !important; // ✅ Allow content to determine height (changed from hidden)
+  gap: 0; // ✅ Remove gap, use padding on individual elements
+  // ✅ Dynamic height - adjust based on content (Key Features data)
+  min-height: auto !important; // ✅ Allow content to determine height
+  height: auto !important; // ✅ Allow content to determine height
+  max-height: none !important; // ✅ No max height restriction
+  width: 100%; // ✅ Full width
+  // ✅ Ensure card grows/shrinks with content
+  flex-shrink: 0;
+}
+
+.pricing-card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px 8px 0 0; // ✅ Rounded top corners
+}
+
+// ✅ All content elements except image have horizontal padding
+.pricing-card-header,
+.pricing-option,
+.pricing-buy-btn,
+.pricing-countdown {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+// ✅ Key Features has its own padding (defined in .pricing-key-features)
+
+.pricing-card-header {
+  padding-top: 1.5rem;
+  margin-bottom: 1rem; // ✅ Equal spacing above price (matching spacing below)
+}
+
+.pricing-option {
+  margin-top: 0; // ✅ No top margin - spacing handled by header margin-bottom
+  margin-bottom: 1rem; // ✅ Equal spacing below price (matching spacing above)
+}
+
+.pricing-buy-btn {
+  margin-top: 0; // ✅ No top margin - spacing handled by pricing-option margin-bottom
+}
+
+.pricing-countdown {
+  margin-top: 0.5rem;
+}
+
+.pricing-key-features {
+  margin-top: 0.5rem;
+}
+
+.pricing-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem; // ✅ Equal spacing above price (matching spacing below)
+}
+
+.pricing-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.pricing-badge-plus {
+  background: #dc2626; // ✅ Red background
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.pricing-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem; // ✅ Equal spacing below price (matching spacing above)
+}
+
+.pricing-radio {
+  margin-top: 0.25rem;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.pricing-label {
+  flex: 1;
+  cursor: pointer;
+}
+
+.pricing-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  // ✅ Ensure discount price displays below main price
+  align-items: flex-start;
+}
+
+.pricing-amount {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.2;
+}
+
+.pricing-discount {
+  font-size: 0.875rem;
+  color: #6b7280; // ✅ Lighter grey color - matching reference image
+  display: block; // ✅ Display on new line below the price
+  margin-top: 0.25rem; // ✅ Small spacing from main price
+  font-weight: 400; // ✅ Normal weight (not bold)
+}
+
+.pricing-buy-btn {
+  background: #007f86 !important; // ✅ User specified background color
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center; // ✅ Center text
+  text-decoration: none;
+  display: flex;
+  align-items: center; // ✅ Vertically center icon and text
+  justify-content: center; // ✅ Horizontally center icon and text
+  gap: 1rem; // ✅ Gap between icon and text (10rem seems like typo, using 1rem)
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  // ✅ Increased button width - make it bigger
+  width: 90%; // ✅ Increased width to 90% of container
+  max-width: 90%; // ✅ Increased max-width to 90%
+  margin: 0 auto; // ✅ Center the button
+  margin-top: 0; // ✅ Remove top margin - spacing handled by pricing-option margin-bottom
+  
+  &:hover:not(.pricing-buy-btn-disabled) {
+    background: #006b70 !important; // ✅ Darker shade on hover
+    color: #ffffff;
+  }
+  
+  i {
+    font-size: 1rem;
+    // ✅ Ensure icon is centered
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  
+  // ✅ Ensure text is centered
+  span,
+  & > *:not(i) {
+    text-align: center;
+    display: inline-block;
+  }
+  
+  // ✅ Disabled state when countdown expires
+  &.pricing-buy-btn-disabled {
+    background: #9ca3af !important; // ✅ Gray background
+    color: #ffffff !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    pointer-events: none;
+    
+    &:hover {
+      background: #9ca3af !important;
+    }
+  }
+}
+
+// ✅ Countdown Timer - User-specific offer countdown
+.pricing-countdown {
+  font-size: 0.875rem;
+  color: #6b7280; // ✅ Standard text color
+  text-align: center;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  
+  .countdown-time {
+    font-weight: 700;
+    color: #dc2626 !important; // ✅ Reddish-orange/dark orange color - matching reference image
+    font-size: 0.875rem;
+  }
+  
+  // ✅ Expired state
+  &.pricing-countdown-expired {
+    .countdown-expired-text {
+      color: #dc2626 !important; // ✅ Reddish-orange color for expired text
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// ✅ Key Features Section (replaces benefits and trial info)
+.pricing-key-features {
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  margin-top: 0.5rem;
+  display: block !important; // ✅ Ensure it's visible
+  visibility: visible !important; // ✅ Ensure it's visible
+  opacity: 1 !important; // ✅ Ensure it's visible
+  width: 100% !important; // ✅ Full width
+  box-sizing: border-box;
+  // ✅ Dynamic height based on content - no fixed height
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  // ✅ No border-top since it's not at the bottom anymore
+}
+
+// ✅ Key Features Title - More specific selector to override any global styles
+:host .pricing-key-features .pricing-features-title,
+:host .pricing-card .pricing-key-features .pricing-features-title,
+:host h4.pricing-features-title,
+.pricing-key-features .pricing-features-title,
+.pricing-card .pricing-key-features .pricing-features-title,
+h4.pricing-features-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+  margin: 0 0 1rem 0;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.pricing-features-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  // ✅ Dynamic height based on number of features - no fixed min-height
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  // ✅ Allow container to grow/shrink based on content
+  flex-shrink: 0;
+}
+
+// ✅ Feature item - More specific selectors to override any global styles
+:host .pricing-feature-item,
+:host li.pricing-feature-item,
+:host .pricing-features-list .pricing-feature-item,
+.pricing-feature-item,
+li.pricing-feature-item,
+.pricing-features-list .pricing-feature-item {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100%;
+  // ✅ Dynamic height - adjust based on content length
+  height: auto !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  // ✅ Allow text wrapping for long feature descriptions
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  
+  .pricing-feature-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  // ✅ Checkmark icon - More specific selectors to override any global styles
+  :host .pricing-feature-check,
+  :host i.pricing-feature-check,
+  :host i.fa-check.pricing-feature-check,
+  :host .fa-check.pricing-feature-check,
+  .pricing-feature-check,
+  i.pricing-feature-check,
+  i.fa-check.pricing-feature-check,
+  .fa-check.pricing-feature-check {
+    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+    font-size: 1rem;
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+  }
+  
+  // ✅ Feature text - More specific selectors to override any global styles
+  :host .pricing-feature-text,
+  :host span.pricing-feature-text,
+  .pricing-feature-text,
+  span.pricing-feature-text {
+    flex: 1;
+    line-height: 1.5;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+// ✅ Legacy support (if still referenced)
 .fixedContainer {
-  position: fixed;
-  top: 15%;
-  width: 350px;
+  position: static; // ✅ Changed from fixed to static (no longer used)
+  width: 100%; // ✅ Full width of sidebar column
 }
 
 .blog-toc__list {
@@ -254,6 +916,121 @@ ul {
 
 /*---------------------------------- About course start------------------------------------------ */
 /* Accordion header styling */
+/* ----------------------About Accordion Section -------------------------------*/
+.about-accordion {
+  // ✅ Spacing handled by .page-section
+  margin-top: 0;
+}
+
+.about-acc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; // ✅ Small vertical spacing between items (no grey lines)
+  background: transparent;
+}
+
+.about-acc-item {
+  background: #ffffff; // ✅ White background only
+  border-radius: 0; // ✅ No rounded corners (matching reference)
+  box-shadow: none !important; // ✅ No shadow
+  border: none !important; // ✅ No border
+  overflow: hidden;
+}
+
+/* About Accordion Header */
+.about-acc-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem; // ✅ Fixed padding (prevents hover jump)
+  background: #ffffff; // ✅ White background
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  box-sizing: border-box !important; // ✅ Prevents size changes
+  min-height: 56px; // ✅ Prevents jump on hover
+  transition: background-color 150ms ease; // ✅ Only background transition
+  
+  &:hover {
+    background: #f9f9f9; // ✅ Very subtle background tint (no layout shift)
+    text-decoration: none;
+    color: inherit;
+    padding: 1rem 1.25rem; // ✅ Same padding (prevents jump)
+  }
+  
+  &.expanded {
+    background: #ffffff;
+  }
+  
+  &.collapsed {
+    background: #ffffff;
+  }
+}
+
+/* About Accordion Text */
+.about-acc-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937; // ✅ Dark text
+  flex: 1;
+  text-align: left;
+}
+
+/* About Accordion Icon - Chevron on Right */
+.about-acc-icon {
+  font-size: 0.875rem;
+  color: #6b7280; // ✅ Grey color
+  transition: transform 0.3s ease, color 150ms ease;
+  flex-shrink: 0;
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  
+  i.fa {
+    color: #6b7280; // ✅ Grey color
+    transition: transform 0.3s ease, color 150ms ease;
+  }
+  
+  // ✅ When expanded (open), chevron points up (no rotation)
+  &.open i.fa {
+    transform: rotate(0deg);
+  }
+}
+
+// ✅ Rotate chevron when header is collapsed
+.about-acc-header.collapsed .about-acc-icon i.fa {
+  transform: rotate(180deg);
+}
+
+// ✅ Keep chevron up when header is expanded
+.about-acc-header.expanded .about-acc-icon i.fa {
+  transform: rotate(0deg);
+}
+
+.about-acc-header:hover .about-acc-icon {
+  color: #1f2937; // ✅ Slightly darker on hover
+}
+
+/* About Accordion Body - Expanded Content */
+.about-acc-body {
+  background: #ffffff; // ✅ White background
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  overflow: hidden;
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+}
+
+.about-acc-body-inner {
+  padding: 0.75rem 1.25rem 1.25rem 1.25rem; // ✅ Comfortable padding
+  color: #4a4a4a; // ✅ Content text color
+  line-height: 1.7;
+  font-size: 0.9375rem;
+}
+
+/* Legacy card-header-about styles (for other sections) */
 .card-header-about {
   cursor: pointer !important; /* Force pointer */
   transition: background-color 0.3s ease;
@@ -276,47 +1053,163 @@ ul {
 
 
 /* ----------------------Top Companies Trust Us start -------------------------------*/
-.course-details__trusted-card {
-  border-radius: 10px;
-  transition: transform $course-transition-medium ease, box-shadow $course-transition-medium ease;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+/* Reduce spacing for this specific section */
+.page-section .course-details__trusted-card {
+  margin-top: -24px; // ✅ Further reduced from -18px
+  margin-bottom: -24px; // ✅ Further reduced from -18px
+  
+  @media (max-width: 1024px) {
+    margin-top: -20px; // ✅ Further reduced from -15px
+    margin-bottom: -20px; // ✅ Further reduced from -15px
   }
-
-  h3 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: $course-color-heading;
-  }
-
-  p {
-    font-size: 1rem;
-    color: #7f8c8d;
+  
+  @media (max-width: 768px) {
+    margin-top: -16px; // ✅ Further reduced from -12px
+    margin-bottom: -16px; // ✅ Further reduced from -12px
   }
 }
 
-.company-logo {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  transition: transform $course-transition-medium ease, box-shadow $course-transition-medium ease;
+/* Override Bootstrap card styles for trusted companies section */
+.card.course-details__trusted-card {
+  background: transparent !important; // ✅ No background color
+  background-color: transparent !important; // ✅ No background color
+  border-radius: 0 !important; // ✅ No rounded corners
+  border: none !important; // ✅ No border
+  box-shadow: none !important; // ✅ No shadow
+  transition: none; // ✅ No hover effects
+  padding: 0; // ✅ Remove default card padding (we use our own)
+  margin-top: -0.5rem; // ✅ Reduce top spacing
+  margin-bottom: -0.5rem; // ✅ Reduce bottom spacing
 
+  // ✅ Remove hover effects
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: none;
+    box-shadow: none;
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
+
+.course-details__trusted-card {
+  background: transparent !important; // ✅ No background color
+  background-color: transparent !important; // ✅ No background color
+  border-radius: 0 !important; // ✅ No rounded corners
+  border: none !important; // ✅ No border
+  box-shadow: none !important; // ✅ No shadow
+  transition: none; // ✅ No hover effects
+
+  // ✅ Reduce inner padding
+  .p-4 {
+    padding-top: 0.5rem !important; // ✅ Further reduced from 0.75rem
+    padding-bottom: 0.5rem !important; // ✅ Further reduced from 0.75rem
+  }
+  
+  .pb-4 {
+    padding-bottom: 0.5rem !important; // ✅ Further reduced from 0.75rem
+  }
+  
+  // ✅ Override Bootstrap margin classes
+  .mb-3 {
+    margin-bottom: 0.5rem !important; // ✅ Reduced from 1rem
+  }
+  
+  .mb-4 {
+    margin-bottom: 0.5rem !important; // ✅ Reduced from 1.5rem
+  }
+  
+  // ✅ Reduce row padding
+  .px-3 {
+    padding-left: 0.5rem !important; // ✅ Reduced from 1rem
+    padding-right: 0.5rem !important; // ✅ Reduced from 1rem
+  }
+
+  // ✅ Remove hover effects
+  &:hover {
+    transform: none;
+    box-shadow: none;
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
+
+/* Trusted Card Title */
+.trusted-card-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e3a8a; // ✅ Dark blue/black (matching image)
+  margin-bottom: 0.25rem !important; // ✅ Further reduced from 0.375rem (override mb-3)
+  margin-top: 0; // ✅ Remove top margin
+}
+
+/* Trusted Card Subtitle */
+.trusted-card-subtitle {
+  font-size: 1rem;
+  color: #6b7280; // ✅ Dark grey (matching image)
+  margin-bottom: 0.5rem !important; // ✅ Further reduced from 0.75rem (override mb-4)
+}
+
+/* Company Logo Container - No Background */
+.company-logo-container {
+  background-color: transparent; // ✅ No background color
+  border-radius: 8px;
+  padding: 0.75rem; // ✅ Further reduced from 1rem
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px; // ✅ Further reduced from 100px
+  transition: filter 0.3s ease; // ✅ Smooth color transition
+  box-shadow: none;
+  border: none;
+  cursor: pointer; // ✅ Pointer cursor on hover
+  
+  // ✅ Hover effect removed (logos already show original colors)
+  &:hover {
+    .company-logo-img {
+      filter: none; // ✅ Original colors (no filter needed)
+    }
+  }
+}
+
+/* Company Logo Image */
+.company-logo-img {
+  max-width: 100%;
+  max-height: 60px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: none; // ✅ Original colors (no filter)
+  transition: filter 0.3s ease; // ✅ Smooth color transition
+  cursor: pointer; // ✅ Pointer cursor on hover
+}
+
+/* Legacy company-logo class support */
+.company-logo {
+  padding: 1.5rem;
+  background-color: transparent; // ✅ No background color
+  border-radius: 8px;
+  transition: filter 0.3s ease; // ✅ Smooth color transition
+  box-shadow: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+
+  // ✅ Hover effect removed (logos already show original colors)
+  &:hover {
+    img {
+      filter: none; // ✅ Original colors (no filter needed)
+    }
   }
 
   img {
     max-width: 100%;
+    max-height: 60px;
     height: auto;
-    filter: grayscale(100%);
-    transition: filter $course-transition-medium ease;
-  }
-
-  &:hover img {
-    filter: grayscale(0%);
+    object-fit: contain;
+    filter: none; // ✅ Original colors (no filter)
+    transition: filter 0.3s ease; // ✅ Smooth color transition
+    cursor: pointer; // ✅ Pointer cursor on hover
   }
 }
 
@@ -351,46 +1244,52 @@ ul {
 /* ---------------------Description  start ------------------------- */
 
 /* General Styles */
-.description-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: $course-color-heading;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid $course-color-accent-red;
-  padding-bottom: 0.5rem;
-  display: inline-block;
-}
+/* Description Title - Matching Image Design */
+// ✅ Removed - now using unified section title styles above
 
+/* Description Container - White Card with Subtle Shadow */
 .description-container {
-  background-color: #f9f9f9;
-  border-radius: 10px;
+  background-color: #ffffff; // ✅ White background (matching image)
+  border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); // ✅ Subtle grey shadow (matching image)
+  border: 1px solid #e5e7eb; // ✅ Subtle grey border
+  margin-bottom: 2rem;
 }
 
-.description-container:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
+/* Description Content */
 .description-content {
   font-size: 1rem;
   color: #4a4a4a;
   line-height: 1.6;
 }
 
+/* Description Heading - Bold Black */
 .description-heading {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: $course-color-heading;
+  font-weight: 700; // ✅ Bold (matching image)
+  color: #000000; // ✅ Black color
   margin-bottom: 1rem;
   display: block;
+  line-height: 1.4;
 }
 
+/* Description Text - Smaller Grey Text */
 .description-text {
-  font-size: 1rem;
-  color: #7f8c8d;
-  margin-bottom: 1rem;
+  font-size: 0.9375rem; // ✅ Smaller font size (matching image)
+  color: #6b7280; // ✅ Grey color (matching image)
+  line-height: 1.7;
+  margin-top: 0.75rem;
+  
+  // ✅ Show all content (no truncation)
+  p {
+    margin-bottom: 1rem;
+    color: #6b7280;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .read-more-button {
@@ -408,9 +1307,7 @@ ul {
 /* Read More Component Styles */
 /* Responsive Design */
 @media (max-width: 768px) {
-  .description-title {
-    font-size: 1.5rem;
-  }
+  // ✅ Section titles now unified above - responsive handled there
 
   .description-heading {
     font-size: 1.1rem;
@@ -440,53 +1337,156 @@ ul {
 
 /* General Styles */
 .margin-top-3 {
+  // ✅ Spacing handled by .page-section - only use for non-section elements if needed
   margin-top: 1.5rem;
 }
 
-.post-sub-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: $course-color-heading;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid $course-color-accent-red;
-  padding-bottom: 0.5rem;
-  display: inline-block;
+// ✅ Removed - now using unified section title styles above
+
+/* FAQ Accordion Container */
+#coursefaq.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; // ✅ Clean spacing between items (no lines)
+  padding: 0;
+  margin: 0;
+  background: transparent; // ✅ Transparent background (no grey lines)
 }
 
-/* FAQ Card Header */
-.card-header-about {
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 1rem;
+/* FAQ List Container */
+#coursefaq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; // ✅ Clean spacing between items
+  background: transparent;
+}
+
+/* FAQ Card - Clean item container (if still in use) */
+#coursefaq .card {
+  border: none !important;
+  background-color: transparent !important;
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  outline: none !important;
+  overflow: visible;
+  padding: 0;
+}
+
+/* FAQ Item - Individual FAQ container */
+#coursefaq .faq-item {
+  border-radius: 0; // ✅ No rounded corners (matching curriculum)
+  background: #fff7ed; // ✅ Light orange background
+  overflow: hidden; // ✅ Keeps content within bounds
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* FAQ Header - Clickable header area */
+#coursefaq .faq-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; // ✅ Space between icon and text
+  padding: 1rem 1.25rem; // ✅ Fixed padding (prevents jumping)
+  background: #fff7ed; // ✅ Light orange background
+  border: 0 !important;
+  outline: 0 !important;
   cursor: pointer;
-}
-
-.card-header-about a {
-  color: $course-color-heading;
+  box-sizing: border-box !important; // ✅ Prevents size changes
+  min-height: 56px; // ✅ Prevents jump on hover
+  transition: background-color 150ms ease; // ✅ Only background transition
   text-decoration: none;
-  transition: color 0.3s ease;
+  color: inherit;
+  
+  // ✅ Hover: Only background color changes, no size/padding changes
+  &:hover {
+    background: #ffedd5; // ✅ Slightly darker orange
+    text-decoration: none;
+    color: inherit;
+    padding: 1rem 1.25rem; // ✅ Same padding (prevents jump)
+    
+    .faq-icon i.fa {
+      color: #FF6B35 !important; // ✅ Orange icon on hover
+    }
+  }
+  
+  &.expanded {
+    background: #ffedd5; // ✅ Darker when expanded
+  }
+  
+  &.collapsed {
+    background: #fff7ed; // ✅ Light orange when collapsed
+  }
 }
 
-.card-header-about a:hover {
-  color: $course-color-accent-red;
+/* FAQ Icon - Plus/Minus icon */
+#coursefaq .faq-icon {
+  font-size: 0.875rem;
+  line-height: 1;
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  
+  i.fa {
+    color: #6b7280 !important; // ✅ Hash/gray color by default
+    font-size: 0.875rem;
+    width: 16px;
+    text-align: center;
+    transition: color 150ms ease; // ✅ Smooth color transition
+  }
 }
 
-.card-header-about .chevron-arrow {
-  transition: transform 0.3s ease;
+/* FAQ Question Title */
+#coursefaq .faq-question-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+  line-height: 1.5;
 }
 
-.card-header-about a.collapsed .chevron-arrow {
-  transform: rotate(0deg);
+/* FAQ Collapse Content - Extended content background */
+#coursefaq .collapse {
+  background-color: #fff7ed; // ✅ Light orange background (same as header)
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease; // ✅ Smooth transition
+  overflow: hidden; // ✅ Prevent content overflow
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0;
+  outline: none !important;
 }
 
-.card-header-about a:not(.collapsed) .chevron-arrow {
-  transform: rotate(180deg);
+#coursefaq .collapse.show {
+  background-color: #fff7ed; // ✅ Light orange background when expanded
+  box-shadow: none !important;
 }
 
-/* FAQ Card Body */
-.card-body {
-  padding: 1rem;
-  background-color: #fff;
+/* FAQ Content - Content area */
+#coursefaq .faq-content {
+  padding: 0.75rem 1.25rem 1rem 3rem; // ✅ Indented to align with question text
+  background-color: #fff7ed; // ✅ Light orange background (matching header)
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  outline: none !important;
+  box-sizing: border-box;
+}
+
+/* Remove any card-body styling that might interfere */
+#coursefaq .card-body {
+  padding: 0.75rem 1.25rem 1rem 3rem;
+  background-color: #fff7ed;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  outline: none !important;
+  box-sizing: border-box;
 }
 
 .card-body .ml-5 {
@@ -495,9 +1495,7 @@ ul {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .post-sub-title {
-    font-size: 1.5rem;
-  }
+  // ✅ Section titles now unified above - responsive handled there
 
   .card-header-about {
     padding: 0.75rem;
@@ -509,9 +1507,7 @@ ul {
 }
 
 @media (max-width: 480px) {
-  .post-sub-title {
-    font-size: 1.25rem;
-  }
+  // ✅ Section titles now unified above - responsive handled there
 
   .card-header-about {
     padding: 0.5rem;
@@ -524,7 +1520,108 @@ ul {
 
 
 /* -------------------about traineer ----------------- */
-/* Trainer Image */
+/* ----------------------Trainer Section - Promotional Banner Design -------------------------------*/
+.trainer-section {
+  // ✅ Spacing handled by .page-section
+  margin-top: 0;
+}
+
+.trainer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; // ✅ Spacing between trainer items
+  background: transparent;
+}
+
+.trainer-item {
+  background: transparent;
+}
+
+/* Trainer Card - Matching Promotional Banner Design */
+.trainer-card {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: #ffffff; // ✅ White background
+  padding: 2rem; // ✅ Generous padding (matching banner)
+  border-radius: 12px; // ✅ Rounded corners (matching banner)
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); // ✅ Subtle shadow (matching banner)
+  border: 1px solid #e5e7eb; // ✅ Subtle border
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); // ✅ Slightly stronger shadow on hover
+  }
+}
+
+/* Trainer Card Left Section - Image */
+.trainer-card-left {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trainer-image-wrapper {
+  width: 150px; // ✅ Larger image size (matching banner)
+  height: 150px;
+  position: relative;
+}
+
+.trainer-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px; // ✅ Rounded corners (matching banner style)
+  object-fit: cover;
+  border: 2px solid #e5e7eb; // ✅ Subtle border
+  background: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Trainer Card Right Section - Content */
+.trainer-card-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.trainer-name {
+  font-size: 1.75rem; // ✅ Large, bold name (matching banner heading)
+  font-weight: 700; // ✅ Bold
+  color: #1f2937; // ✅ Dark text (matching banner)
+  margin: 0;
+  line-height: 1.3;
+}
+
+.trainer-description {
+  font-size: 1rem; // ✅ Readable description text
+  color: #4a5568; // ✅ Dark gray (matching banner text)
+  line-height: 1.7;
+  
+  p {
+    margin-bottom: 1rem;
+    color: #4a5568;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  // ✅ Style bullet points if any
+  ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin: 0.75rem 0;
+    
+    li {
+      margin-bottom: 0.5rem;
+      color: #4a5568;
+    }
+  }
+}
+
+/* Legacy Trainer Styles (for backward compatibility) */
 .rounded-circle.avatar-lg {
   width: 80px;
   height: 80px;
@@ -587,6 +1684,52 @@ h4.mb-0 {
 .course-detail__cta {
   @include course-cta-button(0.85rem 1.5rem);
   margin-bottom: 1rem;
+  
+  // ✅ Orange "Buy Now" button styling (main button without --info modifier)
+  &:not(.course-detail__cta--info) {
+    border: 1.5px solid #FF6B35 !important;
+    background: #FF6B35 !important;
+    background-color: #FF6B35 !important;
+    border-color: #FF6B35 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    
+    &:hover {
+      background: #e55a2b !important; // ✅ Darker orange on hover
+      background-color: #e55a2b !important;
+      border-color: #e55a2b !important;
+      border: 1.5px solid #e55a2b !important;
+      color: #ffffff !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(229, 90, 43, 0.4);
+      text-decoration: none;
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(229, 90, 43, 0.3);
+    }
+    
+    &:focus {
+      border: 1.5px solid #FF6B35 !important;
+      background: #FF6B35 !important;
+      background-color: #FF6B35 !important;
+      border-color: #FF6B35 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
+      text-decoration: none;
+    }
+    
+    &:visited {
+      border: 1.5px solid #FF6B35 !important;
+      background: #FF6B35 !important;
+      color: #ffffff !important;
+      text-decoration: none;
+    }
+  }
 
   .course-detail__cta-text {
     display: inline-flex;
@@ -594,27 +1737,357 @@ h4.mb-0 {
     gap: 0.6rem;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
+    color: #ffffff !important; // ✅ White text for orange button
+    
+    i,
+    i.fa,
+    i.fa-shopping-cart {
+      color: #ffffff !important; // ✅ White icon
+    }
   }
 
   .course-detail__cta-price {
     font-size: 1.05rem;
     font-weight: 700;
+    color: #ffffff !important; // ✅ White price text
+  }
+  
+  // ✅ Override for info variant - apply dark teal color
+  &.course-detail__cta--info {
+    background: #0d9488 !important;
+    background-color: #0d9488 !important;
+    color: #ffffff !important;
+    
+    &:hover {
+      background: #0f766e !important;
+      background-color: #0f766e !important;
+    }
   }
 }
 
-.course-detail__cta--info {
-  justify-content: center;
-  gap: 0.75rem;
-  white-space: normal;
-  text-align: center;
+// ✅ Match image: Dark teal button color and style
+// ✅ Use more specific selector to override mixin styles
+a.course-detail__cta.course-detail__cta--info,
+.course-detail__cta.course-detail__cta--info {
+  justify-content: center !important;
+  gap: 0.75rem !important;
+  white-space: normal !important;
+  text-align: center !important;
+  // ✅ Override mixin background color with dark teal
+  background: #0d9488 !important; // Dark teal matching the image
+  background-color: #0d9488 !important; // Ensure background-color is set
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3) !important; // Teal shadow
+  border: none !important;
+  
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    background: #0f766e !important; // Darker teal on hover
+    background-color: #0f766e !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(15, 118, 110, 0.4) !important;
+    text-decoration: none !important;
+  }
 
   .course-detail__cta-text {
-    justify-content: center;
-    white-space: normal;
-    text-align: center;
+    justify-content: center !important;
+    white-space: normal !important;
+    text-align: center !important;
+    color: #ffffff !important;
+    
+    i,
+    i.fa,
+    i.fa-phone {
+      color: #ffffff !important; // Ensure icon is white
+    }
   }
 
   .course-detail__cta-price {
-    display: none;
+    display: none !important;
+  }
+}
+
+// ✅ Course Curriculum Design (matching image)
+// ✅ Removed - now using unified section title styles above
+
+.course-curriculum-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.curriculum-item {
+  background: #fff7ed; // ✅ Light orange background for content only
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.curriculum-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  background: #fff7ed; // ✅ Light orange background (matching curriculum item)
+  transition: background 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  
+  &:hover {
+    background: #ffedd5; // ✅ Slightly darker orange on hover
+    text-decoration: none;
+    color: inherit;
+    
+    .curriculum-section-left i {
+      color: #FF6B35 !important; // ✅ Orange on hover (matching buy button)
+    }
+  }
+  
+  &.expanded {
+    background: #ffedd5; // ✅ Slightly darker orange when expanded
+  }
+  
+  &.collapsed {
+    background: #fff7ed; // ✅ Light orange background
+  }
+}
+
+.curriculum-section-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  
+  i {
+    color: #6b7280 !important; // ✅ Hash/gray color by default
+    font-size: 0.875rem;
+    width: 16px;
+    text-align: center;
+    transition: color 0.2s ease;
+  }
+  
+  &:hover i {
+    color: #FF6B35 !important; // ✅ Orange on hover (matching buy button)
+  }
+}
+
+.curriculum-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+}
+
+.curriculum-preview-link {
+  color: #FF6B35 !important; // ✅ Orange preview link (matching buy button)
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  
+  &:hover {
+    color: #e55a2b !important; // ✅ Darker orange on hover
+    text-decoration: underline;
+  }
+}
+
+.curriculum-section-content {
+  background: #fff7ed; // ✅ Light orange background (matching curriculum item)
+}
+
+.curriculum-lessons {
+  padding: 0.75rem 1.25rem 0.75rem 3rem; // ✅ Indented for lessons
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fff7ed; // ✅ Light orange background (matching curriculum item)
+}
+
+.curriculum-lesson {
+  display: flex;
+  flex-direction: column;
+}
+
+.curriculum-lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  
+  &:hover {
+    color: #FF6B35; // ✅ Orange on hover (matching buy button)
+    text-decoration: none;
+    
+    i {
+      color: #FF6B35 !important; // ✅ Orange on hover (matching buy button)
+    }
+  }
+  
+  &.expanded {
+    color: #FF6B35; // ✅ Orange when expanded (matching buy button)
+  }
+  
+  &.collapsed {
+    color: inherit;
+  }
+  
+  i {
+    color: #6b7280 !important; // ✅ Hash/gray color by default
+    font-size: 0.875rem;
+    width: 16px;
+    text-align: center;
+    transition: color 0.2s ease;
+  }
+  
+  &:hover i {
+    color: #FF6B35 !important; // ✅ Orange on hover (matching buy button)
+  }
+}
+
+.curriculum-lesson-title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #374151;
+  flex: 1;
+}
+
+.curriculum-lesson-simple {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  
+  .curriculum-lesson-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #374151;
+  }
+}
+
+.curriculum-duration {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.curriculum-lesson-items {
+  padding-left: 1.5rem;
+  margin-top: 0.25rem;
+  background: #fff7ed; // ✅ Light orange background (matching curriculum item)
+}
+
+.curriculum-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.curriculum-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.curriculum-item-title {
+  font-size: 0.875rem;
+  color: #4b5563;
+  flex: 1;
+}
+
+.curriculum-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.curriculum-play-icon {
+  color: #1d4ed8; // ✅ Blue play button
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #1e40af;
+  }
+}
+
+.curriculum-item-duration {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 400;
+  min-width: 45px;
+  text-align: right;
+}
+
+// ✅ Responsive styles
+@media (max-width: 768px) {
+  // ✅ Section titles now unified above - responsive handled there
+  
+  .curriculum-section-header {
+    padding: 0.875rem 1rem;
+  }
+  
+  .curriculum-lessons {
+    padding: 0.5rem 1rem 0.5rem 2rem;
+  }
+  
+  .curriculum-section-title,
+  .curriculum-lesson-title {
+    font-size: 0.875rem;
+  }
+}
+
+// ✅ FORCE Key Features colors - Override any global styles
+// ✅ These styles must take precedence - User specified color
+::ng-deep {
+  // Title color
+  .pricing-key-features .pricing-features-title,
+  .pricing-card .pricing-key-features h4.pricing-features-title,
+  app-public-course-details .pricing-key-features h4.pricing-features-title {
+    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+  }
+  
+  // Feature item text color
+  .pricing-feature-item,
+  .pricing-features-list .pricing-feature-item,
+  .pricing-key-features .pricing-feature-item,
+  .pricing-key-features li.pricing-feature-item,
+  app-public-course-details .pricing-feature-item {
+    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+  }
+  
+  // Checkmark icon color - Match exact HTML structure: <i class="fa fa-check pricing-feature-check"></i>
+  .pricing-feature-check,
+  .pricing-feature-item .fa-check,
+  .pricing-feature-item i.fa-check,
+  .pricing-feature-item .pricing-feature-check,
+  i.pricing-feature-check.fa-check,
+  i.fa.fa-check.pricing-feature-check,
+  .pricing-key-features i.fa-check.pricing-feature-check,
+  .pricing-key-features .fa-check.pricing-feature-check {
+    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
+  }
+  
+  // Feature text color - Match exact HTML structure: <span class="pricing-feature-text">
+  .pricing-feature-text,
+  .pricing-feature-item .pricing-feature-text,
+  .pricing-feature-item span.pricing-feature-text,
+  .pricing-key-features span.pricing-feature-text,
+  .pricing-key-features .pricing-feature-text {
+    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
   }
 }

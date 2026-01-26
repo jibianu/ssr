@@ -5,8 +5,8 @@
       <p class="affiliate-eyebrow">Affiliate program · Remote · High payouts</p>
       <h1>Earn generous commissions promoting <span>industry-leading courses</span></h1>
       <p class="affiliate-hero__lead">
-        Join the Oilandgasclub affiliate network and accelerate your audience’s growth with job-ready API, ASNT, CSWIP,
-        process, and software training. We’ll handle learner delivery—you keep sharing and earning.
+        Join the Oilandgasclub affiliate network and accelerate your audience's growth with job-ready API, ASNT, CSWIP,
+        process, and software training. We'll handle learner delivery—you keep sharing and earning.
       </p>
       <div class="affiliate-hero__cta">
         <a class="btn-primary" href="https://forms.gle/64Dr4QAyBHXupsvS6" target="_blank">Apply to be an affiliate</a>
@@ -29,19 +29,22 @@
     </div>
   </section>
 
-  <section class="affiliate-section">
-    <header class="affiliate-section__header">
-      <p class="affiliate-eyebrow">Why partner with us</p>
-      <h2>Program benefits</h2>
-      <p>Premium courses, global learners, and a dedicated partner success squad.</p>
-    </header>
-    <div class="affiliate-grid">
-      @for (perk of programPerks; track perk.title) {
-        <article class="affiliate-card">
-          <h3>{{ perk.title }}</h3>
-          <p>{{ perk.detail }}</p>
-        </article>
-      }
+  <!-- How does Oilandgasclub's affiliate program work? Section -->
+  <section class="affiliate-program-work">
+    <div class="affiliate-program-work__container">
+      <h2 class="affiliate-program-work__title">How does Oilandgasclub's affiliate program work?</h2>
+      <p class="affiliate-program-work__subtitle">Earn up to 45% commission on Oil & Gas courses, certifications, and expert programs</p>
+      <div class="affiliate-program-work__steps">
+        @for (step of programWorkSteps; track step.title) {
+          <article class="affiliate-program-work__card">
+            <div class="affiliate-program-work__icon-badge">
+              <img [src]="step.icon" [alt]="step.title" class="affiliate-program-work__icon" />
+            </div>
+            <h3 class="affiliate-program-work__card-title">{{ step.title }}</h3>
+            <p class="affiliate-program-work__card-description">{{ step.description }}</p>
+          </article>
+        }
+      </div>
     </div>
   </section>
 
@@ -62,13 +65,50 @@
   </section>
 
   <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">Why partner with us</p>
+      <h2>Program benefits</h2>
+      <p>Premium courses, global learners, and a dedicated partner success squad.</p>
+    </header>
+    <div class="affiliate-grid">
+      @for (perk of programPerks; track perk.title) {
+        <article class="affiliate-card">
+          <h3>{{ perk.title }}</h3>
+          <p>{{ perk.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="affiliate-section">
     <div class="affiliate-cta">
       <div>
         <p class="affiliate-eyebrow">Apply today</p>
         <h2>Ready to share game-changing training?</h2>
-        <p>Tell us about your audience, platforms, and campaign ideas. We’ll get back within 1 business day.</p>
+        <p>Tell us about your audience, platforms, and campaign ideas. We'll get back within 1 business day.</p>
       </div>
       <a class="btn-primary" href="https://forms.gle/64Dr4QAyBHXupsvS6" target="_blank">Submit application</a>
+    </div>
+  </section>
+
+  <!-- Join OilAndGasClub Affiliate Program Section -->
+  <section class="affiliate-join-section">
+    <div class="affiliate-join-section__container">
+      <h2 class="affiliate-join-section__title">Join OilAndGasClub Affiliate Program</h2>
+      <p class="affiliate-join-section__description">
+        OilAndGasClub is looking for industry professionals, educators, content creators, and community leaders in the Oil & Gas and Energy sector to promote expert-led courses, certifications, and programs as affiliate partners. Ideal partners are those with engaged audiences seeking career growth in the energy industry.
+      </p>
+      <div class="affiliate-join-section__benefits">
+        @for (benefit of affiliateBenefits; track benefit.title) {
+          <article class="affiliate-join-section__benefit">
+            <div class="affiliate-join-section__icon-wrapper">
+              <img [src]="benefit.icon" [alt]="benefit.title" class="affiliate-join-section__icon" />
+            </div>
+            <h3 class="affiliate-join-section__benefit-title">{{ benefit.title }}</h3>
+            <p class="affiliate-join-section__benefit-description">{{ benefit.description }}</p>
+          </article>
+        }
+      </div>
     </div>
   </section>
 
@@ -87,4 +127,3 @@
     </div>
   </section>
 </div>
-

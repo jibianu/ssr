@@ -61,11 +61,29 @@ export class PublicAppService {
 
         const options = httpParams ? { params: httpParams } : {};
 
-        return this.http.get<any>(`${this.apiUrl}page/course`, options).pipe(
+        const url = `${this.apiUrl}page/course`;
+        console.log('[PublicAppService] Fetching courses from:', url, 'with params:', params);
+        
+        return this.http.get<any>(url, options).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
-                console.error('Error fetching courses:', error);
-                return of([]); // ✅ ERROR HANDLING: Return empty array instead of throwing
+                // ✅ SSR-FRIENDLY: Only log errors in browser, not during SSR
+                // Network errors during SSR are expected if backend is not running
+                if (this.isServer) {
+                    // During SSR, silently return empty array if backend is not available
+                    console.warn('[PublicAppService] SSR: Backend not available, returning empty courses');
+                    return of({ results: [], totalNumberOfRecords: 0 });
+                } else {
+                    // In browser, log detailed error
+                    console.error('[PublicAppService] Error fetching courses:', {
+                        error,
+                        url,
+                        status: error?.status,
+                        statusText: error?.statusText,
+                        message: error?.message
+                    });
+                    return of({ results: [], totalNumberOfRecords: 0 }); // ✅ ERROR HANDLING: Return empty result structure
+                }
             })
         );
     }
@@ -85,6 +103,24 @@ export class PublicAppService {
     getCourseByCanonicalURL(url: string): Observable<any> {
         // ✅ FIX: Normalize URL - remove leading slashes and any 'course/course/' or 'course/' prefixes
         let normalizedUrl = (url || '').trim();
+
+        // ✅ SAFETY: Never treat static asset filenames as course slugs.
+        // This prevents accidental calls like: getCourseByCanonicalURL("publicapp.module-XXXX.js")
+        const rawLower = normalizedUrl.toLowerCase();
+        const looksLikeAsset =
+            rawLower.endsWith('.js') ||
+            rawLower.endsWith('.css') ||
+            rawLower.endsWith('.map') ||
+            rawLower.endsWith('.json') ||
+            rawLower.endsWith('.ico') ||
+            rawLower.startsWith('assets/') ||
+            rawLower.startsWith('/assets/');
+        if (looksLikeAsset) {
+            if (!this.isServer) {
+                console.warn('[PublicAppService] Ignoring asset-like slug passed to getCourseByCanonicalURL:', url);
+            }
+            return of(null);
+        }
         
         // Remove leading slashes first
         normalizedUrl = normalizedUrl.replace(/^\/+/, '');
@@ -306,6 +342,26 @@ export class PublicAppService {
     getCourseByCanonicalLocationURL(courseUrl: string, locationUrl: string): Observable<any> {
         // ✅ FIX: Normalize courseUrl - remove leading slashes and any 'course/course/' or 'course/' prefixes
         let normalizedCourseUrl = (courseUrl || '').trim();
+
+        // ✅ SAFETY: Never treat static asset filenames as course slugs/locations.
+        const rawCourseLower = normalizedCourseUrl.toLowerCase();
+        const rawLocationLower = (locationUrl || '').trim().toLowerCase();
+        const looksLikeAsset =
+            rawCourseLower.endsWith('.js') || rawCourseLower.endsWith('.css') || rawCourseLower.endsWith('.map') ||
+            rawCourseLower.endsWith('.json') || rawCourseLower.endsWith('.ico') ||
+            rawLocationLower.endsWith('.js') || rawLocationLower.endsWith('.css') || rawLocationLower.endsWith('.map') ||
+            rawLocationLower.endsWith('.json') || rawLocationLower.endsWith('.ico') ||
+            rawCourseLower.startsWith('assets/') || rawCourseLower.startsWith('/assets/') ||
+            rawLocationLower.startsWith('assets/') || rawLocationLower.startsWith('/assets/');
+        if (looksLikeAsset) {
+            if (!this.isServer) {
+                console.warn('[PublicAppService] Ignoring asset-like slug/location passed to getCourseByCanonicalLocationURL:', {
+                    courseUrl,
+                    locationUrl
+                });
+            }
+            return of(null);
+        }
         
         // Remove leading slashes first
         normalizedCourseUrl = normalizedCourseUrl.replace(/^\/+/, '');

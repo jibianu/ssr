@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { SharedModule } from 'src/app/shared/shared.module';
 
 // ✅ PERFORMANCE: OnPush change detection for faster change detection (30-50% improvement)
@@ -26,7 +26,8 @@ export class PublicTopbarComponent implements OnInit {
 
   constructor(
     private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: Required for OnPush - manually trigger change detection
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -52,6 +53,15 @@ export class PublicTopbarComponent implements OnInit {
     if (this.isBrowser) {
       this.isVisible = false;
       this.cdr.markForCheck(); // ✅ PERFORMANCE: Trigger change detection for OnPush
+    }
+  }
+
+  // Navigate to courses page
+  navigateToCourses(): void {
+    if (this.isBrowser) {
+      this.router.navigate(['/courses']).catch(error => {
+        console.error('Navigation error:', error);
+      });
     }
   }
 }

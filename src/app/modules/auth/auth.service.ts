@@ -195,8 +195,29 @@ export class AuthenticationService {
    * Useful before navigation to ensure guard can validate tokens
    */
   public ensureTokensLoaded(): void {
-    this.ensureAccessTokenLoaded();
-    this.ensureIdTokenLoaded();
+    // ✅ FIX: Always try to load tokens, even if platform check fails
+    // This handles cases where platformId might not be properly detected
+    try {
+      this.ensureAccessTokenLoaded();
+      this.ensureIdTokenLoaded();
+    } catch (error) {
+      console.warn('[AuthService] Error loading tokens:', error);
+      // Try direct localStorage access as fallback
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const storedAccessToken = window.localStorage.getItem(this.storageKeys.accessToken);
+          const storedIdToken = window.localStorage.getItem(this.storageKeys.idToken);
+          if (storedAccessToken) {
+            this.accessToken = this.normalizeTokenString(storedAccessToken);
+          }
+          if (storedIdToken) {
+            this.idToken = this.normalizeTokenString(storedIdToken);
+          }
+        } catch (e) {
+          console.warn('[AuthService] Fallback token loading failed:', e);
+        }
+      }
+    }
     
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       console.log('[AuthService] 🔄 Force loaded tokens:');
@@ -581,7 +602,10 @@ export class AuthenticationService {
       return true;
     }
 
-    if (!isPlatformBrowser(this.platformId)) {
+    // ✅ FIX: Check both platformId and window object for better browser detection
+    const isBrowser = isPlatformBrowser(this.platformId) || (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined');
+    
+    if (!isBrowser) {
       if (typeof ngDevMode === 'undefined' || ngDevMode) {
         console.debug('[AuthService] ensureIdTokenLoaded() - Not in browser, skipping');
       }
@@ -645,7 +669,10 @@ export class AuthenticationService {
       return true;
     }
 
-    if (!isPlatformBrowser(this.platformId)) {
+    // ✅ FIX: Check both platformId and window object for better browser detection
+    const isBrowser = isPlatformBrowser(this.platformId) || (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined');
+    
+    if (!isBrowser) {
       if (typeof ngDevMode === 'undefined' || ngDevMode) {
         console.debug('[AuthService] ensureAccessTokenLoaded() - Not in browser, skipping');
       }

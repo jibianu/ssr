@@ -1,4 +1,4 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
@@ -19,8 +19,14 @@ import { environment } from '../../../environments/environment';
  */
 @Injectable()
 export class SSLBypassInterceptor implements HttpInterceptor {
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly isBrowser: boolean;
   private readonly isDevelopment = !environment.production;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // ✅ FIX: Initialize in constructor to prevent injector errors during SSR
+    // Field initializers with inject() can fail if injector is destroyed during SSR
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Only active in development and browser

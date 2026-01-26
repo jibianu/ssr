@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Profile head -->
+  <circle cx="32" cy="22" r="9" fill="#1e3a8a"/>
+  <!-- Profile body -->
+  <path d="M20 36 C20 31 24 27 32 27 C40 27 44 31 44 36 C44 41 40 45 32 45 C24 45 20 41 20 36 Z" fill="#1e3a8a"/>
+  <!-- Face details -->
+  <circle cx="32" cy="22" r="5.5" fill="#ffffff"/>
+  <circle cx="32" cy="22" r="3.5" fill="#1e3a8a"/>
+  <!-- Platform base -->
+  <rect x="22" y="40" width="20" height="3" rx="1.5" fill="#1e3a8a"/>
+</svg>

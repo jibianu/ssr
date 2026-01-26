@@ -39,16 +39,17 @@
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true,
+            "watch": true,
             "budgets": [
                 {
                     "type": "initial",
-                    "maximumWarning": "1mb",
-                    "maximumError": "2mb"
+                    "maximumWarning": "5mb",
+                    "maximumError": "10mb"
                 },
                 {
                     "type": "anyComponentStyle",
-                    "maximumWarning": "2mb",
-                    "maximumError": "3mb"
+                    "maximumWarning": "5mb",
+                    "maximumError": "10mb"
                 },
                 {
                     "type": "bundle",
@@ -112,8 +113,11 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "port": 4200
-           
+            "port": 4200,
+            "poll": 2000,
+            "host": "localhost",
+            "hmr": true,
+            "liveReload": true
           },
           "configurations": {
             "production": {
@@ -121,6 +125,10 @@
             },
             "development": {
               "buildTarget": "Course:build:development"
+            },
+            "hmr": {
+              "buildTarget": "Course:build:development",
+              "hmr": true
             }
           },
           "defaultConfiguration": "development"

@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   Inject,
   OnDestroy,
   OnInit,
@@ -64,6 +65,10 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   eventUserForm!: FormGroup;
   modalRef: NgbModalRef | null = null;
   isSubmitting = false;
+
+  // ✅ Sticky sidebar positioning state
+  isSidebarFixed = true; // ✅ Start as fixed, switch to constrained when near Certificate section
+  isSidebarVisible = false; // ✅ Only visible when "About this event" section is in view
 
   testimonials: Testimonial[] = [
     {
@@ -235,6 +240,12 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    // ✅ Initial check for sidebar visibility
+    if (this.isBrowser) {
+      setTimeout(() => {
+        this.onWindowScroll();
+      }, 100);
+    }
     if (this.isBrowser) {
       setTimeout(() => {
         this.updateTestimonialControls();
@@ -1495,6 +1506,86 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Keep modal open but allow user to retry
     // User can close modal and try again, or contact support
+  }
+
+  // ✅ Handle scroll to show sidebar when "About this event" is visible and stop before Certificate section
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    if (!this.isBrowser || !this.event) {
+      return;
+    }
+
+    const aboutSection = document.querySelector('#about');
+    const certificateElement = document.querySelector('.certificate-section');
+    const sidebarElement = document.querySelector('.sticky-top') as HTMLElement;
+    
+    if (!aboutSection) {
+      this.isSidebarVisible = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!sidebarElement) {
+      return;
+    }
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const aboutRect = aboutSection.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    
+    // ✅ Check if "About this event" section is visible (entered viewport)
+    // Sidebar should appear when about section enters viewport (top is at or above viewport bottom)
+    const isAboutVisible = aboutRect.top <= viewportHeight && aboutRect.bottom > 0;
+    
+    // ✅ Show sidebar only when "About this event" section is in view
+    if (!isAboutVisible) {
+      this.isSidebarVisible = false;
+      this.isSidebarFixed = true;
+      sidebarElement.style.bottom = 'auto';
+      sidebarElement.style.top = 'auto';
+      this.cdr.markForCheck();
+      return;
+    }
+    
+    // ✅ Sidebar is visible when about section is in view
+    this.isSidebarVisible = true;
+
+    // ✅ Handle stopping before Certificate section
+    if (!certificateElement) {
+      this.isSidebarFixed = true;
+      sidebarElement.style.bottom = 'auto';
+      sidebarElement.style.top = '90px';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const certificateRect = certificateElement.getBoundingClientRect();
+    const sidebarHeight = sidebarElement.getBoundingClientRect().height;
+    const sidebarTop = 90; // ✅ Fixed top position
+    const buffer = 20; // ✅ 20px buffer
+    
+    // ✅ Calculate if sidebar bottom would overlap Certificate section top
+    // When sidebar is fixed at top: 90px, its bottom is at scrollTop + 90px + sidebarHeight
+    const sidebarBottomPosition = scrollTop + sidebarTop + sidebarHeight;
+    const certificateTopPosition = certificateRect.top + scrollTop;
+    const stopPosition = certificateTopPosition - buffer;
+    
+    // ✅ Switch to constrained positioning when sidebar would overlap Certificate section
+    if (sidebarBottomPosition >= stopPosition) {
+      this.isSidebarFixed = false;
+      // ✅ Set bottom position to stop before Certificate section
+      // Calculate bottom value from viewport bottom to certificate top
+      // Ensure bottom value is positive and reasonable
+      const bottomValue = Math.max(20, window.innerHeight - certificateRect.top + buffer);
+      sidebarElement.style.bottom = `${bottomValue}px`;
+      sidebarElement.style.top = 'auto';
+    } else {
+      this.isSidebarFixed = true;
+      sidebarElement.style.bottom = 'auto';
+      sidebarElement.style.top = '90px';
+    }
+
+    this.cdr.markForCheck();
   }
 }
 

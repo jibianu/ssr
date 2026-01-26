@@ -567,3 +567,95 @@ img {
   font-weight: 700;
     color: #007bff !important;
 }
+
+// ✅ GLOBAL: Hide "Access Forever" popup/tooltip (fixed right side)
+// Hide any fixed positioned element on the right side
+body > div[style*="position: fixed"][style*="right"],
+body > div[style*="position:fixed"][style*="right"] {
+  // Target common popup/tooltip patterns
+  &[class*="access"],
+  &[id*="access"],
+  &[class*="key-features"],
+  &[id*="key-features"],
+  &[class*="tooltip"],
+  &[class*="popup"],
+  &[role="tooltip"],
+  &[data-tooltip],
+  &[data-popup] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+// ✅ GLOBAL: Hide elements with Access Forever related classes/ids (anywhere on page)
+[class*="access-forever"],
+[class*="accessForever"],
+[class*="access_forever"],
+[id*="access-forever"],
+[id*="accessForever"],
+[id*="access_forever"],
+[class*="key-features"],
+[class*="keyFeatures"],
+[id*="key-features"],
+[id*="keyFeatures"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+// ✅ GLOBAL: Hide tooltip/popup elements that might contain Access Forever content
+.tooltip,
+.popup,
+[role="tooltip"],
+[data-tooltip*="Access"],
+[title*="Access Forever"],
+[data-popup],
+[data-tooltip] {
+  &[class*="access"],
+  &[id*="access"],
+  &[class*="key-features"],
+  &[id*="key-features"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    
+    &::before,
+    &::after {
+      display: none !important;
+      content: none !important;
+    }
+  }
+}
+
+// ✅ GLOBAL: Hide any fixed right-side element (catch-all for dynamically added popups)
+body > *[style*="position: fixed"][style*="right"]:not([class*="toaster"]):not([class*="toast"]) {
+  // Hide if it looks like a popup/tooltip (has shadow, border, or specific dimensions)
+  &[style*="box-shadow"],
+  &[style*="border"],
+  &[style*="z-index"] {
+    // Additional check: if it's a small-medium sized box (typical popup size)
+    max-height: 600px;
+    max-width: 500px;
+    
+    // Hide if it contains Access Forever related attributes
+    &[class*="access"],
+    &[id*="access"],
+    &[class*="key-features"],
+    &[id*="key-features"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  }
+}

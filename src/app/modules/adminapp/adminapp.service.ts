@@ -1,8 +1,8 @@
 import { Category } from './category/category.model';
-import { Observable, of } from 'rxjs';
-import { shareReplay, catchError } from 'rxjs/operators';
+import { Observable, of, BehaviorSubject } from 'rxjs';
+import { shareReplay, catchError, tap } from 'rxjs/operators';
 import { environment } from './../../../environments/environment';
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -79,9 +79,27 @@ export class AdminAppService {
     private userInfoCache$: Observable<any> | null = null;
     private eventsCache$: Observable<any> | null = null;
 
-    private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+    // ✅ SHARED STATE: BehaviorSubject for Events to enable immediate UI sync across components
+    private eventsSubject$ = new BehaviorSubject<EventResponse[]>([]);
+    public events$ = this.eventsSubject$.asObservable();
+    
+    // ✅ DEBUG: Public getter to check current state (for debugging only)
+    public getEventsCount(): number {
+        return this.eventsSubject$.value.length;
+    }
 
-    constructor(private http: HttpClient) {
+    private readonly isBrowser: boolean;
+
+    constructor(
+        private http: HttpClient,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        // ✅ DEBUG: Verify singleton instance
+        console.log('[AdminAppService] 🏗️ Service instance created:', this);
+        
+        // ✅ FIX: Initialize in constructor to prevent injector errors during SSR
+        // Field initializers with inject() can fail if injector is destroyed during SSR
+        this.isBrowser = isPlatformBrowser(this.platformId);
     }
 
     // ✅ PERFORMANCE: shareReplay prevents duplicate concurrent requests
@@ -399,17 +417,32 @@ export class AdminAppService {
     }
     // ✅ PERFORMANCE: Cache events list - frequently accessed in admin panel
     getEvents(): Observable<any> {
+        // ✅ FIX: Always fetch fresh data if cache is invalidated
+        // This ensures updates reflect everywhere
         if (!this.eventsCache$) {
-            this.eventsCache$ = this.http.get(this.apiUrl + `page/event`).pipe(
+            this.eventsCache$ = this.http.get<EventResponse[]>(this.apiUrl + `page/event`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
+                tap(events => {
+                    // ✅ SHARED STATE: Update BehaviorSubject when events are fetched
+                    if (Array.isArray(events)) {
+                        this.eventsSubject$.next(events);
+                    }
+                }),
                 catchError(error => {
                     console.error('Error fetching events:', error);
                     this.eventsCache$ = null; // ✅ ERROR HANDLING: Clear cache on error
+                    this.eventsSubject$.next([]); // ✅ SHARED STATE: Emit empty array on error
                     return of([]); // ✅ ERROR HANDLING: Return empty array on error
                 })
             );
         }
         return this.eventsCache$;
+    }
+    
+    // ✅ FIX: Public method to force refresh events list
+    // This can be called after updates to ensure fresh data
+    refreshEvents(): void {
+        this.eventsCache$ = null;
     }
 
     getEventById(eventId: string): Observable<EventResponse | null> {
@@ -426,6 +459,15 @@ export class AdminAppService {
         // ✅ PERFORMANCE: Invalidate events cache on mutation
         this.eventsCache$ = null;
         return this.http.post<EventResponse>(this.apiUrl + `page/event`, event).pipe(
+            tap(newEvent => {
+                // ✅ SHARED STATE: Add new event to BehaviorSubject
+                // ✅ FIX: Create NEW object reference for Angular change detection
+                const currentEvents = this.eventsSubject$.value;
+                const newEventCopy = { ...newEvent }; // ✅ CRITICAL: New object reference
+                this.eventsSubject$.next([...currentEvents, newEventCopy]);
+                console.log('[AdminAppService] ✅ Added new event to shared state:', newEvent.id || (newEvent as any).Id);
+                console.log('[AdminAppService] 🔁 Emitting new array reference (immutable update)');
+            }),
             catchError(error => {
                 console.error('[AdminAppService] Error creating event:', error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling
@@ -437,22 +479,99 @@ export class AdminAppService {
         // ✅ PERFORMANCE: Invalidate events cache on mutation
         this.eventsCache$ = null;
         
-        // ✅ DEBUG: Log request payload to match backend logging
-        // Backend logs: [EventController.Put] ShowOnDashboard value, so we log the same
+        // ✅ DEBUG: Log request payload
         const showOnDashboard = event.ShowOnDashboard ?? event.showOnDashboard;
         const registrationCompleted = event.RegistrationCompleted ?? event.registrationCompleted;
         
-        console.log('[AdminAppService] Updating event - matching backend logs:', {
+        console.log('[UPDATE PAYLOAD] 📤 PUT Request to backend:', {
             eventId: id,
+            url: `${this.apiUrl}page/event/${id}`,
             showOnDashboard: showOnDashboard,
-            showOnDashboardType: typeof showOnDashboard,
-            registrationCompleted: registrationCompleted,
-            registrationCompletedType: typeof registrationCompleted,
-            hasShowOnDashboard: showOnDashboard !== undefined && showOnDashboard !== null,
-            hasRegistrationCompleted: registrationCompleted !== undefined && registrationCompleted !== null
+            registrationCompleted: registrationCompleted
         });
         
         return this.http.put<EventResponse>(this.apiUrl + `page/event/${id}`, event).pipe(
+            tap(updatedEvent => {
+                // ✅ SHARED STATE: Update BehaviorSubject with updated event
+                const currentEvents = this.eventsSubject$.value;
+                
+                // ✅ FIX: Handle both camelCase (id) and PascalCase (Id) for compatibility
+                const updatedEventId = updatedEvent.id || (updatedEvent as any).Id || id;
+                const searchId = id.toLowerCase();
+                
+                console.log('[AdminAppService] 🔍 Updating shared state - Search ID:', searchId, 'Updated Event ID:', updatedEventId);
+                console.log('[AdminAppService] Current events in shared state:', currentEvents.length);
+                
+                const index = currentEvents.findIndex(e => {
+                    const eventId = (e.id || (e as any).Id || '').toLowerCase();
+                    const matches = eventId === searchId || eventId === updatedEventId.toLowerCase();
+                    if (matches) {
+                        console.log('[AdminAppService] ✅ Found matching event at index:', currentEvents.indexOf(e), 'Event ID:', eventId);
+                    }
+                    return matches;
+                });
+                
+                if (index !== -1 && currentEvents.length > 0) {
+                    // ✅ IMMEDIATE UPDATE: Replace existing event in shared state (0ms delay)
+                    // ✅ FIX: Create NEW array AND NEW object reference for Angular change detection
+                    const updatedEvents = [...currentEvents];
+                    updatedEvents[index] = { ...updatedEvent }; // ✅ CRITICAL: New object reference
+                    this.eventsSubject$.next(updatedEvents);
+                    console.log('[AdminAppService] ✅ Updated event in shared state IMMEDIATELY:', updatedEventId, 'at index:', index, 'Total events:', updatedEvents.length);
+                    console.log('[AdminAppService] 🔁 Emitting new array reference (immutable update)');
+                } else {
+                    // ✅ FALLBACK: Event not in list OR shared state is empty
+                    // Strategy: Add updated event immediately, then refresh list in background
+                    console.log('[AdminAppService] ⚠️ Updated event not found in cache or cache is empty');
+                    console.log('[AdminAppService] Current events count:', currentEvents.length);
+                    console.log('[AdminAppService] Searching for ID:', searchId);
+                    console.log('[AdminAppService] Updated event ID:', updatedEventId);
+                    
+                    // ✅ IMMEDIATE UPDATE: Add updated event to shared state right away (even if list is empty)
+                    // This ensures the list page sees the update immediately without waiting for HTTP call
+                    // ✅ FIX: Create NEW object reference for Angular change detection
+                    const updatedEventCopy = { ...updatedEvent }; // ✅ CRITICAL: New object reference
+                    
+                    if (currentEvents.length > 0) {
+                        // List exists but event not found - add it
+                        const updatedEvents = [...currentEvents, updatedEventCopy];
+                        this.eventsSubject$.next(updatedEvents);
+                        console.log('[AdminAppService] ✅ Added updated event to shared state IMMEDIATELY (event was missing):', updatedEventId);
+                        console.log('[AdminAppService] 🔁 Emitting new array reference (immutable update)');
+                    } else {
+                        // Shared state is empty - create array with just this event for immediate visibility
+                        this.eventsSubject$.next([updatedEventCopy]);
+                        console.log('[AdminAppService] ✅ Initialized shared state with updated event IMMEDIATELY:', updatedEventId);
+                        console.log('[AdminAppService] 🔁 Emitting new array reference (immutable update)');
+                    }
+                    
+                    // ✅ BACKGROUND REFRESH: Fetch full list in background to ensure consistency
+                    // ✅ FIX: Use setTimeout to ensure immediate update happens FIRST, then refresh
+                    // This prevents race condition where background refresh overwrites immediate update
+                    setTimeout(() => {
+                        this.eventsCache$ = null;
+                        this.getEvents().subscribe({
+                            next: (freshEvents) => {
+                                console.log('[AdminAppService] ✅ Background refresh completed:', freshEvents.length, 'events');
+                                // ✅ FIX: Only update if we got more events than what we have
+                                // This prevents overwriting the immediate update if it's already correct
+                                const currentState = this.eventsSubject$.value;
+                                if (freshEvents.length >= currentState.length) {
+                                    // Update shared state with fresh data (includes our immediate update)
+                                    this.eventsSubject$.next(freshEvents);
+                                    console.log('[AdminAppService] 🔄 Background refresh merged with immediate update');
+                                } else {
+                                    console.log('[AdminAppService] ⚠️ Background refresh returned fewer events, keeping immediate update');
+                                }
+                            },
+                            error: (err) => {
+                                console.error('[AdminAppService] ❌ Error refreshing events list:', err);
+                                // Don't clear the immediate update on error - user already sees the updated event
+                            }
+                        });
+                    }, 100); // ✅ Small delay ensures immediate update is processed first
+                }
+            }),
             catchError(error => {
                 console.error(`[AdminAppService] Error updating event ${id}:`, error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling

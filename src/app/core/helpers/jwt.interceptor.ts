@@ -1,6 +1,6 @@
 import { NgxSpinnerService } from 'ngx-spinner';
 import { AuthenticationService } from '../../modules/auth/auth.service';
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
@@ -15,12 +15,17 @@ export class JwtInterceptor implements HttpInterceptor {
     ];
     
     private spinnerTimeout: any;
-    private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+    private readonly isBrowser: boolean;
 
     constructor(
         private authenticationService: AuthenticationService,
-        private spinner: NgxSpinnerService
-    ) { }
+        private spinner: NgxSpinnerService,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        // ✅ FIX: Initialize in constructor to prevent injector errors during SSR
+        // Field initializers with inject() can fail if injector is destroyed during SSR
+        this.isBrowser = isPlatformBrowser(this.platformId);
+    }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         // Debounce spinner: only show after 300ms delay
@@ -45,23 +50,44 @@ export class JwtInterceptor implements HttpInterceptor {
                     refreshAttempted = true;
                     if (typeof ngDevMode === 'undefined' || ngDevMode) {
                         console.warn('[JwtInterceptor] 401 detected. Attempting token refresh before retry.', {
-                            url: request.url
+                            url: request.url,
+                            hasRefreshToken: this.authenticationService.canRefreshToken()
                         });
                     }
 
                     return this.authenticationService.refreshTokens().pipe(
                         switchMap(newToken => {
                             if (!newToken) {
+                                if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                                    console.error('[JwtInterceptor] ❌ Token refresh failed - no new token received. User will be logged out.');
+                                }
                                 return throwError(() => error);
+                            }
+
+                            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                                console.log('[JwtInterceptor] ✅ Token refreshed successfully. Retrying original request.');
                             }
 
                             const retryRequest = this.addAuthHeader(request, newToken);
                             return next.handle(retryRequest);
                         }),
                         catchError(refreshError => {
+                            if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                                console.error('[JwtInterceptor] ❌ Token refresh error:', refreshError);
+                                console.error('[JwtInterceptor]   Refresh endpoint may be failing or refresh token is invalid.');
+                            }
                             return throwError(() => refreshError || error);
                         })
                     );
+                } else if (error?.status === 401) {
+                    // 401 but can't refresh (no refresh token or already attempted)
+                    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+                        if (!this.authenticationService.canRefreshToken()) {
+                            console.warn('[JwtInterceptor] ⚠️ 401 Unauthorized - No refresh token available. User must login again.');
+                        } else {
+                            console.warn('[JwtInterceptor] ⚠️ 401 Unauthorized - Refresh already attempted or refresh token missing.');
+                        }
+                    }
                 }
 
                 return throwError(() => error);
@@ -92,6 +118,19 @@ export class JwtInterceptor implements HttpInterceptor {
      * - Includes debug logging in development mode
      */
     private addAuthHeader(request: HttpRequest<any>, tokenOverride?: string): HttpRequest<any> {
+        // ✅ CRITICAL: Log PUT request body to verify RowVersion is included
+        if (request.method === 'PUT' && request.url.includes('/page/event/') && request.body) {
+            const body = request.body;
+            const rowVersion = (body as any)?.rowVersion || (body as any)?.RowVersion;
+            console.log('[JwtInterceptor] 🔍 PUT Event Request Body Check:', {
+                url: request.url,
+                hasBody: !!request.body,
+                hasRowVersion: !!rowVersion,
+                rowVersion: rowVersion ? (typeof rowVersion === 'string' ? rowVersion.substring(0, 20) + '...' : 'NOT_STRING') : 'MISSING',
+                rowVersionType: rowVersion ? typeof rowVersion : 'null',
+                bodyKeys: Object.keys(body || {}).slice(0, 15)
+            });
+        }
         // ✅ SSR: Skip token attachment on server-side
         if (!this.isBrowser) {
             if (typeof ngDevMode === 'undefined' || ngDevMode) {

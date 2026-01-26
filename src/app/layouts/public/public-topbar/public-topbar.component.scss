@@ -34,8 +34,8 @@ header#theme-header.theme-header.inner-header.course-page-header {
   will-change: auto !important;
   background: #ffffff;
   width: 100%;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 }
 
 .topbar-inner {
@@ -44,10 +44,15 @@ header#theme-header.theme-header.inner-header.course-page-header {
   justify-content: space-between;
   gap: 1.5rem;
   padding-block: clamp(1rem, 3vw, 1.35rem);
+  flex-wrap: nowrap;
+  width: 100%;
+  overflow: visible;
+  position: relative;
 }
 
 .logo {
   cursor: pointer;
+  flex-shrink: 0;
 
   img {
     display: block;
@@ -58,7 +63,14 @@ header#theme-header.theme-header.inner-header.course-page-header {
 
 .topbar-nav {
   &.topbar-nav--desktop {
-    display: block;
+    display: flex !important;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+    overflow: visible;
+    position: relative;
   }
 
   &.topbar-nav--mobile {
@@ -68,21 +80,101 @@ header#theme-header.theme-header.inner-header.course-page-header {
 
 .nav-menu {
   display: flex;
-  gap: clamp(1rem, 3vw, 1.75rem);
+  // Use a variable so we can cancel the gap specifically before the action buttons
+  --nav-gap: clamp(1.25rem, 3vw, 2rem);
+  gap: var(--nav-gap);
   margin: 0;
   padding: 0;
   list-style: none;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+}
+
+.menu-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-left: 0;
+  border-left: none;
 }
 
 .menu-item a {
   color: #1f2937;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9375rem;
   text-decoration: none;
   transition: color 150ms ease;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
 
   &:hover {
-    color: #0f766e;
+    color: #FF6B35;
   }
+}
+
+// Kept for backwards compatibility (no longer used in template)
+.nav-buttons {
+  display: none !important;
+}
+
+.btn-login {
+  display: inline-block !important;
+  padding: 0.4rem 1rem;
+  border: 1.5px solid #FF6B35;
+  background: #ffffff;
+  color: #FF6B35;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 150ms ease;
+  cursor: pointer;
+  visibility: visible !important;
+  opacity: 1 !important;
+  white-space: nowrap;
+
+  &:hover {
+    background: #FF6B35;
+    color: #ffffff;
+  }
+}
+
+.btn-signup {
+  display: inline-block !important;
+  padding: 0.4rem 1rem;
+  border: 1.5px solid #FF6B35;
+  background: #FF6B35;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.25);
+  transition: all 150ms ease;
+  cursor: pointer;
+  visibility: visible !important;
+  opacity: 1 !important;
+  white-space: nowrap;
+
+  &:hover {
+    background: #e55a2b;
+    border-color: #e55a2b;
+    box-shadow: 0 3px 8px rgba(255, 107, 53, 0.35);
+    transform: translateY(-1px);
+  }
+}
+
+.nav-buttons-mobile {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .mobile-nav {
@@ -127,9 +219,26 @@ header#theme-header.theme-header.inner-header.course-page-header {
   }
 }
 
+@media (max-width: 1200px) {
+  .nav-menu {
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+  }
+
+  .nav-buttons {
+    gap: 0.5rem;
+    margin-left: 1rem;
+  }
+
+  .btn-login,
+  .btn-signup {
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 991px) {
   .topbar-nav--desktop {
-    display: none;
+    display: none !important;
   }
 
   .mobile-nav {
@@ -149,6 +258,14 @@ header#theme-header.theme-header.inner-header.course-page-header {
   .topbar-nav--mobile .nav-menu {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .nav-buttons {
+    display: none !important;
+  }
+
+  .nav-buttons-mobile {
+    display: flex !important;
   }
 }
 

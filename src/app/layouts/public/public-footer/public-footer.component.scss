@@ -14,6 +14,7 @@ ul.menu-company {
 }
 .menu-company a{
 	color: #696969;
+	text-decoration: none;
 }
 ul.menu-company li{
 	padding: 3px 0;
@@ -174,6 +175,7 @@ span.linked-in:hover{
     color: #9d9d9d;
     border-right: 1px solid #d6d6d6;
     padding: 0 15px;
+    text-decoration: none;
 }
 .footer-menu{
     padding: 0;
@@ -183,6 +185,7 @@ span.linked-in:hover{
         list-style-type: none; 
         a{
             color: #696969;
+            text-decoration: none;
         }
     }
     
@@ -226,4 +229,72 @@ footer {
 .copy-right {
     width: 100%;
     padding: 0px 15px;
+}
+
+// ✅ Hide "Access Forever" popup/tooltip in footer
+// Hide any element with classes/ids related to "Access Forever"
+[class*="access-forever"],
+[class*="accessForever"],
+[class*="access_forever"],
+[id*="access-forever"],
+[id*="accessForever"],
+[id*="access_forever"],
+[class*="key-features"],
+[class*="keyFeatures"],
+[id*="key-features"],
+[id*="keyFeatures"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+// ✅ Hide tooltip/popup elements that might contain Access Forever content
+footer .tooltip,
+footer .popup,
+footer [role="tooltip"],
+footer [data-tooltip*="Access"],
+footer [title*="Access Forever"],
+footer [data-popup],
+footer [data-tooltip] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  
+  &::before,
+  &::after {
+    display: none !important;
+    content: none !important;
+  }
+}
+
+// ✅ Hide fixed positioned elements on right side that might contain Access Forever
+body > *[style*="position: fixed"][style*="right"],
+body > *[style*="position:fixed"][style*="right"],
+*[style*="position: fixed"][style*="right"]:has-text("Access Forever"),
+*[style*="position:fixed"][style*="right"]:has-text("Access Forever"),
+*[style*="position: fixed"][style*="right"]:has-text("70 Hours"),
+*[style*="position:fixed"][style*="right"]:has-text("70 Hours") {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+// ✅ Hide any fixed right-side popup/tooltip globally
+body > div[style*="position: fixed"][style*="right"],
+body > div[style*="position:fixed"][style*="right"] {
+  // Check if it contains Access Forever related content
+  &:has([class*="access"]),
+  &:has([id*="access"]),
+  &:has([class*="key-features"]),
+  &:has([id*="key-features"]) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 }

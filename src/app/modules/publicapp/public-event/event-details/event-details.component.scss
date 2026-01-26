@@ -1460,17 +1460,75 @@
   height: fit-content; // ✅ Fit content height
   overflow: visible !important; // ✅ Critical: Force no overflow clipping for sticky to work
   position: relative; // ✅ Useful for containing the sticky element within its flow
-  // ✅ Bootstrap's sticky-top class handles positioning - no custom sticky styles needed
-  // ✅ Sticky starts when "About this event" section comes into view
-  // The aside aligns with event-main start, which begins with "About this event"
   
-  // ✅ Ensure sticky-top works properly
+  // ✅ Sticky sidebar - Appears at "About this event", stops before Certificate section
   .sticky-top {
+    position: relative; // ✅ Default: normal flow (hidden before "About this event")
+    width: 340px; // ✅ Fixed width for sidebar (matches grid column width)
+    height: fit-content;
+    max-height: calc(100vh - 110px); // ✅ Prevent overflow viewport
+    z-index: 1000; // ✅ High z-index to stay above other content
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    z-index: 10;
-    width: 100%;
+    overflow: visible !important;
+    transition: opacity 0.2s ease; // ✅ Smooth visibility transition
+    
+    // ✅ Fixed position - visible when "About this event" is in view
+    &.sidebar-fixed {
+      position: fixed !important;
+      top: 90px !important; // ✅ Position from top (accounts for site header ~80px + spacing)
+      bottom: auto !important;
+      
+      // ✅ Position calculation for centered container layout
+      right: max(calc((100vw - min(1140px, calc(100vw - 2 * clamp(1rem, 2.5vw, 2rem)))) / 2), clamp(1rem, 2.5vw, 2rem));
+      
+      // ✅ Simplified positioning for medium screens
+      @media (min-width: 1200px) {
+        right: calc((100vw - 1140px) / 2 + clamp(1rem, 2.5vw, 2rem));
+      }
+      
+      @media (max-width: 1199px) and (min-width: 992px) {
+        right: clamp(1rem, 2.5vw, 2rem); // ✅ Use container padding
+      }
+    }
+    
+    // ✅ Fixed position with bottom constraint - stops before Certificate section
+    &.sidebar-absolute {
+      position: fixed !important; // ✅ Still fixed, but with bottom constraint
+      top: auto !important; // ✅ Remove top when using bottom
+      bottom: auto; // ✅ Will be set dynamically via JavaScript
+      
+      // ✅ Keep same right positioning
+      right: max(calc((100vw - min(1140px, calc(100vw - 2 * clamp(1rem, 2.5vw, 2rem)))) / 2), clamp(1rem, 2.5vw, 2rem));
+      
+      @media (min-width: 1200px) {
+        right: calc((100vw - 1140px) / 2 + clamp(1rem, 2.5vw, 2rem));
+      }
+      
+      @media (max-width: 1199px) and (min-width: 992px) {
+        right: clamp(1rem, 2.5vw, 2rem);
+      }
+    }
+    
+    // ✅ Hide when not visible (before "About this event")
+    &:not(.sidebar-fixed):not(.sidebar-absolute) {
+      position: relative;
+      top: auto;
+      bottom: auto;
+      right: auto;
+    }
+    
+    // ✅ Disable fixed/absolute on mobile
+    @media (max-width: 991.98px) {
+      position: static !important;
+      top: auto !important;
+      bottom: auto !important;
+      right: auto !important;
+      width: 100%;
+      max-width: 100%;
+      max-height: none;
+    }
   }
 }
 

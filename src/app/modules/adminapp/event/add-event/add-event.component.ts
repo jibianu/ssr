@@ -24,6 +24,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
     eventForm: FormGroup;
     submitted = false;
     loading = false;
+    isSaving: boolean = false; // ✅ FIX 4: Prevent double submit
     subscription: Subscription = new Subscription();
     fileUploadProgress: string = null;
   uploadedFilePath: string = null;
@@ -50,7 +51,15 @@ export class AddEventComponent implements OnInit, OnDestroy {
              "LinkdIn",
             "Twitter"
         ]
-        // FIXED: Add route.params subscription to cleanup on destroy
+        
+        // ✅ FIX: Get params synchronously first (same pattern as course component)
+        const routeParams = this.activatedRoute.snapshot.params;
+        if (routeParams['id']) {
+            this.eventId = routeParams['id'];
+            this.isNew = routeParams['isNew'] === 'new';
+        }
+        
+        // Also subscribe for route changes
         this.subscription.add(
             this.activatedRoute.params.subscribe(params => {
                 if (params['id']) {
@@ -59,9 +68,15 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 }
             })
         );
+        
+        // ✅ CRITICAL FIX: Initialize form BEFORE loading event data
+        // This ensures eventForm exists when getEventById tries to patch it
+        this.formInit();
+        
         if (this.eventId) {
             this.pageTitle = 'Update Event';
             this.btntext = 'Update';
+            // ✅ FIX: Call getEventById AFTER formInit to ensure form exists
             this.getEventById(this.eventId);
         } else {
             this.pageTitle = 'Add Event';
@@ -71,7 +86,6 @@ export class AddEventComponent implements OnInit, OnDestroy {
             this.pageTitle = 'Add Event';
             this.btntext = 'Save';
         }
-        this.formInit();
     }
 
     formInit() {
@@ -130,8 +144,14 @@ export class AddEventComponent implements OnInit, OnDestroy {
     }
 
     getEventById(id) {
+        // ✅ SAFETY CHECK: Ensure form is initialized before trying to patch it
+        if (!this.eventForm) {
+            console.warn('[AddEventComponent] getEventById called before formInit - initializing form now');
+            this.formInit();
+        }
+        
         this.subscription.add(this.appService.getEventById(id).subscribe((res: any) => {
-            if (res) {
+            if (res && this.eventForm) {
                 // ✅ FIX: Handle both camelCase and PascalCase for showOnDashboard
                 // Backend may return ShowOnDashboard (PascalCase), form expects showOnDashboard (camelCase)
                 const showOnDashboardValue = res.showOnDashboard !== undefined 
@@ -157,7 +177,19 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 
                 // Patch form with normalized field names
                 this.eventForm.patchValue({
-                    ...res,
+                    title: res.title || res.Title || '',
+                    canonicalUrl: res.canonicalUrl || res.CanonicalUrl || '',
+                    metaDescription: res.metaDescription || res.MetaDescription || '',
+                    amount: res.amount || res.Amount || 0,
+                    eventInfo: res.eventInfo || res.EventInfo || '',
+                    badge: res.badge || res.Badge || '',
+                    duration: res.duration || res.Duration || '',
+                    timeing: res.timeing || res.Timeing || '',
+                    aboutEvent: res.aboutEvent || res.AboutEvent || '',
+                    language: res.language || res.Language || '',
+                    discount: res.discount || res.Discount || 0,
+                    location: res.location || res.Location || '',
+                    titleImageUrl: res.titleImageUrl || res.TitleImageUrl || '',
                     showOnDashboard: showOnDashboardBool,
                     registrationCompleted: registrationCompletedBool
                 });
@@ -175,13 +207,19 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 }
                 
                 try {
+                    if (res.startDate || res.StartDate) {
                     this.eventForm.patchValue({
-                        startDate: new Date(res.startDate).toISOString().split('T')[0],
-                        endDate: new Date(res.endDate).toISOString().split('T')[0]
+                            startDate: new Date(res.startDate || res.StartDate).toISOString().split('T')[0]
+                        });
+                    }
+                    if (res.endDate || res.EndDate) {
+                        this.eventForm.patchValue({
+                            endDate: new Date(res.endDate || res.EndDate).toISOString().split('T')[0]
                     });
+                    }
                 }
                 catch (e) {
-                    console.log(e);
+                    console.log('[AddEventComponent] Error formatting dates:', e);
                 }
                 
                 // ✅ DEBUG: Log final form state
@@ -191,22 +229,56 @@ export class AddEventComponent implements OnInit, OnDestroy {
                     registrationCompleted: this.eventForm.get('registrationCompleted')?.value
                 });
                 if (res.eventDetails && res.eventDetails.length > 0) {
-                    // ✅ DEBUG: Log loaded eventDetails
-                    const socialLinksLoaded = res.eventDetails.filter((item: any) => 
-                        item.section && item.section.startsWith('organized_soc_')
-                    );
-                    console.log('[AddEventComponent] Event loaded - social links found:', {
+                    // ✅ FIX A: Map organized_soc items to organized_soc_0, organized_soc_1, etc.
+                    // Backend returns section "organized_soc", but UI needs "organized_soc_0", "organized_soc_1" per organizer
+                    
+                    // Get all organizers to determine how many we have
+                    const organizers = res.eventDetails.filter((item: any) => item.section === 'organized');
+                    const organizerCount = organizers.length;
+                    
+                    // Get all organized_soc items (from backend, they all have section "organized_soc")
+                    const organizedSocItems = res.eventDetails.filter((item: any) => item.section === 'organized_soc');
+                    
+                    // ✅ DEBUG: Log available sections
+                    const allSections = [...new Set(res.eventDetails.map((item: any) => item.section))];
+                    console.log('[AddEventComponent] Event loaded - Available sections:', allSections);
+                    console.log('[AddEventComponent] Event loaded - organized_soc items found:', {
                         totalEventDetails: res.eventDetails.length,
-                        socialLinksCount: socialLinksLoaded.length,
-                        socialLinks: socialLinksLoaded.map((item: any) => ({
+                        organizerCount: organizerCount,
+                        organizedSocCount: organizedSocItems.length,
+                        organizedSocItems: organizedSocItems.map((item: any) => ({
                             section: item.section,
                             tag: item.tag,
-                            title: item.title
+                            title: item.title,
+                            sortOrder: item.sortOrder
                         }))
                     });
                     
+                    // Map organized_soc items to organized_soc_0, organized_soc_1, etc.
+                    // Strategy: Distribute social links sequentially to organizers
+                    // Each organizer gets social links assigned based on their index
+                    const mappedEventDetails = res.eventDetails.map((item: any) => {
+                        // If this is an organized_soc item, map it to organized_soc_{organizerIndex}
+                        if (item.section === 'organized_soc') {
+                            // Find which organizer this social link belongs to
+                            // Use sortOrder to determine organizer index (assuming social links are grouped by organizer)
+                            // Or use a simple sequential assignment
+                            const socialLinkIndex = organizedSocItems.indexOf(item);
+                            // Calculate which organizer this belongs to (distribute evenly)
+                            const organizerIndex = organizerCount > 0 
+                                ? Math.floor(socialLinkIndex / Math.ceil(organizedSocItems.length / organizerCount))
+                                : 0;
+                            
+                            return {
+                                ...item,
+                                section: `organized_soc_${organizerIndex}` // Map to virtual section for UI
+                            };
+                        }
+                        return item;
+                    });
+                    
                     this.eventForm.setControl('eventDetails', this.formBuilder.array(
-                        res.eventDetails.map((item) => {
+                        mappedEventDetails.map((item) => {
                             return this.formBuilder.group({
                                 id: item.id || '',
                                 section: item.section || '',
@@ -251,10 +323,36 @@ export class AddEventComponent implements OnInit, OnDestroy {
     }
 
     onSubmit() {
+        // ✅ DEBUG: Log when onSubmit is called
+        console.log('[AddEventComponent] === onSubmit() CALLED ===');
+        console.log('[AddEventComponent] eventId:', this.eventId);
+        console.log('[AddEventComponent] isNew:', this.isNew);
+        console.log('[AddEventComponent] loading:', this.loading);
+        console.log('[AddEventComponent] isSaving:', this.isSaving);
+        console.log('[AddEventComponent] form invalid:', this.eventForm.invalid);
+        console.log('[AddEventComponent] form errors:', this.eventForm.errors);
+        
         this.submitted = true;
         
-        // Mark all form controls as touched to show validation messages
+        // ✅ SAFETY: Reset flags if they're stuck (shouldn't happen, but safety measure)
+        if (this.isSaving && !this.loading) {
+            console.warn('[AddEventComponent] ⚠️ isSaving was stuck as true, resetting it');
+            this.isSaving = false;
+        }
+        
+        // ✅ FIX 4: Prevent double submission with isSaving flag
+        if (this.loading || this.isSaving) {
+            console.warn('[AddEventComponent] Submission already in progress, ignoring duplicate submit', {
+                loading: this.loading,
+                isSaving: this.isSaving
+            });
+            return;
+        }
+        
+        // ✅ FIX: Stop here if form is invalid (same as course component)
         if (this.eventForm.invalid) {
+            console.warn('[AddEventComponent] Form is invalid, marking fields as touched');
+            // Mark all form controls as touched to show validation messages
             Object.keys(this.eventForm.controls).forEach(key => {
                 const control = this.eventForm.get(key);
                 if (control) {
@@ -273,13 +371,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
             return;
         }
         
-        // Prevent double submission
-        if (this.loading) {
-            return;
-        }
-        
+        // ✅ FIX 4: Set loading and isSaving state before making request
         this.loading = true;
+        this.isSaving = true;
+        
         if (this.eventId && !this.isNew) {
+            // ✅ DEBUG: Log update path
+            console.log('[AddEventComponent] ✅ Update path - eventId:', this.eventId, 'isNew:', this.isNew);
             // Update event
             // ✅ CRITICAL FIX: Explicitly read checkbox value from form control
             const showOnDashboardControl = this.eventForm.get('showOnDashboard');
@@ -296,33 +394,22 @@ export class AddEventComponent implements OnInit, OnDestroy {
             // ✅ CRITICAL FIX: Build payload with explicit field mapping
             const formValue = this.eventForm.value;
             
-            // ✅ CRITICAL FIX: Explicitly ensure eventDetails are included
+            // ✅ FIX: Ensure form data includes eventId for update (same pattern as course)
+            // Collect eventDetails from form array
             const eventDetailsArray = this.eventForm.get('eventDetails') as FormArray;
-            
-            // ✅ DEBUG: Log form array state before collection
-            console.log('[AddEventComponent] Form array controls before collection:', {
-                totalControls: eventDetailsArray.controls.length,
-                controls: eventDetailsArray.controls.map((control: AbstractControl, idx: number) => {
-                    if (control instanceof FormGroup) {
-                        return {
-                            index: idx,
-                            section: control.get('section')?.value,
-                            tag: control.get('tag')?.value,
-                            title: control.get('title')?.value,
-                            isValid: control.valid,
-                            isDirty: control.dirty,
-                            isTouched: control.touched
-                        };
-                    }
-                    return { index: idx, value: control.value };
-                })
-            });
-            
             const allEventDetails = eventDetailsArray.controls.map((control: AbstractControl) => {
                 if (control instanceof FormGroup) {
-                    const detail = {
+                    let section = control.get('section')?.value || '';
+                    
+                    // ✅ FIX A: Convert organized_soc_0, organized_soc_1 back to organized_soc for backend
+                    // Backend expects section "organized_soc", not "organized_soc_0", "organized_soc_1"
+                    if (section && section.startsWith('organized_soc_')) {
+                        section = 'organized_soc';
+                    }
+                    
+                    return {
                         id: control.get('id')?.value || '',
-                        section: control.get('section')?.value || '',
+                        section: section,
                         imageUrl: control.get('imageUrl')?.value || '',
                         sortOrder: control.get('sortOrder')?.value || 0,
                         title: control.get('title')?.value || '',
@@ -331,223 +418,120 @@ export class AddEventComponent implements OnInit, OnDestroy {
                         amount: control.get('amount')?.value || 0,
                         count: control.get('count')?.value || 0
                     };
-                    // ✅ DEBUG: Log social links being collected
-                    if (detail.section && detail.section.startsWith('organized_soc_')) {
-                        console.log('[AddEventComponent] Collecting social link:', detail);
-                    }
-                    return detail;
                 }
                 return control.value;
             });
             
-            // ✅ DEBUG: Verify all eventDetails including social links
-            const socialLinks = allEventDetails.filter((item: any) => 
-                item.section && item.section.startsWith('organized_soc_')
-            );
-            console.log('[AddEventComponent] All eventDetails before submission:', {
-                total: allEventDetails.length,
-                socialLinks: socialLinks.length,
-                socialLinksDetails: socialLinks.map((item: any) => ({
-                    section: item.section,
-                    tag: item.tag,
-                    title: item.title
-                }))
-            });
-            
+            // ✅ FIX 1 & 2: Build payload
+            // Build base payload from form value, but explicitly set critical fields
             const formData: any = {
-                ...formValue,
                 id: this.eventId,
-                eventDetails: allEventDetails, // ✅ CRITICAL: Explicitly set eventDetails
-                // ✅ CRITICAL: Backend expects PascalCase (ShowOnDashboard) as nullable bool
-                // Explicitly set to boolean value (not undefined/null) to ensure AutoMapper processes it
-                // TypeScript sends boolean, backend C# receives it as bool?
-                ShowOnDashboard: showOnDashboardBool,
-                // Also include camelCase for consistency (but backend uses PascalCase)
+                title: this.eventForm.get('title')?.value || '',
+                canonicalUrl: this.eventForm.get('canonicalUrl')?.value || '',
+                metaDescription: this.eventForm.get('metaDescription')?.value || '',
+                amount: this.eventForm.get('amount')?.value || 0,
+                eventInfo: this.eventForm.get('eventInfo')?.value || '',
+                badge: this.eventForm.get('badge')?.value || '',
+                startDate: this.eventForm.get('startDate')?.value || '',
+                endDate: this.eventForm.get('endDate')?.value || '',
+                duration: this.eventForm.get('duration')?.value || '',
+                timeing: this.eventForm.get('timeing')?.value || '',
+                aboutEvent: this.eventForm.get('aboutEvent')?.value || '',
+                language: this.eventForm.get('language')?.value || '',
+                discount: this.eventForm.get('discount')?.value || 0,
+                location: this.eventForm.get('location')?.value || '',
+                titleImageUrl: this.eventForm.get('titleImageUrl')?.value || '',
+                // ✅ FIX 3: Send both camelCase and PascalCase for backend compatibility
                 showOnDashboard: showOnDashboardBool,
-                // ✅ Also fix registrationCompleted
+                ShowOnDashboard: showOnDashboardBool,
+                registrationCompleted: registrationCompletedBool,
                 RegistrationCompleted: registrationCompletedBool,
-                registrationCompleted: registrationCompletedBool
+                eventDetails: allEventDetails
             };
             
-            // ✅ CRITICAL: Ensure ShowOnDashboard is always explicitly set (true or false, never null/undefined)
-            // This ensures the backend receives a clear boolean value
-            if (formData.ShowOnDashboard === undefined || formData.ShowOnDashboard === null) {
-                formData.ShowOnDashboard = false;
-            }
-            if (formData.RegistrationCompleted === undefined || formData.RegistrationCompleted === null) {
-                formData.RegistrationCompleted = false;
-            }
-            
-            // ✅ DEBUG: Log checkbox state before update
-            console.log('[AddEventComponent] Checkbox state before update:', {
-                showOnDashboardControl: showOnDashboardControl?.value,
-                showOnDashboardControlType: typeof showOnDashboardControl?.value,
-                showOnDashboardBool: showOnDashboardBool,
-                registrationCompletedControl: registrationCompletedControl?.value,
-                registrationCompletedBool: registrationCompletedBool
-            });
-            
-            // ✅ DEBUG: Log social links before submission (already collected above)
-            console.log('[AddEventComponent] Social links being submitted:', {
-                totalEventDetails: allEventDetails.length,
-                socialLinksCount: socialLinks.length,
-                socialLinks: socialLinks.map((item: any) => ({
-                    section: item.section,
-                    tag: item.tag,
-                    title: item.title,
-                    description: item.description,
-                    id: item.id
-                })),
-                // ✅ DEBUG: Show all sections to verify
-                allSections: allEventDetails.map((item: any) => item.section)
-            });
-            
-            // ✅ DEBUG: Verify form array state
-            const formArray = this.eventForm.get('eventDetails') as FormArray;
-            console.log('[AddEventComponent] Form array state:', {
-                formArrayLength: formArray.length,
-                formArraySections: formArray.controls.map((c: AbstractControl) => ({
-                    section: c.get('section')?.value,
-                    tag: c.get('tag')?.value,
-                    title: c.get('title')?.value
-                }))
-            });
-            
-            // ✅ DEBUG: Log payload being sent
-            console.log('[AddEventComponent] Payload sent to backend:', {
+            // ✅ DEBUG: Log exact payload being sent
+            console.log('[AddEventComponent] 📤 PUT Request Payload:', {
                 id: formData.id,
-                showOnDashboard: formData.showOnDashboard,
-                ShowOnDashboard: formData.ShowOnDashboard,
-                registrationCompleted: formData.registrationCompleted,
-                RegistrationCompleted: formData.RegistrationCompleted,
                 eventDetailsCount: formData.eventDetails?.length || 0,
-                curriculumItems: formData.eventDetails?.filter((item: any) => item.section === 'curriculum') || [],
-                allFormValues: formValue
+                showOnDashboard: formData.showOnDashboard,
+                registrationCompleted: formData.registrationCompleted
             });
+            
+            // ✅ DEBUG 2: Log full payload structure (excluding large fields)
+            const payloadForLog = { ...formData };
+            if (payloadForLog.eventDetails) {
+                payloadForLog.eventDetails = `[${payloadForLog.eventDetails.length} items]`;
+            }
+            console.log('[AddEventComponent] Full payload structure:', JSON.stringify(payloadForLog, null, 2));
             
             this.subscription.add(this.appService.updateEvent(this.eventId, formData).subscribe({
                 next: (response) => {
+                    console.log('[AddEventComponent] ✅ Update successful, response received');
                     this.loading = false;
+                    this.isSaving = false;
                     this.submitted = false;
-                    this.toasterService.showSuccess('Event updated successfully');
                     
-                    // ✅ DEBUG: Log response to verify backend returned correct values
-                    console.log('[AddEventComponent] Event update response received:', {
-                        id: response?.id,
-                        showOnDashboard: response?.showOnDashboard ?? response?.ShowOnDashboard,
-                        ShowOnDashboard: response?.ShowOnDashboard,
-                        registrationCompleted: response?.registrationCompleted ?? response?.RegistrationCompleted,
-                        RegistrationCompleted: response?.RegistrationCompleted,
-                        eventDetailsCount: response?.eventDetails?.length || 0
-                    });
+                    // ✅ SUCCESS POPUP: Show success message
+                    this.toasterService.showSuccess('Update completed successfully', { delay: 3000 });
                     
-                    // ✅ FIX: Use response data directly instead of reloading (faster and more reliable)
-                    // Update form with response data from backend (includes all EventDetails)
-                    if (response && response.id) {
-                        // ✅ FIX: If response doesn't include eventDetails, do a quick reload
-                        if (!response.eventDetails || response.eventDetails.length === 0) {
-                            console.log('[AddEventComponent] Response missing eventDetails, doing quick reload...');
-                            // Quick reload without retry delays
-                            setTimeout(() => {
-                                this.getEventById(this.eventId);
-                            }, 100);
-                            return; // Exit early, reload will handle the rest
-                        }
-                        
-                        // Handle showOnDashboard and registrationCompleted
-                        const showOnDashboardValue = response.showOnDashboard !== undefined 
-                            ? response.showOnDashboard 
-                            : (response.ShowOnDashboard !== undefined ? response.ShowOnDashboard : false);
-                        const registrationCompletedValue = response.registrationCompleted !== undefined
-                            ? response.registrationCompleted
-                            : (response.RegistrationCompleted !== undefined ? response.RegistrationCompleted : false);
-                        
-                        const showOnDashboardBool = showOnDashboardValue === true || String(showOnDashboardValue) === 'true' || Number(showOnDashboardValue) === 1 || String(showOnDashboardValue) === '1';
-                        const registrationCompletedBool = registrationCompletedValue === true || String(registrationCompletedValue) === 'true' || Number(registrationCompletedValue) === 1 || String(registrationCompletedValue) === '1';
-                        
-                        // Update eventDetails FormArray with response data
-                        if (response.eventDetails && response.eventDetails.length > 0) {
-                            // ✅ DEBUG: Log social links in response
-                            const socialLinksInResponse = response.eventDetails.filter((item: any) => 
-                                item.section && item.section.startsWith('organized_soc_')
-                            );
-                            console.log('[AddEventComponent] Response - social links:', {
-                                totalEventDetails: response.eventDetails.length,
-                                socialLinksCount: socialLinksInResponse.length,
-                                socialLinks: socialLinksInResponse.map((item: any) => ({
-                                    section: item.section,
-                                    tag: item.tag,
-                                    title: item.title
-                                }))
-                            });
-                            
-                            this.eventForm.setControl('eventDetails', this.formBuilder.array(
-                                response.eventDetails.map((item: any) => {
-                                    return this.formBuilder.group({
-                                        id: item.id || '',
-                                        section: item.section || '',
-                                        imageUrl: item.imageUrl || '',
-                                        sortOrder: item.sortOrder || 0,
-                                        title: item.title || '',
-                                        description: item.description || '',
-                                        tag: item.tag || '',
-                                        amount: item.amount || 0,
-                                        count: item.count || 0
-                                    });
-                                })
-                            ));
-                            
-                            // ✅ DEBUG: Verify social links are in form after update
-                            setTimeout(() => {
-                                const organizers = this.eventCurriculumArrayControls('organized');
-                                console.log('[AddEventComponent] After update - Organizers count:', organizers.length);
-                                organizers.forEach((org: FormGroup, orgIndex: number) => {
-                                    const socialSection = this.getOrganizerSocialSection(orgIndex);
-                                    const socialLinks = this.eventCurriculumArrayControls(socialSection);
-                                    console.log(`[AddEventComponent] After update - Organizer ${orgIndex + 1} (${socialSection}) - Social links:`, socialLinks.length);
-                                });
-                            }, 50);
-                        }
-                        
-                        // Update other form fields
-                        this.eventForm.patchValue({
-                            showOnDashboard: showOnDashboardBool,
-                            registrationCompleted: registrationCompletedBool
-                        }, { emitEvent: false });
-                        
-                        // Update uploaded file path if exists
-                        const imageDetail = response.eventDetails?.find((item: any) => item.section === 'image');
-                        if (imageDetail?.imageUrl) {
-                            this.uploadedFilePath = imageDetail.imageUrl;
-                        }
-                        
-                        // Ensure format items exist
-                        this.addInitialValue();
-                        
-                        // ✅ FIX: Trigger change detection to update UI immediately
-                        this.cdr.detectChanges();
+                    // ✅ SHARED STATE: Updated event is automatically pushed to shared state by AdminAppService
+                    // All subscribers (list, detail pages) will receive the update immediately
+                    
+                    // ✅ STAY ON PAGE: Keep user on the same edit page after update
+                    // Patch the form with server response so the latest saved values are visible immediately.
+                    if (response) {
+                        this.updateFormWithServerValue(response);
+                        this.cdr.markForCheck();
                     }
                 },
                 error: (err) => {
+                    // ✅ CRITICAL: Always reset flags, even on error
                     this.loading = false;
+                    this.isSaving = false;
+                    this.submitted = false;
                     console.error('[AddEventComponent] Error updating event:', err);
-                    this.toasterService.showError(err?.error?.message || 'Failed to update event. Please try again.');
+                    
+                    // ✅ FIX: Handle 401 (Unauthorized) errors specifically
+                    if (err?.status === 401) {
+                        const errorMessage = err?.error?.message || err?.error?.Messages?.[0] || 'Your session has expired. Please log in again.';
+                        this.toasterService.showError(errorMessage);
+                        console.warn('[AddEventComponent] 401 Unauthorized - Token expired. User needs to log in again.');
+                        // Note: ErrorInterceptor will handle logout and redirect
+                        } else {
+                        // ✅ Handle other errors
+                        this.toasterService.showError(err?.error?.message || err?.error?.Messages?.[0] || 'Failed to update event. Please try again.');
+                    }
                 }
             }));
         } else {
+            // ✅ DEBUG: Log create path
+            console.log('[AddEventComponent] ⚠️ Create path - eventId:', this.eventId, 'isNew:', this.isNew);
             // Create new event
             if(this.isNew){
                 this.eventForm.patchValue({id:''})
             }
             this.subscription.add(this.appService.createEvent(this.eventForm.value).subscribe({
-                next: () => {
+                next: (response) => {
                     this.loading = false;
+                    this.isSaving = false;
                     this.toasterService.showSuccess('Event created successfully');
                     this.goBack();
                 },
                 error: (err) => {
+                    // ✅ CRITICAL: Always reset flags, even on error
                     this.loading = false;
+                    this.isSaving = false;
+                    console.error('[AddEventComponent] Error creating event:', err);
+                    
+                    // ✅ FIX: Handle 401 (Unauthorized) errors specifically
+                    if (err?.status === 401) {
+                        const errorMessage = err?.error?.message || err?.error?.Messages?.[0] || 'Your session has expired. Please log in again.';
+                        this.toasterService.showError(errorMessage);
+                        console.warn('[AddEventComponent] 401 Unauthorized - Token expired. User needs to log in again.');
+                        // Note: ErrorInterceptor will handle logout and redirect
+                    } else {
                     this.toasterService.showError(err?.error?.message || 'Failed to create event. Please try again.');
+                    }
                 }
             }));
         }
@@ -556,21 +540,46 @@ export class AddEventComponent implements OnInit, OnDestroy {
     goBack() {
         this.location.back();
     }
+    
+    // ✅ FIX: Reset form functionality (same as course component)
+    resetForm() {
+        if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+            this.submitted = false;
+            this.loading = false;
+            this.uploadedFilePath = null;
+            this.fileUploadProgress = null;
+            this.eventForm.reset();
+            this.formInit();
+            
+            // If editing an existing event, reload the original data
+            if (this.eventId && !this.isNew) {
+                this.getEventById(this.eventId);
+            }
+        }
+    }
     // ✅ TYPE SAFETY: Return FormGroup[] instead of AbstractControl[] for proper template access
+    // ✅ FIX A: Get items for a specific section (helper method)
+    getSectionItems(section: string): any[] {
+        const formArray = this.eventForm.get('eventDetails') as FormArray;
+        if (!formArray) {
+            return [];
+        }
+        return formArray.controls
+            .filter((control: AbstractControl) => {
+                const sectionValue = control.get('section')?.value;
+                return sectionValue === section;
+            })
+            .map((control: AbstractControl) => control.value)
+            .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    }
+    
+    // ✅ FIX A: Ensure form array exists for a section (helper method)
+    ensureFormArrayFromSection(section: string, formArrayName: string): void {
+        // This is handled automatically by eventCurriculumArrayControls
+        // No additional action needed
+    }
+    
     eventCurriculumArrayControls(section: string): FormGroup[] {
-        // var x = (<FormArray>this.eventForm.get('eventDetails')).controls;
-        // var ix = 0;
-        // var arr: AbstractControl[] = [];
-        // var dt = [];
-        // for (let i = 0; i < x.length; i++) {
-        //     if (x[i].value.section === section) {
-        //         // arr[ix] = i;
-        //         dt.push({ index: i, control: x[i] });
-        //     }
-        //     // ix++;
-        // }
-        // // console.log(dt);
-        // return dt;
         const formArray = this.eventForm.get('eventDetails') as FormArray;
         if (!formArray) {
             return [];
@@ -580,14 +589,15 @@ export class AddEventComponent implements OnInit, OnDestroy {
             return sectionValue === section;
         }) as FormGroup[];
         
-        // ✅ DEBUG: Log social links filtering
+        // ✅ FIX A: Improved debug logging for organized_soc
         if (section && section.startsWith('organized_soc_')) {
             console.log(`[AddEventComponent] eventCurriculumArrayControls('${section}') - Found ${filtered.length} items`);
             if (filtered.length === 0) {
                 // Log all sections to debug
                 const allSections = formArray.controls.map((c: AbstractControl) => c.get('section')?.value);
-                const socialSections = allSections.filter((s: string) => s && s.startsWith('organized_soc_'));
+                const socialSections = allSections.filter((s: string) => s && s.startsWith('organized_soc'));
                 console.log(`[AddEventComponent] No items found for ${section}. Available social sections:`, socialSections);
+                console.log(`[AddEventComponent] All sections in form:`, [...new Set(allSections)]);
             }
         }
         
@@ -791,8 +801,141 @@ export class AddEventComponent implements OnInit, OnDestroy {
             console.error('[AddEventComponent] Error updating form with submitted data:', error);
         }
     }
+    
+    // ✅ FIX B: Update form with server value from 409 conflict (handles organized_soc mapping)
+    updateFormWithServerValue(serverValue: any) {
+        try {
+            // Handle showOnDashboard and registrationCompleted
+            const showOnDashboardValue = serverValue.showOnDashboard !== undefined 
+                ? serverValue.showOnDashboard 
+                : (serverValue.ShowOnDashboard !== undefined ? serverValue.ShowOnDashboard : false);
+            
+            const registrationCompletedValue = serverValue.registrationCompleted !== undefined
+                ? serverValue.registrationCompleted
+                : (serverValue.RegistrationCompleted !== undefined ? serverValue.RegistrationCompleted : false);
+            
+            const showOnDashboardBool = showOnDashboardValue === true || showOnDashboardValue === 'true' || showOnDashboardValue === 1 || showOnDashboardValue === '1';
+            const registrationCompletedBool = registrationCompletedValue === true || registrationCompletedValue === 'true' || registrationCompletedValue === 1 || registrationCompletedValue === '1';
+            
+            // Map server value to form (handle both camelCase and PascalCase from backend)
+            const formPatchData: any = {
+                title: serverValue.title || serverValue.Title || '',
+                canonicalUrl: serverValue.canonicalUrl || serverValue.CanonicalUrl || '',
+                metaDescription: serverValue.metaDescription || serverValue.MetaDescription || '',
+                amount: serverValue.amount || serverValue.Amount || 0,
+                eventInfo: serverValue.eventInfo || serverValue.EventInfo || '',
+                badge: serverValue.badge || serverValue.Badge || '',
+                startDate: serverValue.startDate || serverValue.StartDate || null,
+                endDate: serverValue.endDate || serverValue.EndDate || null,
+                duration: serverValue.duration || serverValue.Duration || '',
+                timeing: serverValue.timeing || serverValue.Timeing || '',
+                aboutEvent: serverValue.aboutEvent || serverValue.AboutEvent || '',
+                language: serverValue.language || serverValue.Language || '',
+                discount: serverValue.discount || serverValue.Discount || 0,
+                location: serverValue.location || serverValue.Location || '',
+                showOnDashboard: showOnDashboardBool,
+                registrationCompleted: registrationCompletedBool
+            };
+            
+            // Patch form with mapped server data
+            this.eventForm.patchValue(formPatchData);
+            
+            // ✅ FIX A: Update eventDetails with organized_soc mapping
+            const eventDetails = serverValue.eventDetails || serverValue.EventDetails;
+            if (eventDetails && Array.isArray(eventDetails)) {
+                console.log('[AddEventComponent] Updating eventDetails from server value:', eventDetails.length, 'items');
+                
+                // Get all organizers to determine how many we have
+                const organizers = eventDetails.filter((item: any) => 
+                    (item.section === 'organized' || item.Section === 'organized')
+                );
+                const organizerCount = organizers.length;
+                
+                // Get all organized_soc items (from backend, they all have section "organized_soc")
+                const organizedSocItems = eventDetails.filter((item: any) => 
+                    (item.section === 'organized_soc' || item.Section === 'organized_soc')
+                );
+                
+                // Map organized_soc items to organized_soc_0, organized_soc_1, etc.
+                const mappedEventDetails = eventDetails.map((item: any) => {
+                    const section = item.section || item.Section || '';
+                    
+                    // If this is an organized_soc item, map it to organized_soc_{organizerIndex}
+                    if (section === 'organized_soc') {
+                        const socialLinkIndex = organizedSocItems.indexOf(item);
+                        const organizerIndex = organizerCount > 0 
+                            ? Math.floor(socialLinkIndex / Math.ceil(organizedSocItems.length / organizerCount))
+                            : 0;
+                        
+                        return {
+                            ...item,
+                            section: `organized_soc_${organizerIndex}` // Map to virtual section for UI
+                        };
+                    }
+                    return item;
+                });
+                
+                this.eventForm.setControl('eventDetails', this.formBuilder.array(
+                    mappedEventDetails.map((item: any) => {
+                        return this.formBuilder.group({
+                            id: item.id || item.Id || '',
+                            section: item.section || item.Section || '',
+                            imageUrl: item.imageUrl || item.ImageUrl || '',
+                            sortOrder: item.sortOrder || item.SortOrder || 0,
+                            title: item.title || item.Title || '',
+                            description: item.description || item.Description || '',
+                            tag: item.tag || item.Tag || '',
+                            amount: item.amount || item.Amount || 0,
+                            count: item.count || item.Count || 0
+                        });
+                    })
+                ));
+                
+                // ✅ FIX: Ensure format items exist even if not in database
+                this.addInitialValue();
+            }
+            
+            // Handle date formatting
+            try {
+                if (serverValue.startDate || serverValue.StartDate) {
+                    this.eventForm.patchValue({
+                        startDate: new Date(serverValue.startDate || serverValue.StartDate).toISOString().split('T')[0]
+                    });
+                }
+                if (serverValue.endDate || serverValue.EndDate) {
+                    this.eventForm.patchValue({
+                        endDate: new Date(serverValue.endDate || serverValue.EndDate).toISOString().split('T')[0]
+                    });
+                }
+            } catch (e) {
+                console.log('[AddEventComponent] Error formatting dates from server value:', e);
+            }
+            
+            // Update uploaded file path if exists
+            if (serverValue.titleImageUrl || serverValue.TitleImageUrl) {
+                this.uploadedFilePath = serverValue.titleImageUrl || serverValue.TitleImageUrl;
+            }
+            
+            // Force change detection to update UI immediately
+            this.cdr.detectChanges();
+        } catch (error) {
+            console.error('[AddEventComponent] Error updating form with server value:', error);
+        }
+    }
 
     // ✅ FIX: Reload event data after update with retry mechanism
+    // ✅ OPTIMISTIC CONCURRENCY: Public method to manually refresh event data (e.g., after 409 conflict)
+    refreshEventData(): void {
+        if (!this.eventId) {
+            console.warn('[AddEventComponent] Cannot refresh: eventId is null');
+            return;
+        }
+        
+        console.log('[AddEventComponent] Manual refresh requested');
+        this.loading = true;
+        this.getEventById(this.eventId);
+    }
+    
     reloadEventDataWithRetry(maxRetries: number = 3, initialDelay: number = 200) {
         if (!this.eventId) return;
 
@@ -809,6 +952,7 @@ export class AddEventComponent implements OnInit, OnDestroy {
                     this.http.get(cacheBustUrl).subscribe({
                         next: (res: any) => {
                             if (res && res.id) {
+                                
                                 // Successfully received data - reuse getEventById logic
                                 this.resetFormArrays();
                                 
@@ -858,24 +1002,47 @@ export class AddEventComponent implements OnInit, OnDestroy {
                                     console.log('[AddEventComponent] Error formatting dates:', e);
                                 }
                                 
-                                // Update eventDetails FormArray
+                                // ✅ FIX A: Update eventDetails FormArray with organized_soc mapping
                                 if (res.eventDetails && res.eventDetails.length > 0) {
+                                    // Get all organizers to determine how many we have
+                                    const organizers = res.eventDetails.filter((item: any) => item.section === 'organized');
+                                    const organizerCount = organizers.length;
+                                    
+                                    // Get all organized_soc items (from backend, they all have section "organized_soc")
+                                    const organizedSocItems = res.eventDetails.filter((item: any) => item.section === 'organized_soc');
+                                    
                                     // ✅ DEBUG: Log social links being reloaded
-                                    const socialLinksReloaded = res.eventDetails.filter((item: any) => 
-                                        item.section && item.section.startsWith('organized_soc_')
-                                    );
                                     console.log('[AddEventComponent] Reload - social links found:', {
                                         totalEventDetails: res.eventDetails.length,
-                                        socialLinksCount: socialLinksReloaded.length,
-                                        socialLinks: socialLinksReloaded.map((item: any) => ({
+                                        organizerCount: organizerCount,
+                                        organizedSocCount: organizedSocItems.length,
+                                        organizedSocItems: organizedSocItems.map((item: any) => ({
                                             section: item.section,
                                             tag: item.tag,
-                                            title: item.title
+                                            title: item.title,
+                                            sortOrder: item.sortOrder
                                         }))
                                     });
                                     
+                                    // Map organized_soc items to organized_soc_0, organized_soc_1, etc.
+                                    const mappedEventDetails = res.eventDetails.map((item: any) => {
+                                        // If this is an organized_soc item, map it to organized_soc_{organizerIndex}
+                                        if (item.section === 'organized_soc') {
+                                            const socialLinkIndex = organizedSocItems.indexOf(item);
+                                            const organizerIndex = organizerCount > 0 
+                                                ? Math.floor(socialLinkIndex / Math.ceil(organizedSocItems.length / organizerCount))
+                                                : 0;
+                                            
+                                            return {
+                                                ...item,
+                                                section: `organized_soc_${organizerIndex}` // Map to virtual section for UI
+                                            };
+                                        }
+                                        return item;
+                                    });
+                                    
                                     this.eventForm.setControl('eventDetails', this.formBuilder.array(
-                                        res.eventDetails.map((item: any) => {
+                                        mappedEventDetails.map((item: any) => {
                                             return this.formBuilder.group({
                                                 id: item.id || '',
                                                 section: item.section || '',

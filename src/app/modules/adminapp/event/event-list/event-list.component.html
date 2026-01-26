@@ -75,8 +75,9 @@
                 type="button" 
                 class="btn-action btn-delete" 
                 (click)="deleteEvent(item.id)"
-                title="Delete Event">
-                <i class="fas fa-trash"></i>
+                [disabled]="isDeleting(item.id)"
+                [title]="isDeleting(item.id) ? 'Deleting...' : 'Delete Event'">
+                <i class="fas" [ngClass]="isDeleting(item.id) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
               </button>
               <button 
                 type="button" 

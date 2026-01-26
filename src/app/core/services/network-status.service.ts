@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, BehaviorSubject, fromEvent, merge, of } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -30,13 +30,16 @@ import { map, startWith } from 'rxjs/operators';
  */
 @Injectable({ providedIn: 'root' })
 export class NetworkStatusService {
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly isBrowser: boolean;
   
   // ✅ Observable that emits true when online, false when offline
   private readonly onlineStatus$ = new BehaviorSubject<boolean>(true);
 
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // ✅ FIX: Initialize in constructor to prevent injector errors during SSR
+    // Field initializers with inject() can fail if injector is destroyed during SSR
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
     if (this.isBrowser) {
       this.initializeNetworkMonitoring();
     } else {

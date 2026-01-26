@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, PLATFORM_ID, Inject, ChangeDetectorRef, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -36,6 +36,21 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
   // ✅ FIX: Add missing 'more' property for FAQ expansion functionality
   more = false;
 
+  // ✅ Sticky sidebar positioning state
+  isSidebarFixed = true; // ✅ Start as fixed, switch to absolute when near Related Courses
+
+  // ✅ Countdown Timer Properties
+  countdownHours: string = '00';
+  countdownMinutes: string = '00';
+  countdownSeconds: string = '00';
+  isCountdownExpired: boolean = false;
+  private countdownInterval: any = null;
+  
+  // ✅ Countdown Timer Configuration
+  private readonly OFFER_DURATION_HOURS = 24; // ✅ Configurable: Offer duration in hours
+  private readonly COOKIE_NAME = 'course_offer_end_time';
+  private readonly COOKIE_EXPIRY_DAYS = 30; // ✅ Configurable: Cookie expiry in days
+
   // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
   private readonly canonicalService: CanonicalService;
   private readonly metadataService: MetadataService;
@@ -69,10 +84,66 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
       this.loadCourse(slug, location);
     });
     this.subscription.add(paramsSub);
+    
+    // ✅ Initialize countdown timer
+    if (this.isBrowser) {
+      this.initializeCountdown();
+    }
   }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+    // ✅ Cleanup countdown interval
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+  }
+
+  // ✅ Handle scroll to stop sidebar before Related Courses section
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    if (!this.isBrowser || !this.course) {
+      return;
+    }
+
+    const relatedCoursesElement = document.querySelector('.related-courses-wrapper');
+    if (!relatedCoursesElement) {
+      this.isSidebarFixed = true;
+      this.changeDetectorRef.markForCheck();
+      return;
+    }
+
+    const sidebarElement = document.querySelector('.sticky-sidebar') as HTMLElement;
+    if (!sidebarElement) {
+      return;
+    }
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const relatedCoursesRect = relatedCoursesElement.getBoundingClientRect();
+    const sidebarHeight = sidebarElement.getBoundingClientRect().height;
+    const sidebarTop = 90; // ✅ Fixed top position
+    const buffer = 20; // ✅ 20px buffer
+    
+    // ✅ Calculate if sidebar would overlap Related Courses
+    const sidebarBottom = scrollTop + sidebarTop + sidebarHeight;
+    const relatedCoursesTop = relatedCoursesRect.top + scrollTop;
+    const stopPosition = relatedCoursesTop - buffer;
+    
+    // ✅ Switch to constrained positioning when near Related Courses
+    if (sidebarBottom >= stopPosition) {
+      this.isSidebarFixed = false;
+      // ✅ Set bottom position to stop before Related Courses
+      const bottomValue = window.innerHeight - relatedCoursesRect.top + buffer;
+      sidebarElement.style.bottom = `${bottomValue}px`;
+      sidebarElement.style.top = 'auto';
+    } else {
+      this.isSidebarFixed = true;
+      sidebarElement.style.bottom = 'auto';
+      sidebarElement.style.top = '90px';
+    }
+
+    this.changeDetectorRef.markForCheck();
   }
 
   // ✅ Manual course loading - ONLY triggered by user interaction (button click)
@@ -111,6 +182,46 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
           return;
         }
         
+        // ✅ FIX: Normalize Course Features property name (handle both PascalCase and camelCase)
+        // Backend API returns "CourseFeatures" (PascalCase) but frontend expects "courseFeatures" (camelCase)
+        // This ensures "Key Features" section can access "Course Features" data from API
+        if (data) {
+          // If courseFeatures doesn't exist but CourseFeatures does, copy it
+          if (!data.courseFeatures && (data as any).CourseFeatures) {
+            data.courseFeatures = (data as any).CourseFeatures;
+            if (this.isBrowser) {
+              console.log('[PublicCourseDetailsComponent] ✅ Normalized CourseFeatures (PascalCase) to courseFeatures (camelCase)');
+            }
+          }
+          // Ensure courseFeatures is always set (even if empty array)
+          if (!data.courseFeatures) {
+            data.courseFeatures = [];
+          }
+        }
+        
+        // ✅ DEBUG: Log courseFeatures data with detailed information
+        if (this.isBrowser) {
+          console.log('[PublicCourseDetailsComponent] Course data loaded:', {
+            id: data?.id,
+            title: data?.title,
+            courseFeatures: data?.courseFeatures,
+            courseFeaturesLength: data?.courseFeatures?.length || 0,
+            courseFeaturesRaw: data?.courseFeatures,
+            hasCourseFeatures: !!data?.courseFeatures,
+            isArray: Array.isArray(data?.courseFeatures),
+            // Check for PascalCase version
+            CourseFeatures: (data as any)?.CourseFeatures,
+            CourseFeaturesLength: (data as any)?.CourseFeatures?.length || 0
+          });
+          
+          // ✅ Additional debug: Log full data structure
+          if (!data?.courseFeatures || data.courseFeatures.length === 0) {
+            console.warn('[PublicCourseDetailsComponent] ⚠️ No courseFeatures found in API response!');
+            console.warn('Full data object keys:', Object.keys(data || {}));
+            console.warn('Data object:', data);
+          }
+        }
+        
         // ✅ Set course data (only after successful API response)
         this.course = data;
         this.courseDetails = data; // ✅ Alias for backward compatibility
@@ -135,6 +246,58 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
     }
     return this.course.createdByUser && 
       this.createdByList.includes(this.course.createdByUser.id);
+  }
+
+  // ✅ Getter for course features - handles both camelCase and PascalCase
+  // This maps "Course Features" data from API to "Key Features" display in UI
+  // Used in pricing card to display course features
+  get courseFeatures(): any[] {
+    if (!this.courseDetails) {
+      if (this.isBrowser) {
+        console.warn('[PublicCourseDetailsComponent] courseDetails is null/undefined - cannot get Course Features');
+      }
+      return [];
+    }
+    
+    // ✅ Handle both camelCase (courseFeatures) and PascalCase (CourseFeatures) property names
+    // The API returns "CourseFeatures" but we normalize it to "courseFeatures"
+    // This ensures pricing card can access Course Features data
+    const features = this.courseDetails.courseFeatures || (this.courseDetails as any).CourseFeatures;
+    
+    if (!features) {
+      if (this.isBrowser) {
+        console.warn('[PublicCourseDetailsComponent] ⚠️ No Course Features data found in courseDetails');
+        console.warn('Available properties:', Object.keys(this.courseDetails || {}));
+      }
+      return [];
+    }
+    
+    if (!Array.isArray(features)) {
+      if (this.isBrowser) {
+        console.warn('[PublicCourseDetailsComponent] ⚠️ Course Features is not an array:', typeof features, features);
+      }
+      return [];
+    }
+    
+    // ✅ Filter out any null/undefined items and ensure we have valid features
+    const validFeatures = features.filter(f => {
+      const hasDescription = f && (f.description || f.Description);
+      if (!hasDescription && this.isBrowser) {
+        console.warn('[PublicCourseDetailsComponent] Skipping invalid feature:', f);
+      }
+      return hasDescription;
+    });
+    
+    if (this.isBrowser) {
+      if (validFeatures.length > 0) {
+        console.log('[PublicCourseDetailsComponent] ✅ Course Features loaded for pricing card:', validFeatures.length, 'items');
+        console.log('[PublicCourseDetailsComponent] Course Features data:', validFeatures);
+      } else {
+        console.warn('[PublicCourseDetailsComponent] ⚠️ No valid Course Features found after filtering');
+      }
+    }
+    
+    return validFeatures;
   }
 
   setComponentProperties(courseDetails, location: string | null) {
@@ -279,6 +442,79 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
 
   // ✅ FIX: Prevent navigation when clicking dropdown/collapse links
   // ✅ SSR: Safe - only executes in browser
+  // ✅ Scroll to section when navigation tab is clicked
+  scrollToSection(sectionId: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // ✅ SSR: Only execute DOM operations in browser
+    if (!this.isBrowser) {
+      return;
+    }
+    
+    // ✅ Wait for next tick to ensure DOM is ready
+    setTimeout(() => {
+      // ✅ For trainer section, find the correct element (the one with trainer content)
+      let element: HTMLElement | null = null;
+      
+      if (sectionId === 'trainer') {
+        // ✅ Find the trainer section that contains courseTeachers
+        const trainerElements = document.querySelectorAll(`#${sectionId}`);
+        // ✅ Get the last one (the actual trainer section, not description)
+        if (trainerElements.length > 0) {
+          element = trainerElements[trainerElements.length - 1] as HTMLElement;
+        }
+      } else {
+        element = document.getElementById(sectionId);
+      }
+      
+      if (element) {
+        // ✅ Calculate offset for fixed header (if any)
+        const headerOffset = 100; // Adjust based on your header height
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+        // ✅ Smooth scroll to section
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+        
+        // ✅ Update active nav link
+        this.updateActiveNavLink(sectionId);
+      }
+    }, 100);
+  }
+  
+  // ✅ Update active navigation link
+  updateActiveNavLink(activeSectionId: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
+    
+    // ✅ Remove active class from all nav links
+    const navLinks = document.querySelectorAll('.nav-lb-tab .nav-link');
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+    });
+    
+    // ✅ Add active class to clicked nav link
+    const sectionMap: { [key: string]: string } = {
+      'about': 'description-tab',
+      'contents': 'table-tab',
+      'faq': 'faq-tab',
+      'trainer': 'trainer-tab'
+    };
+    
+    const activeTabId = sectionMap[activeSectionId];
+    if (activeTabId) {
+      const activeLink = document.getElementById(activeTabId);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+    }
+  }
+
   preventNavigation(event: Event): void {
     // Prevent default to stop Angular router from intercepting hash links
     event.preventDefault();
@@ -366,6 +602,260 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
       collapseElement.classList.add('show');
       link.setAttribute('aria-expanded', 'true');
       link.classList.remove('collapsed');
+    }
+  }
+
+  // ✅ ==================== COUNTDOWN TIMER METHODS ====================
+  
+  /**
+   * Initialize countdown timer - checks for existing timer or creates new one
+   */
+  private initializeCountdown(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    let offerEndTime: number | null = this.getStoredOfferEndTime();
+
+    // ✅ If no stored time exists, create a new timer
+    if (!offerEndTime) {
+      offerEndTime = this.createNewOfferTimer();
+    }
+
+    // ✅ Start the countdown
+    this.startCountdown(offerEndTime);
+  }
+
+  /**
+   * Create a new offer timer and store it
+   * @returns The offer end timestamp
+   */
+  private createNewOfferTimer(): number {
+    const now = Date.now();
+    const offerEndTime = now + (this.OFFER_DURATION_HOURS * 60 * 60 * 1000); // Add hours in milliseconds
+    
+    // ✅ Store in cookie (preferred) or localStorage (fallback)
+    this.setStoredOfferEndTime(offerEndTime);
+    
+    if (this.isBrowser) {
+      console.log(`[CountdownTimer] New offer timer created. Expires in ${this.OFFER_DURATION_HOURS} hours.`);
+    }
+    
+    return offerEndTime;
+  }
+
+  /**
+   * Get stored offer end time from cookie or localStorage
+   * @returns The offer end timestamp or null if not found
+   */
+  private getStoredOfferEndTime(): number | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+
+    // ✅ Try cookie first
+    const cookieValue = this.getCookie(this.COOKIE_NAME);
+    if (cookieValue) {
+      const timestamp = parseInt(cookieValue, 10);
+      if (!isNaN(timestamp) && timestamp > Date.now()) {
+        return timestamp;
+      }
+      // ✅ Cookie expired, remove it
+      this.deleteCookie(this.COOKIE_NAME);
+    }
+
+    // ✅ Fallback to localStorage
+    try {
+      const storedValue = localStorage.getItem(this.COOKIE_NAME);
+      if (storedValue) {
+        const timestamp = parseInt(storedValue, 10);
+        if (!isNaN(timestamp) && timestamp > Date.now()) {
+          return timestamp;
+        }
+        // ✅ localStorage value expired, remove it
+        localStorage.removeItem(this.COOKIE_NAME);
+      }
+    } catch (e) {
+      console.warn('[CountdownTimer] localStorage access failed:', e);
+    }
+
+    return null;
+  }
+
+  /**
+   * Store offer end time in cookie (preferred) or localStorage (fallback)
+   * @param timestamp The offer end timestamp
+   */
+  private setStoredOfferEndTime(timestamp: number): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    // ✅ Try cookie first
+    const cookieSet = this.setCookie(this.COOKIE_NAME, timestamp.toString(), this.COOKIE_EXPIRY_DAYS);
+    
+    // ✅ Fallback to localStorage if cookie fails
+    if (!cookieSet) {
+      try {
+        localStorage.setItem(this.COOKIE_NAME, timestamp.toString());
+      } catch (e) {
+        console.warn('[CountdownTimer] Failed to store timer in both cookie and localStorage:', e);
+      }
+    }
+  }
+
+  /**
+   * Start the countdown timer
+   * @param offerEndTime The offer end timestamp
+   */
+  private startCountdown(offerEndTime: number): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    // ✅ Clear any existing interval
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+
+    // ✅ Update immediately
+    this.updateCountdown(offerEndTime);
+
+    // ✅ Update every second
+    this.countdownInterval = setInterval(() => {
+      this.updateCountdown(offerEndTime);
+    }, 1000);
+  }
+
+  /**
+   * Update countdown display
+   * @param offerEndTime The offer end timestamp
+   */
+  private updateCountdown(offerEndTime: number): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const now = Date.now();
+    const remaining = offerEndTime - now;
+
+    if (remaining <= 0) {
+      // ✅ Timer expired
+      this.countdownHours = '00';
+      this.countdownMinutes = '00';
+      this.countdownSeconds = '00';
+      this.isCountdownExpired = true;
+      
+      // ✅ Clear interval
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+      }
+
+      // ✅ Clean up stored timer
+      this.deleteCookie(this.COOKIE_NAME);
+      try {
+        localStorage.removeItem(this.COOKIE_NAME);
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+
+      this.changeDetectorRef.markForCheck();
+      return;
+    }
+
+    // ✅ Calculate time components
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+    // ✅ Format with leading zeros
+    this.countdownHours = this.padZero(hours);
+    this.countdownMinutes = this.padZero(minutes);
+    this.countdownSeconds = this.padZero(seconds);
+    this.isCountdownExpired = false;
+
+    this.changeDetectorRef.markForCheck();
+  }
+
+  /**
+   * Pad number with leading zero
+   * @param num The number to pad
+   * @returns Padded string
+   */
+  private padZero(num: number): string {
+    return num.toString().padStart(2, '0');
+  }
+
+  // ✅ ==================== COOKIE UTILITY METHODS ====================
+
+  /**
+   * Set a cookie
+   * @param name Cookie name
+   * @param value Cookie value
+   * @param days Days until expiry
+   * @returns True if successful
+   */
+  private setCookie(name: string, value: string, days: number): boolean {
+    if (!this.isBrowser) {
+      return false;
+    }
+
+    try {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = `expires=${date.toUTCString()}`;
+      document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
+      return true;
+    } catch (e) {
+      console.warn('[CountdownTimer] Failed to set cookie:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Get a cookie value
+   * @param name Cookie name
+   * @returns Cookie value or null
+   */
+  private getCookie(name: string): string | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+
+    try {
+      const nameEQ = `${name}=`;
+      const cookies = document.cookie.split(';');
+      
+      for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i];
+        while (cookie.charAt(0) === ' ') {
+          cookie = cookie.substring(1, cookie.length);
+        }
+        if (cookie.indexOf(nameEQ) === 0) {
+          return cookie.substring(nameEQ.length, cookie.length);
+        }
+      }
+    } catch (e) {
+      console.warn('[CountdownTimer] Failed to get cookie:', e);
+    }
+
+    return null;
+  }
+
+  /**
+   * Delete a cookie
+   * @param name Cookie name
+   */
+  private deleteCookie(name: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    try {
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    } catch (e) {
+      console.warn('[CountdownTimer] Failed to delete cookie:', e);
     }
   }
 

@@ -65,11 +65,14 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
 
         return this.publicAppService.getCourses(obj).pipe(
           map(response => {
+            console.log('[PublicCourseListComponent] Courses response:', response);
             // ✅ FIX: Normalize canonicalUrl for all courses to ensure routerLink works correctly
             const courses: CourseListItem[] = (response.results || []).map((course: any) => this.mapCourse(course));
 
             const totalItems = response.totalNumberOfRecords || 0;
-            return {
+            console.log('[PublicCourseListComponent] Mapped courses:', courses.length, 'Total items:', totalItems);
+            
+            const result = {
               courses,
               totalItems,
               currentPage,
@@ -79,9 +82,15 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
                 totalItems
               }
             };
+            
+            // Trigger change detection after data is loaded
+            setTimeout(() => this.cdr.markForCheck(), 0);
+            
+            return result;
           }),
           catchError(error => {
-            console.error('Error loading courses:', error);
+            console.error('[PublicCourseListComponent] Error loading courses:', error);
+            this.cdr.markForCheck();
             return of({
               courses: [],
               totalItems: 0,

@@ -6,6 +6,7 @@ import { first } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AuthenticationService } from './../auth.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { environment } from 'src/environments/environment';
 
 // ✅ PERFORMANCE: OnPush change detection for faster change detection (30-50% improvement)
 @Component({
@@ -23,6 +24,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   returnUrl = '/';
   error = '';
   private subscription = new Subscription();
+  logoUrl = environment.logoUrl;
 
   constructor(
     private fb: FormBuilder,

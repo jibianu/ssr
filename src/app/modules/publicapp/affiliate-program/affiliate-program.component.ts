@@ -1,13 +1,55 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
- @Component({
-    selector: 'app-affiliate-program',
-    templateUrl: './affiliate-program.component.html',
-    styleUrls: ['./affiliate-program.component.scss'],
-    standalone: false
+@Component({
+   selector: 'app-affiliate-program',
+   templateUrl: './affiliate-program.component.html',
+   styleUrls: ['./affiliate-program.component.scss'],
+   standalone: false
 })
 export class AffiliateProgramComponent implements OnInit {
+
+  readonly programWorkSteps = [
+    {
+      icon: 'assets/affiliate-join-icon.svg',
+      title: 'Join',
+      description: 'Join OilAndGasClub\'s Affiliate Program on Impact.com, a trusted global partnership platform. Signing up is fast, simple, and completely free.'
+    },
+    {
+      icon: 'assets/affiliate-choose-icon.svg',
+      title: 'Choose',
+      description: 'from Oil & Gas–specific courses, certifications, expert programs, and industry events. Promote the offerings that best match your audience using OilAndGasClub\'s banners, text links, or your own custom content.'
+    },
+    {
+      icon: 'assets/affiliate-track-icon.svg',
+      title: 'Track',
+      description: 'your performance effortlessly with Impact.com\'s advanced tracking tools, including easy-to-use affiliate links, real-time analytics, and transparent reporting.'
+    },
+    {
+      icon: 'assets/affiliate-earn-icon.svg',
+      title: 'Earn',
+      description: 'up to 45% commission on eligible purchases* that your users make on OilAndGasClub, while helping professionals grow their careers in the energy industry.'
+    }
+  ];
+
+
+  readonly affiliateBenefits = [
+    {
+      icon: 'assets/affiliate-grow-icon.svg',
+      title: 'Grow with OilAndGasClub',
+      description: 'Help professionals upskill with industry-relevant Oil & Gas and energy programs.'
+    },
+    {
+      icon: 'assets/affiliate-earn-icon.svg',
+      title: 'Earn through your network',
+      description: 'Generate income by promoting trusted courses and certifications to your audience.'
+    },
+    {
+      icon: 'assets/affiliate-flexible-icon.svg',
+      title: 'Work on your terms',
+      description: 'Promote anytime, anywhere, at your own pace with full flexibility.'
+    }
+  ];
 
   readonly programPerks = [
     {

@@ -4,7 +4,12 @@
       <p>No related courses available.</p>
     </div>
 
-    <div class="related-grid" *ngIf="courses.length > 0">
+    <div *ngIf="courses.length > 0">
+      <header class="related-courses__header">
+        <h2 class="related-courses__title">Related Courses</h2>
+      </header>
+
+      <div class="related-grid">
       <article class="related-card" *ngFor="let course of courses; trackBy: trackByCourseId">
         <a class="related-card__media" [routerLink]="course?.canonicalUrl">
           <img
@@ -40,19 +45,13 @@
 
           <ul class="related-card__stats" *ngIf="course?.learnersCount || course?.rating || course?.reviewCount">
             <li *ngIf="course?.learnersCount">
-              <i class="fa fa-users" aria-hidden="true"></i>
-              {{ course.learnersCount | number:'1.0-0' }}
+              {{ course.learnersCount | number:'1.0-0' }} students
             </li>
-            <li *ngIf="course?.rating">
-              <i class="fa fa-star" aria-hidden="true"></i>
-              {{ course.rating | number:'1.1-1' }}
-              <span *ngIf="course?.reviewCount">
-                ({{ course.reviewCount | number:'1.0-0' }})
-              </span>
+            <li *ngIf="course?.rating && course?.reviewCount">
+              {{ getRatingPercentage(course.rating) }}% positive rating (from {{ formatReviewCount(course.reviewCount) }} reviews)
             </li>
-            <li *ngIf="!course?.rating && course?.reviewCount">
-              <i class="fa fa-comments" aria-hidden="true"></i>
-              {{ course.reviewCount | number:'1.0-0' }}
+            <li *ngIf="course?.rating && !course?.reviewCount">
+              {{ getRatingPercentage(course.rating) }}% positive rating
             </li>
           </ul>
 
@@ -68,10 +67,10 @@
 
         <div class="related-card__offer" *ngIf="course?.discountPercent || course?.listPrice">
           <span class="related-card__offer-percent" *ngIf="course?.discountPercent">
-            {{ course.discountPercent }}% Disc.
+            {{ course.discountPercent }}% Discount,
           </span>
           <span class="related-card__offer-strike" *ngIf="course?.listPrice">
-            {{ course.listPrice | currency:'INR':'symbol' }}
+            {{ course.listPrice | currency:'INR':'symbol':'1.0-0' }}
           </span>
         </div>
 
@@ -82,11 +81,12 @@
               Buy
             </span>
             <span class="related-card__cta-price">
-              {{ course.amount | currency:'INR':'symbol' }}
+              {{ course.amount | currency:'INR':'symbol':'1.0-0' }}
             </span>
           </a>
         </footer>
       </article>
+      </div>
     </div>
   </ng-container>
 

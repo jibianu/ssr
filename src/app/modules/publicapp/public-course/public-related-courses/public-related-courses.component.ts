@@ -113,6 +113,27 @@ export class PublicRelatedCoursesComponent implements OnChanges, OnDestroy {
     return course?.id != null ? String(course.id) : String(index);
   }
 
+  getRatingPercentage(rating: number | undefined): number {
+    if (!rating) return 0;
+    // ✅ Convert 5-star rating to percentage (e.g., 4.9 → 98%)
+    // If rating is already a percentage (0-100), return as is
+    if (rating > 5) {
+      return Math.round(rating);
+    }
+    // Convert 5-star scale to percentage
+    return Math.round((rating / 5) * 100);
+  }
+
+  formatReviewCount(count: number | undefined): string {
+    if (!count) return '0';
+    // ✅ Format review count: 1500 → "1.5K", 908 → "908"
+    if (count >= 1000) {
+      const k = count / 1000;
+      return k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`;
+    }
+    return count.toString();
+  }
+
   private normalizeCourseUrl(url: string | null | undefined): string {
     if (!url) return '';
     let normalized = url.replace(/^\/+/, '');

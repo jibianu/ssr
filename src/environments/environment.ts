@@ -9,8 +9,9 @@ export const environment = {
   // Local backend URL - matches backend launchSettings.json
   // Backend exposes: HTTP on port 7080
   // Using HTTP to avoid SSL certificate issues in development
- apiUrl: 'http://localhost:52056/',
+ apiUrl: 'http://localhost:5001/',
 //  apiUrl: 'https://coursebackend.oilandgasclub.com/',
   seoUrl: 'https://oilandgasclub.com/',
-  imgUrl: 'https://via.placeholder.com/468x300'
+  imgUrl: 'https://via.placeholder.com/468x300',
+  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg'
 };

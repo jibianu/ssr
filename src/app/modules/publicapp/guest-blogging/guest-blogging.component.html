@@ -1,5 +1,5 @@
 <!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
-<div class="guest-blog-page" ngSkipHydration>
+<div class="guest-blog-page">
   <section class="guest-hero">
     <div class="guest-hero__copy">
       <p class="guest-eyebrow">Guest blogging · Paid features · Global reach</p>
@@ -13,9 +13,12 @@
           <li>{{ item }}</li>
         }
       </ul>
-      <div class="guest-hero__actions">
+      <!-- <div class="guest-hero__actions">
         <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Pitch your article</a>
         <a class="btn-link" href="https://blog.oilandgasclub.com">Browse recent features →</a>
+      </div> -->
+      <div class="partner-hero__cta">
+        <a class="btn-primary" href="#" (click)="openModal($event)">Pitch your article</a>
       </div>
     </div>
     <div class="guest-hero__card">
@@ -79,7 +82,7 @@
         <h2>Let’s create something useful together</h2>
         <p>Send your outline, supporting visuals, and a short bio. we’ll respond within 2 business days with editorial guidance and next steps.</p>
       </div>
-      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Submit your pitch</a>
+      <a class="btn-primary" href="#" (click)="openModal($event)">Submit your pitch</a>
     </div>
   </section>
 
@@ -99,3 +102,128 @@
   </section>
 </div>
 
+<!-- Guest Blogging Pitch Modal (same popup pattern as Partner-us) -->
+@if (showModal) {
+  <div class="modal-overlay show" (click)="closeModal()" [attr.aria-hidden]="!showModal" aria-modal="true" role="dialog">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <h2>Guest Blog Pitch</h2>
+          <p>Share your idea below. Our editorial team will respond within 2 business days.</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()" aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="guest-form" (ngSubmit)="onFormSubmit(guestForm)" #guestForm="ngForm">
+        @if (showThankYouInModal) {
+          <div class="submit-message success guest-thankyou">
+            {{ thankYouMessage }}
+          </div>
+        } @else {
+          <div class="form-row">
+            <div class="form-column">
+              <div class="form-group">
+                <input
+                  type="text"
+                  id="guestName"
+                  name="Name"
+                  [(ngModel)]="formData.name"
+                  placeholder="Name"
+                  required
+                  #nameInput="ngModel"
+                  [class.error]="nameInput.invalid && nameInput.touched"
+                />
+                @if (nameInput.invalid && nameInput.touched) {
+                  <span class="error-message">Name is required</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="email"
+                  id="guestEmail"
+                  name="Email"
+                  [(ngModel)]="formData.email"
+                  placeholder="Email"
+                  required
+                  email
+                  #emailInput="ngModel"
+                  [class.error]="emailInput.invalid && emailInput.touched"
+                />
+                @if (emailInput.invalid && emailInput.touched) {
+                  <span class="error-message">Valid email is required</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="text"
+                  id="guestWhatsapp"
+                  name="Phone Number"
+                  [(ngModel)]="formData.phoneNumber"
+                  placeholder="Phone Number"
+                  required
+                  #whatsappInput="ngModel"
+                  [class.error]="whatsappInput.invalid && whatsappInput.touched"
+                />
+                @if (whatsappInput.invalid && whatsappInput.touched) {
+                  <span class="error-message">Phone Number is required</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-column">
+              <div class="form-group">
+                <input
+                  type="text"
+                  id="guestLinkedin"
+                  name="Linkedin Url"
+                  [(ngModel)]="formData.linkedinUrl"
+                  placeholder="Linkedin Url"
+                />
+              </div>
+
+              <div class="form-group">
+                <textarea
+                  id="guestAboutYou"
+                  name="About you"
+                  [(ngModel)]="formData.aboutYou"
+                  placeholder="About you"
+                  rows="5"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <textarea
+                  id="guestAffiliatedOrg"
+                  name="Are you affiliated with any organization"
+                  [(ngModel)]="formData.affiliatedOrganization"
+                  placeholder="Are you affiliated with any organization (optional)"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          @if (submitMessage && !submitSuccess) {
+            <div class="submit-message error">{{ submitMessage }}</div>
+          }
+
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+              @if (isSubmitting) {
+                <span>Submitting...</span>
+              } @else {
+                <span>Submit Pitch</span>
+              }
+            </button>
+          </div>
+        }
+      </form>
+    </div>
+  </div>
+}

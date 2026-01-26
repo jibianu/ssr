@@ -5,6 +5,18 @@
   gap: clamp(1.5rem, 4vw, 2.5rem);
 }
 
+.related-courses__header {
+  margin-bottom: clamp(1.5rem, 4vw, 2rem);
+}
+
+.related-courses__title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  color: $course-color-text-primary;
+  margin: 0;
+  line-height: 1.3;
+}
+
 .related-empty,
 .related-loading {
   text-align: center;
@@ -14,11 +26,21 @@
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, 1fr); // ✅ 4 cards on desktop (matching image)
   gap: clamp(1.5rem, 4vw, 2rem);
-  justify-items: center;
+  justify-items: stretch;
   align-items: stretch;
   grid-auto-rows: 1fr;
+
+  // ✅ Tablet: 2 cards per row
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // ✅ Mobile: 1 card per row
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .related-card {
@@ -26,7 +48,7 @@
     $hover-border-color: rgba(0, 127, 134, 0.32),
     $hover-shadow: $course-shadow-card-hover-teal,
     $min-height: 480px,
-    $width: min(100%, 280px)
+    $width: 100% // ✅ Full width within grid column
   );
 }
 
@@ -117,6 +139,15 @@
     0.9rem,
     0.84rem
   );
+  
+  // ✅ Match image design: remove icons, show text only
+  li {
+    list-style: none;
+    
+    i {
+      display: none; // ✅ Hide icons to match image design
+    }
+  }
 }
 
 .related-card__highlights {

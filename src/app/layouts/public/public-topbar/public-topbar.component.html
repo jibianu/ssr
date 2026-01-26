@@ -10,13 +10,20 @@
       <nav class="topbar-nav topbar-nav--desktop">
         <ul class="nav-menu">
           <li class="menu-item">
-            <a [routerLink]="'/courses'">Courses</a>
+            <a routerLink="/courses">Courses</a>
           </li>
           <li class="menu-item">
             <a [routerLink]="'/events'">Events</a>
           </li>
           <li class="menu-item">
-            <a href="https://elearn.oilandgasclub.com/auth/login/">Login</a>
+            <a href="https://blog.oilandgasclub.com/" target="_blank">Blog</a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="'/become-our-trainer'">Become an Instructor</a>
+          </li>
+          <li class="menu-actions">
+            <a href="https://elearn.oilandgasclub.com/auth/login/" class="btn-login">Log in</a>
+            <a href="https://elearn.oilandgasclub.com/auth/register" class="btn-signup">Sign up</a>
           </li>
         </ul>
       </nav>
@@ -43,9 +50,16 @@
           <a [routerLink]="'/events'" (click)="toggleinVisibility()">Events</a>
         </li>
         <li class="menu-item">
-          <a href="https://elearn.oilandgasclub.com/auth/login/" (click)="toggleinVisibility()">Login</a>
+          <a href="https://blog.oilandgasclub.com/" target="_blank" (click)="toggleinVisibility()">Blog</a>
+        </li>
+        <li class="menu-item">
+          <a [routerLink]="'/become-our-trainer'" (click)="toggleinVisibility()">Become an Instructor</a>
         </li>
       </ul>
+      <div class="nav-buttons-mobile">
+        <a href="https://elearn.oilandgasclub.com/auth/login/" class="btn-login" (click)="toggleinVisibility()">Log in</a>
+        <a href="https://elearn.oilandgasclub.com/auth/register" class="btn-signup" (click)="toggleinVisibility()">Sign up</a>
+      </div>
     </nav>
   </div>
 </header>

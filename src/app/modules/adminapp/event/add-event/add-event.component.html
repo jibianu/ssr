@@ -1,7 +1,6 @@
 <div class="add-event-wrapper">
   <!-- Main Form -->
   <form [formGroup]="eventForm" (ngSubmit)="onSubmit()" class="event-form">
-    
     <!-- Section 1: Event Basic Details -->
     <div class="form-section">
       <div class="section-header">
@@ -904,11 +903,19 @@
       <button 
         class="btn-primary" 
         type="button" 
-        [disabled]="loading || eventForm.invalid"
+        [disabled]="loading || isSaving || eventForm.invalid"
         (click)="onSubmit()">
         <span *ngIf="loading" class="spinner"></span>
         <i class="fas fa-save" *ngIf="!loading"></i>
         {{btntext}}
+      </button>
+      <button 
+        type="button" 
+        class="btn-secondary" 
+        [disabled]="loading" 
+        (click)="resetForm()">
+        <i class="fas fa-redo"></i>
+        Reset
       </button>
       <button 
         type="button" 

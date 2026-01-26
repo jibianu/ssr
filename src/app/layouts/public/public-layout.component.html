@@ -1,4 +1,4 @@
-<app-public-topbar></app-public-topbar>
+<app-public-topbar *ngIf="!isAuthRoute"></app-public-topbar>
 
 <main class="public-main-wrapper">
   <div class="public-container">
@@ -6,4 +6,4 @@
   </div>
 </main>
 
-<app-public-footer></app-public-footer>
+<app-public-footer *ngIf="!isAuthRoute"></app-public-footer>

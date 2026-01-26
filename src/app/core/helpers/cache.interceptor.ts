@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 
 /**
  * HTTP Cache Interceptor
@@ -65,25 +65,31 @@ export class CacheInterceptor implements HttpInterceptor {
 
     // Make request and cache response
     return next.handle(request).pipe(
+      map(event => {
+        // ✅ FIX: If backend returns 304 Not Modified, return cached body as a 200 response.
+        // Angular HttpClient does NOT automatically swap in our cached body.
+        if (event instanceof HttpResponse && event.status === 304) {
+          const cachedBody = this.getCachedResponse(cacheKey);
+          const cached = this.cache.get(cacheKey);
+          if (cached) {
+            cached.timestamp = Date.now(); // extend validity
+          }
+          return new HttpResponse({
+            body: cachedBody,
+            status: 200,
+            statusText: 'OK (from cache after 304)',
+            headers: event.headers,
+            url: event.url || undefined,
+          });
+        }
+        return event;
+      }),
       tap(event => {
         if (event instanceof HttpResponse) {
-          // ✅ ENHANCEMENT: Handle 304 Not Modified
-          if (event.status === 304) {
-            // Response is unchanged - cache is still valid
-            const cached = this.cache.get(cacheKey);
-            if (cached) {
-              // Update timestamp to extend cache validity
-              cached.timestamp = Date.now();
-            }
-            // Note: 304 response will be handled by Angular HTTP client automatically
-            // The cached data is already available from our cache
-            return;
-          }
-
           // ✅ ENHANCEMENT: Extract cache headers from response
           const cacheControl = event.headers.get('Cache-Control');
           const etag = event.headers.get('ETag');
-          
+
           // Parse max-age from Cache-Control header
           let maxAge: number | undefined;
           if (cacheControl) {
@@ -165,11 +171,21 @@ export class CacheInterceptor implements HttpInterceptor {
    */
   private getBasePath(url: string): string {
     const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    
-    // Return path up to resource name (remove ID and sub-paths)
-    if (pathParts.length >= 4) {
-      return pathParts.slice(0, 4).join('/');
+    const pathParts = urlObj.pathname.split('/'); // keeps leading "" segment
+
+    // ✅ FIX: Invalidate at resource level (not per-id).
+    // Examples:
+    // - /page/event/{id}        -> /page/event
+    // - /api/page/event/{id}    -> /api/page/event
+    const pageIndex = pathParts.findIndex(p => p === 'page');
+    if (pageIndex >= 0 && pageIndex + 1 < pathParts.length) {
+      // keep everything up to "/page/{resource}"
+      return pathParts.slice(0, pageIndex + 2).join('/');
+    }
+
+    // fallback: drop the last segment if it looks like an id
+    if (pathParts.length > 2) {
+      return pathParts.slice(0, -1).join('/');
     }
     return urlObj.pathname;
   }

@@ -6,6 +6,7 @@ $affiliate-primary: #0f172a;
 $affiliate-muted: #64748b;
 $affiliate-border: rgba(15, 23, 42, 0.08);
 $affiliate-accent: #f02c00;
+$affiliate-blue: #1e3a8a; // Dark blue for "How does it work" section
 
 .affiliate-page {
   @include common.page-shell($affiliate-bg);
@@ -89,6 +90,203 @@ $affiliate-accent: #f02c00;
   &__label {
     color: $affiliate-muted;
     font-size: 0.95rem;
+  }
+}
+
+// ✅ "How does Oilandgasclub's affiliate program work?" Section
+// Styled to match "The Process" section with premium card design
+.affiliate-program-work {
+  padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 4vw, 2rem);
+  background: #ffffff;
+  margin: 2rem 0;
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  &__title {
+    color: $affiliate-primary;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 1rem 0;
+  }
+
+  &__subtitle {
+    color: $affiliate-muted;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    text-align: center;
+    margin: 0 0 clamp(2.5rem, 5vw, 4rem) 0;
+    font-weight: 400;
+  }
+
+  &__steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); // 2x2 grid for desktop and tablet
+    gap: clamp(1.25rem, 2.5vw, 1.75rem);
+
+    // Mobile: 1 column stacked
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card {
+    background: #ffffff;
+    border-radius: 20px; // Large rounded corners (18-20px)
+    padding: clamp(1.5rem, 3vw, 2rem); // Generous padding
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); // Subtle box shadow for depth
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    // Card 1 (Join) - Light pink/peach background
+    &:nth-child(1) {
+      background: #fef4f4;
+    }
+
+    // Card 2 (Choose) - Light yellow background
+    &:nth-child(2) {
+      background: #fffbf2;
+    }
+
+    // Card 3 (Track) - Light blue background
+    &:nth-child(3) {
+      background: #eaf8ff;
+    }
+
+    // Card 4 (Earn) - Light orange/cream background
+    &:nth-child(4) {
+      background: #fffaf0;
+    }
+  }
+
+  &__icon-badge {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border-radius: 14px; // Rounded white badge
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  &__card-title {
+    color: $affiliate-primary; // Dark almost black (#0f172a)
+    font-size: clamp(1.15rem, 2vw, 1.35rem);
+    font-weight: 700; // Bold title
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+  }
+
+  &__card-description {
+    color: $affiliate-muted; // Muted gray (#64748b)
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    line-height: 1.6; // Generous line height for readability
+    margin: 0;
+    font-weight: 400; // Lighter description text
+  }
+}
+
+// ✅ "Join OilAndGasClub Affiliate Program" Section
+// Professional, industrial design with OilAndGasClub branding
+.affiliate-join-section {
+  padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 4vw, 2rem);
+  background: #ffffff;
+  margin: 2rem 0;
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  &__title {
+    color: #1e3a8a; // Deep navy / oil blue
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 1.5rem 0;
+  }
+
+  &__description {
+    color: $affiliate-primary;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    line-height: 1.7;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto clamp(3rem, 5vw, 4rem) auto;
+  }
+
+  &__benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(2rem, 4vw, 3rem);
+
+    // Tablet: 2 columns
+    @media (max-width: 992px) and (min-width: 769px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    // Mobile: 1 column
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: clamp(2rem, 4vw, 2.5rem);
+    }
+  }
+
+  &__benefit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  &__icon-wrapper {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  &__icon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &__benefit-title {
+    color: #1e3a8a; // Deep navy / oil blue
+    font-size: clamp(1.15rem, 2vw, 1.35rem);
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+  }
+
+  &__benefit-description {
+    color: $affiliate-muted;
+    font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 300px;
   }
 }
 
@@ -205,6 +403,7 @@ $affiliate-accent: #f02c00;
   }
 }
 
+// Mobile breakpoint (1 card per row)
 @media (max-width: 768px) {
   .affiliate-hero__cta {
     flex-direction: column;
@@ -214,5 +413,20 @@ $affiliate-accent: #f02c00;
   .affiliate-stat {
     flex: 1 1 100%;
   }
-}
 
+  .affiliate-program-work {
+    padding: clamp(2rem, 4vw, 3rem) 1rem;
+
+    &__steps {
+      grid-template-columns: 1fr; // Mobile: 1 column stacked
+    }
+  }
+
+  .affiliate-join-section {
+    padding: clamp(2rem, 4vw, 3rem) 1rem;
+
+    &__benefits {
+      grid-template-columns: 1fr; // Mobile: 1 column
+    }
+  }
+}

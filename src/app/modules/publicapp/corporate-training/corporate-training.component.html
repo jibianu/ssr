@@ -17,7 +17,7 @@
         }
       </div>
       <div class="corp-hero__actions">
-        <a class="btn-primary" href="mailto:enterprise@oilandgasclub.com">Request a custom program</a>
+        <a class="btn-primary" href="#" (click)="openModal($event)">Request a custom program</a>
         <a class="btn-link" href="https://www.oilandgasclub.com/courses">Download full catalog →</a>
       </div>
     </div>
@@ -86,7 +86,7 @@
         <p>Live labs, cohort communities, and project reviews keep engineers accountable. We embed your assets,
           vendors, and compliance frameworks for seamless adoption.</p>
       </div>
-      <a class="btn-primary" href="mailto:enterprise@oilandgasclub.com">Book a discovery call</a>
+      <a class="btn-primary" href="#" (click)="openModal($event)">Book a discovery call</a>
     </div>
   </section>
 
@@ -165,8 +165,141 @@
         <h2>Co-create a learning roadmap</h2>
         <p>Send us your skill matrix, competency goals, or certification requirements. Our team will respond within 48 hours with a proposal.</p>
       </div>
-      <a class="btn-primary" href="mailto:enterprise@oilandgasclub.com">Request proposal</a>
+      <a class="btn-primary" href="#" (click)="openModal($event)">Request proposal</a>
     </div>
   </section>
 </div>
 
+  <!-- Corporate Training Enquiry Modal -->
+  @if (showModal) {
+    <div class="modal-overlay show" (click)="closeModal()" [attr.aria-hidden]="!showModal" aria-modal="true" role="dialog">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-header-content">
+          <h2>Request Corporate Training</h2>
+            <p>Submit your details below. Our team will respond within 48 hours with a proposal.</p>
+          </div>
+          <button class="modal-close" (click)="closeModal()" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <form
+          class="corporate-form"
+          (ngSubmit)="onFormSubmit(corporateForm)"
+          #corporateForm="ngForm"
+        >
+          @if (showThankYouInModal) {
+            <div class="submit-message success corporate-thankyou">
+              {{ thankYouMessage }}
+            </div>
+          } @else {
+            <div class="form-row">
+              <div class="form-column">
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="firstName"
+                    name="firstName"
+                    [(ngModel)]="formData.firstName"
+                  placeholder="First Name"
+                    required
+                    #firstNameInput="ngModel"
+                    [class.error]="firstNameInput.invalid && firstNameInput.touched"
+                  />
+                  @if (firstNameInput.invalid && firstNameInput.touched) {
+                  <span class="error-message">First name is required</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="lastName"
+                    name="lastName"
+                    [(ngModel)]="formData.lastName"
+                    placeholder="Last Name"
+                  required
+                  #lastNameInput="ngModel"
+                  [class.error]="lastNameInput.invalid && lastNameInput.touched"
+                  />
+                @if (lastNameInput.invalid && lastNameInput.touched) {
+                  <span class="error-message">Last name is required</span>
+                }
+                </div>
+
+                <div class="form-group">
+                  <input
+                    type="email"
+                  id="workEmail"
+                    name="workEmail"
+                    [(ngModel)]="formData.workEmail"
+                  placeholder="Work Email"
+                    required
+                    email
+                  #emailInput="ngModel"
+                  [class.error]="emailInput.invalid && emailInput.touched"
+                  />
+                @if (emailInput.invalid && emailInput.touched) {
+                  <span class="error-message">Valid email is required</span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-column">
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="whatsappNumber"
+                    name="whatsappNumber"
+                    [(ngModel)]="formData.whatsappNumber"
+                  placeholder="WhatsApp Number"
+                    required
+                    #whatsappInput="ngModel"
+                    [class.error]="whatsappInput.invalid && whatsappInput.touched"
+                  />
+                  @if (whatsappInput.invalid && whatsappInput.touched) {
+                  <span class="error-message">WhatsApp number is required</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="company"
+                    name="company"
+                    [(ngModel)]="formData.company"
+                  placeholder="Company"
+                  required
+                  #companyInput="ngModel"
+                  [class.error]="companyInput.invalid && companyInput.touched"
+                  />
+                @if (companyInput.invalid && companyInput.touched) {
+                  <span class="error-message">Company is required</span>
+                }
+                </div>
+              </div>
+            </div>
+
+          @if (submitMessage && !submitSuccess) {
+            <div class="submit-message error">
+                {{ submitMessage }}
+              </div>
+            }
+
+            <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+                @if (isSubmitting) {
+                  Submitting...
+                } @else {
+                Submit Request
+                }
+              </button>
+            </div>
+          }
+        </form>
+      </div>
+    </div>
+  }

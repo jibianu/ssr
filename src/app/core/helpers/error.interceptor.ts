@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -12,15 +12,20 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
+    private readonly isBrowser: boolean;
+
     constructor(
         private authenticationService: AuthenticationService,
         private router: Router,
         private toasterService: ToasterService,
         private networkStatusService: NetworkStatusService,
-        private logger: LoggerService
-    ) {}
-
-    private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID)); 
+        private logger: LoggerService,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        // ✅ FIX: Initialize in constructor to prevent injector errors during SSR
+        // Field initializers with inject() can fail if injector is destroyed during SSR
+        this.isBrowser = isPlatformBrowser(this.platformId);
+    } 
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
@@ -29,6 +34,10 @@ export class ErrorInterceptor implements HttpInterceptor {
                 // Network errors during SSR are expected if backend is not running
                 const isNetworkError = !error.status || error.status === 0;
                 const isSSR = !this.isBrowser;
+                
+                // ✅ FIX: Don't show toaster for network errors during SSR or if backend is not available
+                // Services already handle these gracefully by returning empty arrays/objects
+                const shouldShowError = this.shouldShowErrorToaster(error, request);
                 
                 if (isSSR && isNetworkError) {
                     // ✅ SSR: Only log network errors at warning level (they're expected if backend is down)
@@ -45,13 +54,45 @@ export class ErrorInterceptor implements HttpInterceptor {
                 this.handleErrorByStatus(error);
 
                 const errorMessage = this.getErrorMessage(error);
-                if (this.isBrowser)
+                
+                // ✅ FIX: Only show toaster if it's a user-facing error that needs attention
+                if (this.isBrowser && shouldShowError) {
                     this.toasterService.showError(errorMessage);
+                }
 
                 // ✅ SSR-friendly: throw an Error object, not a string
                 return throwError(() => new Error(errorMessage));
             })
         );
+    }
+    
+    /**
+     * ✅ FIX: Determine if error toaster should be shown
+     * Don't show toaster for network errors that are already handled gracefully by services
+     */
+    private shouldShowErrorToaster(error: HttpErrorResponse, request: HttpRequest<any>): boolean {
+        const isNetworkError = !error.status || error.status === 0;
+        
+        // ✅ Don't show toaster for network errors on GET requests that are handled gracefully
+        // Services like getCourses() already catch errors and return empty arrays
+        if (isNetworkError && request.method === 'GET') {
+            // Check if this is a course/category listing request that handles errors gracefully
+            const url = request.url.toLowerCase();
+            const isGracefulError = url.includes('/page/course') || 
+                                   url.includes('/page/category') ||
+                                   url.includes('/page/event');
+            
+            if (isGracefulError) {
+                // These endpoints handle errors gracefully, don't show toaster
+                return false;
+            }
+        }
+        
+        // ✅ Show toaster for:
+        // - POST/PUT/DELETE requests (user actions that need feedback)
+        // - Non-network errors (4xx, 5xx)
+        // - Network errors on endpoints that don't handle errors gracefully
+        return true;
     }
 
     /**
@@ -94,9 +135,24 @@ export class ErrorInterceptor implements HttpInterceptor {
     private handleUnauthorizedError(): void {
         // Only show toaster and navigate in browser
         if (this.isBrowser) {
-            this.authenticationService.logout();
-            this.toasterService.showError("Your session has expired or you don't have permission to access this resource");
-            this.router.navigate(['/auth/login']);
+            // ✅ FIX: Check if refresh token exists before logging out
+            // If refresh token exists, JwtInterceptor should have attempted refresh
+            // If we reach here, refresh failed or refresh token is missing
+            const canRefresh = this.authenticationService.canRefreshToken();
+            
+            if (!canRefresh) {
+                // No refresh token available - session expired, need to login again
+                console.warn('[ErrorInterceptor] 401 Unauthorized - No refresh token available. User must login again.');
+                this.authenticationService.logout();
+                this.toasterService.showError("Your session has expired. Please log in again.");
+                this.router.navigate(['/auth/login']);
+            } else {
+                // Refresh token exists but refresh failed - token refresh endpoint might be failing
+                console.warn('[ErrorInterceptor] 401 Unauthorized - Token refresh failed. Logging out user.');
+                this.authenticationService.logout();
+                this.toasterService.showError("Your session has expired. Please log in again.");
+                this.router.navigate(['/auth/login']);
+            }
         }
     }
 

@@ -477,7 +477,10 @@
     </main>
 
     <aside class="event-aside">
-      <div class="sticky-top d-none d-sm-block" style="top: 50px;">
+      <div class="sticky-top d-none d-sm-block" 
+           [class.sidebar-fixed]="isSidebarFixed && isSidebarVisible" 
+           [class.sidebar-absolute]="!isSidebarFixed && isSidebarVisible"
+           [style.display]="isSidebarVisible ? 'flex' : 'none'">
         <div class="card box-shadow mb-3 mb-4">
           <div class="p-0">
             <section class="aside-card price-card">

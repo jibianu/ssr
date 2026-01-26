@@ -1,22 +1,25 @@
 <!-- ✅ HYDRATION OPTIMIZATION: Page is static content -->
 <div class="trainer-page" ngSkipHydration>
   <section class="trainer-hero">
+    <div class="trainer-hero__header">
+      <p class="trainer-eyebrow">Become an instructor at oilandgasclub</p>
+      <h1>Share your expertise by teaching oil &amp; gas professionals <span>from anywhere in the world</span></h1>
+    </div>
     <div class="trainer-hero__copy">
-      <p class="trainer-eyebrow">Instructors · Remote · Paid per cohort</p>
-      <h1>Teach oil &amp; gas professionals <span>from anywhere</span></h1>
       <p>
-        If you’re passionate about your discipline and want to mentor engineers globally, you’re in the right place.
-        Oilandgasclub instructors design hands-on simulations, live labs, and certification prep that change careers.
+        Are you passionate about teaching and an expert in your field? Oilandgasclub invites experienced trainers and Subject Matter Experts to mentor engineers and oil &amp; gas professionals worldwide.
       </p>
+      <p>
+        We are building self-learning courses, and you will collaborate closely with our team to design and deliver high-quality content. This opportunity follows a revenue-sharing model, allowing you to earn as learners succeed.
+      </p>
+      <div class="trainer-hero__cta">
+        <a class="btn-apply-instructor open-popup" (click)="openModal($event)">Apply To Become an Instructor</a>
+      </div>
       <ul class="trainer-checklist">
         @for (item of trainerChecklist; track item) {
           <li>{{ item }}</li>
         }
       </ul>
-      <div class="trainer-hero__actions">
-        <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Talk to our instructor team</a>
-        <a class="btn-link" href="https://www.oilandgasclub.com/courses">Preview our catalog →</a>
-      </div>
       <div class="trainer-hero__benefits">
         <div class="trainer-stat">
           <span class="trainer-stat__value">100%</span>
@@ -53,52 +56,204 @@
     </div>
   </section>
 
-  <section class="trainer-section">
+  <!-- Why Teach With Us Section -->
+  <section class="trainer-section trainer-section--why-teach">
     <header class="trainer-section__header">
-      <p class="trainer-eyebrow">Why partner with us</p>
-      <h2>What you’ll love about teaching here</h2>
+      <p class="trainer-eyebrow">WHY US</p>
+      <h2>Why Teach With Us</h2>
     </header>
-    <div class="trainer-grid">
-      @for (perk of trainerPerks; track perk.title) {
-        <article class="trainer-card">
-          <h3>{{ perk.title }}</h3>
-          <p>{{ perk.description }}</p>
-        </article>
-      }
+    <div class="why-teach-carousel">
+      <button class="carousel-nav carousel-nav--prev" (click)="prevSlide()" aria-label="Previous slide">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="carousel-container">
+        <div class="carousel-track" [style.transform]="'translateX(-' + (currentCarouselSlide * 100) + '%)'">
+          @for (slide of whyTeachCards; track $index) {
+            <div class="carousel-slide">
+              <ul class="why-teach-grid">
+                @for (card of slide; track card.title) {
+                  <li class="why-teach-card">
+                    <div class="why-teach-card__content">
+                      <div class="why-teach-card__icon">
+                      @if (card.icon === 'globe') {
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="24" cy="24" r="21" stroke="#FF5A1F" stroke-width="2"/>
+                          <circle cx="24" cy="24" r="15" stroke="#FF5A1F" stroke-width="1.5" opacity="0.5"/>
+                          <circle cx="15" cy="18" r="2" fill="#FF5A1F"/>
+                          <path d="M15 18L15 12" stroke="#FF5A1F" stroke-width="1.5" stroke-linecap="round"/>
+                          <circle cx="33" cy="21" r="2" fill="#FF5A1F"/>
+                          <path d="M33 21L33 15" stroke="#FF5A1F" stroke-width="1.5" stroke-linecap="round"/>
+                          <circle cx="18" cy="30" r="2" fill="#FF5A1F"/>
+                          <path d="M18 30L18 24" stroke="#FF5A1F" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                      } @else if (card.icon === 'book') {
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M14 10C14 9 14.5 8 16 8H22C23.5 8 24 9 24 10V34C24 35 23.5 36 22 36H16C14.5 36 14 35 14 34V10Z" stroke="#FF5A1F" stroke-width="2"/>
+                          <path d="M22 8H32C33.5 8 34 9 34 10V34C34 35 33.5 36 32 36H22" stroke="#FF5A1F" stroke-width="2"/>
+                          <path d="M16 14H22M16 18H20" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="24" cy="6" r="4" stroke="#FF5A1F" stroke-width="2"/>
+                          <path d="M24 2V4M24 8V10M20 6H18M30 6H32M21 4L19.5 2.5M27 4L28.5 2.5M21 8L19.5 9.5M27 8L28.5 9.5" stroke="#FF5A1F" stroke-width="1.5" stroke-linecap="round"/>
+                          <path d="M18 3L16 1M30 3L32 1M18 9L16 11M30 9L32 11" stroke="#FF5A1F" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                        </svg>
+                      } @else if (card.icon === 'money') {
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M21 15C21 13.5 21.5 12 23 12C24.5 12 25 13.5 25 15V18C25 19.5 24.5 21 23 21C21.5 21 21 19.5 21 18V15Z" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M22.5 18L22.5 24C22.5 25.5 23 27 24.5 27C26 27 26.5 25.5 26.5 24L26.5 21" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M19.5 27C19.5 28.5 20 30 21.5 30C23 30 23.5 28.5 23.5 27" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round"/>
+                          <rect x="15" y="18" width="18" height="12" rx="1.5" stroke="#FF5A1F" stroke-width="2"/>
+                          <rect x="16.5" y="16.5" width="18" height="12" rx="1.5" stroke="#FF5A1F" stroke-width="2" opacity="0.7"/>
+                          <rect x="18" y="15" width="18" height="12" rx="1.5" stroke="#FF5A1F" stroke-width="2" opacity="0.5"/>
+                          <path d="M27 18V21M27 22.5V25.5" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="27" cy="19.5" r="1.5" stroke="#FF5A1F" stroke-width="1.5" fill="none"/>
+                        </svg>
+                      } @else if (card.icon === 'support') {
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <!-- Person head -->
+                          <circle cx="32" cy="24" r="10" stroke="#FF6B35" stroke-width="2"/>
+                          <!-- Person body -->
+                          <path d="M20 44C20 38 25 34 32 34C39 34 44 38 44 44" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <!-- Headset -->
+                          <path d="M22 24C22 20 25 18 28 18C31 18 34 20 34 24" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <path d="M22 24C22 22 23 20 25 20" stroke="#FF6B35" stroke-width="2"/>
+                          <path d="M34 24C34 22 35 20 37 20" stroke="#FF6B35" stroke-width="2"/>
+                          <!-- Wrench on chest -->
+                          <path d="M30 36L34 40M32 38L36 34" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="32" cy="38" r="2" stroke="#FF6B35" stroke-width="1.5" fill="none"/>
+                          <!-- Speech bubble -->
+                          <path d="M40 16C42 14 45 14 47 16C49 18 49 21 47 23L44 26L40 22L40 16Z" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M44 26L42 28" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                      } @else if (card.icon === 'network') {
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <!-- Smartphone outline -->
+                          <rect x="18" y="8" width="28" height="40" rx="3" stroke="#FF6B35" stroke-width="2"/>
+                          <rect x="24" y="12" width="16" height="2" rx="1" fill="#FF6B35" opacity="0.3"/>
+                          <!-- Person with megaphone -->
+                          <circle cx="28" cy="24" r="4" stroke="#FF6B35" stroke-width="2"/>
+                          <path d="M24 28V32" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <path d="M28 24L36 20L40 24L36 28L28 24Z" stroke="#FF6B35" stroke-width="2" stroke-linejoin="round"/>
+                          <!-- Star -->
+                          <path d="M46 18L47 20L49 20.5L47.5 22L48 24L46 23L44 24L44.5 22L43 20.5L45 20L46 18Z" stroke="#FF6B35" stroke-width="1.5" fill="none"/>
+                          <!-- Document/list -->
+                          <rect x="20" y="34" width="12" height="10" rx="1" stroke="#FF6B35" stroke-width="1.5"/>
+                          <path d="M22 36H28M22 38H26M22 40H28" stroke="#FF6B35" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                      } @else if (card.icon === 'experience') {
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <!-- Screen with chart -->
+                          <rect x="12" y="12" width="40" height="24" rx="2" stroke="#FF6B35" stroke-width="2"/>
+                          <path d="M16 20H20M16 24H24M16 28H28" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <!-- Bar chart -->
+                          <rect x="32" y="28" width="4" height="6" rx="1" fill="#FF6B35" opacity="0.4"/>
+                          <rect x="38" y="24" width="4" height="10" rx="1" fill="#FF6B35" opacity="0.4"/>
+                          <rect x="44" y="20" width="4" height="14" rx="1" fill="#FF6B35" opacity="0.4"/>
+                          <!-- Clock -->
+                          <circle cx="48" cy="18" r="4" stroke="#FF6B35" stroke-width="1.5"/>
+                          <path d="M48 18V16M48 18H50" stroke="#FF6B35" stroke-width="1.5" stroke-linecap="round"/>
+                          <!-- Three people -->
+                          <circle cx="18" cy="48" r="3" stroke="#FF6B35" stroke-width="2"/>
+                          <path d="M14 52C14 50 15 48 18 48C21 48 22 50 22 52" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="32" cy="48" r="3" stroke="#FF6B35" stroke-width="2"/>
+                          <path d="M28 52C28 50 29 48 32 48C35 48 36 50 36 52" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="46" cy="48" r="3" stroke="#FF6B35" stroke-width="2"/>
+                          <path d="M42 52C42 50 43 48 46 48C49 48 50 50 50 52" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                      }
+                      </div>
+                      <p class="why-teach-card__title">{{ card.title }}</p>
+                      <p class="why-teach-card__description">{{ card.description }}</p>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+      <button class="carousel-nav carousel-nav--next" (click)="nextSlide()" aria-label="Next slide">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 18L15 12L9 6" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="carousel-indicators">
+        @for (slide of whyTeachCards; track $index) {
+          <button 
+            class="carousel-indicator" 
+            [class.active]="$index === currentCarouselSlide"
+            (click)="goToSlide($index)"
+            [attr.aria-label]="'Go to slide ' + ($index + 1)">
+          </button>
+        }
+      </div>
     </div>
   </section>
 
-  <section class="trainer-section">
+  <!-- The Process Section -->
+  <section class="trainer-section trainer-section--process">
     <header class="trainer-section__header">
-      <p class="trainer-eyebrow">Areas we’re hiring for</p>
-      <h2>High-demand domains</h2>
-      <p>We’re looking for SMEs who can translate plant-floor experience into actionable lessons.</p>
+      <h2>The Process</h2>
     </header>
-    <div class="trainer-grid trainer-grid--domains">
-      @for (domain of trainerDomains; track domain.title) {
-        <article class="trainer-domain">
-          <h3>{{ domain.title }}</h3>
-          <ul>
-            @for (item of domain.items; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
-        </article>
-      }
-    </div>
-  </section>
+    <div class="process-layout">
+      <div class="process-grid">
+        @for (step of processStepsLeft; track step.number) {
+          <div [class]="'process-step process-step--step-' + step.number">
+            <div class="process-step__icon">
+              @if (step.number === '1') {
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="32" cy="32" r="26" stroke="#FF5A1F" stroke-width="2.5"/>
+                  <path d="M24 32L30 38L42 26" stroke="#FF5A1F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              } @else if (step.number === '2') {
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="18" y="16" width="28" height="36" rx="3" stroke="#4F46E5" stroke-width="2.5"/>
+                  <rect x="22" y="22" width="20" height="3" rx="1.5" fill="#4F46E5" opacity="0.4"/>
+                  <rect x="22" y="28" width="16" height="3" rx="1.5" fill="#4F46E5" opacity="0.4"/>
+                  <rect x="22" y="34" width="18" height="3" rx="1.5" fill="#4F46E5" opacity="0.4"/>
+                </svg>
+              } @else if (step.number === '3') {
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="14" y="12" width="36" height="26" rx="3" stroke="#10B981" stroke-width="2.5"/>
+                  <rect x="18" y="16" width="28" height="18" rx="2" fill="#10B981" opacity="0.2"/>
+                  <circle cx="32" cy="24" r="4" fill="#10B981"/>
+                  <path d="M26 30L32 36L38 30" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="18" y="40" width="28" height="5" rx="1.5" fill="#10B981" opacity="0.4"/>
+                </svg>
+              } @else if (step.number === '4') {
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="32" cy="24" r="10" stroke="#F59E0B" stroke-width="2.5"/>
+                  <path d="M18 44C18 36 24 30 32 30C40 30 46 36 46 44" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M42 16C44 14 46 14 48 16C50 18 50 20 48 22L44 26L38 20L42 16Z" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M44 26L40 30" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+              }
+            </div>
+            <div class="process-step__content">
+              <p class="process-step__class-range">Step {{ step.number }}</p>
+              <h3 class="process-step__title">{{ step.title }}</h3>
+            </div>
+            <p class="process-step__description process-step__description--full-width">{{ step.description }}</p>
+          </div>
+        }
+      </div>
 
-  <section class="trainer-section">
-    <header class="trainer-section__header">
-      <p class="trainer-eyebrow">How to get started</p>
-      <h2>Three simple steps</h2>
-    </header>
-    <div class="trainer-steps">
-      @for (step of trainerSteps; track step.step) {
-        <article class="trainer-step">
-          <span class="trainer-step__index">{{ step.step }}</span>
-          <h3>{{ step.title }}</h3>
-          <p>{{ step.detail }}</p>
+      @if (processStepRight) {
+        <article class="process-illustration" aria-label="Step 5">
+          <div class="process-illustration__content">
+            <p class="process-illustration__kicker">Step {{ processStepRight.number }}</p>
+            <h3 class="process-illustration__title">{{ processStepRight.title }}</h3>
+            <p class="process-illustration__description">{{ processStepRight.description }}</p>
+          </div>
+
+          <div class="process-illustration__art" aria-hidden="true">
+            <div class="process-illustration__image-wrap">
+              <img class="process-illustration__img" src="https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/anush_babin.PNG" alt="" />
+            </div>
+            <span class="process-illustration__float process-illustration__float--code">&lt;/&gt;</span>
+            <span class="process-illustration__float process-illustration__float--en">EN</span>
+            <span class="process-illustration__float process-illustration__float--calc">√+</span>
+          </div>
         </article>
       }
     </div>
@@ -107,11 +262,11 @@
   <section class="trainer-section trainer-section--highlight">
     <div class="trainer-highlight">
       <div>
-        <p class="trainer-eyebrow">Instructor spotlight</p>
-        <h2>Launch faster with our production squad</h2>
-        <p>We help storyboard every lesson, prepare labs, set up LMS assets, send learner nudges, and collect feedback loops so you can focus on delivery.</p>
+        <p class="trainer-eyebrow">Instructor Spotlight</p>
+        <h2>Launch your self-learning course faster with OilAndGasClub's production team</h2>
+        <p>Our OilAndGasClub team supports you with lesson planning, hands-on practice setup, LMS configuration, learner engagement, and performance feedback, enabling you to deliver high-impact self-learning courses —so you can focus on sharing real Oil &amp; Gas expertise.</p>
       </div>
-      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Schedule a discovery call</a>
+      <a class="btn-primary open-popup" (click)="openModal($event)">Schedule a discovery call</a>
     </div>
   </section>
 
@@ -123,8 +278,33 @@
     <div class="trainer-testimonials">
       @for (story of trainerTestimonials; track story.author) {
         <article class="trainer-testimonial">
-          <p class="trainer-testimonial__quote">{{ story.quote }}</p>
-          <p class="trainer-testimonial__author">{{ story.author }}</p>
+          <div class="trainer-testimonial__image">
+            <img [src]="story.image" [alt]="story.author" />
+          </div>
+          <div class="trainer-testimonial__content">
+            <p class="trainer-testimonial__quote">{{ story.quote }}</p>
+            <p class="trainer-testimonial__author">{{ story.author }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="trainer-section">
+    <header class="trainer-section__header">
+      <p class="trainer-eyebrow">Areas we're hiring for</p>
+      <h2>High-demand domains</h2>
+      <p>We're looking for SMEs who can translate plant-floor experience into actionable lessons.</p>
+    </header>
+    <div class="trainer-grid trainer-grid--domains">
+      @for (domain of trainerDomains; track domain.title; let i = $index) {
+        <article [class]="'trainer-domain trainer-domain--' + (i + 1)">
+          <h3>{{ domain.title }}</h3>
+          <ul>
+            @for (item of domain.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
         </article>
       }
     </div>
@@ -145,55 +325,163 @@
     </div>
   </section>
 
-  <section class="trainer-section trainer-section--form">
-    <header class="trainer-section__header">
-      <p class="trainer-eyebrow">Drop us a query</p>
-      <h2>Ready to instruct?</h2>
-      <p>Tell us a bit about you and we’ll get in touch within 2–3 business days.</p>
-    </header>
-    <div class="trainer-form">
-      <iframe id="hiddenIframe" name="hiddenIframe" (load)="onIframeLoad()" style="display: none;"></iframe>
-      <form
-        action="https://docs.google.com/forms/d/e/1FAIpQLSdBzPd2kQvC66l3WWj3gqokfzPMjiIdyZXmHozK3sI2LXqeqA/formResponse"
-        (submit)="onFormSubmit()" target="hiddenIframe" method="POST">
-
-        <label>
-          <span>Name *</span>
-          <input type="text" name="entry.1240380496" required placeholder="Your full name">
-        </label>
-
-        <label>
-          <span>Email *</span>
-          <input type="email" name="entry.1616702479" required placeholder="you@example.com">
-        </label>
-
-        <label>
-          <span>Domain expertise *</span>
-          <select name="entry.2052152614" required>
-            <option value="" disabled selected>Select a primary discipline</option>
-            <option value="Piping">Piping</option>
-            <option value="Instrumentation">Instrumentation</option>
-            <option value="Electrical">Electrical</option>
-            <option value="Civil">Civil</option>
-            <option value="Process">Process</option>
-            <option value="Safety">Safety</option>
-            <option value="Welding">Welding</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Phone *</span>
-          <input type="tel" name="entry.1429337558" required placeholder="+1 234 567 8901">
-        </label>
-
-        <label>
-          <span>LinkedIn URL *</span>
-          <input type="url" name="entry.914762180" required placeholder="https://linkedin.com/in/yourprofile">
-        </label>
-
-        <button type="submit" class="btn-primary">Submit application</button>
-      </form>
+  <section class="trainer-section trainer-section--cta">
+    <div class="trainer-cta-wrapper">
+      <div class="trainer-cta__illustration">
+        <div class="trainer-cta__image-overlay"></div>
+        <img src="https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/instructor.PNG" alt="Instructor working from anywhere" class="trainer-cta__image" draggable="false" data-pin-nopin="true" data-pin-no-hover="true" />
+      </div>
+      <div class="trainer-cta__content">
+        <h2>Work Anywhere</h2>
+        <p>Thousands of students are looking for the perfect tutor like you on OilAndGasClub. Work from the comfort of your home whenever you want wherever you are.</p>
+        <a class="trainer-cta__button open-popup" (click)="openModal($event)">Sign Up as Instructor →</a>
+      </div>
     </div>
   </section>
 </div>
 
+<!-- Instructor Application Modal - Reusable Popup -->
+@if (showModal) {
+  <div class="modal-overlay show" (click)="closeModal()" [attr.aria-hidden]="!showModal" aria-modal="true" role="dialog">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <!-- Beautiful Modal Header with Dark Gray Background -->
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <h2>Instructor Registration</h2>
+          <p>Submit your details below. Our team will review your profile and contact you within 5–7 working days</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()" aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Form with Two-Column Layout -->
+      <form class="instructor-form" (ngSubmit)="onSubmitForm()" #instructorForm="ngForm">
+        <div class="form-row">
+          <!-- Left Column -->
+          <div class="form-column">
+            <div class="form-group">
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                [(ngModel)]="formData.name"
+                placeholder="Full Name"
+                required
+                #nameInput="ngModel"
+                [class.error]="nameInput.invalid && nameInput.touched"
+              />
+              @if (nameInput.invalid && nameInput.touched) {
+                <span class="error-message">Name is required</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                [(ngModel)]="formData.email"
+                placeholder="Email Address"
+                required
+                email
+                #emailInput="ngModel"
+                [class.error]="emailInput.invalid && emailInput.touched"
+              />
+              @if (emailInput.invalid && emailInput.touched) {
+                <span class="error-message">Valid email is required</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <input 
+                type="tel" 
+                id="phone" 
+                name="phone" 
+                [(ngModel)]="formData.phone"
+                placeholder="Mobile Number"
+                required
+                #phoneInput="ngModel"
+                [class.error]="phoneInput.invalid && phoneInput.touched"
+              />
+              @if (phoneInput.invalid && phoneInput.touched) {
+                <span class="error-message">Phone number is required</span>
+              }
+            </div>
+          </div>
+          
+          <!-- Right Column -->
+          <div class="form-column">
+            <div class="form-group">
+              <select 
+                id="course" 
+                name="course" 
+                [(ngModel)]="formData.course"
+                required
+                #courseInput="ngModel"
+                [class.error]="courseInput.invalid && courseInput.touched"
+              >
+                <option value="" disabled selected>Select Course/Domain</option>
+                <option value="Process & Simulation">Process & Simulation</option>
+                <option value="Piping & Mechanical">Piping & Mechanical</option>
+                <option value="Inspection & QA">Inspection & QA</option>
+                <option value="Controls & Electrical">Controls & Electrical</option>
+                <option value="Operations & Safety">Operations & Safety</option>
+                <option value="Software & Data">Software & Data</option>
+                <option value="Other">Other</option>
+              </select>
+              @if (courseInput.invalid && courseInput.touched) {
+                <span class="error-message">Course/Domain is required</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <input 
+                type="url" 
+                id="linkedin" 
+                name="linkedin" 
+                [(ngModel)]="formData.linkedin"
+                placeholder="LinkedIn Profile URL"
+                required
+                #linkedinInput="ngModel"
+                [class.error]="linkedinInput.invalid && linkedinInput.touched"
+              />
+              @if (linkedinInput.invalid && linkedinInput.touched) {
+                <span class="error-message">LinkedIn URL is required</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <input 
+                type="text" 
+                id="experience" 
+                name="experience" 
+                placeholder="Years of Experience"
+                [(ngModel)]="formData.experience"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Submit Button - Centered and Full Width -->
+        <div class="form-submit-wrapper">
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting || instructorForm.invalid">
+            @if (isSubmitting) {
+              <span>Submitting...</span>
+            } @else {
+              <span>Submit Application</span>
+            }
+          </button>
+        </div>
+        
+        @if (submitMessage) {
+          <div class="submit-message" [class.success]="submitSuccess" [class.error]="!submitSuccess">
+            {{ submitMessage }}
+          </div>
+        }
+      </form>
+    </div>
+  </div>
+}

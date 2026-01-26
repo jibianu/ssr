@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
@@ -21,9 +21,16 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class LoggerService {
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly isBrowser: boolean;
   private readonly isProduction = environment.production;
-  private readonly enableLogging = !this.isProduction || this.isBrowser;
+  private readonly enableLogging: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // ✅ FIX: Initialize in constructor to prevent injector errors during SSR
+    // Field initializers with inject() can fail if injector is destroyed during SSR
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    this.enableLogging = !this.isProduction || this.isBrowser;
+  }
 
   /**
    * Logs a debug message (only in development)

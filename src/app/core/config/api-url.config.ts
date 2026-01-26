@@ -10,7 +10,7 @@ export const API_URL = new InjectionToken<string>('API_URL', {
   factory: () => {
     // ✅ FIX: Fallback to environment.apiUrl if available (supports development with production backend)
     // Otherwise use Docker default (for containerized deployments)
-    return environment.apiUrl || 'http://localhost:52056/';
+    return environment.apiUrl || 'http://localhost:5001/';
   }
 });
 
@@ -80,16 +80,16 @@ export function loadApiUrl(): () => Promise<void> {
       // Only fetch in browser (not during SSR)
       if (typeof window === 'undefined' || typeof fetch === 'undefined') {
         // ✅ SSR: Use full backend URL directly (no proxy needed)
-        // In development, use http://localhost:52056/ directly (matches backend HTTP port)
+        // In development, use http://localhost:5001/ directly (matches backend HTTP port)
         // In production, use the production backend URL
         let ssrApiUrl = devDefault;
         
         // If apiUrl is a relative path (old proxy setup), convert to full backend URL
         if (ssrApiUrl === '/api/' || ssrApiUrl.startsWith('/api/')) {
-          ssrApiUrl = 'http://localhost:52056/';
+          ssrApiUrl = 'http://localhost:5001/';
         } else if (ssrApiUrl === '/' || !ssrApiUrl || ssrApiUrl.trim() === '') {
           // Handle case where apiUrl is just "/" or empty
-          ssrApiUrl = 'http://localhost:52056/';
+          ssrApiUrl = 'http://localhost:5001/';
         }
         
         const ssrDefault: AppConfig = {
