@@ -467,6 +467,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
             this.subscription.add(this.appService.updateEvent(this.eventId, formData).subscribe({
                 next: (response) => {
                     console.log('[AddEventComponent] ✅ Update successful, response received');
+                    console.log('[AddEventComponent] Response data:', response);
+                    // ✅ FIX: Access metaDescription from EventResponse interface
+                    console.log('[AddEventComponent] MetaDescription in response:', {
+                        metaDescription: response?.metaDescription,
+                        MetaDescription: response?.MetaDescription,
+                        hasMetaDescription: !!response?.metaDescription || !!response?.MetaDescription
+                    });
                     this.loading = false;
                     this.isSaving = false;
                     this.submitted = false;
@@ -481,7 +488,17 @@ export class AddEventComponent implements OnInit, OnDestroy {
                     // Patch the form with server response so the latest saved values are visible immediately.
                     if (response) {
                         this.updateFormWithServerValue(response);
+                        // ✅ DEBUG: Log form value after update
+                        console.log('[AddEventComponent] Form metaDescription after update:', this.eventForm.get('metaDescription')?.value);
+                        
+                        // ✅ FIX: Force change detection and update UI
                         this.cdr.markForCheck();
+                        
+                        // ✅ FIX: Use setTimeout to ensure form updates are reflected in UI
+                        setTimeout(() => {
+                            this.cdr.detectChanges();
+                            console.log('[AddEventComponent] Form metaDescription after detectChanges:', this.eventForm.get('metaDescription')?.value);
+                        }, 0);
                     }
                 },
                 error: (err) => {
@@ -805,6 +822,13 @@ export class AddEventComponent implements OnInit, OnDestroy {
     // ✅ FIX B: Update form with server value from 409 conflict (handles organized_soc mapping)
     updateFormWithServerValue(serverValue: any) {
         try {
+            // ✅ DEBUG: Log server value to see what we're receiving
+            console.log('[AddEventComponent] updateFormWithServerValue called with:', {
+                metaDescription: serverValue?.metaDescription,
+                MetaDescription: serverValue?.MetaDescription,
+                allKeys: Object.keys(serverValue || {})
+            });
+            
             // Handle showOnDashboard and registrationCompleted
             const showOnDashboardValue = serverValue.showOnDashboard !== undefined 
                 ? serverValue.showOnDashboard 
@@ -817,11 +841,18 @@ export class AddEventComponent implements OnInit, OnDestroy {
             const showOnDashboardBool = showOnDashboardValue === true || showOnDashboardValue === 'true' || showOnDashboardValue === 1 || showOnDashboardValue === '1';
             const registrationCompletedBool = registrationCompletedValue === true || registrationCompletedValue === 'true' || registrationCompletedValue === 1 || registrationCompletedValue === '1';
             
+            // ✅ FIX: Get metaDescription - check both camelCase and PascalCase, and also check if it's null/undefined
+            const metaDescriptionValue = serverValue.metaDescription !== undefined && serverValue.metaDescription !== null
+                ? serverValue.metaDescription
+                : (serverValue.MetaDescription !== undefined && serverValue.MetaDescription !== null
+                    ? serverValue.MetaDescription
+                    : '');
+            
             // Map server value to form (handle both camelCase and PascalCase from backend)
             const formPatchData: any = {
                 title: serverValue.title || serverValue.Title || '',
                 canonicalUrl: serverValue.canonicalUrl || serverValue.CanonicalUrl || '',
-                metaDescription: serverValue.metaDescription || serverValue.MetaDescription || '',
+                metaDescription: metaDescriptionValue, // ✅ Use the extracted value
                 amount: serverValue.amount || serverValue.Amount || 0,
                 eventInfo: serverValue.eventInfo || serverValue.EventInfo || '',
                 badge: serverValue.badge || serverValue.Badge || '',
@@ -837,8 +868,29 @@ export class AddEventComponent implements OnInit, OnDestroy {
                 registrationCompleted: registrationCompletedBool
             };
             
+            // ✅ DEBUG: Log what we're patching
+            console.log('[AddEventComponent] Patching form with:', {
+                metaDescription: formPatchData.metaDescription,
+                metaDescriptionLength: formPatchData.metaDescription?.length || 0
+            });
+            
             // Patch form with mapped server data
-            this.eventForm.patchValue(formPatchData);
+            this.eventForm.patchValue(formPatchData, { emitEvent: false });
+            
+            // ✅ FIX: Also update the form control directly to ensure it's set
+            const metaDescControl = this.eventForm.get('metaDescription');
+            if (metaDescControl) {
+                metaDescControl.setValue(metaDescriptionValue, { emitEvent: false });
+            }
+            
+            // ✅ DEBUG: Verify the form was updated
+            const formMetaDesc = this.eventForm.get('metaDescription')?.value;
+            console.log('[AddEventComponent] Form metaDescription after patchValue and setValue:', formMetaDesc);
+            
+            // ✅ FIX: Mark form control as touched to ensure UI updates
+            if (metaDescControl) {
+                metaDescControl.markAsTouched();
+            }
             
             // ✅ FIX A: Update eventDetails with organized_soc mapping
             const eventDetails = serverValue.eventDetails || serverValue.EventDetails;

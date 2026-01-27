@@ -40,6 +40,8 @@ export interface EventResponse {
     registrationCompleted?: boolean | null; // Backend returns RegistrationCompleted (PascalCase), mapped to camelCase
     RegistrationCompleted?: boolean | null; // Also accept PascalCase for compatibility
     isEnded?: boolean | null;
+    metaDescription?: string | null; // ✅ Meta description for SEO
+    MetaDescription?: string | null; // Also accept PascalCase for compatibility
     eventDetails?: EventDetailResponse[] | null;
 }
 
