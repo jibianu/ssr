@@ -275,12 +275,97 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
     const badge = course?.isBestSeller ? 'Best Seller' : course?.badge;
 
+    // ✅ Explicitly preserve course ID - backend returns Guid as 'Id' (capital I)
+    // Convert to string and ensure it's available as lowercase 'id'
+    const courseId = course?.id || course?.Id || course?.ID;
+    const courseIdString = courseId ? String(courseId) : undefined;
+
     return {
       ...course,
+      id: courseIdString, // ✅ Explicitly set id field as string
+      Id: courseId, // ✅ Also preserve original Id (Guid) for compatibility
       canonicalUrl: this.normalizeCourseUrl(course?.canonicalUrl),
       courseFeatures,
       badge
-    };
+    } as HomeCourse;
+  }
+
+
+
+  // ✅ Get buy button URL - handles different ID formats from backend
+  getBuyButtonUrl(course: HomeCourse | null | undefined): string {
+    if (!course) return '#';
+    
+    // ✅ Check for course ID in multiple formats (id, Id, ID) - backend may return Guid as 'Id'
+    const courseId = course.id || (course as any).Id || (course as any).ID;
+    
+    // ✅ Convert to string if it's a Guid
+    const courseIdString = courseId ? String(courseId) : null;
+    
+    // ✅ Redirect to payment/checkout page if course ID is available
+    if (courseIdString) {
+      return `https://elearn.oilandgasclub.com/app/payment/checkout/${courseIdString}`;
+    }
+    
+    // ✅ Fallback to course details page if no ID
+    if (course.canonicalUrl) {
+      return course.canonicalUrl.startsWith('/') ? course.canonicalUrl : `/${course.canonicalUrl}`;
+    }
+    
+    return '#';
+  }
+
+  // ✅ Handle buy button click - force navigation
+  handleBuyClick(event: Event, course: HomeCourse | null | undefined): void {
+    // ✅ Only handle in browser (not SSR)
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    if (!course) {
+      console.warn('Buy button: No course data');
+      event.preventDefault();
+      return;
+    }
+
+    // ✅ Get the URL
+    const url = this.getBuyButtonUrl(course);
+    
+    // ✅ If URL is valid and not '#', navigate
+    if (url && url !== '#' && url !== 'javascript:void(0)') {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      // ✅ Log for debugging
+      if (this.isBrowser) {
+        console.log('Buy button: Navigating to', url, { course });
+      }
+      
+      try {
+        // ✅ Force navigation using window.location
+        window.location.href = url;
+      } catch (error) {
+        console.error('Buy button: Navigation error', error);
+        // ✅ Fallback methods
+        try {
+          window.location.assign(url);
+        } catch (e1) {
+          try {
+            window.location.replace(url);
+          } catch (e2) {
+            console.error('Buy button: All navigation methods failed', e2);
+          }
+        }
+      }
+    } else {
+      // ✅ Invalid URL - log warning
+      console.warn('Buy button: Invalid URL', { url, course });
+    }
+  }
+
+  // ✅ Browser check helper
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
   }
 
   ngOnDestroy(): void {

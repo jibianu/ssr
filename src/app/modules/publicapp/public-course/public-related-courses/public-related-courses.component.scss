@@ -50,10 +50,22 @@
     $min-height: 480px,
     $width: 100% // ✅ Full width within grid column
   );
+  
+  // ✅ Desktop: Reduce total card height
+  @media (min-width: 769px) {
+    min-height: 380px !important; // ✅ Reduced from 480px
+    max-height: none !important;
+  }
 }
 
 .related-card__media {
   @include course-card-media(1.06);
+  
+  // ✅ Desktop: Reduce media section height
+  @media (min-width: 769px) {
+    aspect-ratio: 1.2 / 1 !important; // ✅ Reduced from 1.06 (taller) to 1.2 (shorter)
+    max-height: 200px !important; // ✅ Limit max height
+  }
 
   .related-card__flag {
     @include course-card-badge(
@@ -92,6 +104,12 @@
 
 .related-card__body {
   @include course-card-body(clamp(1.1rem, 3vw, 1.35rem), 0.7rem);
+  
+  // ✅ Desktop: Remove space above Buy button and below course name
+  @media (min-width: 769px) {
+    padding: clamp(0.4rem, 1.2vw, 0.6rem) clamp(0.9rem, 2.5vw, 1.1rem) 0 clamp(0.9rem, 2.5vw, 1.1rem) !important; // ✅ Reduced all padding
+    gap: 0.15rem !important; // ✅ Even smaller gap between elements
+  }
 }
 
 .related-card__labels {
@@ -111,6 +129,15 @@
     $course-color-accent-teal,
     3
   );
+  
+  // ✅ Desktop: Remove space below course name and reduce font size
+  @media (min-width: 769px) {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.15 !important; // ✅ Even tighter line height
+    font-size: 0.95rem !important; // ✅ Slightly smaller font
+  }
 }
 
 .related-card__mentor {
@@ -130,6 +157,16 @@
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  
+  // ✅ Desktop: Reduce line height and spacing
+  @media (min-width: 769px) {
+    line-height: 1.25 !important; // ✅ Even tighter line height
+    font-size: 0.85rem !important; // ✅ Slightly smaller font
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-line-clamp: 2 !important; // ✅ Show only 2 lines instead of 3
+    line-clamp: 2 !important;
+  }
 }
 
 .related-card__stats {
@@ -157,6 +194,20 @@
     0.9rem,
     1.5
   );
+  
+  // ✅ Desktop: Reduce gap between bullet items
+  @media (min-width: 769px) {
+    gap: 0.15rem !important; // ✅ Even smaller gap
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.85rem !important; // ✅ Smaller font
+    
+    li {
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1.25 !important; // ✅ Even tighter line height
+    }
+  }
 }
 
 .related-card__offer {
@@ -166,6 +217,12 @@
   padding: 0 1.35rem;
   font-weight: 700;
   font-size: 0.95rem;
+  
+  // ✅ Desktop: Reduce bottom padding to minimize space above Buy button
+  @media (min-width: 769px) {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
 }
 
 .related-card__offer-percent {
@@ -184,10 +241,54 @@
     center,
     0
   );
+  
+  // ✅ Desktop: Remove space above Buy button and reduce height
+  @media (min-width: 769px) {
+    margin-top: 0 !important;
+    padding: clamp(0.25rem, 0.6vw, 0.4rem) clamp(0.9rem, 2.5vw, 1.1rem) !important; // ✅ Minimal padding all around
+  }
+}
+
+// ✅ Desktop: Remove margin-bottom from elements before footer
+@media (min-width: 769px) {
+  .related-card__body {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .related-card__offer {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0.1rem !important; // ✅ Minimal top padding
+    margin-top: 0 !important;
+  }
+
+  .related-card__highlights,
+  .related-card__stats,
+  .related-card__description,
+  .related-card__mentor {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  // ✅ Remove all spacing from description specifically
+  .related-card__description {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.4 !important; // ✅ Tighter line height
+  }
 }
 
 .related-card__cta {
   @include course-cta-button(0.85rem 1.5rem);
+  
+  // ✅ Desktop: Reduce button padding to decrease height
+  @media (min-width: 769px) {
+    padding: 0.6rem 1.2rem !important; // ✅ Reduced from 0.85rem 1.5rem
+  }
+  
   .related-card__cta-text {
     display: inline-flex;
     align-items: center;

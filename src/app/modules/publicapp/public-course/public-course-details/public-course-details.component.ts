@@ -859,4 +859,81 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ✅ Handle desktop buy button click - force navigation
+  handleDesktopBuyClick(event: Event): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    // ✅ Prevent navigation if countdown expired
+    if (this.isCountdownExpired) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (!this.courseDetails?.id) {
+      console.warn('Buy button: No course ID available');
+      event.preventDefault();
+      return;
+    }
+
+    const url = `https://elearn.oilandgasclub.com/app/payment/checkout/${this.courseDetails.id}`;
+    
+    if (url && url !== '#' && url !== 'javascript:void(0)') {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      try {
+        window.location.href = url;
+      } catch (error) {
+        console.error('Buy button: Navigation error', error);
+        try {
+          window.location.assign(url);
+        } catch (e1) {
+          try {
+            window.location.replace(url);
+          } catch (e2) {
+            console.error('Buy button: All navigation methods failed', e2);
+          }
+        }
+      }
+    }
+  }
+
+  // ✅ Handle mobile buy button click - force navigation
+  handleMobileBuyClick(event: Event): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    if (!this.courseDetails?.id) {
+      console.warn('Buy button: No course ID available');
+      event.preventDefault();
+      return;
+    }
+
+    const url = `https://elearn.oilandgasclub.com/app/payment/checkout/${this.courseDetails.id}`;
+    
+    if (url && url !== '#') {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      try {
+        window.location.href = url;
+      } catch (error) {
+        console.error('Buy button: Navigation error', error);
+        try {
+          window.location.assign(url);
+        } catch (e1) {
+          try {
+            window.location.replace(url);
+          } catch (e2) {
+            console.error('Buy button: All navigation methods failed', e2);
+          }
+        }
+      }
+    }
+  }
+
 }
