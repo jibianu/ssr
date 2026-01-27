@@ -84,6 +84,7 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
+              "watch": false,
               "budgets": [
                 {
                   "type": "initial",
