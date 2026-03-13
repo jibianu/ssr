@@ -1,0 +1,233 @@
+
+
+<div class="curriculum-navigation">
+  <!-- Main Navigation -->
+  <nav class="main-nav navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <div class="nav-left" [class.nav-left--breadcrumb]="roleUrl === 'student'">
+        <!-- Mobile student: profile icon on left opens left sidebar drawer -->
+        <button type="button" class="common-topbar__profile-trigger" *ngIf="roleUrl === 'student' && isMobileView() && user"
+          (click)="openSidebarDrawer()" aria-label="Open menu">
+          <img *ngIf="topbarAvatarUrl && !avatarImageError" [src]="topbarAvatarUrl" alt="" (error)="avatarImageError = true" referrerPolicy="no-referrer" loading="eager" />
+          <span *ngIf="!topbarAvatarUrl || avatarImageError" class="common-topbar__profile-trigger-initial">{{ userInitial }}</span>
+        </button>
+        <!-- Student: breadcrumb on the left (replaces back arrow + title) -->
+        <app-student-breadcrumb *ngIf="roleUrl === 'student'"></app-student-breadcrumb>
+        <!-- Non-student: back arrow + course title -->
+        <ng-container *ngIf="roleUrl !== 'student'">
+          <div class="back-button" (click)="goBack()">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+          </div>
+          <div class="course-info" *ngIf="courseTitle | async as data">
+            <h4 class="course-title">{{data}}</h4>
+            <h4 class="certificate-name" *ngIf="certificateName">{{certificateName}}</h4>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Mobile: practice-questions page – right icon opens question list drawer -->
+      <div class="common-topbar__quiz-list-wrap" *ngIf="roleUrl === 'student' && isMobileView() && isOnPracticeQuestionsPage()">
+        <button type="button" class="common-topbar__quiz-list-trigger" (click)="togglePracticeQuestionsDrawer()" aria-label="Question list">
+          <i class="fa fa-list" aria-hidden="true"></i>
+        </button>
+      </div>
+      <!-- Mobile: curriculum-details (Class 1, etc.) – right icon opens curriculum sidenav -->
+      <div class="common-topbar__quiz-list-wrap" *ngIf="roleUrl === 'student' && isMobileView() && isOnCurriculumDetailsPage()">
+        <button type="button" class="common-topbar__quiz-list-trigger" (click)="toggleCurriculumSidebar()" aria-label="Curriculum">
+          <i class="fa fa-bars" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- Hamburger/toggler removed: not needed in desktop or mobile (student uses profile + left drawer on mobile) -->
+
+      <div class="collapse navbar-collapse" id="navbar-default" [class.show]="mobileMenuOpen" (click)="onMobileNavClick($event)">
+        <div class="nav-right">
+
+          <!-- Topic content buttons (Keypoints / Study / Video / QA) with counts for current curriculum -->
+          <ng-container *ngIf="curriculumData | async as cd">
+            <div class="content-tabs curriculum-type-tabs" *ngIf="cd">
+              <div
+                class="tab"
+                *ngIf="cd.curriculumConceptCount"
+                [class.active]="selectedContent === 'KeyPoint'"
+                (click)="scrollToContent('KeyPoint')">
+                Keypoints
+                <span class="tab-count">({{ cd.curriculumConceptTotal || 0 }})</span>
+              </div>
+              <div
+                class="tab"
+                *ngIf="cd.curriculumStudyMaterialCount"
+                [class.active]="selectedContent === 'StudyMaterials'"
+                (click)="scrollToContent('StudyMaterials')">
+                Study Material
+                <span class="tab-count">({{ cd.curriculumStudyMaterialTotal || 0 }})</span>
+              </div>
+              <div
+                class="tab"
+                *ngIf="cd.curriculumVideoLectureCount"
+                [class.active]="selectedContent === 'VideoLectures'"
+                (click)="scrollToContent('VideoLectures')">
+                Video
+                <span class="tab-count">({{ cd.curriculumVideoLectureTotal || 0 }})</span>
+              </div>
+              <div
+                class="tab"
+                *ngIf="cd.curriculumQuestionCount"
+                [class.active]="selectedContent === 'Questions'"
+                (click)="scrollToContent('Questions')">
+                QA
+                <span class="tab-count">({{ cd.curriculumQuestionTotal || 0 }})</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Course filter tabs - Visible on desktop -->
+          <div class="content-tabs desktop-tabs" *ngIf="commonCourse">
+            <div class="tab" 
+                *ngIf="!commonCourse.isTrainer"
+                [class.active]="commonCourse.status === 1 || (commonCourse.pageType === 1 && !commonCourse.isWishList)"
+                (click)="getFilterCourse(inProgressStatus)">
+              In Progress
+            </div>
+            <div class="tab" 
+                *ngIf="!commonCourse.isTrainer"
+                [class.active]="commonCourse.status === 2 || (commonCourse.pageType === 2 && !commonCourse.isWishList)"
+                (click)="getFilterCourse(completedStatus)">
+              Completed
+            </div>
+            <div class="tab" 
+                *ngIf="!commonCourse.isTrainer"
+                [class.active]="commonCourse.status === 3 || commonCourse.isWishList"
+                (click)="getFilterCourse(3)">
+              WishListed
+            </div>
+          </div>
+
+          <!-- Student search first (desktop: in nav; mobile: at bottom of menu, click to open) -->
+          <div class="common-topbar-student-search-wrap" *ngIf="showStudentCourseSearch">
+            <!-- Mobile: trigger row at bottom - click to open search -->
+            <button type="button" class="common-topbar-student-search-trigger" *ngIf="isMobileView() && !mobileSearchOpen"
+              (click)="openMobileSearch(); $event.stopPropagation()" aria-label="Open search">
+              <span class="common-topbar-student-search-trigger__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </span>
+              <span class="common-topbar-student-search-trigger__label">Search courses</span>
+            </button>
+            <!-- Mobile expanded / Desktop: search input -->
+            <div class="common-topbar-student-search" #studentSearchContainer
+              *ngIf="!isMobileView() || mobileSearchOpen">
+              <span class="common-topbar-student-search__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </span>
+              <input
+                #studentSearchInput
+                type="text"
+                class="common-topbar-student-search__input"
+                [ngModel]="studentSearchText"
+                (input)="onStudentSearchInput($event)"
+                (focus)="onStudentSearchFocus()"
+                placeholder="Search courses"
+                aria-label="Search courses"
+                autocomplete="off"
+              />
+              <button type="button" class="common-topbar-student-search__close-mobile" *ngIf="isMobileView() && mobileSearchOpen"
+                (click)="closeMobileSearch()" aria-label="Close search">
+                <i class="fa fa-times" aria-hidden="true"></i>
+              </button>
+              <div
+                class="common-topbar-student-search__dropdown"
+                *ngIf="studentSearchDropdown && (studentSearchResults.length > 0 || studentSearchLoading)"
+                role="listbox"
+              >
+                <div *ngIf="studentSearchLoading" class="common-topbar-student-search__loading">Searching...</div>
+                <button
+                  *ngFor="let course of studentSearchResults"
+                  type="button"
+                  class="common-topbar-student-search__item"
+                  (click)="onStudentSelectCourse(course)"
+                  role="option"
+                >
+                  {{ course.title }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications (student only; after search on desktop) -->
+          <div class="notifications-dropdown" ngbDropdown *ngIf="user && roleUrl === 'student'" (openChange)="onNotificationsDropdownOpenChange($event)">
+            <button class="notifications-trigger" id="navbarNotifications" ngbDropdownToggle aria-label="Notifications">
+              <i class="fa fa-bell" aria-hidden="true"></i>
+              <span class="notifications-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="navbarNotifications" class="notifications-menu dropdown-menu">
+              <div class="notifications-header">
+                <span class="notifications-title">Notifications</span>
+                <button type="button" class="notifications-mark-all" *ngIf="unreadCount > 0" (click)="markAllAsRead(); $event.stopPropagation()">Mark all read</button>
+              </div>
+              <div class="notifications-list" *ngIf="!notificationsLoading && notifications?.length">
+                <button type="button" class="notification-item" *ngFor="let item of notifications" [class.notification-item--unread]="!item.isRead" (click)="goToNotification(item); $event.stopPropagation()" ngbDropdownItem>
+                  <span class="notification-item__title">{{ item.title }}</span>
+                  <span class="notification-item__message">{{ item.message }}</span>
+                  <span class="notification-item__date">{{ item.createdOn | date:'short' }}</span>
+                </button>
+              </div>
+              <div class="notifications-empty" *ngIf="!notificationsLoading && (!notifications || notifications.length === 0)">
+                No notifications yet.
+              </div>
+              <div class="notifications-loading" *ngIf="notificationsLoading">Loading…</div>
+              <div class="notifications-footer" *ngIf="!notificationsLoading">
+                <a routerLink="/app/student/notifications" ngbDropdownItem class="notifications-view-all">View all</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Profile Dropdown (hidden on mobile for student - profile is in bottom nav) -->
+          <div class="user-profile-dropdown" ngbDropdown *ngIf="user && !(roleUrl === 'student' && isMobileView())">
+            <div class="user-avatar" id="navbarDropdown1" ngbDropdownToggle>
+              <img
+                *ngIf="topbarAvatarUrl && !avatarImageError"
+                [src]="topbarAvatarUrl"
+                alt="User profile"
+                (error)="avatarImageError = true"
+              >
+              <span *ngIf="!topbarAvatarUrl || avatarImageError" class="user-avatar__initial" [attr.aria-label]="'User ' + userInitial">{{ userInitial }}</span>
+            </div>
+            <div ngbDropdownMenu aria-labelledby="navbarDropdown1" class="dropdown-menu">
+              <div class="user-info">
+                <p>{{user.email}}</p>
+              </div>
+              <div class="dropdown-links">
+                <a ngbDropdownItem [routerLink]="['/app/student/courses']">My Course</a>
+                <a ngbDropdownItem [routerLink]="['/app/student/categories']">Explore All course</a>
+                <a ngbDropdownItem [routerLink]="['/app/student/profile']">Profile</a>
+                <a ngbDropdownItem (click)="logout()">Log Out</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Content Tabs -->
+  <div class="content-tabs mobile-tabs" *ngIf="commonCourse">
+    <div class="tab" 
+        *ngIf="!commonCourse.isTrainer"
+        [class.active]="commonCourse.status === 1 || (commonCourse.pageType === 1 && !commonCourse.isWishList)"
+        (click)="getFilterCourse(inProgressStatus)">
+      In Progress
+    </div>
+    <div class="tab" 
+        *ngIf="!commonCourse.isTrainer"
+        [class.active]="commonCourse.status === 2 || (commonCourse.pageType === 2 && !commonCourse.isWishList)"
+        (click)="getFilterCourse(completedStatus)">
+      Completed
+    </div>
+    <div class="tab" 
+        *ngIf="!commonCourse.isTrainer"
+        [class.active]="commonCourse.status === 3 || commonCourse.isWishList"
+        (click)="getFilterCourse(3)">
+      WishListed
+    </div>
+  </div>
+</div>

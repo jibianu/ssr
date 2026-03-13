@@ -1,0 +1,277 @@
+<div class="modal-header" *ngIf="data || showFullDrawer">
+    <h4 class="modal-title">{{ (drawerData?.profile?.fullName || data?.userName) || email }}
+      <br/>
+      <small>{{ (drawerData?.profile?.email || data?.email) || email }}</small>
+    </h4>
+  </div>
+  <div class="modal-body">
+    <!-- ========== Full Admin Student Drawer (from /admin/students) ========== -->
+    <ng-container *ngIf="showFullDrawer">
+      <div *ngIf="drawerLoading" class="drawer-loading">
+        <p>Loading student details…</p>
+      </div>
+      <div *ngIf="drawerError" class="drawer-error">
+        <p>Failed to load student details.</p>
+      </div>
+
+      <ng-container *ngIf="!drawerLoading && !drawerError && drawerData">
+        <!-- A) Basic Information Card -->
+        <div class="drawer-card drawer-card--basic">
+          <h5 class="drawer-card__title">Basic Information</h5>
+          <div class="drawer-card__body">
+            <div class="drawer-grid drawer-grid--2">
+              <div class="drawer-field">
+                <label>Full Name</label>
+                <span>{{ drawerData.profile?.fullName || '—' }}</span>
+              </div>
+              <div class="drawer-field">
+                <label>Email</label>
+                <span>{{ drawerData.profile?.email || '—' }}</span>
+              </div>
+              <div class="drawer-field">
+                <label>Phone</label>
+                <span>{{ drawerData.profile?.phone || '—' }}</span>
+              </div>
+              <div class="drawer-field">
+                <label>Signup Date</label>
+                <span>{{ drawerData.profile?.signupDate | date:'mediumDate' }}</span>
+              </div>
+              <div class="drawer-field">
+                <label>Last Login</label>
+                <span>{{ drawerData.profile?.lastLogin | date:'medium' }}</span>
+              </div>
+              <div class="drawer-field">
+                <label>Status</label>
+                <span class="drawer-badge" [class.drawer-badge--active]="drawerData.profile?.isActive" [class.drawer-badge--inactive]="!drawerData.profile?.isActive">{{ drawerData.profile?.status || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B) Statistics Cards -->
+        <div class="drawer-card drawer-card--stats">
+          <h5 class="drawer-card__title">Statistics</h5>
+          <div class="drawer-stats">
+            <div class="drawer-stat">
+              <span class="drawer-stat__value">{{ drawerData.stats?.totalCoursesPurchased ?? 0 }}</span>
+              <span class="drawer-stat__label">Courses Purchased</span>
+            </div>
+            <div class="drawer-stat">
+              <span class="drawer-stat__value">{{ (drawerData.stats?.totalAmountSpent ?? 0) | number:'1.2-2' }}</span>
+              <span class="drawer-stat__label">Total Spent</span>
+            </div>
+            <div class="drawer-stat">
+              <span class="drawer-stat__value">{{ drawerData.stats?.firstPurchaseDate | date:'shortDate' }}</span>
+              <span class="drawer-stat__label">First Purchase</span>
+            </div>
+            <div class="drawer-stat">
+              <span class="drawer-stat__value">{{ drawerData.stats?.lastPurchaseDate | date:'shortDate' }}</span>
+              <span class="drawer-stat__label">Last Purchase</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- C) Purchase Table -->
+        <div class="drawer-card">
+          <h5 class="drawer-card__title">Purchases</h5>
+          <div class="drawer-filters">
+            <label>From</label>
+            <input type="date" [(ngModel)]="purchaseDateFrom" (change)="onPurchaseDateFilter()" />
+            <label>To</label>
+            <input type="date" [(ngModel)]="purchaseDateTo" (change)="onPurchaseDateFilter()" />
+            <button type="button" class="btn btn-sm btn-primary" (click)="onPurchaseDateFilter()">Apply</button>
+          </div>
+          <div class="drawer-table-wrap" *ngIf="!purchasesLoading">
+            <table class="drawer-table">
+              <thead>
+                <tr>
+                  <th>Course Name</th>
+                  <th>Original Price</th>
+                  <th>Discount</th>
+                  <th>Final Paid</th>
+                  <th>Payment Method</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of purchaseItems">
+                  <td>{{ p.courseName }}</td>
+                  <td>{{ p.originalPrice != null ? (p.originalPrice | number:'1.2-2') : '—' }}</td>
+                  <td>{{ p.discount != null ? (p.discount | number:'1.2-2') : '—' }}</td>
+                  <td>{{ p.finalPaid != null ? (p.finalPaid | number:'1.2-2') : '—' }}</td>
+                  <td>{{ p.paymentMethod || '—' }}</td>
+                  <td>{{ p.purchasedDate | date:'short' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="purchaseItems.length === 0" class="drawer-empty">No purchases in this range.</p>
+          </div>
+          <div *ngIf="purchasesLoading" class="drawer-loading">Loading…</div>
+          <div class="drawer-pagination" *ngIf="totalPurchasePages > 1">
+            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="purchasePage <= 1" (click)="onPurchasePageChange(purchasePage - 1)">Previous</button>
+            <span class="drawer-pagination__text">Page {{ purchasePage }} of {{ totalPurchasePages }}</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="purchasePage >= totalPurchasePages" (click)="onPurchasePageChange(purchasePage + 1)">Next</button>
+          </div>
+        </div>
+
+        <!-- D) Course Engagement Table -->
+        <div class="drawer-card">
+          <h5 class="drawer-card__title">Course Engagement</h5>
+          <div class="drawer-table-wrap">
+            <table class="drawer-table">
+              <thead>
+                <tr>
+                  <th>Course Name</th>
+                  <th>% Completion</th>
+                  <th>Lessons Watched</th>
+                  <th>Watch Time</th>
+                  <th>Last Accessed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let e of drawerData.engagement">
+                  <td>{{ e.courseName }}</td>
+                  <td>{{ e.completionPercent }}%</td>
+                  <td>{{ e.lessonsWatched }}</td>
+                  <td>{{ formatWatchTime(e.totalWatchTimeSeconds) }}</td>
+                  <td>{{ e.lastAccessedDate | date:'short' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="!drawerData.engagement?.length" class="drawer-empty">No engagement data.</p>
+          </div>
+        </div>
+
+        <!-- E) Activity Timeline -->
+        <div class="drawer-card">
+          <h5 class="drawer-card__title">Activity Timeline</h5>
+          <ul class="drawer-timeline">
+            <li *ngFor="let ev of drawerData.timeline" class="drawer-timeline__item">
+              <span class="drawer-timeline__type">{{ ev.eventType }}</span>
+              <span class="drawer-timeline__title">{{ ev.title }}</span>
+              <span class="drawer-timeline__date">{{ ev.dateUtc | date:'medium' }}</span>
+              <span *ngIf="ev.entityName" class="drawer-timeline__entity">{{ ev.entityName }}</span>
+            </li>
+          </ul>
+          <p *ngIf="!drawerData.timeline?.length" class="drawer-empty">No timeline events.</p>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <!-- Content Permissions: hidden when opened from Student List (showFullDrawer) -->
+    <div class="form-row" *ngIf="!showFullDrawer">
+      <div class="col-12">
+        <div class="permissions-container">
+          <h5 class="permissions-main-title">Permissions</h5>
+          
+          <div class="permission-section">
+            <h6 class="section-title">Content Permissions</h6>
+            <div class="permission-group">
+              <div class="form-check permission-item content-permission">
+                <input class="form-check-input" type="checkbox" id="perm-blog" 
+                  [(ngModel)]="group" name="permBlog">
+                <label class="form-check-label" for="perm-blog">
+                  Blog
+                </label>
+              </div>
+              <div class="form-check permission-item content-permission">
+                <input class="form-check-input" type="checkbox" id="perm-course" 
+                  [(ngModel)]="grmCourse" name="permCourse">
+                <label class="form-check-label" for="perm-course">
+                  Course
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <ng-container *ngIf="showPermissionsPanel && targetUserRoleId === 5">
+            <div class="permission-divider"></div>
+            <div class="permission-section">
+              <h6 class="section-title">Management & List Permissions</h6>
+              <div class="permission-grid">
+                <div class="form-check permission-item">
+                  <input class="form-check-input" type="checkbox" id="perm-students" 
+                    [checked]="canViewStudents" [(ngModel)]="canViewStudents">
+                  <label class="form-check-label" for="perm-students">Student List</label>
+                </div>
+                <div class="form-check permission-item">
+                  <input class="form-check-input" type="checkbox" id="perm-trainers" 
+                    [checked]="canViewTrainers" [(ngModel)]="canViewTrainers">
+                  <label class="form-check-label" for="perm-trainers">Trainer List</label>
+                </div>
+                <div class="form-check permission-item">
+                  <input class="form-check-input" type="checkbox" id="perm-companies" 
+                    [checked]="canViewCompanies" [(ngModel)]="canViewCompanies">
+                  <label class="form-check-label" for="perm-companies">Company List</label>
+                </div>
+                <div class="form-check permission-item">
+                  <input class="form-check-input" type="checkbox" id="perm-management" 
+                    [checked]="canViewManagement" [(ngModel)]="canViewManagement">
+                  <label class="form-check-label" for="perm-management">Management List</label>
+                </div>
+                <div class="form-check permission-item">
+                  <input class="form-check-input" type="checkbox" id="perm-categories" 
+                    [checked]="canViewCategories" [(ngModel)]="canViewCategories">
+                  <label class="form-check-label" for="perm-categories">Category List</label>
+                </div>
+                <div class="form-check permission-item">
+                  <input class="form-check-input" type="checkbox" id="perm-courselist" 
+                    [checked]="canViewCourseList" [(ngModel)]="canViewCourseList">
+                  <label class="form-check-label" for="perm-courselist">Course List</label>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          
+          <div class="permission-actions">
+            <button class="btn btn-primary" (click)="UpdateGrp()" [disabled]="!hasChanges()">
+              Update Permissions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+          <label >User Name</label>
+          <input type="text" class="form-control" disabled value="{{data.userName}}">
+        </div>
+        <div class="form-group col-md-6">
+          <label >Email</label>
+          <input type="text" class="form-control" disabled value="{{data.email}}">
+        </div>
+      </div>
+<div class="row">
+  <div class="form-group col-md-6">
+    <strong>associate with management</strong>
+    <br>
+    <ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let item of managementList">
+        {{item.parentUserName}}
+        <button class="btn btn-danger btn-sm" (click)="removeItem(item)">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+        <!-- <span class="badge badge-primary badge-pill">14</span> -->
+      </li>
+    </ul>
+   
+    <!-- <ul>
+      <li *ngFor="let item of managementList">
+      
+      </li>
+    </ul> -->
+  </div>
+  <!-- <div class="form-check" *ngFor="let item of managementList">
+    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" [checked]="item.IsChecked"
+    [(ngModel)]="item.IsChecked">
+    <label class="form-check-label" for="flexCheckDefault">
+      {{item.name}}
+    </label>
+  </div> -->
+</div>
+  </div>
+  <div class="modal-footer">
+    <!-- <button type="button" class="btn btn-outline-dark" >Close</button>-->
+    <button type="button" class="btn btn-danger" (click)="closeModal('ok')">Close</button>
+  </div>
+  

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/site",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"]
+    },
+    "types": [],
+    "strict": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/test.ts", "**/*.spec.ts"]
+}

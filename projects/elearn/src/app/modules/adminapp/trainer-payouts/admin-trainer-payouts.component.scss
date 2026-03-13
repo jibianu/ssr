@@ -1,0 +1,381 @@
+.admin-payouts {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-payouts__header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-payouts__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.admin-payouts__subtitle {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.admin-payouts__stats {
+  margin-bottom: 1.5rem;
+}
+
+.admin-payouts__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.admin-payouts__stat-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.admin-payouts__stat-card--warning {
+  border-color: #ffc107;
+  background: #fffbf0;
+}
+
+.admin-payouts__stat-card--success {
+  border-color: #28a745;
+  background: #f0f9f4;
+}
+
+.admin-payouts__stat-card--danger {
+  border-color: #dc3545;
+  background: #fdf2f3;
+}
+
+.admin-payouts__stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.admin-payouts__stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.admin-payouts__section {
+  margin-bottom: 2rem;
+}
+
+.admin-payouts__section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.admin-payouts__section-desc {
+  color: #555;
+  font-size: 0.875rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.admin-payouts__report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.admin-payouts__report-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.admin-payouts__report-input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.admin-payouts__report-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.admin-payouts__td--notes {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-payouts__error {
+  color: #c0392b;
+  margin-bottom: 0.75rem;
+}
+
+.admin-payouts__loading {
+  color: #666;
+}
+
+.admin-payouts__table-wrap {
+  overflow-x: auto;
+}
+
+.admin-payouts__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-payouts__th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+}
+
+.admin-payouts__td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-payouts__badge {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.admin-payouts__badge--approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.admin-payouts__badge--pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.admin-payouts__badge--rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.admin-payouts__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-payouts__btn {
+  padding: 0.35rem 0.65rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.admin-payouts__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-payouts__btn--approve {
+  background: #28a745;
+  color: #fff;
+}
+
+.admin-payouts__btn--approve:hover:not(:disabled) {
+  background: #218838;
+}
+
+.admin-payouts__btn--reject {
+  background: #dc3545;
+  color: #fff;
+}
+
+.admin-payouts__btn--reject:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.admin-payouts__btn--process {
+  background: #6c5ce7;
+  color: #fff;
+}
+
+.admin-payouts__btn--process:hover {
+  background: #5b4cdb;
+}
+
+.admin-payouts__btn--primary {
+  background: #6c5ce7;
+  color: #fff;
+}
+
+.admin-payouts__btn--primary:hover:not(:disabled) {
+  background: #5b4cdb;
+}
+
+.admin-payouts__btn--secondary {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.admin-payouts__btn--secondary:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.admin-payouts__muted {
+  color: #999;
+}
+
+.admin-payouts__empty-wrap {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.admin-payouts__empty {
+  color: #666;
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-payouts__empty-hint {
+  color: #888;
+  font-size: 0.85rem;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.4;
+}
+
+/* Process Payout Modal */
+.admin-payouts-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.admin-payouts-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.admin-payouts-modal__box {
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+.admin-payouts-modal__title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.admin-payouts-modal__subtitle {
+  color: #555;
+  font-size: 0.875rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.admin-payouts-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-payouts-modal__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-payouts-modal__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.admin-payouts-modal__hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.admin-payouts-modal__input {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.admin-payouts-modal__textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.admin-payouts-modal__error {
+  color: #c0392b;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.admin-payouts-modal__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.admin-payouts-modal__btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.admin-payouts-modal__btn--primary {
+  background: #6c5ce7;
+  color: #fff;
+}
+
+.admin-payouts-modal__btn--primary:hover:not(:disabled) {
+  background: #5b4cdb;
+}
+
+.admin-payouts-modal__btn--primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-payouts-modal__btn--secondary {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.admin-payouts-modal__btn--secondary:hover {
+  background: #e0e0e0;
+}

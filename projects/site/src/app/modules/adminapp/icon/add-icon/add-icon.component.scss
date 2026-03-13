@@ -1,0 +1,37 @@
+// ✅ COMMON ADMIN: Import shared styles
+@import '../../../../shared/admin-common/admin-common.scss';
+
+// Icon-specific customizations (if needed)
+.add-icon-container {
+  @extend .admin-page-wrapper;
+  
+  .add-icon-content {
+    @extend .admin-page-content;
+  }
+  
+  .add-icon-card {
+    @extend .admin-card;
+    @extend .admin-card-centered;
+  }
+  
+  .add-icon-form {
+    @extend .admin-form;
+    @extend .admin-form-full-width;
+  }
+  
+  // Image preview styling
+  .image-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+    
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+}

@@ -1,0 +1,35 @@
+<div class="change-progress">
+  <div class="change-progress__header">
+    <h2 class="change-progress__title">Change Progress</h2>
+    <button type="button" class="change-progress__close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <i class="fa fa-times" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="change-progress__body">
+    <p class="change-progress__label">SELECT COMPLETION PERCENTAGE</p>
+    <div class="change-progress__options">
+      <button
+        *ngFor="let pct of progressList"
+        type="button"
+        class="change-progress__option"
+        [class.change-progress__option--active]="selectedProgress === pct"
+        (click)="selectedProgress = pct"
+      >
+        {{ pct }}%
+      </button>
+    </div>
+    <div class="change-progress__bar-wrap" aria-hidden="true">
+      <div class="change-progress__bar" [style.width.%]="selectedProgress"></div>
+    </div>
+  </div>
+
+  <div class="change-progress__footer">
+    <button type="button" class="change-progress__btn change-progress__btn--secondary" (click)="close()">
+      Close
+    </button>
+    <button type="button" class="change-progress__btn change-progress__btn--primary" (click)="updateProgress()">
+      Update
+    </button>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="login-page">
+  <div class="login-card">
+    <header class="login-header">
+      <a routerLink="/" class="login-brand" aria-label="oilandgasclub home">
+        <img [src]="logoUrl" alt="oilandgasclub" class="login-brand__logo" width="130" height="42" fetchpriority="high">
+      </a>
+      <p class="login-header__prompt">
+        Already have an account? <a routerLink="/auth/login" class="login-header__link">Log in</a>
+      </p>
+    </header>
+
+    <div class="login-info-box">
+      <h1 class="login-info-box__title">Sign up and start learning</h1>
+      <p class="login-info-box__text">Over 250k+ learners trust us for their preparation. Join and get access to industry-recognized courses.</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="register()" aria-label="Sign up">
+      <div class="login-form__field login-form__google-wrap" *ngIf="googleEnabled">
+        <button type="button" class="login-form__google-btn" (click)="continueWithGoogle()" [disabled]="!googleEnabled" aria-label="Continue with Google">
+          <span class="login-form__google-icon" aria-hidden="true"></span>
+          <span class="login-form__google-text">Continue with Google</span>
+        </button>
+      </div>
+      <div class="login-form__divider" aria-hidden="true">OR</div>
+
+      <div class="login-form__field">
+        <label class="login-form__label" for="register-email">Email address</label>
+        <input id="register-email" type="email" name="email" [(ngModel)]="email" required
+          placeholder="you@example.com" class="login-form__input" autocomplete="email" inputmode="email">
+      </div>
+      <div class="login-form__field">
+        <label class="login-form__label" for="register-password">Password</label>
+        <input id="register-password" type="password" name="password" [(ngModel)]="password" required
+          placeholder="Create a password" class="login-form__input" autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="login-form__submit">Register</button>
+    </form>
+
+    <p class="login-signup">
+      Already a member? <a routerLink="/auth/login" class="login-signup__link">Log in</a>
+    </p>
+  </div>
+
+  <footer class="login-footer">
+    <p class="login-footer__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
+    <div class="login-footer__links">
+      <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="login-footer__link">Privacy Policy</a>
+      <a href="https://www.oilandgasclub.com/cookies/" target="_blank" rel="noopener" class="login-footer__link">Manage Cookies</a>
+    </div>
+  </footer>
+</div>

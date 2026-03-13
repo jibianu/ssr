@@ -1,0 +1,56 @@
+<div class="certificates-page">
+  <!-- Page header -->
+  <header class="certificates-header">
+    <h1 class="certificates-title">Certificates</h1>
+    <p class="certificates-subtitle">Showcase your learning journey with OilAndGasClub.</p>
+    <p class="certificates-intro">All certificates you earn after completing a course will appear here. You can easily view, download, and share them to boost your professional profile.</p>
+
+    <div class="certificates-features">
+      <h3 class="certificates-features__title">What you can do here</h3>
+      <div class="certificates-features__list">
+        <span class="certificates-features__item">✅ View Certificates</span>
+        <span class="certificates-features__item">✅ Download Certificates</span>
+        <span class="certificates-features__item">✅ Share on LinkedIn</span>
+      </div>
+    </div>
+
+    <div class="certificates-why">
+      <h3 class="certificates-why__title">Why it matters</h3>
+      <p class="certificates-why__intro">Your OilAndGasClub certificate helps you:</p>
+      <ul class="certificates-why__list">
+        <li>Build credibility in the Oil &amp; Gas domain</li>
+        <li>Strengthen your resume and job applications</li>
+        <li>Stand out to recruiters and industry professionals</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Loading state -->
+  <div class="certificates-loading" *ngIf="!courseList">
+    <p class="text-muted">Loading your certificates...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="certificates-empty" *ngIf="courseList && courseList.length === 0">
+    <img src="/assets/img/oilandgas_club.svg" alt="OilAndGasClub" class="empty-icon__logo" />
+    <h2>No certificates yet</h2>
+    <p>Complete courses to earn certificates. Your earned certificates will appear here.</p>
+  </div>
+
+  <!-- Course cards grid -->
+  <div class="certificates-grid" *ngIf="courseList && courseList.length > 0">
+    <div class="certificate-card" *ngFor="let item of gadata">
+      <div class="certificate-card__visual">
+        <img src="/assets/img/oilandgas_club.svg" alt="OilAndGasClub" class="certificate-card__logo" />
+        <span class="certificate-card__badge" *ngIf="item?.category?.name">{{ item.category.name }}</span>
+      </div>
+      <div class="certificate-card__body">
+        <h3 class="certificate-card__title">{{ item.title }}</h3>
+        <a [routerLink]="['../certificate-template', item.id]" class="certificate-card__btn">
+          <i class="fa fa-download"></i>
+          View Certificate
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

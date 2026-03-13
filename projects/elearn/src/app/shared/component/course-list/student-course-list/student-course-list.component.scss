@@ -1,0 +1,127 @@
+.dropdown-menu span{
+    cursor: pointer;
+}
+.evenDiv{
+    background-color: #dcdcdc;
+  }
+ .oddDiv{
+    background-color: #fff;
+  }
+  ::ng-deep .E-datepicker.input-group{
+      width: 200px;
+  }
+  ::ng-deep.modal-right .modal-dialog {
+    position: fixed !important;
+    margin: auto;
+    width: 500px;
+    height: 100%;
+    -webkit-transform: translate3d(0%, 0, 0);
+        -ms-transform: translate3d(0%, 0, 0);
+         -o-transform: translate3d(0%, 0, 0);
+            transform: translate3d(0%, 0, 0);
+}
+::ng-deep.modal-right .modal-header {
+    padding: 9px 9px;
+}
+::ng-deep.modal-right .modal-body {
+		padding: 15px 15px 80px;
+        height: 475px;
+        overflow-y: auto;
+	}
+
+    ::ng-deep .modal-right .modal-content {
+		height: 100%;
+		overflow-y: auto;
+	}
+
+    ::ng-deep.modal-right.fade .modal-dialog {
+    right: 0;
+    -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+       -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+         -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+            transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+::ng-deep.modal-right.fade.in .modal-dialog {
+    right: 0 !important;
+}
+
+/* Permission column headers (Assign | View | Edit | Course) – align with row cells */
+.student-course-list__permission-headers {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #495057;
+  padding-left: 2px;
+}
+.student-course-list__permission-hdr {
+  box-sizing: border-box;
+}
+.student-course-list__permission-hdr--assign {
+  width: 42px;
+  flex-shrink: 0;
+}
+.student-course-list__permission-hdr--view {
+  width: 56px;
+  flex-shrink: 0;
+}
+.student-course-list__permission-hdr--edit {
+  width: 52px;
+  flex-shrink: 0;
+}
+.student-course-list__permission-hdr--course {
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+/* Row: same column widths so checkboxes align under headers */
+.student-course-list__row-inner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.student-course-list__row-inner--permissions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.student-course-list__cell {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+.student-course-list__cell--assign {
+  width: 42px;
+  flex-shrink: 0;
+}
+.student-course-list__cell--view {
+  width: 56px;
+  flex-shrink: 0;
+  gap: 4px;
+  cursor: pointer;
+}
+.student-course-list__cell--edit {
+  width: 52px;
+  flex-shrink: 0;
+  gap: 4px;
+  cursor: pointer;
+}
+.student-course-list__cell--course {
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+  font-weight: normal;
+}
+.student-course-list__cell-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #495057;
+  user-select: none;
+}
+.student-course-list__cell input[disabled] + .student-course-list__cell-label {
+  color: #adb5bd;
+}

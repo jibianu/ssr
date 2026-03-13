@@ -1,0 +1,41 @@
+.video-block {
+  margin: 0.5rem 0;
+
+  &__meta {
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  &__embed {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #000;
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &__caption {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+  }
+
+  &__placeholder {
+    padding: 1rem;
+    border: 1px dashed #dee2e6;
+    border-radius: 4px;
+  }
+}

@@ -1,0 +1,98 @@
+<div class="related-courses">
+  <ng-container *ngIf="courses$ | async as courses; else loadingTemplate">
+    <div *ngIf="courses.length === 0" class="related-empty">
+      <p>No related courses available.</p>
+    </div>
+
+    <div *ngIf="courses.length > 0">
+      <header class="related-courses__header">
+        <h2 class="related-courses__title">More Courses in this Category</h2>
+      </header>
+
+      <div class="related-grid">
+      <article class="related-card" *ngFor="let course of courses; trackBy: trackByCourseId">
+        <a class="related-card__media" [routerLink]="course?.canonicalUrl">
+          <img
+            [src]="course?.titleImageUrl"
+            (error)="onImgError($event)"
+            alt="{{ course?.title }}"
+            loading="lazy"
+            width="320"
+            height="220"
+          />
+          <span class="related-card__flag" *ngIf="course?.badge">{{ course.badge }}</span>
+          <span class="related-card__play">
+            <i class="fa fa-play" aria-hidden="true"></i>
+          </span>
+        </a>
+
+        <div class="related-card__body">
+          <div class="related-card__labels" *ngIf="course?.tagLabel">
+            <span class="related-card__label">{{ course.tagLabel }}</span>
+          </div>
+
+          <h3 class="related-card__title">
+            <a [routerLink]="course?.canonicalUrl">{{ course?.title }}</a>
+          </h3>
+
+          <p class="related-card__mentor" *ngIf="course?.instructorName">
+            A course by {{ course.instructorName }}
+          </p>
+
+          <p class="related-card__description" *ngIf="course?.shortDescription">
+            {{ course.shortDescription }}
+          </p>
+
+          <ul class="related-card__stats" *ngIf="course?.learnersCount || course?.rating || course?.reviewCount">
+            <li *ngIf="course?.learnersCount">
+              {{ course.learnersCount | number:'1.0-0' }} students
+            </li>
+            <li *ngIf="course?.rating && course?.reviewCount">
+              {{ getRatingPercentage(course.rating) }}% positive rating (from {{ formatReviewCount(course.reviewCount) }} reviews)
+            </li>
+            <li *ngIf="course?.rating && !course?.reviewCount">
+              {{ getRatingPercentage(course.rating) }}% positive rating
+            </li>
+          </ul>
+
+          <ul class="related-card__highlights" *ngIf="!course?.shortDescription">
+            <li *ngFor="let feature of (course.courseFeatures | slice:0:2)">
+              {{ feature?.description }}
+            </li>
+            <li *ngIf="!course?.courseFeatures?.length">
+              Learn industry-ready skills with expert mentors.
+            </li>
+          </ul>
+        </div>
+
+        <div class="related-card__offer" *ngIf="course?.discountPercent || course?.listPrice">
+          <span class="related-card__offer-percent" *ngIf="course?.discountPercent">
+            {{ course.discountPercent }}% Discount,
+          </span>
+          <span class="related-card__offer-strike" *ngIf="course?.listPrice">
+            {{ course.listPrice | currency:'INR':'symbol':'1.0-0' }}
+          </span>
+        </div>
+
+        <footer class="related-card__footer">
+          <a class="related-card__cta" [routerLink]="course?.canonicalUrl">
+            <span class="related-card__cta-text">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+              Buy
+            </span>
+            <span class="related-card__cta-price">
+              {{ (course.amount != null && course.amount > 0) ? (course.amount | currency:'INR':'symbol':'1.0-0') : 'Free' }}
+            </span>
+          </a>
+        </footer>
+      </article>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="related-loading">
+      <p>Loading related courses...</p>
+    </div>
+  </ng-template>
+</div>

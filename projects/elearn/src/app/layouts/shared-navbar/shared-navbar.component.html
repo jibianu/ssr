@@ -1,0 +1,14 @@
+<!-- Common topbar: logo | back | title | user dropdown (Admin, Trainer, Company, Management) -->
+<app-common-page-topbar [showSidebarToggler]="true" [showBack]="true" (sidebarToggle)="toggleSideNav()"></app-common-page-topbar>
+
+<!-- Backdrop for mobile -->
+<div class="sidebar-backdrop" *ngIf="hideSideNav" (click)="toggleSideNav()" role="button" aria-label="Close menu"></div>
+
+<!-- Common sidebar: menu from permission-based config (Admin, Trainer, Company, Management) -->
+<app-navbar-sidebar
+  [menuItems]="menuItems"
+  [userDisplayName]="userDisplayName"
+  [userEmail]="userEmail"
+  [userImageUrl]="userImageUrl"
+  [sidebarToggled]="hideSideNav">
+</app-navbar-sidebar>

@@ -1,0 +1,110 @@
+::ng-deep .modal-right .modal-footer {
+    justify-content: flex-start !important;
+  }
+
+  .card-header {
+    padding: 1rem 1.5rem;
+    margin-bottom: 0;
+    background-color: #fff;
+    border-bottom: 1px solid #eae7f5;
+}
+
+::ng-deep .modal-right .modal-dialog {
+  position: fixed !important;
+  margin: auto;
+  width: 800px !important;
+  max-width: 800px !important;
+  height: 100% !important;
+  -webkit-transform: translate3d(0%, 0, 0);
+      -ms-transform: translate3d(0%, 0, 0);
+       -o-transform: translate3d(0%, 0, 0);
+          transform: translate3d(0%, 0, 0);
+}
+
+::ng-deep .modal-right .modal-body {
+  padding: 15px 15px 80px;
+}
+
+::ng-deep .modal-right .modal-content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+::ng-deep .modal-right.fade .modal-dialog {
+  right: 0;
+  -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+     -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+       -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+          transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+::ng-deep .modal-right.fade.in .modal-dialog {
+  right: 0 !important;
+}
+
+::ng-deep .modal-right .modal-dialog-scrollable .modal-content {
+  max-height: calc(100vh - 0.1rem); 
+}
+
+::ng-deep .modal-right .modal-dialog-scrollable {
+  max-height: calc(100vh - 0.1rem); 
+}
+
+::ng-deep .ck-content{
+  height: 80px;
+}
+
+::ng-deep .ck-content{
+  height: fit-content;
+}
+
+.bodyHeader{
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+  padding:36px 0px;
+}
+.bodyHeader h4{
+  font-size: 56px;
+  color:white;
+}
+
+.customDesign{
+  padding: 10px 70px;
+  // background-color: gray;
+  height: 70vh;
+  // overflow-y: scroll;
+}
+
+table{
+  border: 1px solid #ddd8d8;
+  table-layout: fixed;
+  white-space: nowrap;
+}
+
+table tbody{
+  overflow-y: scroll;
+}
+
+.customBtn{
+  padding:1px 6px!important;
+  width: 28px;
+}
+.tdtitle{
+  display: inline-block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+}
+
+#backarrow{
+  font-size: 20px;
+  position: relative;
+  top: -10px;
+  padding-right: 22px;
+}
+
+
+.addshowmore{
+  word-wrap: break-word;
+  height: fit-content;
+}

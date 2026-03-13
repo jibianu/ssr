@@ -1,0 +1,128 @@
+/* Payment success page – follows app design (primary orange, PT Sans, f5f4f8 bg) */
+$primary: var(--app-primary, #f57722);
+$primary-light: var(--app-primary-light, #ff9d2a);
+$primary-bg: var(--app-primary-bg, rgba(245, 119, 34, 0.12));
+$dark: var(--app-dark, #393939);
+$gray: var(--gray, #79758f);
+
+.payment-success-page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px 48px;
+  background-color: #f5f4f8;
+}
+
+.payment-success-card {
+  max-width: 480px;
+  width: 100%;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 48px 40px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.payment-success__icon-wrap {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(245, 119, 34, 0.35);
+}
+
+.payment-success__icon {
+  font-size: 44px;
+  color: #fff;
+}
+
+.payment-success__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $dark;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.payment-success__message {
+  font-size: 15px;
+  color: $gray;
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+}
+
+.payment-success__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.payment-success__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  i {
+    font-size: 14px;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(245, 119, 34, 0.35);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 119, 34, 0.4);
+      color: #fff;
+    }
+  }
+
+  &--secondary {
+    background: transparent;
+    color: $dark;
+    border: 2px solid $dark;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+      color: $dark;
+    }
+  }
+}
+
+.payment-success__footer {
+  font-size: 12px;
+  color: $gray;
+  margin: 0;
+}
+
+@media (max-width: 576px) {
+  .payment-success-card {
+    padding: 36px 24px;
+  }
+
+  .payment-success__title {
+    font-size: 22px;
+  }
+
+  .payment-success__message {
+    font-size: 14px;
+  }
+}

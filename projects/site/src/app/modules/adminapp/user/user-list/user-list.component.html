@@ -1,0 +1,161 @@
+<!-- ✅ COMMON ADMIN LIST: Modern Admin Panel User List -->
+<div class="admin-list-container">
+  <!-- Header Section with Title and Add Button -->
+  <div class="admin-list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="fas fa-users"></i>
+          User List
+        </h1>
+        <p class="page-subtitle">Manage and organize your users</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="admin-list-search-bar">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search users..." 
+          [(ngModel)]="searchTitle"
+          (ngModelChange)="dataChanged($event)"
+          (keyup.enter)="fetchUsers()">
+        <button class="search-btn" (click)="fetchUsers()" title="Search">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="stats-badge" *ngIf="count !== undefined">
+      <i class="fas fa-chart-line"></i>
+      <span>{{ count }} {{ count === 1 ? 'User' : 'Users' }}</span>
+    </div>
+  </div>
+
+  <!-- User Table Card -->
+  <div class="admin-list-table-card">
+    <table class="admin-list-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortByHeading('FirstName')">
+            <span class="th-content">
+              First Name
+              <span class="sort-icon" *ngIf="sortBy === 'FirstName'">
+                <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+              </span>
+              <span class="sort-icon-placeholder" *ngIf="sortBy !== 'FirstName'">
+                <i class="fas fa-sort"></i>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sortByHeading('LastName')">
+            <span class="th-content">
+              Last Name
+              <span class="sort-icon" *ngIf="sortBy === 'LastName'">
+                <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+              </span>
+              <span class="sort-icon-placeholder" *ngIf="sortBy !== 'LastName'">
+                <i class="fas fa-sort"></i>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sortByHeading('Email')">
+            <span class="th-content">
+              Email
+              <span class="sort-icon" *ngIf="sortBy === 'Email'">
+                <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+              </span>
+              <span class="sort-icon-placeholder" *ngIf="sortBy !== 'Email'">
+                <i class="fas fa-sort"></i>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sortByHeading('UserName')">
+            <span class="th-content">
+              Username
+              <span class="sort-icon" *ngIf="sortBy === 'UserName'">
+                <i class="fas" [ngClass]="{'fa-sort-up': isAsc, 'fa-sort-down': !isAsc}"></i>
+              </span>
+              <span class="sort-icon-placeholder" *ngIf="sortBy !== 'UserName'">
+                <i class="fas fa-sort"></i>
+              </span>
+            </span>
+          </th>
+          <th>
+            <span class="th-content">Is Admin?</span>
+          </th>
+          <th class="actions-column">
+            <span class="th-content">Action</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of users | paginate : { itemsPerPage: tableSize, currentPage: page, totalItems: count }; trackBy: trackByUserId">
+          <td>{{ item?.firstName || 'N/A' }}</td>
+          <td>{{ item?.lastName || 'N/A' }}</td>
+          <td>{{ item?.email || 'N/A' }}</td>
+          <td>{{ item?.userName || 'N/A' }}</td>
+          <td>
+            <span class="badge" [ngClass]="{'badge-success': item?.isAdmin, 'badge-secondary': !item?.isAdmin}">
+              {{ item?.isAdmin ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button 
+                type="button" 
+                class="btn-action btn-edit" 
+                [routerLink]="['/app/user/edit', item.id]"
+                title="Edit User">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button 
+                type="button" 
+                class="btn-action btn-delete" 
+                (click)="deleteUser(item.id)"
+                title="Delete User">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <!-- Empty State -->
+        <tr *ngIf="users.length === 0" class="empty-row">
+          <td colspan="6" class="empty-state">
+            <div class="empty-state-content">
+              <i class="fas fa-inbox empty-icon"></i>
+              <p class="empty-title">No users found</p>
+              <p class="empty-description">No users match your search criteria</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination and Page Size Controls -->
+    <div class="admin-list-table-footer">
+      <div class="pagination-wrapper">
+        <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+      </div>
+      <div class="page-size-control">
+        <label for="pageSize" class="page-size-label">
+          <i class="fas fa-list-ol"></i>
+          Items per page:
+        </label>
+        <select 
+          id="pageSize"
+          (change)="onTableSizeChange($event)" 
+          class="page-size-select"
+          [value]="tableSize">
+          <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [value]="size">
+            {{ size }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

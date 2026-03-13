@@ -1,0 +1,21 @@
+// ✅ COMMON ADMIN: Import shared styles
+@import '../../../../shared/admin-common/admin-common.scss';
+
+// Category-specific customizations (if needed)
+.add-category-container {
+  @extend .admin-page-wrapper;
+  
+  .add-category-content {
+    @extend .admin-page-content;
+  }
+  
+  .add-category-card {
+    @extend .admin-card;
+    @extend .admin-card-centered;
+  }
+  
+  .add-category-form {
+    @extend .admin-form;
+    @extend .admin-form-full-width;
+  }
+}

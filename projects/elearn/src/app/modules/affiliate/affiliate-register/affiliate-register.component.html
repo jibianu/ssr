@@ -1,0 +1,59 @@
+<div class="affiliate-register-page">
+  <div class="affiliate-register-card">
+    <header class="affiliate-register-header">
+      <a routerLink="/" class="affiliate-register-brand">
+        <img [src]="logoUrl" alt="logo" class="affiliate-register-logo" width="130" height="42">
+      </a>
+      <p class="affiliate-register-header__prompt">
+        <a routerLink="/auth/login">Log in</a>
+      </p>
+    </header>
+
+    <h1 class="affiliate-register-title">Become an Affiliate</h1>
+    <p class="affiliate-register-subtitle">Share our courses and earn 10% commission on every purchase.</p>
+
+    <form class="affiliate-register-form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="fullName">Full Name <span class="required">*</span></label>
+        <input id="fullName" type="text" [(ngModel)]="model.fullName" name="fullName"
+          placeholder="Your full name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email <span class="required">*</span></label>
+        <input id="email" type="email" [(ngModel)]="model.email" name="email"
+          placeholder="you@example.com" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password <span class="required">*</span></label>
+        <input id="password" type="password" [(ngModel)]="model.password" name="password"
+          placeholder="Min 6 characters" class="form-control" required minlength="6">
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" [(ngModel)]="model.phone" name="phone"
+          placeholder="Optional" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="linkedInProfile">LinkedIn Profile</label>
+        <input id="linkedInProfile" type="url" [(ngModel)]="model.linkedInProfile" name="linkedInProfile"
+          placeholder="https://linkedin.com/in/..." class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="reason">Why do you want to join?</label>
+        <textarea id="reason" [(ngModel)]="model.reason" name="reason" rows="3"
+          placeholder="Optional" class="form-control"></textarea>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting">
+        {{ submitting ? 'Submitting...' : 'Submit Application' }}
+      </button>
+    </form>
+
+    <p class="affiliate-register-footer-link">
+      <a routerLink="/">Back to home</a>
+    </p>
+  </div>
+</div>

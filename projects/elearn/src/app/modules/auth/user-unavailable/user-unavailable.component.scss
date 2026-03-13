@@ -1,0 +1,46 @@
+.user-unavailable {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: #f5f5f5;
+}
+
+.user-unavailable__card {
+  max-width: 420px;
+  width: 100%;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.user-unavailable__title {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-unavailable__message {
+  margin: 0 0 1.5rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.user-unavailable__btn {
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: #0d6efd;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.user-unavailable__btn:hover {
+  background: #0b5ed7;
+}

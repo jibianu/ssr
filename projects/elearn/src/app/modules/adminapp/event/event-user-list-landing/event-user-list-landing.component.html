@@ -1,0 +1,43 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="event-list__header-row">
+    <div class="event-list__header">
+      <h1 class="event-list__title"><i class="fas fa-user-friends"></i> Event user list</h1>
+      <p class="event-list__subtitle">Select an event to view all registered users</p>
+    </div>
+    <a class="event-list__add-btn btn btn-outline-secondary" routerLink="/app/admin/events">
+      <i class="fas fa-arrow-left"></i> Back to Events
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="event-list__loading">Loading events…</div>
+
+  <ng-container *ngIf="!loading">
+    <div class="list-page__table-wrap list-table-modern__wrap">
+      <div class="list-table-modern__table-responsive">
+        <table class="list-table-modern__table">
+          <thead>
+            <tr>
+              <th><span class="th-content">Event Title</span></th>
+              <th><span class="th-content">Start Date</span></th>
+              <th class="actions-column"><span class="th-content">Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let event of events">
+              <td>{{ getEventTitle(event) }}</td>
+              <td>{{ getEventStartDate(event) | date:'mediumDate' }}</td>
+              <td class="actions-cell">
+                <a [routerLink]="['/app/admin/events/users', getEventId(event)]" class="btn btn-sm btn-primary">
+                  <i class="fas fa-list"></i> View registrations
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="events.length === 0">
+              <td colspan="3" class="text-center text-muted py-4">No events found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>

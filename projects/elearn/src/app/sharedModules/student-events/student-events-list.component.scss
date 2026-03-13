@@ -1,0 +1,105 @@
+.student-events-page {
+  padding: 1rem 0 2rem;
+}
+
+.student-events-hero {
+  margin-bottom: 1.5rem;
+  &__badge {
+    display: inline-block;
+    font-size: 0.875rem;
+    color: var(--primary, #e65100);
+    margin-bottom: 0.5rem;
+  }
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  &__subtitle {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.student-events-loading,
+.student-events-error {
+  text-align: center;
+  padding: 2rem;
+}
+
+.student-events-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.student-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.student-event-card {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  &__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  &__media {
+    height: 160px;
+    background-color: #f0f0f0;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  &__badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+  &__content {
+    padding: 1rem;
+  }
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    i { margin-right: 4px; }
+  }
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+  }
+  &__description {
+    font-size: 0.875rem;
+    color: #555;
+    margin: 0 0 0.75rem;
+    line-height: 1.4;
+  }
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  &__price {
+    font-weight: 600;
+    color: var(--primary, #e65100);
+  }
+  &__cta {
+    font-size: 0.875rem;
+    color: var(--primary, #e65100);
+  }
+}

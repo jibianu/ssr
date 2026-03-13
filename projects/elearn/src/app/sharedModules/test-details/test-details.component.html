@@ -1,0 +1,90 @@
+<div class="card">
+  <div class="card-body row fullWidth pt-0">
+    <div class="col-lg-12 col-md-5 card-header">
+      <!-- <h1 class="text-white display-4 font-weight-bold">{{}}
+                        </h1> -->
+      <h3 class="title mb-3 text-white display-4 font-weight-bold">
+        {{questionSetDetails?.title}}
+      </h3>
+
+    </div>
+    <aside class="col-md-6 border-right p-0">
+      <div class="col">
+        <div class="row">
+          <div class="col-md-12 p-0">
+            <!-- Side Navbar -->
+            <ul class="nav nav-lb-tab mb-2" id="tab" role="tablist" style="display:flex; justify-content:center;">
+              <li class="nav-item ml-0" role="presentation">
+                <a class="nav-link active" id="about-tab" data-toggle="pill" href="#about" role="tab"
+                  aria-controls="about" aria-selected="true">About </a>
+              </li>
+
+              <li class="nav-item ml-0" role="presentation">
+                <a class="nav-link" id="terms-tab" data-toggle="pill" href="#terms" role="tab" aria-controls="terms"
+                  aria-selected="true">Terms & conditions </a>
+              </li>
+            </ul>
+            <!-- Tab content -->
+            <div class="tab-content tctab p-2" id="tabContent">
+              <div class="tab-pane fade active show" id="about" role="tabpanel" aria-labelledby="about-tab">
+                <p>{{questionSetDetails?.questionSetTestInformation?.about}}</p>
+              </div>
+
+              <div class="tab-pane fade active" id="terms" role="tabpanel" aria-labelledby="terms-tab">
+                <p>{{questionSetDetails?.questionSetTestInformation?.termsAndConditions}}</p>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </aside>
+    <aside class="col-md-6 p-0">
+      <article class="card-body description">
+        <!-- <h3 class="title mb-3">{{questionSetDetails?.title}}</h3> -->
+        <dl class="item-property">
+          <dt>Description</dt>
+          <dd>
+            <p>{{questionSetDetails?.description}}</p>
+          </dd>
+        </dl>
+        <dl class="param param-feature">
+          <dt>Difficulty</dt>
+          <dd>{{Difficulty[questionSetDetails?.difficultyLevelId]}}</dd>
+        </dl>
+        <dl class="param param-feature">
+          <dt>Duration</dt>
+          <dd>{{questionSetDetails?.questionSetTestInformation?.durationInMinute}}</dd>
+        </dl>
+        <dl class="param param-feature">
+          <dt>Topics</dt>
+          <dd>{{questionSetDetails?.questionSetTestInformation?.topics}}</dd>
+        </dl>
+        <dl class="param param-feature">
+          <dt>Question Counts</dt>
+          <dd>{{questionSetDetails?.questionSetTestInformation?.questionCount}}</dd>
+        </dl>
+        <dl class="param param-feature">
+          <dt>Pass Question Counts</dt>
+          <dd>{{questionSetDetails?.questionSetTestInformation?.passQuestionCounts}}</dd>
+        </dl>
+        <dl class="param param-feature">
+          <dt>Max Attempts Allowed</dt>
+          <dd>{{questionSetDetails?.questionSetTestInformation?.maxAttemptsAllowed}}</dd>
+        </dl>
+        <hr>
+        <div class="row justify-content-center">
+          <button class="btn text-center text-uppercase mr-2" [disabled]="questionSetDetails.isCompleted"
+            (click)="takeQuiz()">Take Quiz </button>
+
+          <div class="btntype">
+            <a class="btn text-center text-uppercase"
+              routerLink="/app/{{redirectTo}}/details/exam-result/{{questionSetDetails.id}}"
+              routerLinkActive="router-link-active">Test Result</a>
+          </div>
+        </div>
+      </article>
+    </aside>
+  </div>
+</div>

@@ -1,0 +1,306 @@
+@use '../public-course-common' as *;
+
+.related-courses {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.related-courses__header {
+  margin-bottom: clamp(1.5rem, 4vw, 2rem);
+}
+
+.related-courses__title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  color: $course-color-text-primary;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.related-empty,
+.related-loading {
+  text-align: center;
+  color: $course-color-text-secondary;
+  font-size: 0.95rem;
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); // ✅ 4 cards on desktop (matching image)
+  gap: clamp(1.5rem, 4vw, 2rem);
+  justify-items: stretch;
+  align-items: stretch;
+  grid-auto-rows: 1fr;
+
+  // ✅ Tablet: 2 cards per row
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // ✅ Mobile: 1 card per row
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.related-card {
+  @include course-card-shell(
+    $hover-border-color: rgba(0, 127, 134, 0.32),
+    $hover-shadow: $course-shadow-card-hover-teal,
+    $min-height: 480px,
+    $width: 100% // ✅ Full width within grid column
+  );
+  
+  // ✅ Desktop: Reduce total card height
+  @media (min-width: 769px) {
+    min-height: 380px !important; // ✅ Reduced from 480px
+    max-height: none !important;
+  }
+}
+
+.related-card__media {
+  @include course-card-media(1.06);
+  
+  // ✅ Desktop: Reduce media section height
+  @media (min-width: 769px) {
+    aspect-ratio: 1.2 / 1 !important; // ✅ Reduced from 1.06 (taller) to 1.2 (shorter)
+    max-height: 200px !important; // ✅ Limit max height
+  }
+
+  .related-card__flag {
+    @include course-card-badge(
+      $background: $course-color-accent-gold,
+      $color: $course-color-accent-gold-text,
+      $font-size: 0.72rem,
+      $padding: 0.3rem 0.9rem
+    );
+  }
+}
+
+.related-card__play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+
+  i {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: $course-color-overlay;
+    color: $course-color-surface;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    transition: transform $course-transition-medium ease, background $course-transition-medium ease;
+  }
+}
+
+.related-card__media:hover .related-card__play i {
+  background: rgba(0, 127, 134, 0.72);
+  transform: scale(1.05);
+}
+
+.related-card__body {
+  @include course-card-body(clamp(1.1rem, 3vw, 1.35rem), 0.7rem);
+  
+  // ✅ Desktop: Remove space above Buy button and below course name
+  @media (min-width: 769px) {
+    padding: clamp(0.4rem, 1.2vw, 0.6rem) clamp(0.9rem, 2.5vw, 1.1rem) 0 clamp(0.9rem, 2.5vw, 1.1rem) !important; // ✅ Reduced all padding
+    gap: 0.15rem !important; // ✅ Even smaller gap between elements
+  }
+}
+
+.related-card__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.related-card__label {
+  @include course-label-pill();
+}
+
+.related-card__title {
+  @include course-card-title(
+    1.05rem,
+    $course-color-text-primary,
+    $course-color-accent-teal,
+    3
+  );
+  
+  // ✅ Desktop: Remove space below course name and reduce font size
+  @media (min-width: 769px) {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.15 !important; // ✅ Even tighter line height
+    font-size: 0.95rem !important; // ✅ Slightly smaller font
+  }
+}
+
+.related-card__mentor {
+  margin: 0;
+  font-size: 0.85rem;
+  color: $course-color-text-muted;
+  font-weight: 600;
+}
+
+.related-card__description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: $course-color-text-secondary;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  
+  // ✅ Desktop: Reduce line height and spacing
+  @media (min-width: 769px) {
+    line-height: 1.25 !important; // ✅ Even tighter line height
+    font-size: 0.85rem !important; // ✅ Slightly smaller font
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-line-clamp: 2 !important; // ✅ Show only 2 lines instead of 3
+    line-clamp: 2 !important;
+  }
+}
+
+.related-card__stats {
+  @include course-stat-list(
+    $course-color-text-secondary,
+    $course-color-accent-orange,
+    0.9rem,
+    0.84rem
+  );
+  
+  // ✅ Match image design: remove icons, show text only
+  li {
+    list-style: none;
+    
+    i {
+      display: none; // ✅ Hide icons to match image design
+    }
+  }
+}
+
+.related-card__highlights {
+  @include course-bullet-list(
+    $course-color-accent-teal,
+    0.35rem,
+    0.9rem,
+    1.5
+  );
+  
+  // ✅ Desktop: Reduce gap between bullet items
+  @media (min-width: 769px) {
+    gap: 0.15rem !important; // ✅ Even smaller gap
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.85rem !important; // ✅ Smaller font
+    
+    li {
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1.25 !important; // ✅ Even tighter line height
+    }
+  }
+}
+
+.related-card__offer {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0 1.35rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  
+  // ✅ Desktop: Reduce bottom padding to minimize space above Buy button
+  @media (min-width: 769px) {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+.related-card__offer-percent {
+  color: $course-color-danger;
+}
+
+.related-card__offer-strike {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.related-card__footer {
+  @include course-card-footer(
+    clamp(0.85rem, 2.4vw, 1.1rem),
+    center,
+    center,
+    0
+  );
+  
+  // ✅ Desktop: Remove space above Buy button and reduce height
+  @media (min-width: 769px) {
+    margin-top: 0 !important;
+    padding: clamp(0.25rem, 0.6vw, 0.4rem) clamp(0.9rem, 2.5vw, 1.1rem) !important; // ✅ Minimal padding all around
+  }
+}
+
+// ✅ Desktop: Remove margin-bottom from elements before footer
+@media (min-width: 769px) {
+  .related-card__body {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .related-card__offer {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0.1rem !important; // ✅ Minimal top padding
+    margin-top: 0 !important;
+  }
+
+  .related-card__highlights,
+  .related-card__stats,
+  .related-card__description,
+  .related-card__mentor {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  // ✅ Remove all spacing from description specifically
+  .related-card__description {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.4 !important; // ✅ Tighter line height
+  }
+}
+
+.related-card__cta {
+  @include course-cta-button(0.85rem 1.5rem);
+  
+  // ✅ Desktop: Reduce button padding to decrease height
+  @media (min-width: 769px) {
+    padding: 0.6rem 1.2rem !important; // ✅ Reduced from 0.85rem 1.5rem
+  }
+  
+  .related-card__cta-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.92rem;
+  }
+
+  .related-card__cta-price {
+    font-size: 1.02rem;
+  }
+}
+
+.related-card__cta-price {
+  font-weight: 700;
+}

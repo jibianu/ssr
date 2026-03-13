@@ -1,0 +1,142 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="career-page" ngSkipHydration>
+  <section class="career-hero">
+    <div class="career-hero__content">
+      <p class="career-hero__eyebrow">Careers · Remote friendly · Impact at scale</p>
+      <h1>Build the future of <span>oil &amp; gas learning</span> with us</h1>
+      <p class="career-hero__lead">
+        We’re a remote-first, profitable team designing self-learning programs that help engineers thrive.
+        Join experts, creators, and builders reimagining how energy professionals master new skills.
+      </p>
+      <div class="career-hero__actions">
+        <a class="btn-primary" href="mailto:careers@oilandgasclub.com">Email your resume</a>
+        <a class="btn-link" href="https://www.oilandgasclub.com/about">Read our story →</a>
+      </div>
+    </div>
+    <div class="career-hero__stats">
+      <div class="career-stat">
+        <span class="career-stat__value">20+</span>
+        <span class="career-stat__label">Teammates worldwide</span>
+      </div>
+      <div class="career-stat">
+        <span class="career-stat__value">5</span>
+        <span class="career-stat__label">Time zones covered</span>
+      </div>
+      <div class="career-stat">
+        <span class="career-stat__value">250K+</span>
+        <span class="career-stat__label">Learners empowered</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="career-section">
+    <header class="career-section__header">
+      <p class="career-eyebrow">Why Oilandgasclub</p>
+      <h2>How we work</h2>
+      <p>Autonomy, deep collaboration, and learner obsession power everything we build.</p>
+    </header>
+    <div class="career-grid">
+      @for (highlight of highlights; track highlight.title) {
+        <article class="career-card">
+          <h3>{{ highlight.title }}</h3>
+          <p>{{ highlight.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="career-section">
+    <header class="career-section__header">
+      <p class="career-eyebrow">Roles we hire for</p>
+      <h2>Current openings</h2>
+      <p>We welcome generalists, SMEs, creators, and caretakers of learner experience.</p>
+    </header>
+    <div class="career-grid career-grid--openings">
+      @for (role of openings; track role.title) {
+        <article class="career-opening">
+          <div class="career-opening__meta">
+            <span class="career-opening__type">{{ role.type }}</span>
+            <div class="career-opening__tags">
+              @for (tag of role.tags; track tag) {
+                <span class="career-tag">{{ tag }}</span>
+              }
+            </div>
+          </div>
+          <h3>{{ role.title }}</h3>
+          <p>{{ role.summary }}</p>
+          <a class="btn-primary btn-primary--outline"
+             href="mailto:careers@oilandgasclub.com?subject=Application: {{ role.title }}">
+            Apply via email
+          </a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="career-section">
+    <header class="career-section__header">
+      <p class="career-eyebrow">Our culture</p>
+      <h2>Principles we live by</h2>
+      <p>We value progress, radically candid feedback, and building with purpose.</p>
+    </header>
+    <div class="career-grid career-grid--culture">
+      @for (principle of culturePrinciples; track principle.title) {
+        <article class="career-culture-card">
+          <h3>{{ principle.title }}</h3>
+          <p>{{ principle.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="career-section career-section--cta">
+    <div class="career-cta">
+      <p class="career-eyebrow">Ready to make an impact?</p>
+      <h2>Let’s transform learning together</h2>
+      <p>Send your portfolio, LinkedIn, or GitHub along with a short note about why Oilandgasclub excites you.</p>
+      <a class="btn-primary" href="mailto:careers@oilandgasclub.com">Introduce yourself</a>
+    </div>
+  </section>
+</div>
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="public-container" ngSkipHydration>
+    <div class="inner-page-content">
+
+        <p>Revolutionize Learning with Us</p>
+
+        <p>We at oilandgasclub from the bottom of our heart subsidy the importance of education to change one&rsquo;s
+            life. Collectively, we come together to the table with our own thoughts and ideas to redesign how people
+            learn. Combined, we are a potent force that transforms the lives of our employees, learners, instructors,
+            and business partners for the better.</p>
+
+        <p>Come let&rsquo;s transform the way learning is done together. The advantage is that no matter if you are a
+            young specialist and have just entered the workforce, now you can really participate in changing the world.
+            At oilandgasclub, we work in a friendly team and respect any ideas that can make the company progress and
+            develop.</p>
+
+        <p>Join a team that has the vision of enhancing peoples&rsquo; lives by providing affordable, quality training
+            and education. Yes, let us join hand in hand in order to make the future a better place as compared to the
+            present one.</p>
+            <ul>
+                
+            <li>Instructional Design and Curriculum Development: Designing, documenting, and implementing courses and
+            training that focus on industries such as the oil and gas industries.</li>
+
+            <li>Training and Coaching: Offering seminar, classes and coaching for executive personal development and
+            executive skill enhancement.</li>
+
+            <li>Content Creation and Management: Creating and maintaining blogs and educational videos and articles and
+            online courses.</li>
+
+            <li>Sales and Business Development: Struggle to diversify the partnerships and acquire more customers or actors
+            for carrying out the training.</li>
+
+            <li>Technical Support and IT: The backbone of the digital ecosystem as well as making sure that no hitches plague
+            the user&rsquo;s experience.</li>
+
+            <li>Marketing and Communications: Creating awareness of the platform and its products among the targeted
+            clientele to ensure more consumers get to engage the platform for their services.</li>
+            </ul>
+    </div>
+</div>
+

@@ -1,0 +1,23 @@
+<aside class="student-layout__sidebar">
+  <div class="student-layout__sidebar-inner">
+    <div class="student-layout__logo">
+      <a [href]="base + '/dashboard'" class="student-layout__logo-link">
+        <img class="student-layout__logo-img" [src]="logoUrl" alt="Oilandgas Club" (error)="$any($event.target).src = logoFallback" />
+      </a>
+    </div>
+    <nav class="student-layout__nav">
+      <a [href]="base + '/dashboard'" title="Dashboard"><i class="fa fa-tachometer"></i><span class="student-layout__nav-text">Dashboard</span></a>
+      <a [href]="base + '/courses'" title="My Courses"><i class="fa fa-book"></i><span class="student-layout__nav-text">My Courses</span></a>
+      <div class="student-layout__sub-nav">
+        <a [href]="base + '/courses'" class="student-layout__sub-link" title="In Progress"><i class="fa fa-play"></i><span class="student-layout__nav-text">In Progress</span></a>
+        <a [href]="base + '/courses'" class="student-layout__sub-link" title="Completed"><i class="fa fa-check-circle"></i><span class="student-layout__nav-text">Completed</span></a>
+        <a [href]="base + '/courses'" class="student-layout__sub-link" title="Wishlisted"><i class="fa fa-heart"></i><span class="student-layout__nav-text">Wishlisted</span></a>
+      </div>
+      <a [href]="base + '/categories'" class="active" title="Explore"><i class="fa fa-compass"></i><span class="student-layout__nav-text">Explore</span></a>
+      <a [href]="base + '/profile'" title="Profile"><i class="fa fa-user-circle"></i><span class="student-layout__nav-text">Profile</span></a>
+      <a [href]="base + '/certificate'" title="Certificates"><i class="fa fa-certificate"></i><span class="student-layout__nav-text">Certificates</span></a>
+      <a [href]="base + '/purchase-history'" title="Purchase History"><i class="fa fa-shopping-cart"></i><span class="student-layout__nav-text">Purchase History</span></a>
+      <a [href]="base + '/notifications'" title="Notifications"><i class="fa fa-bell"></i><span class="student-layout__nav-text">Notifications</span></a>
+    </nav>
+  </div>
+</aside>

@@ -1,0 +1,204 @@
+@use 'sass:color';
+@use '../shared/public-common' as common;
+
+$refund-bg: #f6f8fb;
+$refund-primary: #0f172a;
+$refund-muted: #5d6b81;
+$refund-border: rgba(15, 23, 42, 0.1);
+$refund-accent: #f04a00;
+
+.refund-page {
+  @include common.page-shell($refund-bg);
+}
+
+.refund-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.78rem;
+  color: $refund-accent;
+}
+
+.refund-hero {
+  @include common.hero-shell(
+    $background: linear-gradient(135deg, #0f172a, #1f3b8a),
+    $text-color: #e2e8f0,
+    $shadow: 0 35px 70px rgba(15, 23, 42, 0.35),
+    $border-color: rgba(255, 255, 255, 0.15)
+  );
+  color: #e2e8f0;
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      font-weight: 800;
+
+      span {
+        color: #fbbf24;
+      }
+    }
+
+    p {
+      margin: 0;
+      color: rgba(241, 245, 249, 0.85);
+      line-height: 1.6;
+    }
+  }
+
+  &__highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  &__summary {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 22px;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    box-shadow: 0 25px 55px rgba(15, 23, 42, 0.4);
+
+    ul {
+      margin: 0.75rem 0 0;
+      padding-left: 1.5rem;
+
+      li {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+.refund-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+
+  h3 {
+    margin: 0 0 0.45rem;
+    color: #f8fafc;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(226, 232, 240, 0.85);
+  }
+}
+
+.btn-primary--warm {
+  background: linear-gradient(135deg, #fbbf24, #f97316);
+  color: #0f172a;
+  box-shadow: 0 18px 32px rgba(249, 115, 22, 0.35);
+}
+
+.btn-link {
+  text-decoration: none;
+  font-weight: 600;
+  color: $refund-primary;
+}
+
+.refund-section {
+  @include common.surface-card($padding: clamp(1.6rem, 4vw, 2.4rem));
+
+  &--cta {
+    background: #0f172a;
+    color: #fff;
+
+    .refund-eyebrow,
+    p {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+}
+
+.refund-section__header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto clamp(1rem, 3vw, 1.5rem);
+
+  h2 {
+    margin: 0.3rem 0 0.6rem;
+    font-size: clamp(2rem, 3vw, 2.4rem);
+  }
+
+  p {
+    margin: 0;
+    color: $refund-muted;
+  }
+}
+
+.refund-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(1rem, 2vw, 1.4rem);
+}
+
+.refund-eligibility {
+  @include common.surface-card($padding: 1.4rem);
+
+  h3 {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0;
+    color: $refund-muted;
+  }
+}
+
+.refund-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(1rem, 2vw, 1.4rem);
+}
+
+.refund-step {
+  @include common.surface-card($padding: 1.4rem);
+
+  h3 {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0;
+    color: $refund-muted;
+  }
+}
+
+.refund-notes {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.5rem;
+
+  li {
+    line-height: 1.55;
+    color: $refund-muted;
+  }
+}
+
+.refund-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .refund-hero__highlights {
+    grid-template-columns: 1fr;
+  }
+}
+

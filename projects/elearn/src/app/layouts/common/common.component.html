@@ -1,0 +1,63 @@
+
+
+  <div class="app-container">
+    <!-- Desktop Sidebar -->
+    <div class="desktop-sidebar">
+      <div class="sidebar-logo">
+      
+        <img ngSrc="assets/img/ogclubsvg.svg" alt="Graduation Cap Icon" width="32" height="32" />
+        <!-- <span class="logo-text">EduPortal</span> -->
+      </div>
+      <nav class="sidebar-nav">
+        <a routerLink="dashboard" title="Dashboard" *ngIf="!isStudent">
+          <i class="fa fa-home"></i>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a routerLink="courses" title="My Courses" *ngIf="!isTrainer">
+          <i class="fa fa-book"></i>
+          <span class="nav-text">My Courses</span>
+        </a>
+        <a routerLink="categories" title="Explore" *ngIf="!hideExplore">
+          <i class="fa fa-compass"></i>
+          <span class="nav-text">Explore</span>
+        </a>
+        <a routerLink="profile" title="Profile">
+          <i class="fa fa-user-circle"></i>
+          <span class="nav-text">Profile</span>
+        </a>
+        <a routerLink="certificate" title="Certificates" *ngIf="!isTrainer">
+          <i class="fa fa-certificate"></i>
+          <span class="nav-text">Certificates</span>
+        </a>
+      </nav>
+    </div>
+  
+    <!-- Mobile Bottom Bar -->
+    <div class="mobile-bottom-bar">
+      <a routerLink="dashboard" *ngIf="!isStudent">
+        <i class="fa fa-home"></i>
+      </a>
+      <a routerLink="courses" *ngIf="!isTrainer">
+        <i class="fa fa-book"></i>
+      </a>
+      <a routerLink="categories" *ngIf="!hideExplore">
+        <i class="fa fa-compass"></i>
+      </a>
+      <a routerLink="profile">
+        <i class="fa fa-user-circle"></i>
+      </a>
+      <a routerLink="certificate" *ngIf="!isTrainer">
+        <i class="fa fa-certificate"></i>
+      </a>
+    </div>
+  
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="topbar">
+        <app-common-topbar></app-common-topbar>
+      </div>
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>

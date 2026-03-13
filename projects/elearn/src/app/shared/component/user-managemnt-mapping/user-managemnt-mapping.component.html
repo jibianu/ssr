@@ -1,0 +1,48 @@
+<div class="modal-header">
+  <h4 class="modal-title">User Mapping</h4>
+</div>
+<div class="modal-body">
+  <ng-container *ngIf="sourceRole === 'trainer' || sourceRole === 'company' || sourceRole === 'management' || sourceRole === 'student' || sourceRole === 'course'">
+    <p class="mb-2"><strong>Select Management User:</strong></p>
+    <select class="form-control mb-3" [(ngModel)]="selectedManagementId" (ngModelChange)="onManagementSelect()">
+      <option [ngValue]="null">-- Select Management --</option>
+      <option *ngFor="let m of managmentList" [ngValue]="m.id">{{ m.email || m.userName }}</option>
+    </select>
+    <div *ngIf="loadingItems" class="text-muted mb-2">Loading {{ getItemLabel() }}...</div>
+    <ng-container *ngIf="selectedManagementId && !loadingItems">
+      <p class="mb-2"><strong>Assign {{ getItemLabel(true) }} (checked = mapped):</strong></p>
+      <div class="form-check mb-2 border-bottom pb-2" *ngIf="itemList.length">
+        <input class="form-check-input" type="checkbox" id="selectAllItems" #selectAllRef
+          [checked]="allItemsSelected" (change)="toggleSelectAllItems($event)">
+        <label class="form-check-label font-weight-bold" for="selectAllItems">Select All</label>
+      </div>
+      <div class="form-check" *ngFor="let t of itemList; let i = index">
+        <input class="form-check-input" type="checkbox" [id]="'item-' + i" [(ngModel)]="t.IsChecked"
+          (ngModelChange)="onItemCheckChange()">
+        <label class="form-check-label" [for]="'item-' + i">{{ t.title || t.email || t.userName }}</label>
+      </div>
+      <p *ngIf="!itemList.length" class="text-muted">No {{ getItemLabel() }} found.</p>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="false">
+    <p class="mb-2"><strong>Selected {{ sourceRole === 'trainer' ? 'Trainers' : 'Users' }}:</strong></p>
+    <ul class="mb-3">
+      <li *ngFor="let item of users">{{ item.email || item.userName }}</li>
+    </ul>
+    <p class="mb-2"><strong>Select Management User(s):</strong></p>
+    <div class="form-check" *ngFor="let item of managmentList; let i = index">
+      <input class="form-check-input" type="checkbox" [id]="'mgmt-' + i" [checked]="item.IsChecked" [(ngModel)]="item.IsChecked">
+      <label class="form-check-label" [for]="'mgmt-' + i">{{ item.email || item.userName }}</label>
+    </div>
+  </ng-container>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-danger" (click)="closeModal()" [disabled]="submitting">Cancel</button>
+  <button type="button" class="btn btn-success" (click)="updateUser()"
+    [disabled]="submitting || ((sourceRole === 'trainer' || sourceRole === 'company' || sourceRole === 'management' || sourceRole === 'student' || sourceRole === 'course') && !hasItemChanges())">
+    <span *ngIf="!submitting">Submit</span>
+    <span *ngIf="submitting"><i class="fa fa-spinner fa-spin"></i> Saving...</span>
+  </button>
+</div>
+  

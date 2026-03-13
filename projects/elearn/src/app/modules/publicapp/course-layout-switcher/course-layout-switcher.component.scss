@@ -1,0 +1,19 @@
+/* NOT logged in: Oilandgas header + content + footer (same as rest of public site) */
+.course-switcher-public.main-content {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-switcher-public .content-wrapper {
+  flex: 1;
+  margin-top: 60px;
+  padding: 20px;
+}
+
+@media (min-width: 768px) {
+  .course-switcher-public .content-wrapper {
+    margin-top: 70px;
+    padding: 30px 40px;
+  }
+}

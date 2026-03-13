@@ -1,0 +1,105 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
+<div class="courses-page" ngSkipHydration>
+  <section class="courses-hero">
+    <div class="courses-hero__copy">
+      <p class="courses-eyebrow">API · ASNT · CSWIP · HTRI · Digital oilfield</p>
+      <h1>Explore <span>70+ courses</span> built for working oil &amp; gas professionals</h1>
+      <p>Pick live cohorts, hybrid bootcamps, or self-paced labs that fit your schedule. Every program blends real projects, assessments, and certification prep.</p>
+      <div class="courses-hero__stats">
+        @for (stat of heroHighlights; track stat.label) {
+          <div class="courses-stat">
+            <span class="courses-stat__value">{{ stat.value }}</span>
+            <span class="courses-stat__label">{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="courses-hero__actions">
+        <a class="btn-primary" href="mailto:admissions@oilandgasclub.com">Request a custom quote</a>
+        <a class="btn-link" href="/list">See full catalog →</a>
+      </div>
+    </div>
+    <div class="courses-hero__card">
+      <h3>Need guidance?</h3>
+      <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> with your target roles, timeline, and preferred format.</p>
+      <p class="courses-note">We respond within 24 hours with recommended tracks and bundled pricing.</p>
+    </div>
+  </section>
+
+  <section class="courses-section">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Training tracks</p>
+      <h2>Areas of expertise</h2>
+    </header>
+    <div class="courses-grid">
+      @for (track of trainingTracks; track track.title) {
+        <article class="courses-card">
+          <h3>{{ track.title }}</h3>
+          <ul>
+            @for (item of track.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Delivery options</p>
+      <h2>Choose how you learn</h2>
+    </header>
+    <div class="courses-grid courses-grid--delivery">
+      @for (option of deliveryOptions; track option.title) {
+        <article class="courses-mode">
+          <h3>{{ option.title }}</h3>
+          <p>{{ option.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section courses-section--spotlight">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Featured programs</p>
+      <h2>Spotlight courses</h2>
+    </header>
+    <div class="courses-grid courses-grid--spotlight">
+      @for (course of spotlightCourses; track course.title) {
+        <article class="courses-spotlight">
+          <span class="courses-tag">{{ course.tag }}</span>
+          <h3>{{ course.title }}</h3>
+          <p>{{ course.description }}</p>
+          <a class="btn-link" [routerLink]="course.link">Learn more →</a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section courses-section--testimonials">
+    <header class="courses-section__header">
+      <p class="courses-eyebrow">Learner stories</p>
+      <h2>Trusted by teams worldwide</h2>
+    </header>
+    <div class="courses-testimonials">
+      @for (story of testimonials; track story.author) {
+        <article class="courses-testimonial">
+          <p class="courses-testimonial__quote">{{ story.quote }}</p>
+          <p class="courses-testimonial__author">{{ story.author }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="courses-section courses-section--cta">
+    <div class="courses-cta">
+      <div>
+        <p class="courses-eyebrow">Ready to start?</p>
+        <h2>Join a cohort or build your own learning path</h2>
+        <p>Send us the courses you’re interested in or the competency goals you’re targeting. We’ll recommend bundles, schedules, and pricing.</p>
+      </div>
+      <a class="btn-primary" href="mailto:admissions@oilandgasclub.com">Contact learning advisor</a>
+    </div>
+  </section>
+</div>
+

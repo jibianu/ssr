@@ -1,0 +1,127 @@
+<!-- ✅ COMMON ADMIN LIST: Modern Admin Panel Icon List -->
+<div class="admin-list-container">
+  <!-- Header Section with Title and Add Button -->
+  <div class="admin-list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="fas fa-icons"></i>
+          Icon List
+        </h1>
+        <p class="page-subtitle">Manage and organize your icons</p>
+      </div>
+      <a class="btn-add-item" [routerLink]="['/app/icon/add']">
+        <i class="fas fa-plus"></i>
+        <span>Add Icon</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="admin-list-search-bar">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search icons..." 
+          [(ngModel)]="term"
+          (ngModelChange)="onSearchChange()">
+        <button class="search-btn" (click)="onSearchChange()" title="Search">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="stats-badge" *ngIf="filteredIcons.length > 0">
+      <i class="fas fa-chart-line"></i>
+      <span>{{ filteredIcons.length }} {{ filteredIcons.length === 1 ? 'Icon' : 'Icons' }}</span>
+    </div>
+  </div>
+
+  <!-- Icon Table Card -->
+  <div class="admin-list-table-card">
+    <table class="admin-list-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="onSortClick($event, 'name')">
+            <span class="th-content">
+              Name
+              <i class="fas fa-sort sort-icon-placeholder"></i>
+            </span>
+          </th>
+          <th class="sortable" (click)="onSortClick($event, 'url')">
+            <span class="th-content">
+              URL
+              <i class="fas fa-sort sort-icon-placeholder"></i>
+            </span>
+          </th>
+          <th class="actions-column">
+            <span class="th-content">Action</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredIcons | paginate: config; trackBy: trackByIconId">
+          <td>{{ item?.name || 'N/A' }}</td>
+          <td>
+            <span class="url-text" [title]="item?.url">
+              {{ item?.url || 'N/A' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button 
+                class="btn-action btn-edit" 
+                [routerLink]="['/app/icon/edit', item.id]"
+                title="Edit Icon">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button 
+                class="btn-action btn-delete" 
+                (click)="deleteIcon(item.id)"
+                title="Delete Icon">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <!-- Empty State -->
+        <tr *ngIf="filteredIcons.length === 0" class="empty-row">
+          <td colspan="3" class="empty-state">
+            <div class="empty-state-content">
+              <i class="fas fa-inbox empty-icon"></i>
+              <p class="empty-title">No icons found</p>
+              <p class="empty-description">Get started by creating your first icon</p>
+              <a class="btn-empty-action" [routerLink]="['/app/icon/add']">
+                <i class="fas fa-plus"></i>
+                Add Icon
+              </a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination and Page Size Controls -->
+    <div class="admin-list-table-footer">
+      <div class="pagination-wrapper">
+        <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+      </div>
+      <div class="page-size-control">
+        <label for="pageSize" class="page-size-label">
+          <i class="fas fa-list-ol"></i>
+          Items per page:
+        </label>
+        <select 
+          id="pageSize"
+          (change)="onTableSizeChange($event)" 
+          class="page-size-select">
+          <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">
+            {{ size }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

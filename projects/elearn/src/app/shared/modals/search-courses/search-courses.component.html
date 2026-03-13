@@ -1,0 +1,88 @@
+<div class="modal-header search-filter-sidebar__header">
+  <h4 class="modal-title">Search</h4>
+  <button type="button" class="search-filter-sidebar__close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body search-filter-sidebar__body">
+  <div class="search-filter-sidebar__form-wrap">
+  <div class="form-group search-filter-sidebar__field">
+    <label class="search-filter-sidebar__label">Course status</label>
+    <div class="input-group">
+      <div ngbDropdown class="d-inline-block w-100">
+        <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownPublish" ngbDropdownToggle>
+          {{SelectedPublishType}}
+        </button>
+        <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownPublish">
+          <button type="button" ngbDropdownItem (click)="filterByPublishType('all')">All course</button>
+          <button type="button" ngbDropdownItem (click)="filterByPublishType('published-lms')">Published on the Elearn LMS</button>
+          <button type="button" ngbDropdownItem (click)="filterByPublishType('published-public')">Published on Public marketing course page</button>
+          <button type="button" ngbDropdownItem (click)="filterByPublishType('unpublished-lms')">Unpublished on the Elearn LMS</button>
+          <button type="button" ngbDropdownItem (click)="filterByPublishType('unpublished-public')">Published on the Elearn but unpublished on Public marketing course page</button>
+        </div>
+      </div>
+    </div>
+    <p class="search-filter-sidebar__hint">Counts differ because they use different filters: <strong>Elearn LMS</strong> = available to students in the LMS; <strong>Public marketing</strong> = visible on the public site. A course can be LMS-only until you enable &quot;Public marketing&quot; in Publish options.</p>
+  </div>
+  <div class="form-group search-filter-sidebar__field">
+    <label class="search-filter-sidebar__label">Category</label>
+    <div class="input-group">
+      <div ngbDropdown class="d-inline-block w-100">
+        <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownCategory" ngbDropdownToggle>
+          {{SelectedCategory}}
+        </button>
+        <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownCategory">
+          <button type="button" ngbDropdownItem (click)="filterByCategory(null, 'All Category')">All Category</button>
+          <button type="button" ngbDropdownItem *ngFor="let item of categories"
+            (click)="filterByCategory(item.id, item.name)">{{ item.name }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-group search-filter-sidebar__field">
+    <label class="search-filter-sidebar__label">Author</label>
+    <div class="input-group">
+      <div ngbDropdown class="d-inline-block w-100">
+        <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownAuthor" ngbDropdownToggle>
+          {{SelectedAuthor}}
+        </button>
+        <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownAuthor">
+          <button type="button" ngbDropdownItem (click)="filterByAuthor(null)">All Authors</button>
+          <button type="button" ngbDropdownItem *ngFor="let item of AuthorList" (click)="filterByAuthor(item)">{{item.email}}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group search-filter-sidebar__field">
+    <label class="search-filter-sidebar__label">Created Date (yyyy-mm-dd)</label>
+    <div class="E-datepicker input-group">
+      <input class="form-control search-filter-sidebar__input" placeholder="yyyy-mm-dd" name="startDate" ngbDatepicker
+        #s="ngbDatepicker" [(ngModel)]="sendData.createdDate">
+      <div class="input-group-append">
+        <button class="btn search-filter-sidebar__calendar-btn" (click)="s.toggle()" type="button">
+          <i class="fa fa-calendar" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="form-group search-filter-sidebar__field">
+    <label class="search-filter-sidebar__label">Updated Date (yyyy-mm-dd)</label>
+    <div class="E-datepicker input-group">
+      <input class="form-control search-filter-sidebar__input" placeholder="yyyy-mm-dd" name="endDate" ngbDatepicker
+        #u="ngbDatepicker" [(ngModel)]="sendData.updatedDate">
+      <div class="input-group-append">
+        <button class="btn search-filter-sidebar__calendar-btn" (click)="u.toggle()" type="button">
+          <i class="fa fa-calendar" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+<div class="modal-footer search-filter-sidebar__footer">
+  <div class="search-filter-sidebar__actions">
+    <button type="button" class="search-filter-sidebar__btn search-filter-sidebar__btn--cancel" (click)="reset()">Reset</button>
+    <button type="button" class="search-filter-sidebar__btn search-filter-sidebar__btn--primary" (click)="search()">Search</button>
+  </div>
+</div>

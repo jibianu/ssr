@@ -1,0 +1,467 @@
+/* Common topbar – uses application palette from styles.scss :root */
+$primary-btn: var(--app-primary);
+$primary-btn-dark: var(--app-primary-light);
+$primary-btn-light: var(--app-primary-bg);
+$primary-btn-focus: rgba(245, 119, 34, 0.25);
+$border: var(--app-gray);
+$text: var(--app-dark);
+$text-muted: #6b7280;
+$bg-card: #ffffff;
+
+.common-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: $bg-card;
+  box-shadow: 0 1px 0 $border;
+  z-index: 1002;
+}
+
+.common-topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, $primary-btn 0%, $primary-btn-dark 100%);
+}
+
+.common-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.common-topbar__toggler {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $text;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.common-topbar__toggler:hover {
+  background: $primary-btn-light;
+  color: $primary-btn;
+}
+
+.common-topbar__toggler i {
+  font-size: 1.2rem;
+}
+
+.common-topbar__logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  line-height: 0;
+}
+
+.common-topbar__logo {
+  height: 36px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  display: block;
+}
+
+.common-topbar__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $text;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.common-topbar__back:hover {
+  background: $primary-btn-light;
+  color: $primary-btn;
+}
+
+.common-topbar__back i {
+  font-size: 1.1rem;
+}
+
+.common-topbar__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: -0.02em;
+  flex: 1;
+  text-align: center;
+}
+
+.common-topbar__curriculum-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.common-topbar__curriculum-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.common-topbar__curriculum-tab {
+  padding: 8px 14px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: $text;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.common-topbar__curriculum-tab:hover {
+  color: $primary-btn;
+}
+
+.common-topbar__curriculum-tab--active {
+  color: $text;
+  border-bottom-color: $primary-btn;
+}
+
+.common-topbar__curriculum-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.common-topbar__course-list-search {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+  .common-topbar__search {
+    border: none;
+    border-radius: 0;
+    min-width: 160px;
+  }
+}
+
+.common-topbar__search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: none;
+  background: #f3f4f6;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  &:hover {
+    background: $primary-btn-light;
+    color: $primary-btn;
+  }
+}
+
+.common-topbar__search {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  border: 1px solid $border;
+  border-radius: 8px;
+  min-width: 180px;
+  font-family: inherit;
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.common-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.common-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.common-topbar__action-btn {
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.common-topbar__action-btn--outline {
+  background: transparent;
+  border: 1px solid $border;
+  color: $text;
+}
+
+.common-topbar__action-btn--outline:hover {
+  background: $primary-btn-light;
+  border-color: $primary-btn;
+  color: $primary-btn;
+}
+
+.common-topbar__action-btn--primary {
+  background: $primary-btn;
+  border: 1px solid $primary-btn;
+  color: #fff;
+}
+
+.common-topbar__action-btn--primary:hover {
+  background: $primary-btn-dark;
+  border-color: $primary-btn-dark;
+  color: #fff;
+}
+
+.common-topbar__action-btn--icon {
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid $border;
+  color: $text;
+  min-width: 40px;
+}
+
+.common-topbar__action-btn--icon:hover {
+  background: $primary-btn-light;
+  border-color: $primary-btn;
+  color: $primary-btn;
+}
+
+.common-topbar__user-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.common-topbar__user-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: #fff;
+  color: $text;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  max-width: 200px;
+}
+
+.common-topbar__user-trigger:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.common-topbar__user-trigger:focus {
+  outline: none;
+  border-color: $primary-btn;
+  box-shadow: 0 0 0 2px $primary-btn-focus;
+}
+
+.common-topbar__user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.common-topbar__user-chevron {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.common-topbar__user-wrap--open .common-topbar__user-chevron {
+  transform: rotate(180deg);
+}
+
+.common-topbar__dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  cursor: default;
+}
+
+.common-topbar__dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: $bg-card;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+  border: 1px solid $border;
+  padding: 6px 0;
+  z-index: 200;
+}
+
+.common-topbar__dropdown-email {
+  padding: 10px 14px 8px;
+  font-size: 0.8125rem;
+  color: $text-muted;
+  border-bottom: 1px solid $border;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.common-topbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  color: $text;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.common-topbar__dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.common-topbar__dropdown-item i {
+  width: 18px;
+  color: $text-muted;
+  font-size: 0.9rem;
+}
+
+/* Student topbar course search (same look as site) */
+.common-topbar__student-search {
+  position: relative;
+  width: 260px;
+  max-width: 320px;
+  min-width: 0;
+  margin-right: 8px;
+}
+
+.common-topbar__student-search__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #9ca3af;
+  z-index: 1;
+}
+
+.common-topbar__student-search__input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  color: #111827;
+  background: #f9fafb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:hover {
+    background: #fff;
+    border-color: #d1d5db;
+  }
+
+  &:focus {
+    outline: none;
+    background: #fff;
+    border-color: $primary-btn;
+    box-shadow: 0 0 0 3px $primary-btn-focus;
+  }
+}
+
+.common-topbar__student-search__dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+}
+
+.common-topbar__student-search__loading {
+  padding: 0.75rem 1rem;
+  color: $text-muted;
+  font-size: 0.875rem;
+}
+
+.common-topbar__student-search__item {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  text-align: left;
+  border: none;
+  background: none;
+  font-size: 0.9375rem;
+  color: #1f2937;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-family: inherit;
+
+  &:hover,
+  &:focus {
+    background: #f3f4f6;
+    outline: none;
+  }
+}

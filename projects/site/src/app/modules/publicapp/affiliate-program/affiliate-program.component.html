@@ -1,0 +1,129 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="affiliate-page" ngSkipHydration>
+  <section class="affiliate-hero">
+    <div class="affiliate-hero__content">
+      <p class="affiliate-eyebrow">Affiliate program · Remote · High payouts</p>
+      <h1>Earn generous commissions promoting <span>industry-leading courses</span></h1>
+      <p class="affiliate-hero__lead">
+        Join the Oilandgasclub affiliate network and accelerate your audience's growth with job-ready API, ASNT, CSWIP,
+        process, and software training. We'll handle learner delivery—you keep sharing and earning.
+      </p>
+      <div class="affiliate-hero__cta">
+        <a class="btn-primary" [href]="getAffiliateSignupUrl()" (click)="navigateToAffiliateSignup($event)">Apply to be an affiliate</a>
+        <a class="btn-link" href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a>
+      </div>
+    </div>
+    <div class="affiliate-hero__stats">
+      <div class="affiliate-stat">
+        <span class="affiliate-stat__value">30%</span>
+        <span class="affiliate-stat__label">Recurring commission</span>
+      </div>
+      <div class="affiliate-stat">
+        <span class="affiliate-stat__value">60 days</span>
+        <span class="affiliate-stat__label">Tracking window</span>
+      </div>
+      <div class="affiliate-stat">
+        <span class="affiliate-stat__value">500+</span>
+        <span class="affiliate-stat__label">Affiliates worldwide</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- How does Oilandgasclub's affiliate program work? Section -->
+  <section class="affiliate-program-work">
+    <div class="affiliate-program-work__container">
+      <h2 class="affiliate-program-work__title">How does Oilandgasclub's affiliate program work?</h2>
+      <p class="affiliate-program-work__subtitle">Earn up to 45% commission on Oil & Gas courses, certifications, and expert programs</p>
+      <div class="affiliate-program-work__steps">
+        @for (step of programWorkSteps; track step.title) {
+          <article class="affiliate-program-work__card">
+            <div class="affiliate-program-work__icon-badge">
+              <img [src]="step.icon" [alt]="step.title" class="affiliate-program-work__icon" />
+            </div>
+            <h3 class="affiliate-program-work__card-title">{{ step.title }}</h3>
+            <p class="affiliate-program-work__card-description">{{ step.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">How it works</p>
+      <h2>Quick start in three steps</h2>
+    </header>
+    <div class="affiliate-steps">
+      @for (step of steps; track step.step) {
+        <article class="affiliate-step">
+          <span class="affiliate-step__index">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">Why partner with us</p>
+      <h2>Program benefits</h2>
+      <p>Premium courses, global learners, and a dedicated partner success squad.</p>
+    </header>
+    <div class="affiliate-grid">
+      @for (perk of programPerks; track perk.title) {
+        <article class="affiliate-card">
+          <h3>{{ perk.title }}</h3>
+          <p>{{ perk.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <div class="affiliate-cta">
+      <div>
+        <p class="affiliate-eyebrow">Apply today</p>
+        <h2>Ready to share game-changing training?</h2>
+        <p>Tell us about your audience, platforms, and campaign ideas. We'll get back within 1 business day.</p>
+      </div>
+      <a class="btn-primary" [href]="getAffiliateSignupUrl()" (click)="navigateToAffiliateSignup($event)">Submit application</a>
+    </div>
+  </section>
+
+  <!-- Join OilAndGasClub Affiliate Program Section -->
+  <section class="affiliate-join-section">
+    <div class="affiliate-join-section__container">
+      <h2 class="affiliate-join-section__title">Join OilAndGasClub Affiliate Program</h2>
+      <p class="affiliate-join-section__description">
+        OilAndGasClub is looking for industry professionals, educators, content creators, and community leaders in the Oil & Gas and Energy sector to promote expert-led courses, certifications, and programs as affiliate partners. Ideal partners are those with engaged audiences seeking career growth in the energy industry.
+      </p>
+      <div class="affiliate-join-section__benefits">
+        @for (benefit of affiliateBenefits; track benefit.title) {
+          <article class="affiliate-join-section__benefit">
+            <div class="affiliate-join-section__icon-wrapper">
+              <img [src]="benefit.icon" [alt]="benefit.title" class="affiliate-join-section__icon" />
+            </div>
+            <h3 class="affiliate-join-section__benefit-title">{{ benefit.title }}</h3>
+            <p class="affiliate-join-section__benefit-description">{{ benefit.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="affiliate-section">
+    <header class="affiliate-section__header">
+      <p class="affiliate-eyebrow">FAQs</p>
+      <h2>Everything you need to know</h2>
+    </header>
+    <div class="affiliate-faq">
+      @for (faq of faqList; track faq.question) {
+        <details>
+          <summary>{{ faq.question }}</summary>
+          <p>{{ faq.answer }}</p>
+        </details>
+      }
+    </div>
+  </section>
+</div>

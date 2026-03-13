@@ -1,0 +1,99 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing content -->
+<div class="refineries-page public-container" ngSkipHydration>
+  <section class="refineries-hero">
+    <div class="refineries-hero__content">
+      <p class="refineries-eyebrow">Global Infrastructure · 2025 Edition</p>
+      <h1>World’s Largest Refineries</h1>
+      <p class="refineries-lead">
+        A snapshot of the mega complexes that keep global supply chains moving. These facilities combine cutting-edge
+        conversion technology, deep-water logistics, and relentless optimisation to deliver reliable fuels and feedstocks.
+      </p>
+      <div class="refineries-hero__cta">
+        <a class="refineries-btn" [routerLink]="'/courses'">Explore downstream courses</a>
+        <a class="refineries-link" href="mailto:anush@oilandgasclub.com">Talk to an expert →</a>
+      </div>
+    </div>
+
+    <div class="refineries-hero__stats">
+      <article class="refineries-stat" *ngFor="let stat of heroStats">
+        <span class="refineries-stat__value">{{ stat.value }}</span>
+        <span class="refineries-stat__label">{{ stat.label }}</span>
+        <p>{{ stat.detail }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="refineries-insights">
+    <header>
+      <p class="refineries-eyebrow">Field notes</p>
+      <h2>What differentiates these complexes?</h2>
+    </header>
+    <ul>
+      @for (item of insights; track item) {
+        <li>
+          <span class="bullet"></span>
+          {{ item }}
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="refineries-table">
+    <header>
+      <div>
+        <p class="refineries-eyebrow">Capacity leaderboard</p>
+        <h2>Top 15 refineries by throughput</h2>
+      </div>
+      <p class="refineries-table__note">
+        Capacities shown in barrels per day. Figures represent nameplate capability and may vary with maintenance or crude slate.
+      </p>
+    </header>
+
+    <div class="refineries-table__wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Facility</th>
+            <th>Location</th>
+            <th>Capacity (bpd)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (refinery of refineries; track refinery.rank) {
+            <tr>
+              <td>{{ refinery.rank | number:'2.0-0' }}</td>
+              <td>
+                <strong>{{ refinery.name }}</strong>
+              </td>
+              <td>{{ refinery.location }}</td>
+              <td>
+                <span class="capacity">{{ refinery.capacity }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="refineries-footer">
+    <div>
+      <h3>How we curate this list</h3>
+      <p>
+        We track publicly available filings, operator briefings, and energy analytics to maintain the benchmark for mega-refinery capacity.
+        Each site listed here processes more than 400,000 barrels per day and is undergoing continuous upgrades to meet low-carbon mandates.
+      </p>
+    </div>
+    <div>
+      <h3>Need tailored insights?</h3>
+      <p>
+        Oilandgasclub supports operators and service providers with curated learning paths on refining economics, digital twins,
+        and energy transition roadmaps.
+      </p>
+      <a class="refineries-btn refineries-btn--ghost" href="mailto:anush@oilandgasclub.com">
+        Request a custom session
+      </a>
+    </div>
+  </section>
+</div>

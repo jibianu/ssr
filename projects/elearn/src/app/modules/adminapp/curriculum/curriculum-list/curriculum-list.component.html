@@ -1,0 +1,1132 @@
+<div class="curriculum-page">
+  <div class="curriculum-page__course-header" *ngIf="courseInfo?.title">
+    <h1 class="curriculum-page__course-name">{{ courseInfo.title }}</h1>
+    <button type="button" class="curriculum-page__public-link btn btn-sm btn-outline-primary" (click)="openPublicLandingPageSidebar()" title="Edit course landing page">
+      <i class="fa fa-pencil"></i> Edit landing page
+    </button>
+  </div>
+  <div class="tab-content" id="tabContent">
+    <div class="tab-pane fade" [class.show]="activeTabId === 'concepts'" [class.active]="activeTabId === 'concepts'" id="concepts" role="tabpanel" aria-labelledby="concepts-tab">
+      <div class="curriculum-page__table-wrap">
+        <div class="table-responsive">
+          <table class="curriculum-page__table">
+            <thead>
+              <tr>
+                <th class="curriculum-page__th curriculum-page__th--sortable" (click)="onSortClick($event, 'title')">Title <span class="fa ml-1" [ngClass]="{'fa-caret-down': sortDir === 1, 'fa-caret-up': sortDir === -1}"></span></th>
+                <th class="curriculum-page__th">Description</th>
+                <th class="curriculum-page__th curriculum-page__th--actions">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!curriculumList?.length" class="curriculum-page__empty-row">
+                <td colspan="3">
+                  <div class="curriculum-page__empty">
+                    <i class="fa fa-book curriculum-page__empty-icon"></i>
+                    <p class="curriculum-page__empty-text">No curriculum yet. Click "Add Curriculum" to create one.</p>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let item of curriculumList | filter:term | paginate: config; trackBy: trackByCurriculumId" class="curriculum-page__row">
+                <td class="curriculum-page__cell">
+                  <a href="javascript:void(0)" class="curriculum-page__link" (click)="checkCourse(content, item)">{{item?.title}}</a>
+                  <div class="curriculum-page__meta">
+                    <span *ngIf="item?.curriculumConceptCount">Concepts ({{item.curriculumConceptCount}})</span>
+                    <span *ngIf="item?.curriculumQuestionCount">Questions ({{item.curriculumQuestionCount}})</span>
+                    <span *ngIf="item?.curriculumStudyMaterialCount">StudyMaterials ({{item.curriculumStudyMaterialCount}})</span>
+                    <span *ngIf="item?.curriculumTopicCount">Topics ({{item.curriculumTopicCount}})</span>
+                    <span *ngIf="item?.curriculumVideoLectureCount">VideoLectures ({{item.curriculumVideoLectureCount}})</span>
+                  </div>
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--desc">{{item?.description}}</td>
+                <td class="curriculum-page__cell curriculum-page__cell--actions">
+                  <a class="curriculum-page__icon-btn curriculum-page__icon-btn--edit" routerLink="/app/{{txtRoute}}/course/curriculum/edit/{{item.id}}" title="Edit"><i class="fa fa-edit"></i></a>
+                  <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--danger" title="Delete" (click)="deleteCurriculumById(item.id)"><i class="fa fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="curriculum-page__footer">
+          <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+          <div class="curriculum-page__page-size">
+            <label class="curriculum-page__page-size-label">Per page</label>
+            <select (change)="onTableSizeChange($event)" class="form-control form-control-sm">
+              <option *ngFor="let size of tableSizes; trackBy: trackBySize" [ngValue]="size">{{ size }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTabId === 'description'" [class.active]="activeTabId === 'description'" id="description" role="tabpanel" aria-labelledby="description-tab">
+      <div class="curriculum-page__table-wrap p-4">
+        <h5 class="mb-3">Course Description / About</h5>
+        <p class="text-muted small mb-2">This is the course about and summary text shown on the public landing page. To edit, use <strong>Edit landing page</strong> &rarr; Course Description &rarr; Course About Information.</p>
+        <div class="border rounded p-3 bg-light" *ngIf="(courseInfo?.description || courseInfo?.Description) as desc">
+          <p class="mb-0" style="white-space: pre-wrap;">{{ desc }}</p>
+        </div>
+        <div class="border rounded p-3 text-muted" *ngIf="!courseInfo?.description && !courseInfo?.Description">
+          No description set. Use <strong>Edit landing page</strong> to add About / Summary.
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTabId === 'questionset'" [class.active]="activeTabId === 'questionset'" id="questionset" role="tabpanel" aria-labelledby="questionset-tab">
+        <app-curriculum-questions-set [courseId]="courseId"></app-curriculum-questions-set>
+      </div>
+      <div class="tab-pane fade" [class.show]="activeTabId === 'question'" [class.active]="activeTabId === 'question'" id="question" role="tabpanel" aria-labelledby="question-tab">
+        <app-course-question [courseId]="courseId"></app-course-question>
+      </div>
+      <div class="tab-pane fade" [class.show]="activeTabId === 'prices'" [class.active]="activeTabId === 'prices'" id="prices" role="tabpanel" aria-labelledby="prices-tab">
+      <app-course-prices [courseId]="courseId"></app-course-prices>
+    </div>
+  </div>
+</div>
+
+<ng-template #content let-modal>
+  <div class="modal-header curriculum-modal-header">
+    <div class="curriculum-modal-header__container">
+      <!-- Row 1: Title + Edit button -->
+      <div class="curriculum-modal-header__title-row">
+        <div class="curriculum-modal-header__title-wrap" *ngIf="!isEditingCurriculum">
+          <h4 class="modal-title curriculum-modal-header__title">{{curriculumDetailstitle}}</h4>
+          <p class="curriculum-modal-header__desc" *ngIf="selectedCurriculumItem?.description">{{selectedCurriculumItem?.description}}</p>
+        </div>
+        <div class="curriculum-modal-header__title-edit" *ngIf="isEditingCurriculum">
+          <div class="form-group mb-2">
+            <label class="small text-muted">Title</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editCurriculumTitle" />
+          </div>
+          <div class="form-group mb-2">
+            <label class="small text-muted">Description</label>
+            <textarea class="form-control form-control-sm" [(ngModel)]="editCurriculumDescription" rows="2"></textarea>
+          </div>
+          <div class="curriculum-modal-header__title-actions">
+            <button type="button" class="btn btn-success btn-sm" (click)="saveCurriculumEdit()"><i class="fa fa-check"></i> Save</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelCurriculumEdit()">Cancel</button>
+          </div>
+        </div>
+        <div class="curriculum-modal-header__actions">
+          <button *ngIf="!isEditingCurriculum && operationOnModal==='view'" type="button" class="curriculum-modal-header__edit-btn" (click)="startCurriculumEdit()" title="Edit Curriculum">
+            <i class="fa fa-pencil curriculum-modal-header__edit-icon" aria-hidden="true"></i>
+            <span class="curriculum-modal-header__edit-text">Edit</span>
+          </button>
+          <button type="button" class="curriculum-modal-header__close-btn" aria-label="Close" (click)="rootCloseModal()" title="Close">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Row 2: 4 Tab buttons (show in view and in edit mode so user can switch sections) -->
+      <div class="curriculum-modal-header__tabs-row" *ngIf="(operationOnModal==='view' && !isEditingCurriculum) || operationOnModal==='concepts' || operationOnModal==='add-concepts' || operationOnModal==='study-material' || operationOnModal==='add-study-material' || operationOnModal==='videos' || operationOnModal==='add-videos' || operationOnModal==='questions' || operationOnModal==='add-questions'">
+        <div class="curriculum-modal-header__tabs">
+          <button type="button" (click)="scrollToContent('KeyPoint')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='concepts' || operationOnModal==='add-concepts'" title="Key Points">
+            <i class="fa fa-lightbulb-o"></i> Key Points <span *ngIf="(selectedCurriculumItem?.curriculumConceptCount ?? 0) > 0" class="curriculum-modal-header__count">({{selectedCurriculumItem?.curriculumConceptCount}})</span>
+          </button>
+          <button type="button" (click)="scrollToContent('StudyMaterials')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='study-material' || operationOnModal==='add-study-material'" title="Study Materials">
+            <i class="fa fa-book"></i> Study Materials <span *ngIf="(selectedCurriculumItem?.curriculumStudyMaterialCount ?? 0) > 0" class="curriculum-modal-header__count">({{selectedCurriculumItem?.curriculumStudyMaterialCount}})</span>
+          </button>
+          <button type="button" (click)="scrollToContent('VideoLectures')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='videos' || operationOnModal==='add-videos'" title="Video Lectures">
+            <i class="fa fa-video-camera"></i> Video Lectures <span *ngIf="(selectedCurriculumItem?.curriculumVideoLectureCount ?? 0) > 0" class="curriculum-modal-header__count">({{selectedCurriculumItem?.curriculumVideoLectureCount}})</span>
+          </button>
+          <button type="button" (click)="scrollToContent('Questions')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='questions' || operationOnModal==='add-questions'" title="Questions">
+            <i class="fa fa-question-circle"></i> Questions <span *ngIf="(questionLength ?? selectedCurriculumItem?.curriculumQuestionCount ?? 0) > 0" class="curriculum-modal-header__count">({{questionLength ?? selectedCurriculumItem?.curriculumQuestionCount ?? 0}})</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-body" [class.modal-body--question]="operationOnModal==='questions' || operationOnModal==='add-questions'">
+    <!-- Single page: all sections stacked; Add button inside each section header -->
+    <div *ngIf="operationOnModal==='view'" class="curriculum-view">
+      <div class="card curriculum-view__card">
+        <div class="card-body pt-0 pb-1 curriculum-view__card-body">
+          <div class="col-md-12 p-0 customScroll">
+            <!-- Key Points -->
+            <div class="curriculum-view__section" id="KeyPoint" *ngIf="concepts?.length">
+              <div class="curriculum-view__section-header curriculum-view__section-header--with-action">
+                <div class="curriculum-view__section-title">
+                  <i class="fa fa-lightbulb-o"></i>
+                  <span>Key Points</span>
+                </div>
+                <div class="curriculum-view__section-actions">
+                  <button type="button" class="btn btn-success btn-sm curriculum-view__add-btn" (click)="editCurriculum('add-concepts')" title="Add Concept">
+                    <i class="fa fa-plus"></i> Add Concept
+                  </button>
+                </div>
+              </div>
+              <div class="curriculum-view__content-list" *ngFor="let item of concepts; trackBy: trackByCurriculumId">
+                <div class="curriculum-view__content-card">
+                  <div class="curriculum-view__card-header curriculum-view__card-header--with-actions">
+                    <h5 class="curriculum-view__card-title">{{item?.title}}</h5>
+                    <div class="curriculum-view__card-actions">
+                      <button type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('concepts', item)" title="Edit Key Point">
+                        <i class="fa fa-pencil"></i> Edit
+                      </button>
+                      <button type="button" class="btn btn-outline-danger btn-sm curriculum-view__header-delete-btn" (click)="deleteConcept(item)" title="Delete Key Point (removes from DB and S3)">
+                        <i class="fa fa-trash"></i> Delete
+                      </button>
+                    </div>
+                  </div>
+                  <div class="curriculum-view__card-body" *ngFor="let x of item.concepts; trackBy: trackByConceptId">
+                    <h6 class="curriculum-view__item-title">{{x?.title}}</h6>
+                    <div class="curriculum-view__item-image" *ngIf="x.imageLink">
+                      <img [src]="x.imageLink" alt="Concept" />
+                    </div>
+                    <div class="curriculum-view__item-content">
+                      <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Study Materials -->
+            <div class="curriculum-view__section" id="StudyMaterials" *ngIf="studyMaterials?.length">
+              <div class="curriculum-view__section-header curriculum-view__section-header--with-action">
+                <div class="curriculum-view__section-title">
+                  <i class="fa fa-book"></i>
+                  <span>Study Materials</span>
+                </div>
+                <div class="curriculum-view__section-actions">
+                  <button type="button" class="btn btn-success btn-sm curriculum-view__add-btn" (click)="editCurriculum('add-study-material')" title="Add Study Material">
+                    <i class="fa fa-plus"></i> Add Study Material
+                  </button>
+                </div>
+              </div>
+              <div class="curriculum-view__content-list" *ngFor="let item of studyMaterials; trackBy: trackByCurriculumId">
+                <div class="curriculum-view__content-card">
+                  <div class="curriculum-view__card-header curriculum-view__card-header--with-actions">
+                    <h5 class="curriculum-view__card-title">{{item?.title}}</h5>
+                    <div class="curriculum-view__card-actions">
+                      <button type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('study-material', item)" title="Edit Study Material">
+                        <i class="fa fa-pencil"></i> Edit
+                      </button>
+                      <button type="button" class="btn btn-outline-danger btn-sm curriculum-view__header-delete-btn" (click)="deleteStudyMaterial(item)" title="Delete Study Material (removes from DB and S3)">
+                        <i class="fa fa-trash"></i> Delete
+                      </button>
+                    </div>
+                  </div>
+                  <div class="curriculum-view__card-body" *ngFor="let x of item.studyMaterials; trackBy: trackByConceptId">
+                    <h6 class="curriculum-view__item-title">{{x?.title}}</h6>
+                    <div class="curriculum-view__item-image" *ngIf="x.imageLink">
+                      <img [src]="x.imageLink" alt="Study material" />
+                    </div>
+                    <div class="curriculum-view__item-content">
+                      <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Video Lectures -->
+            <div class="curriculum-view__section" id="VideoLectures" *ngIf="videos?.length">
+              <div class="curriculum-view__section-header curriculum-view__section-header--with-action">
+                <div class="curriculum-view__section-title">
+                  <i class="fa fa-video-camera"></i>
+                  <span>Video Lectures</span>
+                </div>
+                <div class="curriculum-view__section-actions">
+                  <button type="button" class="btn btn-success btn-sm curriculum-view__add-btn" (click)="editCurriculum('add-videos')" title="Add Video Lecture">
+                    <i class="fa fa-plus"></i> Add Video Lecture
+                  </button>
+                </div>
+              </div>
+              <div class="curriculum-view__content-list" *ngFor="let item of videos; trackBy: trackByCurriculumId">
+                <div class="curriculum-view__video-item">
+                  <div class="curriculum-view__video-item-actions">
+                    <button type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('videos', item)" title="Edit Video Lecture">
+                      <i class="fa fa-pencil"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm curriculum-view__header-delete-btn" (click)="deleteVideoLecture(item)" title="Delete Video Lecture (removes from DB and S3)">
+                      <i class="fa fa-trash"></i> Delete
+                    </button>
+                  </div>
+                  <div class="curriculum-view__video-card" *ngFor="let x of item?.videoLectures; trackBy: trackByIndex">
+                    {{loadVideo(x)}}
+                    <div class="curriculum-view__video-wrapper">
+                      <div class="curriculum-view__video-player">
+                        <video width="100%" controls controlsList="nodownload" crossorigin="anonymous" playsinline *ngIf="videoObj?.providerType=='local'"
+                          (error)="onVideoError()" (loadeddata)="onVideoLoaded()">
+                          <source [src]="getVideoSrc(videoObj?.videoLink) | safeUrl" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                        <p class="text-danger small mt-1" *ngIf="videoLoadError">Video could not be loaded. Check that the API is running ({{ appService.apiUrl }}) and the file exists in S3.</p>
+                        <iframe width="100%" height="100%" *ngIf="videoObj?.providerType=='youtube'"
+                          [src]="videoObj?.videoLink|safeUrl" frameborder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowfullscreen></iframe>
+                      </div>
+                      <div class="curriculum-view__video-details">
+                        <div class="curriculum-view__card-header">
+                          <h5 class="curriculum-view__card-title">{{videoObj?.title}}</h5>
+                        </div>
+                        <p class="curriculum-view__video-desc">{{videoObj?.description}}</p>
+                      </div>
+                    </div>
+                    <hr class="curriculum-view__divider" *ngIf="item?.videoLectures?.length > 1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Questions & Answers -->
+            <div class="curriculum-view__section" id="Questions" *ngIf="questionItem?.length">
+              <div class="curriculum-view__section-header curriculum-view__section-header--with-action">
+                <div class="curriculum-view__section-title">
+                  <i class="fa fa-question-circle"></i>
+                  <span>Questions & Answers</span>
+                </div>
+                <div class="curriculum-view__section-actions">
+                  <button *ngIf="questionItem?.length" type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('questions', questionItem[0])" title="Edit Question">
+                    <i class="fa fa-pencil"></i> Edit
+                  </button>
+                  <button type="button" class="btn btn-success btn-sm curriculum-view__add-btn" (click)="editCurriculum('add-questions')" title="Add New Question">
+                    <i class="fa fa-plus"></i> Add New Question
+                  </button>
+                </div>
+              </div>
+              <div class="curriculum-view__question-list">
+                <div class="curriculum-view__question-card" *ngFor="let data of questionItem; trackBy: trackByQuestionId">
+                  <div class="curriculum-view__card-header">
+                    <p class="curriculum-view__question-title">{{data.title}}</p>
+                    <div class="curriculum-view__question-actions">
+                      <button type="button" (click)="editSpecificCurriculum('questions', data)" class="btn btn-sm btn-outline-primary curriculum-view__edit-btn"><i class="fa fa-pencil"></i> Edit</button>
+                      <button type="button" (click)="deleteQuestion(data)" class="btn btn-sm btn-outline-danger curriculum-view__delete-btn" title="Delete question"><i class="fa fa-trash"></i> Delete</button>
+                    </div>
+                  </div>
+                  <div class="curriculum-view__options-list">
+                    <div class="curriculum-view__option-row" *ngFor="let option of data.options; trackBy: trackByIndex">
+                      <div class="curriculum-view__option-content">
+                        <app-lesson-editor *ngIf="isLessonContent(option?.description)" [content]="option.description" mode="student"></app-lesson-editor>
+                        <div class="ck-content post-body curriculum-view__option-text" *ngIf="!isLessonContent(option?.description)" [innerHtml]="option.description"></div>
+                        <div class="curriculum-view__option-image-wrap" *ngIf="option.extraInformation">
+                          <img [src]="option.extraInformation" alt="Option" class="curriculum-view__option-image" />
+                        </div>
+                      </div>
+                      <span class="curriculum-view__correct-badge" *ngIf="option.isCorrect">✓ Correct</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="operationOnModal=='concepts' || operationOnModal=='add-concepts'" class="curriculum-editor-page">
+      <form [formGroup]="conceptForm">
+        <div class="form-group">
+          <label>Title <span class="text-muted small">(optional)</span></label>
+          <textarea type="text" formControlName="title" class="form-control addshowmore"
+            onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
+            [ngClass]="{ 'is-invalid': submitted && cf.title.errors }"> </textarea>
+        </div>
+  
+        <div formArrayName="concepts">
+          <div *ngFor="let item of courseConceptsArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
+            <div class="w-100 mb-2">
+              <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm"
+                (click)="removeCourseConceptItems(i)">
+                <span>Concept Section {{i + 1}}</span> <span>
+                  <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</span></a>
+            </div>
+  
+            <div class="mb-3">
+              <div [formGroupName]="i" class="h-100">
+                <div class="form-group">
+                  <label>Title <span class="text-muted small">(optional)</span></label>
+                  <input type="text" formControlName="title" class="form-control" />
+                </div>
+  
+                <div class="form-group lesson-editor-form-group">
+                  <label>Content (block-based lesson editor)</label>
+                  <div class="lesson-editor-container">
+                    <app-lesson-editor
+                      [content]="item.controls.description.value"
+                      [mode]="sectionViewMode('c-' + i)"
+                      [uploadImage]="uploadImageFn"
+                      [deleteImage]="deleteImageFn"
+                      (uploadInProgressChange)="uploadInProgress = $event"
+                      (jsonChange)="item.controls.description.setValue($event)"
+                    ></app-lesson-editor>
+                  </div>
+                  <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback d-block">
+                    <div *ngIf="item.controls.description.errors.required">Content is required (add at least one block)</div>
+                  </div>
+                </div>
+  
+                <div class="form-group">
+                  <label>Image</label>
+                  <br>
+                  <input type="file" name="image" accept="image/*" (change)="conceptfileProgress($event, i)" />
+                </div>
+                <div *ngIf="fileUploadProgress">
+                  Upload progress: {{ fileUploadProgress }}
+                </div>
+                <div class="image-preview mb-3" *ngIf="item.controls.imageLink.value">
+                  <img [src]="item.controls.imageLink.value" height="200" />
+                </div>
+  
+                <div class="mb-3" *ngIf="item.controls.imageLink.value">
+                  {{item.controls.imageLink.value}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-success w-100 ml-2 mb-2" (click)="addCourseConceptItems()">Add
+            Concept</button>
+        </div>
+      </form>
+      <!-- Sticky footer so Update/Cancel are always visible -->
+      <div class="question-editor__sticky-footer">
+        <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onConceptSubmit()" [disabled]="uploadInProgress">
+          <i class="fa fa-check"></i> {{btntext}}
+        </button>
+        <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+    <div *ngIf="operationOnModal=='study-material' || operationOnModal=='add-study-material'" class="curriculum-editor-page">
+      <form [formGroup]="studyMaterialForm">
+        <div class="form-group">
+          <label>Title <span class="text-muted small">(optional)</span></label>
+          <textarea type="text" formControlName="title" class="form-control addshowmore" onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
+            [ngClass]="{ 'is-invalid': submitted && f.title.errors }"></textarea>
+        </div>
+  
+        <div formArrayName="studyMaterials">
+          <div *ngFor="let item of courseStudyMaterialsArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
+            <div class="d-sm-flex align-items-center justify-content-between">
+              <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm" (click)="removeCourseStudyMaterialsItems(i)">
+               <span>Study Material Section {{i + 1}}</span> <span><i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove </span></a>
+            </div>
+  
+            <div class="mb-3">
+              <div [formGroupName]="i" class="h-100">
+                <div class="form-group">
+                  <label>Title <span class="text-muted small">(optional)</span></label>
+                  <input type="text" formControlName="title" class="form-control" />
+                </div>
+  
+                <div class="form-group lesson-editor-form-group">
+                  <label>Content (block-based lesson editor)</label>
+                  <div class="lesson-editor-container">
+                    <app-lesson-editor
+                      [content]="item.controls.description.value"
+                      [mode]="sectionViewMode('sm-' + i)"
+                      [uploadImage]="uploadImageFn"
+                      [deleteImage]="deleteImageFn"
+                      (uploadInProgressChange)="uploadInProgress = $event"
+                      (jsonChange)="item.controls.description.setValue($event)"
+                    ></app-lesson-editor>
+                  </div>
+                  <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback d-block">
+                    <div *ngIf="item.controls.description.errors.required">Content is required (add at least one block)</div>
+                  </div>
+                </div>
+  
+                <div class="form-group">
+                  <label>Image</label>
+                  <br>
+                  <input type="file" name="image" accept="image/*" (change)="studyMaterialfileProgress($event, i)" />
+                </div>
+                <div *ngIf="fileUploadProgress">
+                  Upload progress: {{ fileUploadProgress }}
+                </div>
+                <div class="image-preview mb-3" *ngIf="item.controls.imageLink.value">
+                  <img [src]="item.controls.imageLink.value" height="200" />
+                </div>
+  
+                <div class="mb-3" *ngIf="item.controls.imageLink.value">
+                  {{item.controls.imageLink.value}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn  w-100 btn-success ml-2 mb-2" (click)="addCourseStudyMaterialsItems()">Add
+            Study Material</button>
+        </div>
+      </form>
+      <!-- Sticky footer so Update/Cancel are always visible -->
+      <div class="question-editor__sticky-footer">
+        <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onSubmit()" [disabled]="uploadInProgress">
+          <i class="fa fa-check"></i> {{btntext}}
+        </button>
+        <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+    <div *ngIf="operationOnModal=='videos' || operationOnModal=='add-videos'" class="curriculum-editor-page">
+      <form [formGroup]="videoForm">
+        <div class="form-group">
+            <label>Title <span class="text-muted small">(optional)</span></label>
+            <textarea type="text" formControlName="title" class="form-control addshowmore" onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
+                [ngClass]="{ 'is-invalid': submitted && vf.title.errors }" ></textarea>
+        </div>
+
+        <div formArrayName="videoLectures">
+            <div *ngFor="let item of courseVideoLectureArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
+                <div class="d-sm-flex align-items-center justify-content-between">
+                    <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm"
+                        (click)="removeCourseVideoLectureItems(i)">
+                        <span>Video Section {{i + 1}}</span><span>
+                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</span></a>
+                </div>
+
+                <div class="mb-3">
+                    <div [formGroupName]="i" class="h-100">
+                        <div class="form-group">
+                            <label>Title <span class="text-muted small">(optional)</span></label>
+                            <input type="text" formControlName="title" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description <span class="text-muted small">(optional)</span></label>
+                            <textarea type="text" formControlName="description" class="form-control" onclick='this.style.height = this.scrollHeight + "px"'></textarea>
+                        </div>
+
+                        <div class="btn-group-sm me-2" role="group" >
+                            <button type="button" (click)="changeProvider('local',i)" class="btn btn-secondry" [ngClass]="{'btn-primary': item.controls.providerType.value=='local'}">Local</button>
+                            <button type="button" (click)="changeProvider('youtube',i)" class="btn btn-secondry"  [ngClass]="{'btn-primary': item.controls.providerType.value=='youtube'}">Youtube</button>
+                        </div>
+                        <div *ngIf="item.controls.providerType.value=='local'">
+                            <div class="form-group">
+                                <label>Video</label>
+                                <br>
+                                <input type="file" name="video" accept="video/*" (change)="videofileProgress($event,i)" />
+                            </div>
+                            <div *ngIf="videoUploadsInProgress > 0" class="text-primary small mb-2">
+                                Uploading video… Please wait before clicking Update.
+                            </div>
+<div class="image-preview mb-3" *ngIf="item.controls.videoLink.value">
+                                    <video width="320" height="240" controls crossorigin="anonymous" playsinline>
+                                    <source [src]="getVideoSrc(item.controls.videoLink.value) | safeUrl" type="video/mp4">
+                                Your browser does not support the video tag.
+                                </video>
+                            </div>
+
+                            <div class="mb-3" *ngIf="item.controls.videoLink.value">
+                                {{item.controls.videoLink.value}}
+                            </div>
+                        </div>
+                        <div *ngIf="item.controls.providerType.value=='youtube'">
+                            <div class="form-group">
+                                <label>Video</label>
+                                <br>
+                                <div class="input-group">
+                                    <input type="text" formControlName="url" class="form-control"
+                                    [ngClass]="{ 'is-invalid': submitted && item.controls.videoLink.errors }" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-sm btn-outline-primary" (click)="uploadLink(item.controls.url.value,i)" type="button">Upload</button>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="image-preview mb-3" *ngIf="item.controls.videoLink.value">
+                                <iframe width="320" height="240" [src]="item.controls.videoLink.value | safeUrl" frameborder="0" ></iframe>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn w-100 btn-success ml-2 mb-2" (click)="addCourseVideoLectureItems()">Add
+            Video Lecture</button>
+    </form>
+      <!-- Sticky footer so Update/Cancel are always visible -->
+      <div class="question-editor__sticky-footer">
+        <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onVideoSubmit()"
+          [disabled]="videoUploadsInProgress > 0" [title]="videoUploadsInProgress > 0 ? 'Wait for video upload to finish' : ''">
+          <i class="fa fa-check"></i> {{btntext}}
+        </button>
+        <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+    <div *ngIf="operationOnModal=='questions' || operationOnModal=='add-questions'" class="question-editor">
+      <div class="question-editor__header question-editor__header--blue">
+        <h5 class="question-editor__header-title">
+          {{ operationOnModal === 'add-questions' ? 'Add New Question' : 'Update Question' }}
+        </h5>
+      </div>
+      <form [formGroup]="questionForm" class="question-editor__form">
+        <section class="question-editor__section question-editor__section--main">
+          <h5 class="question-editor__section-title">Question</h5>
+          <div class="form-group">
+            <label class="question-editor__label">Title</label>
+            <input type="text" formControlName="title" class="form-control question-editor__input"
+              placeholder="Enter question title"
+              [ngClass]="{ 'is-invalid': submitted && qf.title?.errors }" />
+            <div *ngIf="submitted && qf.title?.errors" class="invalid-feedback d-block">
+              <div *ngIf="qf.title.errors?.required">Title is required</div>
+            </div>
+          </div>
+          <div class="form-group question-editor__solution-editor">
+            <label class="question-editor__label">Description</label>
+            <div class="lesson-editor-container">
+              <app-lesson-editor
+                [content]="qf.description?.value"
+                mode="author"
+                [allowedBlockTypes]="questionEditorBlockTypes"
+                [uploadImage]="uploadImageFn"
+                [deleteImage]="deleteImageFn"
+                (uploadInProgressChange)="uploadInProgress = $event"
+                (jsonChange)="onQuestionDescriptionJsonChange($event)"
+              ></app-lesson-editor>
+            </div>
+            <div *ngIf="submitted && qf.description?.errors" class="invalid-feedback d-block">
+              <div *ngIf="qf.description.errors?.required">Description is required</div>
+            </div>
+          </div>
+        </section>
+
+        <section formArrayName="options" class="question-editor__section question-editor__section--options">
+          <h5 class="question-editor__section-title">Answer options</h5>
+          <div *ngFor="let item of questionOptionArray?.controls; let i = index; trackBy: trackByIndex" class="question-editor__option-card" [formGroupName]="i">
+            <!-- Row 1: Option N + Answer text (left), Remove (right) -->
+            <div class="question-editor__option-row-1">
+              <div class="question-editor__option-header">
+                <span class="question-editor__option-badge">Option {{i + 1}}</span>
+              </div>
+              <label class="question-editor__field-label question-editor__option-label">Answer</label>
+              <button type="button" class="question-editor__option-remove" (click)="removeQuestionOptionsItems(i)" title="Remove option">
+                <i class="fa fa-trash-o"></i> Remove
+              </button>
+            </div>
+            <!-- Row 2: Add block toolbar + editor content -->
+            <div class="lesson-editor-container question-editor__option-editor-area">
+              <app-lesson-editor
+                [content]="item.controls.description?.value"
+                mode="author"
+                [allowedBlockTypes]="questionEditorBlockTypes"
+                [uploadImage]="uploadImageFn"
+                [deleteImage]="deleteImageFn"
+                (uploadInProgressChange)="uploadInProgress = $event"
+                (jsonChange)="onQuestionOptionJsonChange($event, i)"
+              ></app-lesson-editor>
+            </div>
+            <div class="form-group question-editor__option-editor question-editor__option-editor-feedback" *ngIf="submitted && item.controls.description?.errors">
+              <div class="invalid-feedback d-block">
+                <div *ngIf="item.controls.description?.errors?.required">Answer text is required</div>
+              </div>
+            </div>
+            <div class="form-group question-editor__correct-answer">
+              <label class="question-editor__field-label">Correct answer?</label>
+              <div class="question-editor__radio-group">
+                <label class="question-editor__radio-item">
+                  <input type="radio" [value]="true" formControlName="isCorrect" class="question-editor__radio-input">
+                  <span class="question-editor__radio-label">Yes</span>
+                </label>
+                <label class="question-editor__radio-item">
+                  <input type="radio" [value]="false" formControlName="isCorrect" class="question-editor__radio-input">
+                  <span class="question-editor__radio-label">No</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="question-editor__add-option-row">
+            <button type="button" class="question-editor__add-option" (click)="addQuestionOptionsItems()">
+              <i class="fa fa-plus"></i> Add Option
+            </button>
+          </div>
+        </section>
+      </form>
+      <!-- Sticky footer inside modal-body so Update/Cancel are always visible -->
+      <div class="question-editor__sticky-footer">
+        <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onQuestionSubmit()" [disabled]="uploadInProgress">
+          <i class="fa fa-check"></i> {{btntext}}
+        </button>
+        <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <!-- Footer only in view mode (Prev/Next); add-concepts/study-material/videos use sticky footer above – no empty space below -->
+  <div class="modal-footer" *ngIf="operationOnModal==='view'">
+    <div class="form-group">
+        <button class="btn btn-primary" type="button" (click)="prevItem()" *ngIf="index > 0">Prev</button>
+        <button class="btn btn-primary ml-1" type="button" (click)="nextItem()" *ngIf="index < curriculumList.length">Next</button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #pContent let-modal>
+  <div class="modal-header update-price-modal__header">
+    <h4 class="modal-title">Update Price</h4>
+    <button type="button" class="update-price-modal__close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body update-price-modal__body">
+    <div class="update-price-modal__form-wrap">
+      <form [formGroup]="priceForm" class="update-price-modal__form">
+        <!-- STEP 1: Course Pricing Type (Udemy-style) -->
+        <div class="form-group update-price-modal__field">
+          <label class="update-price-modal__label">Course Pricing</label>
+          <div class="update-price-modal__radio-group">
+            <label class="update-price-modal__radio-wrap">
+              <input type="radio" formControlName="coursePricingType" [value]="PRICING_TYPE_FREE" class="update-price-modal__radio" />
+              <span>Free Course</span>
+            </label>
+            <label class="update-price-modal__radio-wrap">
+              <input type="radio" formControlName="coursePricingType" [value]="PRICING_TYPE_PAID" class="update-price-modal__radio" />
+              <span>Paid Course</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- STEP 2: Free course message -->
+        <div class="update-price-modal__free-message" *ngIf="priceForm.get('coursePricingType')?.value === PRICING_TYPE_FREE">
+          <p class="update-price-modal__free-message-text">This course will be available for free. Students can enroll without payment.</p>
+        </div>
+
+        <!-- STEP 3: Paid course fields -->
+        <ng-container *ngIf="priceForm.get('coursePricingType')?.value === PRICING_TYPE_PAID">
+          <div class="form-group update-price-modal__field">
+            <label class="update-price-modal__label">Original Price <span class="update-price-modal__required">*</span></label>
+            <input type="number" formControlName="originalPrice" class="form-control update-price-modal__input"
+              placeholder="e.g. 799" min="0"
+              [ngClass]="{ 'is-invalid': submitted && priceF.originalPrice.errors }" />
+            <div *ngIf="submitted && priceF.originalPrice.errors" class="invalid-feedback">
+              <div *ngIf="priceF.originalPrice.errors.required">Original price is required</div>
+              <div *ngIf="priceF.originalPrice.errors.min">Must be 0 or more</div>
+            </div>
+          </div>
+          <div class="form-group update-price-modal__field">
+            <label class="update-price-modal__label">Discounted Price <span class="update-price-modal__optional">(optional)</span></label>
+            <input type="number" formControlName="discountedPrice" class="form-control update-price-modal__input"
+              placeholder="e.g. 99" min="0"
+              [ngClass]="{ 'is-invalid': submitted && priceF.discountedPrice.errors }" />
+            <div *ngIf="submitted && priceF.discountedPrice.errors" class="invalid-feedback">
+              <div *ngIf="priceF.discountedPrice.errors.discountMustBeLower">Discounted price must be lower than original price</div>
+            </div>
+          </div>
+          <div class="form-group update-price-modal__field">
+            <label class="update-price-modal__label">Discount Start Date <span class="update-price-modal__optional">(optional)</span></label>
+            <input type="date" formControlName="startDate" class="form-control update-price-modal__input"
+              [ngClass]="{ 'is-invalid': submitted && priceF.startDate.errors }" />
+          </div>
+          <div class="form-group update-price-modal__field">
+            <label class="update-price-modal__label">Discount End Date <span class="update-price-modal__optional">(optional)</span></label>
+            <input type="date" formControlName="endDate" class="form-control update-price-modal__input"
+              [ngClass]="{ 'is-invalid': submitted && priceF.endDate.errors }" />
+          </div>
+        </ng-container>
+      </form>
+    </div>
+    <div class="update-price-modal__actions">
+      <button type="button" class="update-price-modal__btn update-price-modal__btn--cancel" (click)="modal.close('Close click')">Cancel</button>
+      <button type="button" class="update-price-modal__btn update-price-modal__btn--primary" (click)="updatePrice()">Update</button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #cContent let-modal>
+  <div class="modal-header update-course-modal__header">
+    <h4 class="modal-title">Update Course</h4>
+    <button type="button" class="update-course-modal__close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body update-course-modal__body">
+    <div class="update-course-modal__form-wrap">
+      <form [formGroup]="courseForm" class="update-course-modal__form">
+        <div class="form-group update-course-modal__field">
+          <label class="update-course-modal__label">Title</label>
+          <input type="text" formControlName="title" class="form-control update-course-modal__input"
+            placeholder="Course title"
+            [ngClass]="{ 'is-invalid': submitted && courseF.title.errors }" />
+          <div *ngIf="submitted && courseF.title.errors" class="invalid-feedback">
+            <div *ngIf="courseF.title.errors.required">Title is required</div>
+          </div>
+        </div>
+        <div class="form-group update-course-modal__field">
+          <label class="update-course-modal__label">Description</label>
+          <textarea formControlName="description" class="form-control update-course-modal__textarea" rows="4"
+            placeholder="Brief description of the course"
+            [ngClass]="{ 'is-invalid': submitted && courseF.description.errors }"></textarea>
+          <div *ngIf="submitted && courseF.description.errors" class="invalid-feedback">
+            <div *ngIf="courseF.description.errors.required">Description is required</div>
+          </div>
+        </div>
+        <div class="form-group update-course-modal__field">
+          <label class="update-course-modal__label">Category</label>
+          <select formControlName="categoryId" class="form-control update-course-modal__input update-course-modal__select" id="sel1"
+            [class.update-course-modal__select--placeholder]="!courseF.categoryId.value"
+            [ngClass]="{ 'is-invalid': submitted && courseF.categoryId.errors }">
+            <option value="" disabled>Select a category</option>
+            <option *ngFor="let item of categories; trackBy: trackByCategoryId" [value]="item.id">{{item?.name}}</option>
+          </select>
+          <div *ngIf="submitted && courseF.categoryId.errors" class="invalid-feedback">
+            <div *ngIf="courseF.categoryId.errors.required">Category is required</div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="update-course-modal__actions">
+      <button type="button" class="update-course-modal__btn update-course-modal__btn--cancel" (click)="modal.close('Close click')">Cancel</button>
+      <button type="button" class="update-course-modal__btn update-course-modal__btn--primary" (click)="updateCourse()">Update</button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #publicLandingSidebar let-modal>
+  <div class="public-landing-sidenav public-landing-sidenav--edit-only">
+    <div class="public-landing-sidenav__header">
+      <h4 class="public-landing-sidenav__title">Edit landing page</h4>
+      <div class="public-landing-sidenav__actions">
+        <a *ngIf="publicLandingPageUrl" [href]="publicLandingPageUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+          <i class="fa fa-external-link"></i> Open in new tab
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Close" (click)="modal.dismiss()">
+          <i class="fa fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+    <!-- Edit landing page: accordion only (no preview) -->
+    <div class="public-landing-sidenav__panel edit-landing-page">
+      <p *ngIf="landingEditLoadInProgress" class="text-muted small mb-2">Loading course data…</p>
+
+      <!-- 1. Course Basic Details -->
+      <div class="edit-landing-accordion">
+        <div class="edit-landing-accordion__header" (click)="setLandingAccordion('basic')">
+          <span class="edit-landing-accordion__icon"><i class="fa fa-square-o"></i></span>
+          <span>Course Basic Details</span>
+          <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingAccordionOpen === 'basic'"></i>
+        </div>
+        <div class="edit-landing-accordion__body collapse" [class.show]="landingAccordionOpen === 'basic'">
+          <div class="form-group mb-2">
+            <label class="form-label">Course Title *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.title" placeholder="Course title" [readonly]="landingEditLoadInProgress">
+          </div>
+          <div class="form-group mb-2">
+            <label class="form-label">Canonical URL *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.canonicalUrl" placeholder="e.g. course-slug" [readonly]="landingEditLoadInProgress">
+          </div>
+          <div class="form-group mb-2">
+            <label class="form-label">Category *</label>
+            <select class="form-control form-control-sm" [(ngModel)]="landingEditForm.categoryId" [disabled]="landingEditLoadInProgress">
+              <option value="">— Select —</option>
+              <option *ngFor="let c of landingCategories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
+            </select>
+          </div>
+          <div class="form-group mb-2">
+            <label class="form-label">Meta Description *</label>
+            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="landingEditForm.metaDescription" placeholder="Short description for SEO" [readonly]="landingEditLoadInProgress"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Course Category & Icon -->
+      <div class="edit-landing-accordion">
+        <div class="edit-landing-accordion__header" (click)="setLandingAccordion('category')">
+          <span class="edit-landing-accordion__icon"><i class="fa fa-tag"></i></span>
+          <span>Course Category &amp; Icon</span>
+          <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingAccordionOpen === 'category'"></i>
+        </div>
+        <div class="edit-landing-accordion__body collapse" [class.show]="landingAccordionOpen === 'category'">
+          <div class="form-group mb-2">
+            <label class="form-label">Category</label>
+            <select class="form-control form-control-sm" [(ngModel)]="landingEditForm.categoryId" [disabled]="landingEditLoadInProgress">
+              <option value="">Select category</option>
+              <option *ngFor="let c of landingCategories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
+            </select>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">Course Icon</label>
+            <select class="form-control form-control-sm" disabled><option>Select icon (optional)</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Course Media -->
+      <div class="edit-landing-accordion">
+        <div class="edit-landing-accordion__header" (click)="setLandingAccordion('media')">
+          <span class="edit-landing-accordion__icon"><i class="fa fa-camera"></i></span>
+          <span>Course Media</span>
+          <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingAccordionOpen === 'media'"></i>
+        </div>
+        <div class="edit-landing-accordion__body collapse" [class.show]="landingAccordionOpen === 'media'">
+          <label class="form-label">Title Image *</label>
+          <div class="edit-landing-media-upload mb-2" (click)="titleImageUploading ? null : fileTitleImageInput.click()" [class.uploading]="titleImageUploading">
+            <input #fileTitleImageInput type="file" accept="image/png,image/jpeg,image/jpg,image/gif" (change)="onTitleImageFileSelected($event)" style="display: none">
+            <ng-container *ngIf="!landingEditForm.imageLink && !titleImageUploading">
+              <i class="fa fa-cloud-upload edit-landing-media-upload__icon"></i>
+              <span class="edit-landing-media-upload__text">Change Image</span>
+              <small class="edit-landing-media-upload__hint">PNG, JPG, GIF up to 10MB</small>
+            </ng-container>
+            <ng-container *ngIf="titleImageUploading">
+              <i class="fa fa-spinner fa-spin edit-landing-media-upload__icon"></i>
+              <span class="edit-landing-media-upload__text">Uploading…</span>
+            </ng-container>
+            <ng-container *ngIf="landingEditForm.imageLink && !titleImageUploading">
+              <i class="fa fa-cloud-upload edit-landing-media-upload__icon"></i>
+              <span class="edit-landing-media-upload__text">Change Image</span>
+              <small class="edit-landing-media-upload__hint">PNG, JPG, GIF up to 10MB</small>
+            </ng-container>
+          </div>
+          <p class="text-danger small mb-1" *ngIf="titleImageUploadError">{{ titleImageUploadError }}</p>
+          <div class="edit-landing-media-preview mb-2" *ngIf="landingEditForm.imageLink">
+            <img [src]="landingEditForm.imageLink" alt="Title" class="edit-landing-media-preview__img" (error)="landingEditForm.imageLink = ''" />
+            <small class="d-block text-muted mt-1">{{ landingEditForm.imageLink }}</small>
+            <button type="button" class="btn btn-sm btn-outline-danger mt-2" (click)="removeTitleImage()" [disabled]="titleImageRemoveInProgress || landingEditLoadInProgress">
+              <i class="fa fa-trash" aria-hidden="true"></i> Remove image
+            </button>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label small text-muted">Or paste Image URL</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.imageLink" placeholder="https://..." [readonly]="landingEditLoadInProgress">
+            <small class="form-text text-muted">Max. 2Mb, 600×400 px recommended. File is stored in S3; URL is saved in DB.</small>
+          </div>
+
+          <label class="form-label mt-3">Promo / Title Video</label>
+          <div class="edit-landing-media-upload mb-2" (click)="promoVideoUploading ? null : filePromoVideoInput.click()" [class.uploading]="promoVideoUploading">
+            <input #filePromoVideoInput type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" (change)="onPromoVideoFileSelected($event)" style="display: none">
+            <ng-container *ngIf="!landingEditForm.promoVideoUrl && !promoVideoUploading">
+              <i class="fa fa-cloud-upload edit-landing-media-upload__icon"></i>
+              <span class="edit-landing-media-upload__text">Upload Video</span>
+              <small class="edit-landing-media-upload__hint">MP4, WebM, MOV</small>
+            </ng-container>
+            <ng-container *ngIf="promoVideoUploading">
+              <i class="fa fa-spinner fa-spin edit-landing-media-upload__icon"></i>
+              <span class="edit-landing-media-upload__text">Uploading…</span>
+            </ng-container>
+            <ng-container *ngIf="landingEditForm.promoVideoUrl && !promoVideoUploading">
+              <i class="fa fa-cloud-upload edit-landing-media-upload__icon"></i>
+              <span class="edit-landing-media-upload__text">Change Video</span>
+              <small class="edit-landing-media-upload__hint">MP4, WebM, MOV</small>
+            </ng-container>
+          </div>
+          <p class="text-danger small mb-1" *ngIf="promoVideoUploadError">{{ promoVideoUploadError }}</p>
+          <div class="edit-landing-media-preview mb-2" *ngIf="landingEditForm.promoVideoUrl">
+            <video width="100%" controls class="edit-landing-media-preview__img" *ngIf="landingEditForm.promoVideoUrl" crossorigin="anonymous" playsinline>
+              <source [src]="getVideoSrc(landingEditForm.promoVideoUrl) | safeUrl" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <small class="d-block text-muted mt-1">{{ landingEditForm.promoVideoUrl }}</small>
+            <button type="button" class="btn btn-sm btn-outline-danger mt-2" (click)="removePromoVideo()" [disabled]="promoVideoRemoveInProgress || landingEditLoadInProgress">
+              <i class="fa fa-trash" aria-hidden="true"></i> Remove video
+            </button>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label small text-muted">Or paste Video URL</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.promoVideoUrl" placeholder="https://..." [readonly]="landingEditLoadInProgress">
+            <small class="form-text text-muted">Upload stores file in S3; or paste an external video URL. Click Update to save.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Pricing & Access Settings -->
+      <div class="edit-landing-accordion">
+        <div class="edit-landing-accordion__header" (click)="setLandingAccordion('pricing')">
+          <span class="edit-landing-accordion__icon"><i class="fa fa-dollar"></i></span>
+          <span>Pricing &amp; Access Settings</span>
+          <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingAccordionOpen === 'pricing'"></i>
+        </div>
+        <div class="edit-landing-accordion__body collapse" [class.show]="landingAccordionOpen === 'pricing'">
+          <div class="mb-2">
+            <label class="form-label">Prices</label>
+            <p class="small text-muted mb-2">Prices are managed in Elearn (PRICES tab). Shown here for reference only.</p>
+            <ul class="list-group list-group-flush public-landing-sidenav__list" style="max-height: 200px;">
+              <li class="list-group-item py-2 px-2" *ngFor="let item of landingPricesList">
+                <div class="small">{{ (item.originalPrice ?? item.OriginalPrice) | number:'1.2-2' }} → {{ (item.discountedPrice ?? item.DiscountedPrice) | number:'1.2-2' }}</div>
+              </li>
+              <li class="list-group-item py-2 px-2" *ngIf="!landingPricesList?.length"><span class="text-muted">No prices.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Course Description (About + Curriculum + FAQ + Trainers) -->
+      <div class="edit-landing-accordion">
+        <div class="edit-landing-accordion__header" (click)="setLandingAccordion('description')">
+          <span class="edit-landing-accordion__icon"><i class="fa fa-file-text-o"></i></span>
+          <span>Course Description</span>
+          <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingAccordionOpen === 'description'"></i>
+        </div>
+        <div class="edit-landing-accordion__body collapse" [class.show]="landingAccordionOpen === 'description'">
+          <!-- Course Title Summaries -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('summaries')">
+              <i class="fa fa-list"></i> Course Title Summaries
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'summaries'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'summaries'">
+              <ul class="list-group list-group-flush public-landing-sidenav__list mb-2" style="max-height: 200px;">
+                <li class="list-group-item py-2 px-2" *ngFor="let item of landingSummariesList">
+                  <ng-container *ngIf="landingSummaryEditId !== (item.id || item.Id)">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                      <p class="small mb-0 text-muted flex-grow-1">{{ item.summary || item.Summary || '—' }}</p>
+                      <span class="d-flex gap-1 flex-shrink-0"><button type="button" class="btn btn-sm btn-outline-primary" (click)="startEditLandingSummary(item)">Edit</button><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLandingSummary(item)">Remove</button></span>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="landingSummaryEditId === (item.id || item.Id)">
+                    <div class="small mb-1 text-muted"><strong>Title:</strong> {{ landingSummaryTitle || '—' }}</div>
+                    <textarea class="form-control form-control-sm mb-1" rows="3" [(ngModel)]="landingSummarySummary" placeholder="Summary"></textarea>
+                    <button type="button" class="btn btn-sm btn-primary" [disabled]="landingSummarySaveInProgress" (click)="saveLandingSummaryEdit()">Save</button><button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelEditLandingSummary()">Cancel</button>
+                  </ng-container>
+                </li>
+                <li class="list-group-item py-2 px-2" *ngIf="!landingSummariesList?.length"><span class="text-muted">No summaries.</span></li>
+              </ul>
+              <div class="border-top pt-2">
+                <div class="small mb-1 text-muted"><strong>Title:</strong> {{ landingNewSummaryTitle || '—' }}</div>
+                <textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingNewSummarySummary" placeholder="Summary"></textarea>
+                <button type="button" class="btn btn-sm btn-success" [disabled]="landingSummaryAddInProgress" (click)="addLandingSummary()">Add Course Summary</button>
+              </div>
+            </div>
+          </div>
+          <!-- Course About Information (info sections) -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('aboutinfo')">
+              <i class="fa fa-info-circle"></i> Course About Information
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'aboutinfo'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'aboutinfo'">
+              <ul class="list-group list-group-flush public-landing-sidenav__list mb-2" style="max-height: 200px;">
+                <li class="list-group-item py-2 px-2" *ngFor="let item of landingInfoList">
+                  <ng-container *ngIf="landingInfoEditId !== (item.id || item.Id)">
+                    <div class="d-flex justify-content-between align-items-start"><div class="small"><strong>{{ item.title || item.Title || 'Information Section' }}</strong></div><span class="d-flex gap-1"><button type="button" class="btn btn-sm btn-outline-primary" (click)="startEditLandingInfo(item)">Edit</button><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLandingInfo(item)">Remove</button></span></div>
+                    <p class="small mb-0 mt-1 text-muted">{{ (item.summary || item.Summary) | slice:0:80 }}{{ (item.summary || item.Summary)?.length > 80 ? '…' : '' }}</p>
+                  </ng-container>
+                  <ng-container *ngIf="landingInfoEditId === (item.id || item.Id)">
+                    <input class="form-control form-control-sm mb-1" [(ngModel)]="landingInfoTitle" placeholder="Title"><textarea class="form-control form-control-sm mb-1" rows="3" [(ngModel)]="landingInfoSummary" placeholder="Summary"></textarea>
+                    <button type="button" class="btn btn-sm btn-primary" [disabled]="landingInfoSaveInProgress" (click)="saveLandingInfoEdit()">Save</button><button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelEditLandingInfo()">Cancel</button>
+                  </ng-container>
+                </li>
+                <li class="list-group-item py-2 px-2" *ngIf="!landingInfoList?.length"><span class="text-muted">No info sections.</span></li>
+              </ul>
+              <div class="border-top pt-2">
+                <input class="form-control form-control-sm mb-1" [(ngModel)]="landingNewInfoTitle" placeholder="Title"><textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingNewInfoSummary" placeholder="Summary"></textarea>
+                <button type="button" class="btn btn-sm btn-success" [disabled]="landingInfoAddInProgress" (click)="addLandingInfo()">Add Course Info Section</button>
+              </div>
+            </div>
+          </div>
+          <!-- Curriculum link -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('curriculum')">
+              <i class="fa fa-list"></i> Course Curriculum
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'curriculum'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'curriculum'">
+              <p class="small text-muted mb-2">Manage sections and content in the full curriculum editor.</p>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="navigateToFullCurriculum()"><i class="fa fa-external-link"></i> Manage curriculum</button>
+            </div>
+          </div>
+          <!-- Become Course -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('become')">
+              <i class="fa fa-graduation-cap"></i> Become Course
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'become'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'become'">
+              <div class="form-group mb-2">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="landingBecomeTitle" placeholder="e.g. API-571 Practice Exam Question and Answers">
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label">Description</label>
+                <textarea class="form-control form-control-sm" rows="4" [(ngModel)]="landingBecomeDescription" placeholder="Enter become course description"></textarea>
+              </div>
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="landingBecomeSaveInProgress" (click)="saveBecomeCourse()">Save</button>
+            </div>
+          </div>
+          <!-- FAQ -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('faq')">
+              <i class="fa fa-question-circle"></i> Frequently Asked Questions
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'faq'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'faq'">
+              <ul class="list-group list-group-flush public-landing-sidenav__list" style="max-height: 200px;">
+                <li class="list-group-item py-2 px-2" *ngFor="let item of landingFaqList">
+                  <ng-container *ngIf="landingFaqEditId !== (item.id || item.Id)">
+                    <div class="d-flex justify-content-between"><div class="small"><strong>{{ item.question || item.Question }}</strong></div><span><button type="button" class="btn btn-sm btn-outline-primary" (click)="startEditLandingFaq(item)">Edit</button><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLandingFaq(item)">Remove</button></span></div>
+                  </ng-container>
+                  <ng-container *ngIf="landingFaqEditId === (item.id || item.Id)">
+                    <input class="form-control form-control-sm mb-1" [(ngModel)]="landingFaqQuestion" placeholder="Question"><textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingFaqAnswer" placeholder="Answer"></textarea>
+                    <button type="button" class="btn btn-sm btn-primary" [disabled]="landingFaqSaveInProgress" (click)="saveLandingFaqEdit()">Save</button><button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelEditLandingFaq()">Cancel</button>
+                  </ng-container>
+                </li>
+                <li class="list-group-item py-2 px-2" *ngIf="!landingFaqList?.length"><span class="text-muted">No FAQs.</span></li>
+              </ul>
+              <div class="border-top pt-2 mt-2">
+                <input class="form-control form-control-sm mb-1" [(ngModel)]="landingNewFaqQuestion" placeholder="New question"><textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingNewFaqAnswer" placeholder="Answer"></textarea>
+                <button type="button" class="btn btn-sm btn-success" [disabled]="landingFaqAddInProgress || !landingNewFaqQuestion?.trim()" (click)="addLandingFaq()">Add FAQ</button>
+              </div>
+            </div>
+          </div>
+          <!-- Course Trainers -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('trainers')">
+              <i class="fa fa-users"></i> Course Trainers
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'trainers'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'trainers'">
+              <ul class="list-group list-group-flush public-landing-sidenav__list" style="max-height: 200px;">
+                <li class="list-group-item py-2 px-2" *ngFor="let item of landingTrainersList">
+                  <ng-container *ngIf="landingTrainerEditId !== (item.id || item.Id)">
+                    <div class="d-flex justify-content-between"><div class="small"><strong>{{ item.name || item.Name }}</strong></div><span><button type="button" class="btn btn-sm btn-outline-primary" (click)="startEditLandingTrainer(item)">Edit</button><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLandingTrainer(item)">Remove</button></span></div>
+                  </ng-container>
+                  <ng-container *ngIf="landingTrainerEditId === (item.id || item.Id)">
+                    <input class="form-control form-control-sm mb-1" [(ngModel)]="landingTrainerName" placeholder="Name"><input class="form-control form-control-sm mb-1" [(ngModel)]="landingTrainerImageUrl" placeholder="Image URL"><textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingTrainerDescription" placeholder="Description"></textarea>
+                    <button type="button" class="btn btn-sm btn-primary" [disabled]="landingTrainerSaveInProgress" (click)="saveLandingTrainerEdit()">Save</button><button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelEditLandingTrainer()">Cancel</button>
+                  </ng-container>
+                </li>
+                <li class="list-group-item py-2 px-2" *ngIf="!landingTrainersList?.length"><span class="text-muted">No trainers.</span></li>
+              </ul>
+              <div class="border-top pt-2 mt-2">
+                <input class="form-control form-control-sm mb-1" [(ngModel)]="landingNewTrainerName" placeholder="Name"><input class="form-control form-control-sm mb-1" [(ngModel)]="landingNewTrainerImageUrl" placeholder="Image URL"><textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingNewTrainerDescription" placeholder="Description"></textarea>
+                <button type="button" class="btn btn-sm btn-success" [disabled]="landingTrainerAddInProgress || !landingNewTrainerName?.trim()" (click)="addLandingTrainer()">Add trainer</button>
+              </div>
+            </div>
+          </div>
+          <!-- Course Features -->
+          <div class="edit-landing-subaccordion">
+            <div class="edit-landing-subaccordion__header" (click)="setLandingDescAccordion('features')">
+              <i class="fa fa-star"></i> Course Features
+              <i class="fa fa-chevron-down edit-landing-accordion__chevron" [class.edit-landing-accordion__chevron--open]="landingDescAccordionOpen === 'features'"></i>
+            </div>
+            <div class="collapse" [class.show]="landingDescAccordionOpen === 'features'">
+              <ul class="list-group list-group-flush public-landing-sidenav__list mb-2" style="max-height: 200px;">
+                <li class="list-group-item py-2 px-2" *ngFor="let item of landingFeaturesList">
+                  <ng-container *ngIf="landingFeatureEditId !== (item.id || item.Id)">
+                    <div class="d-flex justify-content-between align-items-start"><div class="small">Feature Section</div><span class="d-flex gap-1"><button type="button" class="btn btn-sm btn-outline-primary" (click)="startEditLandingFeature(item)">Edit</button><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLandingFeature(item)">Remove</button></span></div>
+                    <p class="small mb-0 mt-1">{{ item.description || item.Description || '' }}</p>
+                  </ng-container>
+                  <ng-container *ngIf="landingFeatureEditId === (item.id || item.Id)">
+                    <label class="form-label">Description</label><textarea class="form-control form-control-sm mb-1" rows="3" [(ngModel)]="landingFeatureDescription" placeholder="Detailed Explanations"></textarea>
+                    <button type="button" class="btn btn-sm btn-primary" [disabled]="landingFeatureSaveInProgress" (click)="saveLandingFeatureEdit()">Save</button><button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelEditLandingFeature()">Cancel</button>
+                  </ng-container>
+                </li>
+                <li class="list-group-item py-2 px-2" *ngIf="!landingFeaturesList?.length"><span class="text-muted">No features.</span></li>
+              </ul>
+              <div class="border-top pt-2">
+                <label class="form-label">Description</label><textarea class="form-control form-control-sm mb-1" rows="2" [(ngModel)]="landingNewFeatureDescription" placeholder="Detailed Explanations"></textarea>
+                <button type="button" class="btn btn-sm btn-success" [disabled]="landingFeatureAddInProgress" (click)="addLandingFeature()">Add Course Feature</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="edit-landing-page__actions">
+        <button type="button" class="btn btn-sm btn-primary" [disabled]="landingSaveInProgress || landingEditLoadInProgress" (click)="saveLandingCourse()"><i class="fa fa-save"></i> Update</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="landingEditLoadInProgress" (click)="resetLandingEdit()"><i class="fa fa-refresh"></i> Reset</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelLandingEdit()"><i class="fa fa-times"></i> Cancel</button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Success popup after Edit landing page Update -->
+<ng-template #landingUpdateSuccessModal let-modal>
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title text-success"><i class="fa fa-check-circle"></i> Success</h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pt-0">
+    <p class="mb-0">Course updated successfully.</p>
+  </div>
+  <div class="modal-footer border-0">
+    <button type="button" class="btn btn-primary" (click)="modal.close()">OK</button>
+  </div>
+</ng-template>

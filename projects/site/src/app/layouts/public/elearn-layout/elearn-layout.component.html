@@ -1,0 +1,16 @@
+<!-- Existing Elearn layout for /:courseId: sidebar + header + content (no public site header/footer) -->
+<div class="layout-container elearn-layout-container">
+  <app-elearn-sidebar></app-elearn-sidebar>
+  <main class="elearn-layout__main">
+    <header class="elearn-layout__header">
+      <app-elearn-topbar></app-elearn-topbar>
+    </header>
+    <div class="elearn-layout__content content-area">
+      <ng-content></ng-content>
+      <router-outlet></router-outlet>
+    </div>
+    <footer class="elearn-layout__footer">
+      <app-elearn-footer></app-elearn-footer>
+    </footer>
+  </main>
+</div>

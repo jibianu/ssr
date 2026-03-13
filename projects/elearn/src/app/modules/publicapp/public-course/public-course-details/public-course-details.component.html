@@ -1,0 +1,381 @@
+<!-- Hero section – same design as site (visible with or without login, canonical URL) -->
+<div *ngIf="courseDetails" class="course-header-old">
+  <div class="course-header-card">
+    <h1 class="course-header-title">{{ courseDetails?.title }}</h1>
+    <p class="course-header-category text-muted small mb-1" *ngIf="courseSummaryText">{{ courseSummaryText }}</p>
+    <ul class="course-header-features" *ngIf="(courseDetails?.courseSummaries && courseDetails?.courseSummaries.length > 1)">
+      <li *ngFor="let item of courseDetails?.courseSummaries | slice:1">
+        <i class="fa fa-check"></i>
+        <span>{{ item?.summary }}</span>
+      </li>
+    </ul>
+    <div class="course-header-footer">
+      <p>Designed by Industry Experts</p>
+      <p>Modern e-Learning Platform</p>
+    </div>
+  </div>
+</div>
+
+<div class="container public-container course-details" *ngIf="courseDetails">
+  <div class="row">
+    <div class="col-lg-8 col-md-12 col-12 mt-n8 mb-4 mb-lg-0">
+      <!-- Card -->
+      <div class="card rounded-lg">
+        <!-- Card header -->
+        <div class="card-header  border-bottom-0 p-0">
+          <div>
+            <!-- Nav -->
+            <ul class="nav nav-lb-tab" id="tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="description-tab" data-toggle="pill" role="tab" [routerLink]="'.'"
+                  fragment="about">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="table-tab" data-toggle="pill" role="tab" aria-controls="contents"
+                  aria-selected="true" [routerLink]="'.'" fragment="contents">Contents</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="faq-tab" data-toggle="pill" role="tab" aria-controls="faq" aria-selected="false"
+                  [routerLink]="'.'" fragment="faq">FAQ</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="trainer-tab" data-toggle="pill" role="tab" aria-controls="trainer"
+                  aria-selected="false" [routerLink]="'.'" fragment="trainer">Trainer</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- Card Body -->
+      </div>
+
+      <div *ngIf="(courseDetails?.courseInformation && courseDetails?.courseInformation.length > 0)">
+        <h3 class="margin-top-3 post-sub-title">About {{ courseDetails?.title }}</h3>
+        <div id="about">
+          <div class="accordion" id="courseabout">
+            <div class="card mb-2 rounded-0" *ngFor="let item of courseDetails?.courseInformation;
+                let i = index">
+              <div class="card-header-about" id="headingOne">
+                <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none active"
+                  data-toggle="collapse" href="#courseabout{{ i }}" aria-expanded="false"
+                  aria-controls="courseabout{{ i }}">
+                  <div class="mr-auto">{{ item?.title }}</div>
+                  <!-- Chevron -->
+                  <span class="chevron-arrow ml-4">
+                    <i class="fa fa-chevron-down font-size-md text-primary"></i>
+                  </span>
+                </a>
+              </div>
+              <div class="collapse" id="courseabout{{ i }}" data-parent="#courseabout">
+                <div class="card-body bg-white">
+                  <div class="ml-5 pb-2">
+                    <app-read-more [content]="item?.summary" [limit]="500" [completeWords]="true">
+                    </app-read-more>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card w-100 mt-5 mb-5 course-details__trusted-card">
+        <div class="p-4">
+          <h3 class="text-center mb-3 trusted-card-title">Top Companies Trust Us</h3>
+          <p class="text-center trusted-card-subtitle mb-4">Get your dream career. Learn-to-earn in top 70+ courses.</p>
+        </div>
+        <div class="row px-3 pb-4 justify-content-center">
+          <div class="col-lg-2 col-md-4 col-6 mb-3" *ngFor="let logo of companyLogos">
+            <div class="company-logo-container text-center">
+              <img [src]="logo.src" [alt]="logo.alt" class="company-logo-img" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="(courseDetails?.courseContents && courseDetails?.courseContents.length > 0)">
+        <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} Curriculum</h3>
+        <div id="courseAccordion">
+          <div id="contents" class="card mb-2 rounded-0" *ngFor="let item of courseDetails?.courseContents;
+          let i = index">
+            <div class="card-header-custom" id="headingOne">
+              <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none active collapsed "
+                data-toggle="collapse" href="#courseContent{{ i }}" aria-expanded="false"
+                aria-controls="courseContent{{ i }}" id='card-header'>
+                <div class="mr-auto">
+                  <img [src]="item?.iconUrl" height="20px" width="20px">
+                  <span class="ml-2">
+                    {{ item?.title }}
+                  </span>
+                </div>
+              </a>
+            </div>
+
+            <div id="courseContent{{ i }}" class="collapse" data-parent="#courseAccordion">
+              <div class="card-body" id="content">
+                <div class="ml-5" *ngFor="let subItem of item?.courseContentSubTypes; let j = index;">
+                  <div
+                    *ngIf="(subItem?.courseContentSubSubTypes && subItem?.courseContentSubSubTypes.length > 0); else subContent">
+                    <a class="mb-3 d-flex justify-content-between align-items-center text-inherit text-decoration-none"
+                      data-toggle="collapse" href="#subContentCollapse{{j}}" aria-expanded="false"
+                      aria-controls="subContentCollapse{{j}}" id='sub-card-header'>
+                      <div class="mr-auto">
+                        <img [src]="subItem?.iconUrl" height="20px" width="20px">
+                        <span class="ml-2">
+                          {{ subItem?.title }}
+                        </span>
+                      </div>
+                    </a>
+                    <div class="collapse show" id="subContentCollapse{{j}}" data-parent="#subContentCollapse{{j}}">
+                      <ul>
+                        <li *ngFor="let item of subItem?.courseContentSubSubTypes">
+                          <div class="mr-auto">
+                            <img [src]="subItem?.iconUrl" height="20px" width="20px">
+                            <span class="ml-2">
+                              {{ subItem?.title }}
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <ng-template #subContent>
+                    <a class="mb-2 d-flex justify-content-between align-items-center text-inherit text-decoration-none">
+                      <div class="mr-auto">
+                        <img [src]="subItem?.iconUrl" height="20px" width="20px">
+                        <span class="ml-2">
+                          {{ subItem?.title }}
+                        </span>
+                      </div>
+                    </a>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="(courseDetails?.becomeCourse?.title && courseDetails?.becomeCourse?.description)">
+        <h3 class="margin-top-3 post-sub-title">Description</h3>
+        <div class="" id="trainer">
+
+          <div class="mb-3">
+            <strong>{{courseDetails?.becomeCourse?.title}}</strong>
+            <!-- <div id="module">
+              <p class="collapse" id="collapseDesc" aria-expanded="false">
+                {{courseDetails?.becomeCourse?.description}}
+              </p>
+              <a role="button" class="collapsed" data-toggle="collapse" href="#collapseDesc" aria-expanded="false"
+                aria-controls="collapseDesc"></a>
+            </div> -->
+            <app-read-more [content]="courseDetails?.becomeCourse?.description" [limit]="" [completeWords]="true">
+            </app-read-more>
+          </div>
+        </div>
+      </div>
+
+
+      <div *ngIf="(courseDetails?.frequentlyAskedQuestions && courseDetails?.frequentlyAskedQuestions.length > 0)">
+        <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} FAQ</h3>
+        <div id="faq">
+          <div class="accordion" id="coursefaq">
+            <div class="card mb-2 rounded-0" *ngFor="let item of courseDetails?.frequentlyAskedQuestions;
+            let i = index">
+              <div class="card-header-about" id="headingOne">
+                <a class="h4 mb-0 d-flex align-items-center text-inherit text-decoration-none active"
+                  data-toggle="collapse" href="#coursefaq{{ i }}" aria-expanded="false"
+                  aria-controls="coursefaq{{ i }}">
+                  <div class="mr-auto">{{ item?.question }}</div>
+                  <!-- Chevron -->
+                  <span class="chevron-arrow ml-4">
+                    <i class="fa fa-chevron-down font-size-md text-primary"></i>
+                  </span>
+                </a>
+              </div>
+              <div class="collapse" id="coursefaq{{ i }}" data-parent="#coursefaq">
+                <div class="card-body bg-white">
+                  <div class="ml-5 pb-2">
+                    <!-- <a class="mb-2 d-flex justify-content-between align-items-center text-inherit text-decoration-none"> -->
+                    <!-- <div class="text-truncate">
+                        <span>{{ item?.answer }}</span>
+                      </div> -->
+                    <app-read-more [content]="item?.answer" [limit]="500" [completeWords]="true">
+                    </app-read-more>
+                    <!-- </a> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="(courseDetails?.courseTeachers && courseDetails?.courseTeachers.length > 0)">
+        <h3 class="margin-top-3 post-sub-title">{{ courseDetails?.title }} Trainer</h3>
+        <div class="" id="trainer">
+          <div class="card-body">
+            <div class="mb-3">
+              <div *ngFor="let item of courseDetails?.courseTeachers;
+              let i = index; let isLast=last">
+                <div class="" [ngClass]="{'border-bottom pb-4 mb-4': !isLast }" *ngIf="i<2 || more">
+                  <!-- Content -->
+                  <div class="row">
+                    <div class="col-sm-2 col-md-2" style="padding: 5px">
+                      <img [src]="item?.imageUrl" (error)="onUserImgError($event)" alt=""
+                        class="rounded-circle avatar-lg">
+                    </div>
+                    <div class="col-sm-10 col-md-10">
+                      <h4 class="mb-0"> {{item?.name}}</h4>
+                      <app-read-more class="d-inline" [content]="item?.description" [limit]="200"
+                        [completeWords]="true">
+                      </app-read-more>
+                    </div>
+                  </div>
+                  <br>
+                  <a class="text-primary" *ngIf="(isLast && i > 2)" (click)="more = !more">{{ more ? 'Less':'More' }}</a>
+                </div>
+                <!--  -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample certificate - shown on all public course pages before Related Courses -->
+      <section class="sample-certificate-section" *ngIf="courseDetails">
+        <h3 class="sample-certificate-section__title">Sample certificate</h3>
+        <p class="sample-certificate-section__intro">Complete this course to earn your certificate. Below is a preview of how it will look.</p>
+        <div class="sample-certificate-preview">
+          <div class="sample-certificate-preview__watermark" aria-hidden="true">SAMPLE</div>
+          <div class="sample-certificate-preview__logo">
+            <img src="assets/img/oilandgas_club.svg" alt="Oilandgas Club" class="sample-certificate-preview__logo-img">
+          </div>
+          <h4 class="sample-certificate-preview__heading">Declaration of Completion</h4>
+          <p class="sample-certificate-preview__body">
+            <strong>[Your Name]</strong> has successfully completed the online course:
+          </p>
+          <p class="sample-certificate-preview__course-name">{{ courseDetails?.title || 'Course' }}</p>
+          <p class="sample-certificate-preview__body sample-certificate-preview__body--small">
+            [Your Name] completed oilandgasclub self-learning courses, showing good effort to improve skills and grow their professional career. Well done!
+          </p>
+          <div class="sample-certificate-preview__footer">
+            <div class="sample-certificate-preview__meta">
+              <span>Completion date: [Upon completion]</span>
+              <span>Certificate code: XXXXXXXX</span>
+            </div>
+            <div class="sample-certificate-preview__signatory">
+              <div class="sample-certificate-preview__seal" aria-hidden="true">
+                <svg class="sample-certificate-preview__seal-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="46" fill="#1e40af" stroke="#1e40af" stroke-width="1"/>
+                  <circle cx="50" cy="50" r="40" fill="#fff"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#1e40af" stroke-width="0.8"/>
+                  <path id="seal-arc-top-elearn" fill="none" d="M 50 7 A 43 43 0 1 1 49.99 7"/>
+                  <text font-size="5.5" font-weight="700" fill="#fff" letter-spacing="0.4">
+                    <textPath href="#seal-arc-top-elearn" startOffset="0" text-anchor="middle">oilandgasclub</textPath>
+                  </text>
+                  <path id="seal-arc-bottom-elearn" fill="none" d="M 93 50 A 43 43 0 0 1 7 50"/>
+                  <text font-size="2.9" font-weight="600" fill="#fff">
+                    <textPath href="#seal-arc-bottom-elearn" startOffset="0" text-anchor="middle">upgrade your skills anywhere, anytime</textPath>
+                  </text>
+                  <g transform="translate(20, 50)">
+                    <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="scale(0.9)"/>
+                    <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,4) scale(0.9)"/>
+                    <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,8) scale(0.9)"/>
+                  </g>
+                  <g transform="translate(80, 50)">
+                    <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="scale(0.9)"/>
+                    <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,4) scale(0.9)"/>
+                    <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,8) scale(0.9)"/>
+                  </g>
+                  <g transform="translate(50, 50)">
+                    <path d="M -14 -2 L 14 -2 L 12 4 L -12 4 Z" fill="#1e3a8a"/>
+                    <path d="M -10 4 L -8 11 L 8 11 L 10 4 Z" fill="#1e40af"/>
+                    <circle cx="12" cy="0" r="2" fill="#1e3a8a"/>
+                    <path d="M 12 1.5 Q 14 5 12 7" stroke="#1e3a8a" stroke-width="0.8" fill="none"/>
+                    <text x="1" y="4" text-anchor="middle" font-size="5.5" font-style="italic" fill="#1e40af" font-family="cursive, 'Brush Script MT', Georgia, serif">Anush</text>
+                  </g>
+                </svg>
+              </div>
+              <div>
+                <strong>Anush</strong>
+                <div class="sample-certificate-preview__signatory-role">CEO</div>
+                <div class="sample-certificate-preview__signatory-org">Oil and Gas Club</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <h3 class="margin-top-3 post-sub-title">Related Courses</h3>
+      <app-public-related-courses [categoryName]="categoryName" [courseId]="courseId"></app-public-related-courses>
+    </div>
+    <aside class="col-lg-4 col-md-12 col-12 sidebar-column">
+      <div class="sticky-sidebar d-none d-sm-block">
+        <div class="pricing-card">
+          <ng-container *ngIf="courseDetails?.promoVideoUrl && courseDetails?.titleImageUrl">
+            <div class="promo-thumb-wrap pricing-card-image-wrap" (click)="openPromoVideo()" role="button" tabindex="0" (keydown.enter)="openPromoVideo()" (keydown.space)="openPromoVideo(); $event.preventDefault()">
+              <img [src]="courseDetails?.titleImageUrl" class="pricing-card-image promo-thumb-img" (error)="onImgError($event)" [alt]="courseDetails?.title" loading="lazy">
+              <div class="promo-thumb-play" aria-hidden="true">
+                <span class="promo-thumb-play-btn"><i class="fa fa-play" aria-hidden="true"></i></span>
+              </div>
+            </div>
+          </ng-container>
+          <img *ngIf="(!courseDetails?.promoVideoUrl) && courseDetails?.titleImageUrl" [src]="courseDetails?.titleImageUrl" class="pricing-card-image" (error)="onImgError($event)" [alt]="courseDetails?.title" loading="lazy">
+          <div class="pricing-card-header">
+            <h3 class="pricing-card-title">Buy Now with Plus free Trial</h3>
+            <span class="pricing-badge-plus">PLUS</span>
+          </div>
+          <div class="pricing-option">
+            <input type="radio" id="pricing-option-elearn" name="pricing" checked class="pricing-radio">
+            <label for="pricing-option-elearn" class="pricing-label">
+              <div class="pricing-main">
+                <span class="pricing-amount">₹{{ displayAmount | number:'1.2-2' }}</span>
+                <span class="pricing-discount" *ngIf="originalAmount">
+                  {{ ((originalAmount - displayAmount) / originalAmount * 100) | number:'1.0-0' }}% Disc. ₹{{ originalAmount | number:'1.0-0' }}
+                </span>
+              </div>
+            </label>
+          </div>
+          <a [href]="courseDetails?.id ? ('/checkout/' + courseDetails.id) : '#'" class="pricing-buy-btn" target="_self">
+            <i class="fa fa-shopping-cart"></i> Buy
+          </a>
+          <div class="pricing-countdown">This offer ends in 24h – limited time.</div>
+          <div class="pricing-key-features" *ngIf="courseDetails">
+            <h4 class="pricing-features-title">Key Features</h4>
+            <ul class="pricing-features-list">
+              <ng-container *ngIf="courseFeaturesList && courseFeaturesList.length > 0; else staticFeatures">
+              <li class="pricing-feature-item" *ngFor="let f of courseFeaturesList">
+                <i class="fa fa-check pricing-feature-check"></i>
+                <span class="pricing-feature-text">{{ f }}</span>
+              </li>
+              </ng-container>
+              <ng-template #staticFeatures>
+                <li class="pricing-feature-item"><i class="fa fa-check pricing-feature-check"></i><span class="pricing-feature-text">Comprehensive Study Materials</span></li>
+                <li class="pricing-feature-item"><i class="fa fa-check pricing-feature-check"></i><span class="pricing-feature-text">Practice Tests / Mock Trials</span></li>
+                <li class="pricing-feature-item"><i class="fa fa-check pricing-feature-check"></i><span class="pricing-feature-text">Flexible Learning Options</span></li>
+                <li class="pricing-feature-item"><i class="fa fa-check pricing-feature-check"></i><span class="pricing-feature-text">Mentorship Opportunities</span></li>
+                <li class="pricing-feature-item"><i class="fa fa-check pricing-feature-check"></i><span class="pricing-feature-text">Real-World Application Focus</span></li>
+                <li class="pricing-feature-item"><i class="fa fa-check pricing-feature-check"></i><span class="pricing-feature-text">Certification / Exam Preparation</span></li>
+              </ng-template>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Promo video overlay: click thumbnail to play -->
+  <div class="promo-video-overlay" *ngIf="showPromoVideoModal && courseDetails?.promoVideoUrl" (click)="closePromoVideo()" role="dialog" aria-label="Promo video" aria-modal="true">
+    <div class="promo-video-overlay__backdrop"></div>
+    <div class="promo-video-overlay__box" (click)="$event.stopPropagation()">
+      <button type="button" class="promo-video-overlay__close" (click)="closePromoVideo()" aria-label="Close">
+        <i class="fa fa-times"></i>
+      </button>
+      <video class="promo-video-overlay__video" controls controlsList="nodownload" playsinline crossorigin="anonymous" #promoVideoPlayer>
+        <source [src]="getPromoVideoSrc(courseDetails.promoVideoUrl) | safeUrl" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+</div>

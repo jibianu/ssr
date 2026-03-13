@@ -1,0 +1,147 @@
+<div class="payout-page">
+  <div class="payout-page__header">
+    <h1 class="payout-page__title">Payout & Tax Details</h1>
+    <p class="payout-page__subtitle">Manage how you receive payments. Connect a payout method below.</p>
+  </div>
+
+  <section class="payout-page__section">
+    <h2 class="payout-page__section-title">
+      <span class="payout-page__info-icon" title="Info">&#9432;</span>
+      Payout Method
+    </h2>
+    <p class="payout-page__section-desc">
+      Choose your payout method below. Connecting to a new payout method may take a few days.
+      You won't receive payments to the new linked account until its status is approved.
+    </p>
+    <p class="payout-page__section-desc payout-page__section-desc--note">
+      <strong>PayPal &amp; Payoneer:</strong> Verification is done by admin review. An administrator will approve or reject your linked account; we do not connect to PayPal or Payoneer for automatic verification.
+    </p>
+
+    <p class="payout-page__error" *ngIf="error">{{ error }}</p>
+    <div class="payout-page__loading" *ngIf="loading">Loading…</div>
+
+    <p class="payout-page__section-desc" *ngIf="methodOptionsToConnect.length">Select a method below to connect. Already connected methods are listed in the table further down.</p>
+    <div class="payout-page__cards" *ngIf="!loading && !error">
+      <div class="payout-card" *ngFor="let opt of methodOptionsToConnect">
+        <div class="payout-card__brand">
+          <span class="payout-card__icon fa {{ opt.icon }}"></span>
+          <div class="payout-card__labels">
+            <span class="payout-card__name">{{ opt.label }}</span>
+            <span class="payout-card__desc">{{ opt.description }}</span>
+          </div>
+        </div>
+        <div class="payout-card__right">
+          <span class="payout-card__status">Not Connected</span>
+          <button type="button" class="payout-card__btn" (click)="openConnect(opt.type)">Connect</button>
+        </div>
+      </div>
+    </div>
+    <p class="payout-page__section-desc payout-page__section-desc--muted" *ngIf="!loading && !error && methodOptionsToConnect.length === 0">You have connected all available payout methods. Manage or disconnect them in the table below.</p>
+  </section>
+
+  <section class="payout-page__section">
+    <h2 class="payout-page__section-title">
+      <span class="payout-page__info-icon" title="Info">&#9432;</span>
+      Payout Threshold
+    </h2>
+    <p class="payout-page__section-desc">
+      If your earnings for a given month are below the minimum payout threshold, they will carry over to the next month and no payout will be made. Once your total unpaid earnings exceed the threshold, you will receive a payout according to your approved payout schedule.
+    </p>
+  </section>
+
+  <section class="payout-page__section">
+    <h2 class="payout-page__section-title">
+      <span class="payout-page__info-icon" title="Info">&#9432;</span>
+      Withholding Tax Status
+    </h2>
+    <p class="payout-page__section-desc">
+      You may need to submit tax documentation once you start earning. When you earn revenue, you may be prompted to submit tax details as required by your country. Contact support if you have questions about tax withholding.
+    </p>
+  </section>
+
+  <section class="payout-page__section" *ngIf="!loading && methods.length">
+    <h2 class="payout-page__section-title">Connected methods</h2>
+    <p class="payout-page__section-desc">Account numbers are masked for security.</p>
+    <div class="payout-page__table-wrap">
+      <table class="payout-page__table">
+        <thead>
+          <tr>
+            <th class="payout-page__th">Method</th>
+            <th class="payout-page__th">Account (masked)</th>
+            <th class="payout-page__th">Status</th>
+            <th class="payout-page__th">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of methods">
+            <td class="payout-page__td">{{ m.methodTypeName }}</td>
+            <td class="payout-page__td">{{ m.maskedAccountNumber || m.maskedUpiId || '—' }}</td>
+            <td class="payout-page__td"><span class="payout-page__badge" [ngClass]="getStatusClass(m.status)">{{ m.statusName }}</span></td>
+            <td class="payout-page__td">
+              <button type="button" class="payout-page__btn-sm" (click)="openConnect(m.methodType)">Manage</button>
+              <button type="button" class="payout-page__btn-sm payout-page__btn-sm--danger" (click)="disconnect(m)">Disconnect</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Modal -->
+<div class="payout-modal" *ngIf="showModal" (keydown.escape)="closeModal()">
+  <div class="payout-modal__backdrop" (click)="closeModal()"></div>
+  <div class="payout-modal__box" role="dialog" aria-labelledby="payout-modal-title">
+    <h3 id="payout-modal-title" class="payout-modal__title">
+      {{ selectedMethodType === 1 ? 'Bank Transfer (NEFT/IMPS/RTGS)' : selectedMethodType === 4 ? 'UPI ID' : selectedMethodType === 2 ? 'PayPal' : 'Payoneer' }}
+    </h3>
+    <div class="payout-modal__form">
+      <!-- Bank Transfer -->
+      <div class="payout-modal__row" *ngIf="form.methodType === 1">
+        <label class="payout-modal__label">Account Holder Name</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.accountName" placeholder="Name as on bank account" />
+      </div>
+      <div class="payout-modal__row" *ngIf="form.methodType === 1">
+        <label class="payout-modal__label">Bank Name</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.bankName" placeholder="e.g. SBI, HDFC" />
+      </div>
+      <div class="payout-modal__row" *ngIf="form.methodType === 1">
+        <label class="payout-modal__label">Account Number</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.accountNumber" placeholder="Bank account number" />
+      </div>
+      <div class="payout-modal__row" *ngIf="form.methodType === 1">
+        <label class="payout-modal__label">IFSC Code</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.ifsc" placeholder="e.g. SBIN0001234" maxlength="11" />
+      </div>
+      <div class="payout-modal__row" *ngIf="form.methodType === 1">
+        <label class="payout-modal__label">PAN Number</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.pan" placeholder="10 character PAN" maxlength="10" />
+      </div>
+      <div class="payout-modal__row" *ngIf="form.methodType === 1">
+        <label class="payout-modal__label">GST Number (optional)</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.gst" placeholder="GSTIN if applicable" />
+      </div>
+      <!-- UPI -->
+      <div class="payout-modal__row" *ngIf="form.methodType === 4">
+        <label class="payout-modal__label">UPI ID</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.upiId" placeholder="e.g. name@paytm or name@ybl" />
+      </div>
+      <!-- PayPal / Payoneer -->
+      <div class="payout-modal__row" *ngIf="form.methodType === 2 || form.methodType === 3">
+        <label class="payout-modal__label">Email</label>
+        <input type="email" class="payout-modal__input" [(ngModel)]="form.email" placeholder="PayPal or Payoneer email" />
+      </div>
+      <div class="payout-modal__row" *ngIf="form.methodType === 2 || form.methodType === 3">
+        <label class="payout-modal__label">Account / ID (optional)</label>
+        <input type="text" class="payout-modal__input" [(ngModel)]="form.accountNumber" placeholder="Account identifier" />
+      </div>
+      <p class="payout-modal__error" *ngIf="formError">{{ formError }}</p>
+      <div class="payout-modal__actions">
+        <button type="button" class="payout-modal__btn payout-modal__btn--primary" (click)="submit()" [disabled]="saving">
+          {{ saving ? 'Saving…' : 'Save' }}
+        </button>
+        <button type="button" class="payout-modal__btn payout-modal__btn--secondary" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

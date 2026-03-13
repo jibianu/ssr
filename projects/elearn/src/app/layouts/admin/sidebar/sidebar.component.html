@@ -1,0 +1,53 @@
+<!-- <nav id="sidebar" class="navbar-dark bg-dark" [ngClass]="{'hidden': sideNavService.hideSideNav }">
+  <ul class="navbar-nav" *ngFor="let item of menuItem">
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="item.link" routerLinkActive="active">{{item?.label}}</a>
+    </li>
+  </ul>
+</nav> -->
+
+
+<!-- <nav id="sidebar" [ngClass]="{'hidden': sideNavService.hideSideNav}">
+  <ul class="nav-menu">
+    <li class="nav-item" *ngFor="let item of menuItem">
+      <a class="nav-link" [routerLink]="item.link" routerLinkActive="active">
+        {{item?.label}}
+      </a>
+    </li>
+  </ul>
+</nav> -->
+
+
+
+
+
+
+<nav id="sidebar" [ngClass]="{'hidden': sideNavService.hideSideNav}">
+  <div class="sidebar-header">
+    <h3>Menu</h3>
+  </div>
+  <ul class="nav-menu">
+    @for (item of menuItem; track item.link) {
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="item.link" routerLinkActive="active">
+          <i class="nav-icon" [ngClass]="item.icon"></i>
+          <span class="nav-text">{{item?.label}}</span>
+        </a>
+      </li>
+    }
+  </ul>
+  @defer (on idle) {
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">
+          <img ngSrc="assets/img/user-profile.png" alt="User Avatar" width="36" height="36">
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{userName}}</span>
+        </div>
+      </div>
+    </div>
+  } @placeholder {
+    <div class="sidebar-footer sidebar-footer-placeholder"></div>
+  }
+</nav>

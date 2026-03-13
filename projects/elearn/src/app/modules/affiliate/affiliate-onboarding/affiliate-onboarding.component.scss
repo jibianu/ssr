@@ -1,0 +1,270 @@
+.onboarding {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.onboarding__title {
+  font-size: 1.5rem;
+  margin: 0 0 8px 0;
+  color: #18113c;
+}
+
+.onboarding__subtitle {
+  margin: 0 0 24px 0;
+  color: #64748b;
+  font-size: 0.9375rem;
+}
+
+.onboarding__step-indicator {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  span {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    &.active {
+      background: #f97316;
+      color: #fff;
+    }
+  }
+}
+
+.onboarding__step-title {
+  font-size: 1.125rem;
+  margin: 0 0 16px 0;
+  color: #334155;
+}
+
+.onboarding__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onboarding__card {
+  display: block;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  &.selected {
+    border-color: #f97316;
+    background: rgba(249, 115, 22, 0.06);
+  }
+  input { margin-right: 8px; }
+}
+
+.onboarding__card-title {
+  font-weight: 600;
+  color: #18113c;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.onboarding__card-desc {
+  font-size: 0.875rem;
+  color: #64748b;
+  display: block;
+  margin-left: 24px;
+}
+
+.onboarding__promo-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.onboarding__promo-add {
+  padding: 10px 18px;
+  border: 1px solid #fdba74;
+  border-radius: 10px;
+  background: #fff;
+  color: #c2410c;
+  font-weight: 500;
+  cursor: pointer;
+  &:hover {
+    background: #ffedd5;
+    border-color: #f97316;
+  }
+}
+
+.onboarding__added-title {
+  font-size: 0.9375rem;
+  margin: 0 0 8px 0;
+  color: #475569;
+}
+
+.onboarding__added-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.onboarding__added-label {
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.onboarding__added-url {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.onboarding__added-remove {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #64748b;
+  &:hover {
+    background: #fecaca;
+    color: #b91c1c;
+  }
+}
+
+.onboarding__add-form {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.onboarding__add-form-title {
+  font-size: 1rem;
+  margin: 0 0 12px 0;
+}
+
+.onboarding__add-form-row {
+  margin-bottom: 12px;
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #334155;
+  }
+}
+
+.onboarding__add-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.onboarding__form .onboarding__field {
+  margin-bottom: 16px;
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #334155;
+  }
+  .required { color: #dc2626; }
+}
+
+.onboarding__form .form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.onboarding__radio-group {
+  margin-bottom: 20px;
+}
+
+.onboarding__radio {
+  display: block;
+  margin-bottom: 12px;
+  cursor: pointer;
+  input { margin-right: 8px; }
+}
+
+.onboarding__field--half {
+  display: inline-block;
+  width: calc(50% - 8px);
+  margin-right: 8px;
+  @media (max-width: 600px) {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+.onboarding__checkbox {
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.onboarding__hint {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.onboarding__error {
+  color: #dc2626;
+  margin: 16px 0 0 0;
+}
+
+.onboarding__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  .btn--primary {
+    background: #f97316;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover:not(:disabled) {
+      background: #ea580c;
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  .btn--secondary {
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    cursor: pointer;
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+}
+
+.onboarding__loading {
+  padding: 48px 24px;
+  text-align: center;
+  color: #64748b;
+}

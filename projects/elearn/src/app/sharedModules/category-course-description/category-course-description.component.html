@@ -1,0 +1,166 @@
+<div class="cd-page">
+  <!-- Hero: two-column grid -->
+  <header class="cd-hero">
+    <div class="cd-hero__grid">
+      <div class="cd-hero__info">
+        <span class="cd-badge" *ngIf="courses">BEST SELLER</span>
+        <h1 class="cd-hero__title">{{ courses?.title }}</h1>
+        <p class="cd-hero__subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+        <div class="cd-hero__meta">
+          <span class="cd-meta__item" *ngIf="courses?.rating != null">
+            <i class="fas fa-star" aria-hidden="true"></i>
+            {{ courses?.rating }} <span class="cd-meta__muted" *ngIf="courses?.reviewCount">({{ courses?.reviewCount | number }} reviews)</span>
+          </span>
+          <span class="cd-meta__dot" *ngIf="courses?.rating != null && courses?.studentCount != null" aria-hidden="true">·</span>
+          <span class="cd-meta__item" *ngIf="courses?.studentCount != null">
+            <i class="fas fa-users" aria-hidden="true"></i>
+            {{ courses?.studentCount | number }} students
+          </span>
+          <span class="cd-meta__item" *ngIf="courses?.studentCount == null && curriculumList?.length">
+            <i class="fas fa-list" aria-hidden="true"></i>
+            {{ curriculumList?.length }} modules
+          </span>
+        </div>
+        <div class="cd-hero__tags" *ngIf="courses?.category?.name">
+          <span class="cd-tag">{{ courses?.category?.name }}</span>
+        </div>
+      </div>
+
+      <!-- Sticky purchase card (desktop) -->
+      <aside class="cd-purchase-card" aria-label="Purchase options">
+        <div class="cd-purchase-card__price">
+          <span class="cd-price__old" *ngIf="courses?.price != null && courses?.price !== courses?.discountedPrice"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.price | number:'1.2-2' }}</span>
+          <span class="cd-price__current"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.discountedPrice != null ? (courses?.discountedPrice | number:'1.2-2') : (courses?.price | number:'1.2-2') }}</span>
+        </div>
+        <button *ngIf="!isEnrolled" class="cd-btn cd-btn--primary" (click)="fnGotoEntroll()">
+          <i class="fas fa-shopping-cart" aria-hidden="true"></i> Enroll Now
+        </button>
+        <button *ngIf="isEnrolled" class="cd-btn cd-btn--success" (click)="fnResume()">
+          <i class="fas fa-play" aria-hidden="true"></i> Resume Learning
+        </button>
+        <button *ngIf="!isEnrolled" class="cd-btn cd-btn--ghost cd-wishlist" [class.cd-wishlist--active]="isWishListedAdded" (click)="fnAddWishList()">
+          <i class="fa-heart" [ngClass]="isWishListedAdded ? 'fas' : 'far'" aria-hidden="true"></i> {{ WishListText }}
+        </button>
+        <div class="cd-includes">
+          <p class="cd-includes__title">This course includes</p>
+          <ul class="cd-includes__list">
+            <li *ngIf="totalQuestions > 0"><i class="fas fa-check" aria-hidden="true"></i> {{ totalQuestions }} practice questions</li>
+            <li><i class="fas fa-check" aria-hidden="true"></i> Lifetime access</li>
+            <li><i class="fas fa-check" aria-hidden="true"></i> Mobile access</li>
+            <li><i class="fas fa-check" aria-hidden="true"></i> Certificate</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <div class="cd-content">
+    <!-- What you will learn (from curriculum titles – API) -->
+    <section class="cd-section cd-learn" *ngIf="learningPoints?.length" aria-labelledby="learn-heading">
+      <h2 id="learn-heading" class="cd-section__title">What you will learn</h2>
+      <ul class="cd-learn__list">
+        <li *ngFor="let point of learningPoints">
+          <i class="fas fa-check" aria-hidden="true"></i>
+          <span>{{ point }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Curriculum accordion (all data from API) -->
+    <section class="cd-section cd-curriculum" aria-labelledby="curriculum-heading">
+      <h2 id="curriculum-heading" class="cd-section__title">Course Curriculum</h2>
+      <p class="cd-section__subtitle">This curriculum has everything you need to confidently master the subject. Each module is crafted by industry experts to build your knowledge progressively.</p>
+      <div class="cd-accordion">
+        <article *ngFor="let item of curriculumList; index as i" class="cd-accordion__item" [class.cd-accordion__item--open]="isModuleExpanded(item?.id)">
+          <button type="button" class="cd-accordion__head" (click)="toggleModule(item?.id)" [attr.aria-expanded]="isModuleExpanded(item?.id)" [attr.aria-controls]="'panel-' + item?.id" [id]="'head-' + item?.id">
+            <span class="cd-accordion__num">{{ i + 1 }}</span>
+            <div class="cd-accordion__head-text">
+              <h3 class="cd-accordion__title">{{ item?.title }}</h3>
+              <div class="cd-accordion__meta">
+                <span *ngIf="(item?.curriculumQuestionCount ?? 0) > 0">{{ item?.curriculumQuestionCount }} exercises</span>
+                <span *ngIf="getModuleDurationMinutes(item) > 0">{{ getModuleDurationMinutes(item) }} min</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down cd-accordion__chevron" aria-hidden="true"></i>
+          </button>
+          <div [id]="'panel-' + item?.id" class="cd-accordion__body" role="region" [attr.aria-labelledby]="'head-' + item?.id">
+            <div class="cd-accordion__inner">
+              <ul class="cd-lesson-list" *ngIf="getModuleContentRows(item).length">
+                <li *ngFor="let row of getModuleContentRows(item)">
+                  <i class="fas fa-play cd-lesson-list__icon" aria-hidden="true"></i>
+                  <span>{{ row.label }} ({{ row.count }})</span>
+                </li>
+              </ul>
+              <p *ngIf="!getModuleContentRows(item).length" class="cd-accordion__empty">No content items in this module.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Sample certificate (same design as backend certificate view/download) -->
+    <section class="cd-section cd-certificate-sample" *ngIf="courses" aria-labelledby="cert-sample-heading">
+      <h2 id="cert-sample-heading" class="cd-section__title">Sample certificate</h2>
+      <p class="cd-section__subtitle">Complete this course to earn your certificate. Below is a preview of how it will look.</p>
+      <div class="cd-cert">
+        <span class="cd-cert__watermark" aria-hidden="true">SAMPLE</span>
+        <div class="cd-cert__accent"></div>
+        <div class="cd-cert__inner">
+          <img [src]="certificateLogoUrl" alt="" class="cd-cert__logo" (error)="onCertificateLogoError($event)" />
+          <h1 class="cd-cert__title">Declaration of Completion</h1>
+          <p class="cd-cert__student">[Your Name]</p>
+          <p class="cd-cert__intro">has successfully completed the online course:</p>
+          <p class="cd-cert__course">{{ courses?.title }}</p>
+          <p class="cd-cert__desc">[Your Name] completed oilandgasclub self-learning courses, showing good effort to improve skills and grow their professional career. Well done!</p>
+          <div class="cd-cert__footer">
+            <div class="cd-cert__meta">
+              <p><strong>Completion date:</strong> [Upon completion]</p>
+              <p><strong>Certificate code:</strong> XXXXXXXX</p>
+            </div>
+            <div class="cd-cert__seal-wrap">
+              <div class="cd-cert__seal" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" class="cd-cert__seal-svg" role="img" aria-label="Seal">
+                  <!-- Two concentric circles -->
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="#002366" stroke-width="1.8" />
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#002366" stroke-width="1.2" />
+                  <!-- Top text (straight, no textPath for reliable rendering) -->
+                  <text x="60" y="32" fill="#002366" font-family="Arial, sans-serif" font-size="8" font-weight="600" text-anchor="middle">OILANDGASCLUB</text>
+                  <!-- Bottom text -->
+                  <text x="60" y="88" fill="#002366" font-family="Arial, sans-serif" font-size="6" font-weight="600" text-anchor="middle">Edu tech pvt ltd</text>
+                  <!-- Side markers -->
+                  <text x="22" y="60.5" fill="#002366" font-family="Arial, sans-serif" font-size="7" font-weight="700" text-anchor="middle">&#9733;</text>
+                  <text x="98" y="60.5" fill="#002366" font-family="Arial, sans-serif" font-size="7" font-weight="700" text-anchor="middle">&#9733;</text>
+                  <!-- Center: graduation cap -->
+                  <g fill="#002366">
+                    <path d="M 42 48 L 78 48 L 74 52 L 46 52 Z" />
+                    <path d="M 52 52 L 68 52 L 64 60 L 56 60 Z" />
+                    <circle cx="74" cy="50" r="3" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+            <div class="cd-cert__sig-block">
+              <p class="cd-cert__sig-name">{{ certificateSignerName }}</p>
+              <p class="cd-cert__sig-title">{{ certificateSignerTitle }}</p>
+              <p class="cd-cert__sig-org">{{ certificateBrandName }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Mobile: fixed bottom enroll bar -->
+  <footer class="cd-mobile-bar" *ngIf="courses">
+    <div class="cd-mobile-bar__price">
+      <span class="cd-price__old" *ngIf="courses?.price != null && courses?.price !== courses?.discountedPrice"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.price | number:'1.2-2' }}</span>
+      <span class="cd-price__current"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.discountedPrice != null ? (courses?.discountedPrice | number:'1.2-2') : (courses?.price | number:'1.2-2') }}</span>
+    </div>
+    <button *ngIf="!isEnrolled" class="cd-btn cd-btn--primary cd-mobile-bar__btn" (click)="fnGotoEntroll()">
+      <i class="fas fa-shopping-cart" aria-hidden="true"></i> Enroll Now
+    </button>
+    <button *ngIf="isEnrolled" class="cd-btn cd-btn--success cd-mobile-bar__btn" (click)="fnResume()">
+      <i class="fas fa-play" aria-hidden="true"></i> Resume Learning
+    </button>
+  </footer>
+</div>

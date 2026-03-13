@@ -1,0 +1,8 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Globe/Network icon for Join -->
+  <circle cx="24" cy="24" r="18" stroke="#f02c00" stroke-width="2.5" fill="none"/>
+  <ellipse cx="24" cy="24" rx="18" ry="6" stroke="#f02c00" stroke-width="2" fill="none"/>
+  <path d="M6 24 Q24 18 42 24 Q24 30 6 24" stroke="#f02c00" stroke-width="2" fill="none"/>
+  <path d="M24 6 Q18 24 24 42 Q30 24 24 6" stroke="#f02c00" stroke-width="2" fill="none"/>
+  <circle cx="24" cy="24" r="3" fill="#f02c00"/>
+</svg>

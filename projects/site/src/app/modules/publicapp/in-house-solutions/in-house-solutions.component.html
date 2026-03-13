@@ -1,0 +1,148 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="inhouse-page" ngSkipHydration>
+  <section class="inhouse-hero">
+    <div class="inhouse-hero__copy">
+      <p class="inhouse-eyebrow">🏢 In-house academies</p>
+      <h1>Design a <span>private learning lab</span> for your teams anywhere in the world</h1>
+      <p class="inhouse-hero__lead">
+        Oilandgasclub architects turnkey training engagements—hybrid or on-site—that mirror your assets, standards,
+        and talent goals.
+      </p>
+      <div class="inhouse-hero__stats">
+        @for (stat of heroStats; track stat.label) {
+          <article class="inhouse-stat">
+            <span class="inhouse-stat__value">{{ stat.value }}</span>
+            <span class="inhouse-stat__label">{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+      <div class="inhouse-hero__cta">
+        <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Request a proposal</a>
+        <a class="btn-secondary" href="/partner-us">Partner with us</a>
+      </div>
+    </div>
+    <figure class="inhouse-hero__visual" aria-hidden="true">
+      <svg class="inhouse-svg inhouse-svg--hero" viewBox="0 0 360 300" role="presentation">
+        <defs>
+          <linearGradient id="inhouseHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#dbeafe" />
+            <stop offset="100%" stop-color="#e0f7f1" />
+          </linearGradient>
+        </defs>
+        <rect x="32" y="32" width="296" height="220" rx="32" fill="url(#inhouseHeroBg)" />
+        <rect x="70" y="70" width="220" height="64" rx="18" fill="#fff" opacity="0.95" />
+        <rect x="70" y="150" width="220" height="74" rx="22" fill="#0f172a" opacity="0.9" />
+        <circle cx="118" cy="102" r="18" fill="#3b82f6" opacity="0.9" />
+        <rect x="148" y="90" width="64" height="12" rx="6" fill="#dbe3ff" />
+        <rect x="148" y="112" width="90" height="10" rx="5" fill="#eef2ff" />
+        <rect x="90" y="170" width="48" height="26" rx="10" fill="#10b981" />
+        <rect x="150" y="170" width="48" height="26" rx="10" fill="#fde68a" />
+        <rect x="210" y="170" width="48" height="26" rx="10" fill="#a5b4fc" />
+        <path d="M82 240c32-48 172-48 204 0" fill="none" stroke="#67e8f9" stroke-width="16" stroke-linecap="round" />
+      </svg>
+    </figure>
+  </section>
+
+  <section class="inhouse-section">
+    <header class="inhouse-section__header">
+      <p class="inhouse-eyebrow">✨ What we build</p>
+      <h2>Curated experiences for every asset class</h2>
+    </header>
+    <div class="inhouse-grid">
+      @for (solution of solutionHighlights; track solution.title) {
+        <article class="inhouse-card">
+          <div class="inhouse-card__icon">
+            <svg viewBox="0 0 60 60" role="presentation">
+              <defs>
+                <linearGradient id="inhouseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#c7d2fe" />
+                  <stop offset="100%" stop-color="#bae6fd" />
+                </linearGradient>
+              </defs>
+              <rect x="8" y="12" width="44" height="36" rx="14" fill="url(#inhouseGradient)" opacity="0.6" />
+              <path d="M20 30h20" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+              <path d="M25 40h10" stroke="#10b981" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+            </svg>
+          </div>
+          <h3>{{ solution.title }}</h3>
+          <p>{{ solution.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="inhouse-section inhouse-section--dual">
+    <article class="inhouse-panel">
+      <header>
+        <p class="inhouse-eyebrow">🧩 Delivery models</p>
+        <h2>Choose how we embed with you</h2>
+      </header>
+      <ul class="inhouse-list">
+        @for (model of deliveryModels; track model) {
+          <li>
+            <span class="inhouse-list__bullet"></span>
+            {{ model }}
+          </li>
+        }
+      </ul>
+    </article>
+    <article class="inhouse-panel">
+      <header>
+        <p class="inhouse-eyebrow">🔒 Capability pillars</p>
+        <h2>Assurance with every engagement</h2>
+      </header>
+      <div class="inhouse-pillars">
+        @for (pillar of capabilityPillars; track pillar.title) {
+          <div>
+            <h3>{{ pillar.title }}</h3>
+            <p>{{ pillar.description }}</p>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="inhouse-section inhouse-section--process">
+    <header class="inhouse-section__header">
+      <p class="inhouse-eyebrow">🛠 Delivery blueprint</p>
+      <h2>Four-step co-creation</h2>
+    </header>
+    <div class="inhouse-steps">
+      @for (step of processSteps; track step.title) {
+        <article class="inhouse-step">
+          <span class="inhouse-step__badge">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="inhouse-section">
+    <header class="inhouse-section__header">
+      <p class="inhouse-eyebrow">📌 Why teams choose us</p>
+      <h2>Enterprise differentiators</h2>
+    </header>
+    <div class="inhouse-impact">
+      @for (item of differentiators; track item.title) {
+        <article class="inhouse-impact__card">
+          <div class="inhouse-impact__badge">{{ item.badge }}</div>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="inhouse-section inhouse-section--cta">
+    <div class="inhouse-cta">
+      <div>
+        <p class="inhouse-eyebrow">🚀 Ready to blueprint?</p>
+        <h2>Let’s architect your next in-house academy</h2>
+        <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> or schedule a discovery call.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Book discovery call</a>
+    </div>
+  </section>
+</div>
+

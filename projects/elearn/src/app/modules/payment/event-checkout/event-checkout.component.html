@@ -1,0 +1,149 @@
+<section class="event-checkout" *ngIf="event">
+  <div class="event-checkout__container">
+    <header class="event-checkout__header">
+      <a [routerLink]="['/']" class="event-checkout__logo-link">
+        <img [src]="logoUrl" alt="Logo" class="event-checkout__logo" (error)="onLogoError($event)" />
+      </a>
+      <span class="event-checkout__badge">Secure checkout · All prices in INR (₹)</span>
+    </header>
+
+    <div class="event-checkout__grid">
+      <div class="event-checkout__payment-col">
+        <h1 class="event-checkout__welcome">You can now complete your event registration{{ userName ? ', ' + userName : '' }}</h1>
+        <p class="event-checkout__welcome-note">Review your order on the right and click below to pay securely.</p>
+
+        <div class="event-checkout__order-box">
+          <h2 class="event-checkout__order-heading">Order summary</h2>
+          <div class="event-checkout__order-row" *ngIf="!event.isFree">
+            <span>Subtotal</span>
+            <span><span aria-label="INR">₹</span>{{ event.amount | number:'1.2-2' }}</span>
+          </div>
+          <div class="event-checkout__order-row" *ngIf="!event.isFree && hasDiscount">
+            <span>Discount</span>
+            <span><span aria-label="INR">₹</span>{{ event.discount | number:'1.2-2' }}</span>
+          </div>
+          <div class="event-checkout__order-row" *ngIf="event.isFree">
+            <span>{{ event.title }}</span>
+            <span>Free</span>
+          </div>
+          <div class="event-checkout__order-divider"></div>
+          <div class="event-checkout__order-row event-checkout__order-total">
+            <span>Total (Incl. taxes)</span>
+            <span *ngIf="!event.isFree"><span aria-label="INR">₹</span>{{ event.finalAmount ?? event.amount | number:'1.2-2' }}</span>
+            <span *ngIf="event.isFree">Free</span>
+          </div>
+        </div>
+
+        <p class="event-checkout__error" *ngIf="loadError">{{ loadError }}</p>
+
+        <!-- Paid: Proceed to payment first (mounts Stripe Payment Element), then Complete purchase -->
+        <ng-container *ngIf="!event.isFree">
+          <div class="event-checkout__methods" *ngIf="!clientSecret">
+            <button
+              type="button"
+              class="event-checkout__btn event-checkout__btn--primary"
+              [disabled]="creatingIntent"
+              (click)="proceedToPayment()"
+              aria-label="Proceed to payment"
+            >
+              <i class="fas fa-ticket-alt event-checkout__btn-icon" *ngIf="!creatingIntent"></i>
+              <span class="event-checkout__btn-text">{{ creatingIntent ? 'Loading…' : 'Proceed to payment' }}</span>
+            </button>
+          </div>
+          <div class="event-checkout__methods" *ngIf="clientSecret">
+            <div id="event-payment-element" class="event-checkout__payment-element"></div>
+            <button
+              type="button"
+              class="event-checkout__btn event-checkout__btn--primary event-checkout__btn--complete"
+              [disabled]="!paymentElementReady || paying"
+              (click)="payNow()"
+              aria-label="Complete purchase"
+            >
+              <i class="fas fa-shopping-cart event-checkout__btn-icon" *ngIf="!paying"></i>
+              <span class="event-checkout__btn-text">{{ paying ? 'Processing…' : 'Complete purchase' }}</span>
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Free: Register for free -->
+        <button
+          *ngIf="event.isFree"
+          type="button"
+          class="event-checkout__btn event-checkout__btn--primary"
+          [disabled]="creatingSession"
+          (click)="registerFree()"
+          aria-label="Register for free"
+        >
+          <i class="fas fa-ticket-alt event-checkout__btn-icon" *ngIf="!creatingSession"></i>
+          <span class="event-checkout__btn-text">{{ creatingSession ? 'Processing…' : 'Register for free' }}</span>
+        </button>
+
+        <div class="event-checkout__trust">
+          <p class="event-checkout__trust-line"><i class="fas fa-lock"></i> 100% secure payment</p>
+          <p class="event-checkout__trust-note">Powered by Stripe. Your payment details are encrypted and secure.</p>
+        </div>
+
+        <p class="event-checkout__help">
+          Any questions? <a routerLink="/app/student/profile" class="event-checkout__help-link">Visit your profile</a> or contact support.
+        </p>
+      </div>
+
+      <div class="event-checkout__cart-col">
+        <div class="event-checkout__cart-card">
+          <h2 class="event-checkout__cart-heading">Event</h2>
+          <a (click)="goToEventDetail()" class="event-checkout__back" role="button">
+            <i class="fas fa-arrow-left"></i> Back to event
+          </a>
+          <div class="event-checkout__divider"></div>
+
+          <div class="event-checkout__item">
+            <div class="event-checkout__item-media">
+              <div class="event-checkout__item-placeholder">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+            </div>
+            <div class="event-checkout__item-body">
+              <h3 class="event-checkout__item-title">{{ event.title }}</h3>
+              <p class="event-checkout__item-available">Available</p>
+            </div>
+            <div class="event-checkout__item-prices" *ngIf="!event.isFree">
+              <span class="event-checkout__price-old" *ngIf="hasDiscount">
+                <span aria-label="INR">₹</span>{{ event.amount | number:'1.2-2' }}
+              </span>
+              <span class="event-checkout__price-current"><span aria-label="INR">₹</span>{{ event.finalAmount ?? event.amount | number:'1.2-2' }}</span>
+            </div>
+            <p class="event-checkout__item-price event-checkout__item-price--free" *ngIf="event.isFree">Free</p>
+          </div>
+
+          <div class="event-checkout__what-you-get">
+            <h3 class="event-checkout__what-title">What are you buying?</h3>
+            <ul class="event-checkout__what-list">
+              <li><i class="fas fa-check event-checkout__what-icon"></i> Event registration and access to event details.</li>
+              <li><i class="fas fa-check event-checkout__what-icon"></i> Updates and joining information before the event.</li>
+            </ul>
+          </div>
+
+          <div class="event-checkout__terms">
+            <p>By completing your purchase you agree to our terms of use and privacy policy. All charges are in INR (₹).</p>
+          </div>
+        </div>
+
+        <p class="event-checkout__help event-checkout__help--bottom">
+          Need help? <a routerLink="/app/student/profile" class="event-checkout__help-link">Profile &amp; support</a>
+        </p>
+      </div>
+    </div>
+
+    <footer class="event-checkout__footer">
+      <p>&copy; {{ appName }} {{ currentYear }}. Secure checkout powered by Stripe.</p>
+    </footer>
+  </div>
+</section>
+
+<div *ngIf="loading" class="event-checkout__loading">
+  <i class="fa fa-spinner fa-spin"></i> Loading…
+</div>
+<div *ngIf="loadError && !event" class="event-checkout__error-page">
+  <p>{{ loadError }}</p>
+  <a routerLink="/app/student/events" class="event-checkout__link">Back to events</a>
+</div>

@@ -1,0 +1,432 @@
+:host {
+  display: block;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+/* Test Information page layout */
+.test-info-page {
+  min-height: 200px;
+  background: #f8f9fa;
+}
+
+.test-info-page__header {
+  background: linear-gradient(135deg, #153e7c 0%, #147fa0 100%);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.test-info-page__header-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.test-info-page__back {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+}
+
+.test-info-page__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.test-info-page__header-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.test-info-page__add-btn {
+  background: #21c08c;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  i {
+    font-size: 0.9rem;
+  }
+
+  &:hover {
+    background: #1ba87a;
+    color: #fff;
+  }
+}
+
+.test-info-page__table-wrap {
+  background: #fff;
+  margin: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.test-info-page__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.test-info-page__th {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #495057;
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+
+  &--actions {
+    text-align: right;
+    width: 120px;
+  }
+}
+
+.test-info-page__row {
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f8fafb;
+  }
+}
+
+.test-info-page__empty-row td {
+  padding: 0;
+  border: none;
+}
+
+.test-info-page__empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+.test-info-page__empty-icon {
+  font-size: 3rem;
+  color: #dee2e6;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.test-info-page__empty-text {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.test-info-page__cell {
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  color: #495057;
+  border-bottom: 1px solid #f1f3f4;
+  vertical-align: middle;
+
+  &--actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+.test-info-page__link {
+  color: #147fa0;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    color: #0f5f7a;
+    text-decoration: underline;
+  }
+}
+
+.test-info-page__icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 0.35rem;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &--edit {
+    background: rgba(20, 127, 160, 0.12);
+    color: #147fa0;
+
+    &:hover {
+      background: rgba(20, 127, 160, 0.2);
+      color: #0f5f7a;
+    }
+  }
+
+  &--danger {
+    background: rgba(220, 53, 69, 0.12);
+    color: #dc3545;
+
+    &:hover {
+      background: rgba(220, 53, 69, 0.2);
+      color: #c82333;
+    }
+  }
+}
+
+/* Modal (Add/Update Test Information) – right-side panel + custom design */
+::ng-deep .modal-right .modal-dialog {
+  position: fixed !important;
+  margin: auto;
+  width: 800px !important;
+  max-width: 800px !important;
+  height: 100% !important;
+  -webkit-transform: translate3d(0%, 0, 0);
+  -ms-transform: translate3d(0%, 0, 0);
+  -o-transform: translate3d(0%, 0, 0);
+  transform: translate3d(0%, 0, 0);
+}
+
+::ng-deep .modal-right .modal-content {
+  height: 100%;
+  overflow-y: auto;
+  border: none;
+  border-radius: 0;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+}
+
+::ng-deep .modal-right .modal-body {
+  padding: 0;
+}
+
+::ng-deep .modal-right.fade .modal-dialog {
+  right: 0;
+  -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+  transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+::ng-deep .modal-right.fade.in .modal-dialog {
+  right: 0 !important;
+}
+
+::ng-deep .modal-right .modal-dialog-scrollable .modal-content {
+  max-height: calc(100vh - 0.1rem);
+}
+
+::ng-deep .modal-right .modal-dialog-scrollable {
+  max-height: calc(100vh - 0.1rem);
+}
+
+/* Add/Update Test Information modal – header, body, footer */
+::ng-deep .modal-right .test-info-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #153e7c 0%, #147fa0 100%);
+  border-bottom: none;
+}
+
+::ng-deep .modal-right .test-info-modal__title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+::ng-deep .modal-right .test-info-modal__close {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1rem;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+}
+
+::ng-deep .modal-right .test-info-modal__body {
+  padding: 1.5rem 1.5rem 1rem;
+  background: #fff;
+}
+
+::ng-deep .modal-right .test-info-modal__form {
+  max-width: 100%;
+}
+
+::ng-deep .modal-right .test-info-modal__section {
+  margin-bottom: 1.5rem;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+::ng-deep .modal-right .test-info-modal__section-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+::ng-deep .modal-right .test-info-modal__field {
+  margin-bottom: 1rem;
+}
+
+::ng-deep .modal-right .test-info-modal__field--half {
+  flex: 1;
+  min-width: 0;
+}
+
+::ng-deep .modal-right .test-info-modal__row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0;
+
+  .test-info-modal__field {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  ::ng-deep .modal-right .test-info-modal__row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+::ng-deep .modal-right .test-info-modal__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+::ng-deep .modal-right .test-info-modal__input,
+::ng-deep .modal-right .test-info-modal__textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &::placeholder {
+    color: #adb5bd;
+  }
+
+  &:focus {
+    border-color: #147fa0;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(20, 127, 160, 0.15);
+  }
+
+  &.is-invalid {
+    border-color: #dc3545;
+  }
+}
+
+::ng-deep .modal-right .test-info-modal__textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+::ng-deep .modal-right .test-info-modal__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+::ng-deep .modal-right .test-info-modal__btn {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+
+  i {
+    font-size: 0.9rem;
+  }
+
+  &--primary {
+    background: #21c08c;
+    color: #fff;
+
+    &:hover {
+      background: #1ba87a;
+      color: #fff;
+    }
+  }
+
+  &--secondary {
+    background: #fff;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+
+    &:hover {
+      background: #f1f3f4;
+      color: #495057;
+      border-color: #ced4da;
+    }
+  }
+}
+
+::ng-deep .modal-right .modal-footer {
+  display: none !important;
+}

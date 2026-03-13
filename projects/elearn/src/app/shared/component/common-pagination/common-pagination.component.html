@@ -1,0 +1,31 @@
+<nav class="common-pagination" aria-label="Pagination">
+  <div class="common-pagination__info">
+    Showing {{ rangeStart }} – {{ rangeEnd }} of {{ totalCount ?? 0 }}
+  </div>
+  <div class="common-pagination__nav">
+    <button type="button" class="common-pagination__btn common-pagination__btn--prev"
+      [disabled]="!canGoPrev" (click)="onPrev()" aria-label="Previous page">
+      <i class="fa fa-chevron-left" aria-hidden="true"></i> Prev
+    </button>
+    <div class="common-pagination__pages">
+      <button type="button" *ngFor="let p of pageNumbers"
+        class="common-pagination__page"
+        [class.common-pagination__page--active]="p === pageNumber"
+        (click)="goToPage(p)" [attr.aria-current]="p === pageNumber ? 'page' : null"
+        [attr.aria-label]="'Page ' + p">
+        {{ p }}
+      </button>
+    </div>
+    <button type="button" class="common-pagination__btn common-pagination__btn--next"
+      [disabled]="!canGoNext" (click)="onNext()" aria-label="Next page">
+      Next <i class="fa fa-chevron-right" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="common-pagination__size">
+    <label [for]="sizeSelectId" class="common-pagination__size-label">Per page</label>
+    <select [id]="sizeSelectId" class="common-pagination__size-select"
+      [ngModel]="pageSize" (ngModelChange)="onPageSizeSelect($event)">
+      <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+    </select>
+  </div>
+</nav>

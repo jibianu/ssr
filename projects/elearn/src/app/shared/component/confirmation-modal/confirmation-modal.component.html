@@ -1,0 +1,22 @@
+<div class="confirmation-modal" [class.confirmation-modal--default]="confirmStyle === 'default'">
+  <div class="confirmation-modal__header">
+    <div class="confirmation-modal__icon-wrap" aria-hidden="true">
+      <i class="fa confirmation-modal__icon" [ngClass]="confirmStyle === 'default' ? 'fa-question-circle' : 'fa-exclamation-triangle'"></i>
+    </div>
+    <h2 class="confirmation-modal__title">{{ title }}</h2>
+    <button type="button" class="confirmation-modal__close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <i class="fa fa-times" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="confirmation-modal__body">
+    <p class="confirmation-modal__message" [innerHTML]="descText"></p>
+  </div>
+  <div class="confirmation-modal__footer">
+    <button type="button" class="confirmation-modal__btn confirmation-modal__btn--secondary" (click)="closeModal('close')">
+      {{ cancelLabel }}
+    </button>
+    <button type="button" ngbAutofocus class="confirmation-modal__btn confirmation-modal__btn--primary" (click)="closeModal('ok')">
+      {{ confirmLabel }}
+    </button>
+  </div>
+</div>

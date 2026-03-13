@@ -1,0 +1,101 @@
+<!-- ✅ Same as Elearn: api/public/courses + category filter from api/public/categories -->
+<ng-container *ngIf="coursesData$ | async as data">
+  <section class="course-listing container">
+    <header class="course-listing__header">
+      <div>
+        <p class="course-listing__eyebrow">Learning Path</p>
+        <h1 class="course-listing__title">{{ data.categoryName ? data.categoryName + ' Courses' : 'All Oil &amp; Gas Courses' }}</h1>
+        <p class="course-listing__subtitle">
+          Choose from industry-led programs crafted to help you grow faster in upstream, downstream and allied domains.
+        </p>
+      </div>
+      <div class="course-listing__metrics">
+        <div>
+          <span class="course-listing__metric-label">Total Programs</span>
+          <span class="course-listing__metric-value">{{ data.totalItems }}</span>
+        </div>
+        <div>
+          <span class="course-listing__metric-label">Per page</span>
+          <span class="course-listing__metric-value">{{ itemsPerPage }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Category filter (same as Elearn): All + categories from api/public/categories -->
+    <nav class="course-listing__categories" *ngIf="data.categories?.length">
+      <button type="button" class="course-listing__cat-btn" [class.active]="!data.categorySlug" (click)="setCategory('')">
+        All
+      </button>
+      <button type="button" *ngFor="let cat of data.categories" class="course-listing__cat-btn"
+        [class.active]="data.categorySlug === cat.slug" (click)="setCategory(cat.slug)">
+        {{ cat.name }}
+      </button>
+    </nav>
+
+    <div class="course-grid">
+      <article class="course-card" *ngFor="let item of data.courses; trackBy: trackByCourseId">
+        <a class="course-card__media" [href]="item?.canonicalUrl">
+          <img
+            [src]="item?.titleImageUrl"
+            (error)="onImgError($event)"
+            alt="{{ item?.title }}"
+            loading="lazy"
+          />
+          <span class="course-card__badge" *ngIf="item?.badge">{{ item.badge }}</span>
+        </a>
+
+        <div class="course-card__body">
+          <h2 class="course-card__title">
+            <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
+          </h2>
+
+          <ul class="course-card__highlights" *ngIf="item?.courseFeatures?.length">
+            <li
+              *ngFor="let feature of (item?.courseFeatures | slice:0:3); trackBy: trackByFeatureId"
+            >
+              {{ feature?.description }}
+            </li>
+          </ul>
+        </div>
+
+        <footer class="course-card__footer">
+          <a class="course-card__cta" [href]="item?.canonicalUrl">
+            <span class="course-card__cta-text">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+              Buy
+            </span>
+            <span class="course-card__cta-price">
+              {{ (item.amount != null && item.amount > 0) ? (item.amount | currency:'INR':'symbol') : 'Free' }}
+            </span>
+          </a>
+        </footer>
+      </article>
+    </div>
+
+    <nav class="course-pagination" *ngIf="data.totalItems > itemsPerPage">
+      <button
+        type="button"
+        class="course-pagination__btn"
+        [disabled]="data.currentPage <= 1"
+        (click)="pageChange(data.currentPage - 1, data.totalItems)"
+      >
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        <span>Previous</span>
+      </button>
+
+      <span class="course-pagination__status">
+        Page {{ data.currentPage }} of {{ totalPages(data.totalItems) }}
+      </span>
+
+      <button
+        type="button"
+        class="course-pagination__btn"
+        [disabled]="data.currentPage >= totalPages(data.totalItems)"
+        (click)="pageChange(data.currentPage + 1, data.totalItems)"
+      >
+        <span>Next</span>
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </nav>
+  </section>
+</ng-container>

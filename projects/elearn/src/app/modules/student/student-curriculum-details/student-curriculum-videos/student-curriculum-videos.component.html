@@ -1,0 +1,52 @@
+<ul class="list-group list-group-flush">
+    <!-- List group item -->
+    <li class="list-group-item px-0 py-3" *ngFor="let item of videos; index as i;">
+        <h3 class="mb-3">{{item?.title}}</h3>
+        <div class="mb-2" *ngFor="let x of item?.videoLectures; index as i">
+            <div class="justify-content-between">
+                <div class="d-flex">
+                    <a href="javascript:void(0)" (click)="loadVideo(content,x)">
+                        <img src="assets/img/thumbnail.png" alt="" class="rounded img-4by3-lg"></a>
+                    <div class="ml-lg-3 mt-2 mt-lg-0">
+                        <h4 class="mb-1 h5">
+                            <a class="text-inherit" (click)="loadVideo(content,x)" href="javascript:void(0)">
+                                {{x?.title}}
+                            </a>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <hr *ngIf="item?.videoLectures.length > 1" />
+        </div>
+    </li>
+</ul>
+
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title"></h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="row h-100">
+            <aside class="col-md-7 border-right">
+                <video width="100%" controls controlsList="nodownload">
+                    <source [src]="getVideoSrc(videoObj?.videoLink) | safeUrl" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </aside>
+            <aside class="col-md-5">
+                <div class="p-5">
+                    <h3 class="title mb-3">{{videoObj?.title}}</h3>
+                    <dl class="item-property">
+                        <dt>Description</dt>
+                        <dd>
+                            <p>{{videoObj?.description}}</p>
+                        </dd>
+                    </dl>
+                </div>
+            </aside>
+        </div>
+    </div>
+</ng-template>

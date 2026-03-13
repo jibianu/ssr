@@ -1,0 +1,41 @@
+<div class="assignment-block" [class.assignment-block--author]="isEditable">
+  <div class="assignment-block__meta" *ngIf="isEditable">
+    <input
+      type="text"
+      class="form-control form-control-sm mb-2"
+      placeholder="Assignment title"
+      [ngModel]="block.title"
+      (ngModelChange)="onTitleChange($event)"
+    />
+    <textarea
+      class="form-control form-control-sm mb-2"
+      rows="3"
+      placeholder="Instructions (required)"
+      [ngModel]="block.instructions"
+      (ngModelChange)="onInstructionsChange($event)"
+    ></textarea>
+    <div class="assignment-block__options">
+      <label class="d-flex align-items-center gap-2 mb-1">
+        <input type="checkbox" [ngModel]="block.allowFileUpload" (ngModelChange)="onAllowFileUploadChange($event)" />
+        Allow file upload
+      </label>
+      <label class="d-flex align-items-center gap-2 mb-1">
+        <input type="checkbox" [ngModel]="block.allowExternalLink" (ngModelChange)="onAllowExternalLinkChange($event)" />
+        Allow external link
+      </label>
+    </div>
+  </div>
+  <div class="assignment-block__header" *ngIf="!isEditable">
+    <span class="assignment-block__icon">📋</span>
+    <span class="assignment-block__title">{{ block.title || 'Assignment' }}</span>
+  </div>
+  <div class="assignment-block__instructions" *ngIf="!isEditable && block.instructions" [innerHTML]="block.instructions"></div>
+  <div class="assignment-block__action" *ngIf="!isEditable && mode === 'student'">
+    <button type="button" class="btn btn-outline-primary btn-sm" disabled>
+      Submit assignment
+    </button>
+  </div>
+  <div class="assignment-block__action" *ngIf="!isEditable && mode === 'preview'">
+    <span class="text-muted">Preview: assignment submission would appear here.</span>
+  </div>
+</div>

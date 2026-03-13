@@ -1,0 +1,74 @@
+<div class="search-page">
+  <div class="search-page__input-wrap" (click)="$event.stopPropagation()">
+    <span class="search-page__input-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </span>
+    <input
+      type="text"
+      class="search-page__input"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearchInput()"
+      (keydown.enter)="onSearchSubmit()"
+      (focus)="onSearchInput()"
+      placeholder="What do you want to learn?"
+      aria-label="Search courses"
+      autocomplete="off"
+    />
+    <div
+      class="search-page__dropdown"
+      *ngIf="showSearchDropdown"
+      role="listbox"
+    >
+      <div class="search-page__dropdown-loading" *ngIf="searchLoading">Searching…</div>
+      <ng-container *ngIf="!searchLoading">
+        <button
+          type="button"
+          class="search-page__dropdown-item"
+          *ngFor="let course of searchResults"
+          (click)="onSelectSearchResult(course)"
+          role="option"
+        >
+          {{ course.title }}
+        </button>
+        <p class="search-page__dropdown-empty" *ngIf="searchResults.length === 0">No courses found.</p>
+      </ng-container>
+    </div>
+  </div>
+  <div class="search-page__backdrop" *ngIf="showSearchDropdown" (click)="closeSearchDropdown()" role="presentation"></div>
+
+  <section class="search-page__section search-page__section--top-searches" *ngIf="topSearchTags.length > 0">
+    <h2 class="search-page__section-title">Top searches</h2>
+    <div class="search-page__tags">
+      <button
+        type="button"
+        class="search-page__tag"
+        *ngFor="let tag of topSearchTags"
+        (click)="onTopSearchClick(tag)"
+      >
+        {{ tag }}
+      </button>
+    </div>
+  </section>
+
+  <section class="search-page__section">
+    <h2 class="search-page__section-title">Categories</h2>
+    <div class="search-page__loading" *ngIf="loadingCategories">Loading…</div>
+    <div class="search-page__categories" *ngIf="!loadingCategories && categories.length">
+      <button
+        type="button"
+        class="search-page__category"
+        *ngFor="let cat of categories; index as i"
+        (click)="goToCategory(cat)"
+      >
+        <span
+          class="search-page__category-thumb"
+          [style.background]="getCategoryColor(i)"
+        >
+          <span class="search-page__category-initial">{{ (cat.name || '?').charAt(0).toUpperCase() }}</span>
+        </span>
+        <span class="search-page__category-name">{{ cat.name }}</span>
+      </button>
+    </div>
+    <p class="search-page__empty" *ngIf="!loadingCategories && !categories.length">No categories yet.</p>
+  </section>
+</div>

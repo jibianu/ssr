@@ -1,0 +1,328 @@
+// Shared dashboard styles – same look for Admin, Company, Management, Student, Trainer
+$primary: var(--app-primary, #f57722);
+$primary-light: var(--app-primary-bg, #fff5ef);
+$border: var(--app-gray, #e5e7eb);
+$text: var(--app-dark, #1f2937);
+$text-muted: #6b7280;
+$card-bg: #ffffff;
+$radius: 12px;
+$shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+.dashboard {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* Mobile inside app layout (topbar + bottom nav): avoid extra height that forces a second scrollbar. */
+@media (max-width: 991px) {
+  .dashboard {
+    min-height: 0;
+  }
+}
+
+.dashboard__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+}
+
+.dashboard__filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dashboard__preset {
+  padding: 0.5rem 0.875rem;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: $card-bg;
+  color: $text;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  &:hover {
+    background: $primary-light;
+    border-color: $primary;
+    color: $primary;
+  }
+  &--active {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+  }
+}
+
+.dashboard__custom {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dashboard__date {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: $text;
+}
+
+.dashboard__date-sep {
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.dashboard__apply {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: $primary;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.dashboard__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard__card {
+  background: $card-bg;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+  overflow: hidden;
+}
+
+.dashboard__card-inner {
+  padding: 1.25rem;
+  position: relative;
+  min-height: 120px;
+}
+
+.dashboard__card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.dashboard__card-value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: $text;
+  line-height: 1.2;
+}
+
+.dashboard__card-label {
+  display: block;
+  font-size: 0.8125rem;
+  color: $text-muted;
+  margin-top: 0.25rem;
+}
+
+.dashboard__card-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin-top: 0.125rem;
+}
+
+.dashboard__skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: dashboard-shimmer 1.2s ease-in-out infinite;
+  border-radius: 6px;
+  &--value {
+    height: 28px;
+    width: 60%;
+    margin-bottom: 0.5rem;
+  }
+  &--sub {
+    height: 14px;
+    width: 80%;
+  }
+  &--chart {
+    height: 260px;
+    width: 100%;
+  }
+  &--cell {
+    height: 20px;
+    width: 100%;
+  }
+}
+
+@keyframes dashboard-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.dashboard__charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard__chart-card {
+  background: $card-bg;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+  padding: 1.25rem;
+}
+
+.dashboard__chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 1rem;
+}
+
+.dashboard__chart-wrap {
+  position: relative;
+  min-height: 260px;
+  &--canvas {
+    height: 260px;
+    canvas {
+      max-height: 260px;
+    }
+  }
+}
+
+.dashboard__empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-align: center;
+}
+
+.dashboard__table-section {
+  background: $card-bg;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border: 1px solid $border;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard__table-toolbar {
+  margin-bottom: 1rem;
+}
+
+.dashboard__search {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: $text;
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.dashboard__table-wrap {
+  overflow-x: auto;
+  &--loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+}
+
+.dashboard__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.dashboard__th {
+  text-align: left;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: $text;
+  border-bottom: 2px solid $border;
+  white-space: nowrap;
+}
+
+.dashboard__td {
+  padding: 0.75rem;
+  border-bottom: 1px solid $border;
+  color: $text;
+}
+
+.dashboard__empty-cell {
+  text-align: center;
+  color: $text-muted;
+  padding: 2rem;
+}
+
+.dashboard__pagination {
+  margin-top: 1rem;
+}
+
+/* Mobile: stack cards vertically, single-column charts */
+@media (max-width: 767px) {
+  .dashboard {
+    padding: 1rem;
+  }
+  .dashboard__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dashboard__title {
+    font-size: 1.25rem;
+  }
+  .dashboard__cards {
+    grid-template-columns: 1fr;
+  }
+  .dashboard__charts {
+    grid-template-columns: 1fr;
+  }
+  .dashboard__search {
+    max-width: none;
+  }
+  .dashboard__table-wrap {
+    -webkit-overflow-scrolling: touch;
+  }
+}

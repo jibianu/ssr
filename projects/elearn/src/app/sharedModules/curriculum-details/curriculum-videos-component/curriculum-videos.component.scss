@@ -1,0 +1,140 @@
+
+
+/* Base Styles - full width */
+.video-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: #fff;
+  width: 100%;
+  max-width: 100%;
+}
+
+.video-list-item {
+  margin-bottom: 2rem;
+  background-color: transparent;
+  width: 100%;
+}
+
+.video-lecture-wrapper {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.video-content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background-color: #ffffff;
+  overflow: hidden;
+  /* Center the thumbnail/video block in the right-side page */
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.video-main-title {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1rem 1.5rem 0.5rem;
+  color: #1e293b;
+}
+
+.video-player-container {
+  width: 100%;
+  max-width: 100%;
+  background-color: #000;
+  flex-shrink: 0;
+
+  video, iframe {
+    width: 100%;
+    aspect-ratio: 16/9;
+    display: block;
+    border: none;
+    max-width: 100%;
+  }
+}
+
+.video-info-container {
+  padding: 0 1.25rem 1rem;
+  flex-shrink: 0;
+}
+
+.video-info-card {
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  border: 1px solid #e2e8f0;
+}
+
+.video-title {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.video-description {
+  h4 {
+    color: #334155;
+    font-weight: 500;
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.video-separator {
+  border: none;
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 2rem 0;
+}
+
+/* Desktop: keep video full width on top, info below */
+@media (min-width: 992px) {
+  .video-content-container {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .video-player-container {
+    width: 100%;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .video-info-container {
+    padding: 0 1.25rem 0;
+  }
+
+  .video-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .video-content-container {
+    border-radius: 0;
+  }
+  
+  .video-info-card {
+    padding: 0.75rem;
+  }
+  
+  .video-title {
+    font-size: 1.1rem;
+  }
+}
+
+.video-content-container {
+  transition: box-shadow 0.2s ease;
+}

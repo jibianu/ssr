@@ -1,0 +1,228 @@
+<div class="course-page-scroll impact-dashboard">
+  <div class="course-container manage-courses affiliate-dashboard">
+    <div class="list-page__loading" *ngIf="loading">
+      <div class="list-page__loading-spinner"></div>
+      <p class="list-page__loading-text">Loading dashboard…</p>
+    </div>
+
+    <div *ngIf="!loading">
+      <div class="impact-dashboard__header">
+        <h1 class="impact-dashboard__title">Affiliate Dashboard</h1>
+        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Approved'">Share your link and earn {{ commissionRate }}% on every purchase.</p>
+        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Pending'">Your application is under review. You will receive your referral link after approval.</p>
+        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'None'">You are not registered as an affiliate. <a routerLink="/auth/register-affiliate">Apply here</a>.</p>
+      </div>
+
+      <!-- Pending: complete application -->
+      <div class="impact-card impact-card--full" *ngIf="dashboard?.status === 'Pending'">
+        <div class="impact-card__body">
+          <h2 class="impact-card__title">Complete your application</h2>
+          <p class="impact-card__meta">Add the following details to help us review your affiliate application.</p>
+          <div class="complete-form">
+            <div class="complete-form__field">
+              <label for="complete-phone">Phone</label>
+              <input id="complete-phone" type="tel" [(ngModel)]="completePhone" placeholder="Optional" class="complete-form__input form-control">
+            </div>
+            <div class="complete-form__field">
+              <label for="complete-linkedin">LinkedIn Profile</label>
+              <input id="complete-linkedin" type="url" [(ngModel)]="completeLinkedIn" placeholder="https://linkedin.com/in/..." class="complete-form__input form-control">
+            </div>
+            <div class="complete-form__field">
+              <label for="complete-reason">Why do you want to join?</label>
+              <textarea id="complete-reason" [(ngModel)]="completeReason" rows="3" placeholder="Optional" class="complete-form__input form-control"></textarea>
+            </div>
+            <button type="button" class="impact-btn impact-btn--primary" (click)="saveCompleteApplication()" [disabled]="completeSubmitting">
+              {{ completeSubmitting ? 'Saving…' : 'Save' }}
+            </button>
+            <p class="complete-form__success" *ngIf="completeSuccess">Saved. Your application is under review.</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="dashboard && dashboard.status === 'Approved'">
+        <!-- Row 1: Financial summary + Message center -->
+        <div class="impact-grid impact-grid--2">
+          <div class="impact-card impact-card--financial">
+            <div class="impact-card__body">
+              <h2 class="impact-card__title impact-card__title--uppercase">Financial summary</h2>
+              <div class="financial-summary">
+                <div class="financial-item financial-item--primary">
+                  <span class="financial-label">Available balance</span>
+                  <span class="financial-value">{{ formatCurrency(dashboard.paidEarnings) }}</span>
+                  <span class="financial-note" *ngIf="dashboard.paidEarnings > 0">Paid earnings</span>
+                </div>
+                <div class="financial-item">
+                  <span class="financial-label">Upcoming</span>
+                  <span class="financial-note">Tracked but not approved</span>
+                  <span class="financial-value">{{ formatCurrency(dashboard.pendingEarnings) }}</span>
+                </div>
+                <div class="financial-item">
+                  <span class="financial-label">Approved but not due</span>
+                  <span class="financial-value">{{ formatCurrency(0) }}</span>
+                </div>
+                <div class="financial-item">
+                  <span class="financial-label">Overdue</span>
+                  <span class="financial-note">Waiting for payment</span>
+                  <span class="financial-value">{{ formatCurrency(0) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="impact-card impact-card--messages">
+            <div class="impact-card__body">
+              <div class="impact-card__head">
+                <h2 class="impact-card__title impact-card__title--uppercase">Message center</h2>
+                <a href="javascript:void(0)" class="impact-link">View all</a>
+              </div>
+              <div class="message-list">
+                <p class="message-list__empty" *ngIf="!messages?.length">No new messages.</p>
+                <div class="message-item" *ngFor="let m of messages">
+                  <span class="message-item__title">{{ m.title }}</span>
+                  <span class="message-item__meta">{{ m.date }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Snapshot + Create a link -->
+        <div class="impact-grid impact-grid--2">
+          <div class="impact-card impact-card--snapshot">
+            <div class="impact-card__body">
+              <div class="impact-card__head">
+                <h2 class="impact-card__title impact-card__title--uppercase">Snapshot</h2>
+                <select class="impact-select impact-select--sm" [(ngModel)]="snapshotPeriod" (ngModelChange)="onSnapshotPeriodChange()">
+                  <option value="all">All time</option>
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                </select>
+              </div>
+              <div class="snapshot-chart">
+                <div class="snapshot-chart__placeholder" *ngIf="!hasChartData">No data to display</div>
+                <div class="snapshot-chart__bars" *ngIf="hasChartData">
+                  <div class="snapshot-bar" *ngFor="let b of snapshotBars" [style.height.%]="b.pct" [title]="b.label"></div>
+                </div>
+              </div>
+              <div class="snapshot-kpis">
+                <div class="kpi" [class.kpi--active]="activeKpi === 'clicks'" (click)="activeKpi = 'clicks'">
+                  <span class="kpi__value">{{ snapshot?.clicks ?? dashboard.totalClicks }}</span>
+                  <span class="kpi__label">Clicks</span>
+                </div>
+                <div class="kpi" [class.kpi--active]="activeKpi === 'actions'" (click)="activeKpi = 'actions'">
+                  <span class="kpi__value">{{ snapshot?.actions ?? dashboard.totalSignups }}</span>
+                  <span class="kpi__label">Actions</span>
+                </div>
+                <div class="kpi" [class.kpi--active]="activeKpi === 'payouts'" (click)="activeKpi = 'payouts'">
+                  <span class="kpi__value">{{ formatCurrency(snapshot?.payouts ?? dashboard.paidEarnings) }}</span>
+                  <span class="kpi__label">Payouts</span>
+                </div>
+                <div class="kpi" [class.kpi--active]="activeKpi === 'sale'" (click)="activeKpi = 'sale'">
+                  <span class="kpi__value">{{ formatCurrency(snapshot?.saleAmount ?? 0) }}</span>
+                  <span class="kpi__label">Sale amount</span>
+                </div>
+                <div class="kpi" [class.kpi--active]="activeKpi === 'conv'" (click)="activeKpi = 'conv'">
+                  <span class="kpi__value">{{ conversionRate }}%</span>
+                  <span class="kpi__label">Conversion rate</span>
+                </div>
+                <div class="kpi" [class.kpi--active]="activeKpi === 'epc'" (click)="activeKpi = 'epc'">
+                  <span class="kpi__value">{{ formatCurrency(epc) }}</span>
+                  <span class="kpi__label">EPC</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="impact-card impact-card--create-link">
+            <div class="impact-card__body">
+              <div class="create-link__header">
+                <span class="create-link__icon" aria-hidden="true">🔗</span>
+                <h2 class="impact-card__title impact-card__title--uppercase">Create a link</h2>
+              </div>
+              <p class="impact-card__meta create-link__desc">Promote any course with a simple link. Share the URL; when someone signs up or purchases, you earn commission.</p>
+              <div class="create-link__main">
+                <label class="create-link__label">Select a course</label>
+                <select [(ngModel)]="selectedCourseId" (ngModelChange)="onCourseSelect()" class="impact-select form-control" [disabled]="loadingCourses">
+                  <option value="">General referral (all courses)</option>
+                  <option *ngFor="let c of coursesForLinks" [value]="c.id">{{ c.title }}</option>
+                </select>
+                <p class="create-link__course-note" *ngIf="selectedCourseId && selectedCourseName">This link opens registration with <strong>{{ selectedCourseName }}</strong> pre-selected.</p>
+                <div class="create-link__output" *ngIf="displayLink">
+                  <input type="text" [value]="displayLink" readonly class="create-link__input form-control">
+                  <button type="button" class="impact-btn impact-btn--primary" (click)="copyDisplayLink()">
+                    {{ (copyCourseLinkSuccess || copySuccess) ? 'Copied!' : 'Copy link' }}
+                  </button>
+                </div>
+                <p class="create-link__loading" *ngIf="loadingCourseLink && selectedCourseId">Loading link…</p>
+                <p class="impact-card__meta create-link__save-note">Generated links are not stored in the app; copy and save them where you need (e.g. notes, social posts).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Courses to promote + Profile / Per-course -->
+        <div class="impact-grid impact-grid--2">
+          <div class="impact-card impact-card--courses">
+            <div class="impact-card__body">
+              <h2 class="impact-card__title impact-card__title--uppercase">Courses to promote</h2>
+              <p class="impact-card__meta">Earn {{ commissionRate }}% on every purchase when you share your link.</p>
+              <div class="courses-grid" *ngIf="coursesForLinks?.length">
+                <div class="course-tile" *ngFor="let c of coursesForLinks.slice(0, 6)">
+                  <div class="course-tile__info">
+                    <span class="course-tile__title">{{ c.title }}</span>
+                    <span class="course-tile__commission">{{ commissionRate }}% commission</span>
+                  </div>
+                </div>
+              </div>
+              <p class="impact-card__meta" *ngIf="!coursesForLinks?.length">Loading courses…</p>
+            </div>
+          </div>
+          <div class="impact-card impact-card--profile-summary">
+            <div class="impact-card__body">
+              <div class="impact-card__head">
+                <h2 class="impact-card__title impact-card__title--uppercase">Your profile</h2>
+                <a routerLink="/app/affiliate/onboarding" class="impact-btn impact-btn--outline">Edit profile</a>
+              </div>
+              <div *ngIf="loadingProfile" class="profile-loading">Loading…</div>
+              <dl class="profile-dl" *ngIf="profile && !loadingProfile">
+                <dt>Display name</dt>
+                <dd>{{ profile.accountDisplayName || '—' }}</dd>
+                <dt>Country</dt>
+                <dd>{{ profile.countryRegion || '—' }}</dd>
+                <dt>Currency</dt>
+                <dd>{{ profile.currency || '—' }}</dd>
+              </dl>
+              <p class="impact-card__meta" *ngIf="!profile && !loadingProfile">Complete your profile in onboarding.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Per-course performance (full width) -->
+        <div class="impact-card impact-card--full" *ngIf="dashboard.perCourseStats?.length">
+          <div class="impact-card__body">
+            <h2 class="impact-card__title impact-card__title--uppercase">Per-course performance</h2>
+            <p class="impact-card__meta">Signups and purchases from course-specific referral links.</p>
+            <div class="per-course-table-wrap">
+              <table class="per-course-table">
+                <thead>
+                  <tr>
+                    <th>Course</th>
+                    <th>Signups</th>
+                    <th>Purchases</th>
+                    <th>Pending earnings</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of dashboard.perCourseStats">
+                    <td>{{ row.courseTitle || 'General' }}</td>
+                    <td>{{ row.signups }}</td>
+                    <td>{{ row.purchases }}</td>
+                    <td>{{ formatCurrency(row.pendingEarnings) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

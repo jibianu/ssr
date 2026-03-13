@@ -1,0 +1,10 @@
+<div class="checkout-page">
+  <div class="checkout-card" *ngIf="loading">
+    <p>Preparing checkout…</p>
+    <div class="spinner" aria-hidden="true"></div>
+  </div>
+  <div class="checkout-card checkout-error" *ngIf="error && !loading">
+    <p class="error-message">{{ error }}</p>
+    <a routerLink="/courses" class="back-link">Back to courses</a>
+  </div>
+</div>

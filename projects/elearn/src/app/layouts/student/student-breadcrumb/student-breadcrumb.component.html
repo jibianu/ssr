@@ -1,0 +1,12 @@
+<nav class="student-breadcrumb" *ngIf="segments?.length" aria-label="Breadcrumb">
+  <span class="student-breadcrumb__trail" *ngIf="segments.length > 1">
+    <ng-container *ngFor="let seg of segments; last as isLast">
+      <ng-container *ngIf="!isLast">
+        <a *ngIf="seg.url" [routerLink]="seg.url" class="student-breadcrumb__link">{{ seg.label }}</a>
+        <span *ngIf="!seg.url" class="student-breadcrumb__current--inline">{{ seg.label }}</span>
+        <span class="student-breadcrumb__sep" aria-hidden="true">/</span>
+      </ng-container>
+    </ng-container>
+  </span>
+  <span class="student-breadcrumb__current">{{ segments[segments.length - 1].label }}</span>
+</nav>

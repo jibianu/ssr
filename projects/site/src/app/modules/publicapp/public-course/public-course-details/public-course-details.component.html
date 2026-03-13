@@ -1,0 +1,594 @@
+<!-- ✅ Loading and error state so Canonical URL page shows why it's not connected -->
+<div *ngIf="isLoading" class="container py-5 text-center">
+  <p class="text-muted">Loading course…</p>
+</div>
+<div *ngIf="loadError && !course" class="container py-5">
+  <div class="alert alert-warning mb-0">
+    <h5 class="alert-heading">Course not found</h5>
+    <p class="mb-2">{{ loadError }}</p>
+    <hr>
+    <p class="mb-0 small">Ensure the backend API is running (e.g. <code>https://localhost:52287</code>). If using config, check that <code>apiUrl</code> has the correct port.</p>
+    <a routerLink="/" class="btn btn-outline-primary btn-sm mt-2">Back to home</a>
+  </div>
+</div>
+
+<!-- ✅ Old Design: Blue promotional card header -->
+<div *ngIf="course" class="course-header-old">
+  <div class="course-header-card">
+    <h1 class="course-header-title">{{ course.title }}</h1>
+    <p class="course-header-category text-muted small mb-1" *ngIf="courseSummaryText">
+      {{ courseSummaryText }}
+    </p>
+    <p class="course-header-subtitle" *ngIf="courseDetails?.eventInfo">
+      {{ courseDetails.eventInfo }}
+    </p>
+    <ul class="course-header-features" *ngIf="(courseDetails?.courseSummaries && courseDetails?.courseSummaries.length > 1)">
+          <li *ngFor="let item of courseDetails?.courseSummaries | slice:1; trackBy: trackBySummaryIndex">
+        <i class="fa fa-check"></i>
+        <span>{{ item?.summary }}</span>
+          </li>
+        </ul>
+    <div class="course-header-footer">
+      <p>Designed By Industry Experts</p>
+      <p>Mobile & Desktop Friendly Platform</p>
+    </div>
+  </div>
+</div>
+<div *ngIf="course" class="public-container course-details">
+  <div class="row">
+    <div class="col-lg-8 col-md-12 col-12 mt-n8 mb-4 mb-lg-0">
+
+      <div class="card rounded-lg">
+
+        <div class="card-header  border-bottom-0 p-0">
+          <div>
+
+            <ul class="nav nav-lb-tab" id="tab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="description-tab" data-toggle="pill" role="tab" 
+                  (click)="scrollToSection('about', $event)">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="table-tab" data-toggle="pill" role="tab" aria-controls="contents"
+                  aria-selected="true" (click)="scrollToSection('contents', $event)">Contents</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="faq-tab" data-toggle="pill" role="tab" aria-controls="faq" aria-selected="false"
+                  (click)="scrollToSection('faq', $event)">FAQ</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="trainer-tab" data-toggle="pill" role="tab" aria-controls="trainer"
+                  aria-selected="false" (click)="scrollToSection('trainer', $event)">Trainer</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <div *ngIf="(courseDetails?.courseInformation && courseDetails?.courseInformation.length > 0)" class="page-section">
+        <h3 class="post-sub-title d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <span>About {{ courseDetails?.title }}</span>
+          <a *ngIf="showEditSection && !isEmbedMode" [href]="adminEditCourseUrl" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">Edit in admin</a>
+        </h3>
+        <div id="about" class="about-accordion">
+          <div class="about-acc-list" id="courseabout">
+            <div class="about-acc-item"
+              *ngFor="let item of courseDetails?.courseInformation; let i = index; trackBy: trackByInfoItemId">
+              <a class="about-acc-header d-flex align-items-center justify-content-between text-inherit text-decoration-none"
+                [class.expanded]="i === 0"
+                [class.collapsed]="i !== 0"
+                data-toggle="collapse" 
+                [attr.href]="'#courseabout' + i" 
+                [attr.aria-expanded]="i === 0 ? 'true' : 'false'"
+                [attr.aria-controls]="'courseabout' + i" 
+                role="button" 
+                (click)="preventNavigation($event)">
+                <span class="about-acc-text">{{ item?.title }}</span>
+                <span class="about-acc-icon" [class.open]="i === 0">
+                  <i class="fa fa-chevron-up" aria-hidden="true"></i>
+                  </span>
+                </a>
+              <div class="collapse" 
+                   [class.show]="i === 0"
+                   id="courseabout{{ i }}" 
+                   data-parent="#courseabout">
+                <div class="about-acc-body">
+                  <div class="about-acc-body-inner">
+                    {{ item?.summary }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🆕 HYDRATION OPTIMIZATION: Defer company logos section (below the fold) -->
+      @defer (on viewport) {
+        <div class="page-section">
+          <div class="card w-100 course-details__trusted-card">
+            <div class="p-4">
+              <h3 class="text-center mb-3 trusted-card-title">Top Companies Trust Us</h3>
+              <p class="text-center trusted-card-subtitle mb-4">Get your team access to top 70+ courses</p>
+            </div>
+            <div class="row px-3 pb-4 justify-content-center">
+              <div class="col-lg-2 col-md-4 col-6 mb-3">
+                <div class="company-logo-container">
+                  <img src="assets/img/shell.svg" alt="Shell" class="company-logo-img" loading="lazy">
+          </div>
+              </div>
+              <div class="col-lg-2 col-md-4 col-6 mb-3">
+                <div class="company-logo-container">
+                  <img src="assets/img/adnoc.svg" alt="ADNOC" class="company-logo-img" loading="lazy">
+            </div>
+              </div>
+              <div class="col-lg-2 col-md-4 col-6 mb-3">
+                <div class="company-logo-container">
+                  <img src="assets/img/petronas-2.svg" alt="Petronas" class="company-logo-img" loading="lazy">
+            </div>
+              </div>
+              <div class="col-lg-2 col-md-4 col-6 mb-3">
+                <div class="company-logo-container">
+                  <img src="assets/img/fluor.svg" alt="Fluor" class="company-logo-img" loading="lazy">
+            </div>
+              </div>
+              <div class="col-lg-2 col-md-4 col-6 mb-3">
+                <div class="company-logo-container">
+                  <img src="assets/img/technipfm.svg" alt="TechnipFMC" class="company-logo-img" loading="lazy">
+            </div>
+              </div>
+              <div class="col-lg-2 col-md-4 col-6 mb-3">
+                <div class="company-logo-container">
+                  <img src="assets/img/sweco.svg" alt="Sweco" class="company-logo-img" loading="lazy">
+            </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      } @placeholder {
+        <!-- ✅ Placeholder maintains layout -->
+        <div class="page-section">
+          <div class="card w-100 course-details__trusted-card">
+            <div class="p-4">
+              <h3 class="text-center mb-3 trusted-card-title">Top Companies Trust Us</h3>
+              <p class="text-center trusted-card-subtitle mb-4">Get your team access to top 70+ courses</p>
+            </div>
+            <div class="row px-3 pb-4 justify-content-center">
+              <div class="col-lg-2 col-md-4 col-6 mb-3" *ngFor="let i of [1,2,3,4,5,6]">
+                <div class="company-logo-container"></div>
+          </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Top Companies Trust Us  end -->
+
+
+
+      <div *ngIf="courseDetails && courseDetails.courseContents && courseDetails.courseContents.length > 0" id="contents" class="page-section">
+        <h3 class="course-curriculum-title d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <span>Course Content</span>
+          <a *ngIf="showEditSection && !isEmbedMode" [href]="adminCurriculumUrl" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">Edit in admin</a>
+        </h3>
+        <div class="course-curriculum-list">
+          <div class="curriculum-item" *ngFor="let item of courseDetails.courseContents; let i = index; trackBy: trackByCourseContentId">
+            <!-- Section Header -->
+            <a class="curriculum-section-header" 
+               [class.expanded]="i === 0"
+               [class.collapsed]="i !== 0"
+               data-toggle="collapse" 
+               [attr.href]="'#curriculumContent' + i" 
+               [attr.aria-expanded]="i === 0 ? 'true' : 'false'"
+               [attr.aria-controls]="'curriculumContent' + i"
+               (click)="preventNavigation($event)">
+              <div class="curriculum-section-left">
+                <i class="fa" [class.fa-minus]="i === 0" [class.fa-plus]="i !== 0" aria-hidden="true"></i>
+                <span class="curriculum-section-title">{{ item?.title || 'Untitled Section' }}</span>
+                </div>
+              <span class="curriculum-preview-link" *ngIf="i !== 0">Preview</span>
+            </a>
+
+            <!-- Section Content -->
+            <div [id]="'curriculumContent' + i" 
+                 class="collapse curriculum-section-content" 
+                 [class.show]="i === 0"
+                 [attr.data-parent]="'.course-curriculum-list'">
+              <div class="curriculum-lessons" *ngIf="item && item.courseContentSubTypes && item.courseContentSubTypes.length > 0">
+                <!-- Lessons -->
+                <div class="curriculum-lesson" *ngFor="let subItem of item.courseContentSubTypes; let j = index; trackBy: trackBySubContentId">
+                  <!-- Lesson with nested items -->
+                  <div *ngIf="subItem && subItem.courseContentSubSubTypes && subItem.courseContentSubSubTypes.length > 0">
+                    <a class="curriculum-lesson-header"
+                       [class.expanded]="i === 0 && j === 0"
+                       [class.collapsed]="i !== 0 || j !== 0"
+                       data-toggle="collapse"
+                       [attr.href]="'#lessonContent' + i + '-' + j"
+                       [attr.aria-expanded]="i === 0 && j === 0 ? 'true' : 'false'"
+                       [attr.aria-controls]="'lessonContent' + i + '-' + j"
+                       (click)="preventNavigation($event)">
+                      <i class="fa" [class.fa-minus]="i === 0 && j === 0" [class.fa-plus]="i !== 0 || j !== 0" aria-hidden="true"></i>
+                      <span class="curriculum-lesson-title">{{ subItem?.title }}</span>
+                      <span class="curriculum-duration" *ngIf="subItem?.duration">{{ subItem.duration }}</span>
+                    </a>
+                    <div [id]="'lessonContent' + i + '-' + j"
+                         class="collapse curriculum-lesson-items"
+                         [class.show]="i === 0 && j === 0"
+                         [attr.data-parent]="'#curriculumContent' + i">
+                      <ul class="curriculum-item-list">
+                        <li *ngFor="let subSubItem of subItem.courseContentSubSubTypes; trackBy: trackBySubSubContentId" class="curriculum-item-row">
+                          <span class="curriculum-item-title">{{ subSubItem?.title || 'Untitled' }}</span>
+                          <div class="curriculum-item-actions">
+                            <i class="fa fa-play-circle curriculum-play-icon" aria-hidden="true"></i>
+                            <span class="curriculum-item-duration" *ngIf="subSubItem?.duration">{{ subSubItem.duration }}</span>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Lesson without nested items -->
+                  <div *ngIf="!subItem?.courseContentSubSubTypes || !subItem.courseContentSubSubTypes || subItem.courseContentSubSubTypes.length === 0" class="curriculum-lesson-simple">
+                    <span class="curriculum-lesson-title">{{ subItem?.title || 'Untitled' }}</span>
+                    <span class="curriculum-duration" *ngIf="subItem?.duration">{{ subItem.duration }}</span>
+                  </div>
+                </div>
+                      </div>
+              <!-- ✅ Fallback: Show section title if no sub-items -->
+              <div class="curriculum-lessons" *ngIf="!item?.courseContentSubTypes || !item.courseContentSubTypes || item.courseContentSubTypes.length === 0">
+                <div class="curriculum-lesson-simple">
+                  <span class="curriculum-lesson-title">{{ item?.title || 'Untitled Section' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!------------------------------ Course Curriculum  end  ------------- -->
+
+
+
+
+      <div *ngIf="(courseDetails?.becomeCourse?.title && courseDetails?.becomeCourse?.description)" class="page-section">
+        <h3 class="description-title d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <span>Description</span>
+          <a *ngIf="showEditSection && !isEmbedMode" [href]="adminEditCourseUrl" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">Edit in admin</a>
+        </h3>
+        <div class="description-container" id="description">
+          <div class="description-content">
+            <strong class="description-heading">{{courseDetails?.becomeCourse?.title}}</strong>
+            <div class="description-text" [innerHTML]="courseDetails?.becomeCourse?.description">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--    Description  end  -->
+
+      <!--  Course FAQ start -->
+
+
+      <div *ngIf="courseDetails?.frequentlyAskedQuestions?.length > 0" class="page-section">
+        <h3 class="post-sub-title d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <span>{{ courseDetails?.title }} FAQ</span>
+          <a *ngIf="showEditSection && !isEmbedMode" [href]="adminEditCourseUrl" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">Edit in admin</a>
+        </h3>
+        <div id="faq">
+          <div class="accordion" id="coursefaq">
+            <div class="faq-item" 
+                 [class.open]="i === 0"
+              *ngFor="let item of courseDetails?.frequentlyAskedQuestions; let i = index; trackBy: trackByFaqId">
+              <!-- FAQ Header -->
+              <a class="faq-header d-flex align-items-center text-inherit text-decoration-none"
+                [class.expanded]="i === 0"
+                [class.collapsed]="i !== 0"
+                data-toggle="collapse" 
+                [attr.href]="'#coursefaq' + i" 
+                [attr.aria-expanded]="i === 0 ? 'true' : 'false'"
+                [attr.aria-controls]="'coursefaq' + i" 
+                (click)="preventNavigation($event)">
+                <span class="faq-icon">
+                  <i class="fa" [class.fa-minus]="i === 0" [class.fa-plus]="i !== 0" aria-hidden="true"></i>
+                  </span>
+                <span class="faq-question-title">{{ item?.question }}</span>
+                </a>
+
+              <!-- FAQ Body -->
+              <div class="collapse" 
+                   [class.show]="i === 0"
+                   id="coursefaq{{ i }}" 
+                   data-parent="#coursefaq">
+                <div class="faq-content">
+                    <app-read-more [content]="item?.answer" [limit]="500" [completeWords]="true"></app-read-more>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--  Course FAQ end -->
+      <div *ngIf="courseDetails?.courseTeachers?.length > 0" class="page-section">
+        <h3 class="post-sub-title d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <span>{{ courseDetails?.title }} Trainer</span>
+          <a *ngIf="showEditSection && !isEmbedMode" [href]="adminEditCourseUrl" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">Edit in admin</a>
+        </h3>
+        <div id="trainer" class="trainer-section">
+          <div class="trainer-list">
+            <div *ngFor="let item of courseDetails?.courseTeachers; let i = index; let isLast = last; trackBy: trackByTeacherId"
+                 class="trainer-item">
+              <!-- Trainer Card - Matching Promotional Banner Design -->
+              <div class="trainer-card">
+                <!-- Left Section: Trainer Image -->
+                <div class="trainer-card-left">
+                  <div class="trainer-image-wrapper">
+                    <img [src]="item?.imageUrl" 
+                         (error)="onImgError($event)" 
+                         alt="{{ item?.name }}"
+                         class="trainer-image"
+                         loading="lazy">
+                  </div>
+                    </div>
+
+                <!-- Right Section: Trainer Content -->
+                <div class="trainer-card-right">
+                  <h4 class="trainer-name">{{ item?.name }}</h4>
+                  <div class="trainer-description">
+                    <app-read-more [content]="item?.description" 
+                                   [limit]="500"
+                        [completeWords]="true">
+                      </app-read-more>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!----------------- Trainer Details end ------------ -->
+
+    </div>
+    <!-- ✅ Sidebar column - positioned after hero section -->
+    <aside class="col-lg-4 col-md-12 col-12 sidebar-column">
+      <div class="sticky-sidebar d-none d-sm-block" [class.sidebar-fixed]="isSidebarFixed" [class.sidebar-absolute]="!isSidebarFixed">
+        <!-- ✅ Pricing Card - Gets Course Features data from API via courseFeatures getter -->
+        <div class="pricing-card">
+          <!-- Course Image: when promo video exists, show as clickable thumbnail; otherwise image only -->
+          <ng-container *ngIf="courseDetails?.promoVideoUrl && courseDetails?.titleImageUrl">
+            <div class="promo-thumb-wrap pricing-card-image-wrap"
+                 (click)="openPromoVideo()"
+                 role="button"
+                 tabindex="0"
+                 (keydown.enter)="openPromoVideo()"
+                 (keydown.space)="openPromoVideo(); $event.preventDefault()">
+              <img [src]="courseDetails?.titleImageUrl"
+                   class="pricing-card-image promo-thumb-img"
+                   (error)="onImgError($event)"
+                   [alt]="course?.title || 'Course Image'"
+                   loading="lazy">
+              <div class="promo-thumb-play" aria-hidden="true">
+                <span class="promo-thumb-play-btn"><i class="fa fa-play" aria-hidden="true"></i></span>
+              </div>
+            </div>
+          </ng-container>
+          <img *ngIf="(!courseDetails?.promoVideoUrl) && courseDetails?.titleImageUrl"
+               [src]="courseDetails?.titleImageUrl"
+               class="pricing-card-image"
+               (error)="onImgError($event)"
+               [alt]="course?.title || 'Course Image'"
+               loading="lazy">
+          
+          <!-- Header: FREE vs Price with Plus -->
+          <div class="pricing-card-header">
+            <h3 class="pricing-card-title" *ngIf="!isFreeCourse">Price with Plus Free Trial</h3>
+            <h3 class="pricing-card-title" *ngIf="isFreeCourse">Course Price</h3>
+            <span class="pricing-badge-plus" *ngIf="!isFreeCourse">PLUS</span>
+            <span class="pricing-badge-free" *ngIf="isFreeCourse">FREE</span>
+          </div>
+          
+          <!-- Free: FREE label | Paid: price (with optional strikethrough + discount) -->
+          <div class="pricing-option">
+            <input type="radio" id="pricing-option" name="pricing" checked class="pricing-radio">
+            <label for="pricing-option" class="pricing-label">
+              <div class="pricing-main" *ngIf="isFreeCourse">
+                <span class="pricing-amount pricing-amount--free">FREE</span>
+              </div>
+              <div class="pricing-main" *ngIf="!isFreeCourse">
+                <span class="pricing-amount" [class.text-decoration-line-through]="hasActiveDiscount">₹{{ (courseDetails?.originalAmount ?? courseDetails?.amount ?? 0) | number:'1.2-2' }}</span>
+                <span class="pricing-amount" *ngIf="hasActiveDiscount"> ₹{{ (courseDetails?.amount ?? courseDetails?.finalPrice ?? 0) | number:'1.2-2' }}</span>
+                <span class="pricing-discount" *ngIf="hasActiveDiscount && courseDetails?.originalAmount">
+                  {{ ((courseDetails.originalAmount - (courseDetails?.amount ?? courseDetails?.finalPrice)) / courseDetails.originalAmount * 100) | number:'1.0-0' }}% off
+                </span>
+              </div>
+            </label>
+          </div>
+          <!-- Limited Time Offer (paid with active discount) -->
+          <p class="pricing-limited-offer" *ngIf="hasActiveDiscount && !isFreeCourse">
+            Limited Time Offer
+          </p>
+          
+          <!-- CTA: Enroll Now (free) → login or enroll API then /app/student/course/:id; Buy Now (paid) → /checkout -->
+          <a [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
+             class="pricing-buy-btn"
+             [class.pricing-buy-btn--enroll]="isFreeCourse"
+             [class.pricing-buy-btn-disabled]="(!isFreeCourse && isCountdownExpired) || (isFreeCourse && enrollInProgress)"
+             [attr.aria-disabled]="(!isFreeCourse && isCountdownExpired) || (isFreeCourse && enrollInProgress)"
+             (click)="isFreeCourse ? handleEnrollNowClick($event) : handleDesktopBuyClick($event)"
+             *ngIf="courseDetails"
+             target="_self">
+            <i class="fa" [class.fa-user-plus]="isFreeCourse" [class.fa-shopping-cart]="!isFreeCourse"></i>
+            <ng-container *ngIf="isFreeCourse">{{ enrollInProgress ? 'Enrolling…' : 'Enroll Now' }}</ng-container>
+            <ng-container *ngIf="!isFreeCourse">{{ isCountdownExpired ? 'Offer Expired' : 'Buy Now' }}</ng-container>
+          </a>
+          <p class="pricing-enroll-error" *ngIf="enrollError">{{ enrollError }}</p>
+          
+          <!-- Flash sale countdown (only when paid with active discount and discount end date in future) -->
+          <div class="pricing-countdown" *ngIf="hasActiveDiscount && !isFreeCourse && !isCountdownExpired">
+            This offer ends in <span class="countdown-time">{{ countdownHours }}h : {{ countdownMinutes }}m : {{ countdownSeconds }}s</span>
+          </div>
+          <div class="pricing-countdown pricing-countdown-expired" *ngIf="hasActiveDiscount && !isFreeCourse && isCountdownExpired">
+            <span class="countdown-expired-text">Offer expired</span>
+          </div>
+          
+          <!-- Key Features Section inside Pricing Card -->
+          <!-- ✅ This section displays "Course Features" data from the API -->
+          <!-- The UI label is "Key Features" but the data source is "Course Features" (courseFeatures/CourseFeatures) -->
+          <!-- ✅ Pricing card gets Course Features data via courseFeatures getter method -->
+          <!-- ✅ Container height adjusts dynamically based on number of features -->
+          <div class="pricing-key-features" *ngIf="courseDetails">
+            <h4 class="pricing-features-title">Key Features</h4>
+            <ul class="pricing-features-list">
+              <!-- Dynamic Features from API - Uses Course Features data -->
+              <!-- ✅ courseFeatures getter method handles both camelCase (courseFeatures) and PascalCase (CourseFeatures) -->
+              <!-- ✅ This ensures pricing card can access and display Course Features from API -->
+              <!-- ✅ Container height will adjust automatically based on number of features -->
+              <ng-container *ngIf="courseFeatures && courseFeatures.length > 0; else staticFeatures">
+                <!-- ✅ Display Course Features from API - container height adjusts dynamically -->
+                <li class="pricing-feature-item" 
+                    *ngFor="let feature of courseFeatures; trackBy: trackByFeatureId"
+                    [attr.data-feature-id]="feature?.id">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">{{ feature?.description || feature?.Description || '' }}</span>
+                </li>
+              </ng-container>
+              <!-- Fallback Static Features if no API data -->
+              <ng-template #staticFeatures>
+                <li class="pricing-feature-item">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">Comprehensive Study Materials</span>
+                </li>
+                <li class="pricing-feature-item">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">Hands-On Practical Exercises</span>
+                </li>
+                <li class="pricing-feature-item">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">Flexible Learning Options</span>
+                </li>
+                <li class="pricing-feature-item">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">Networking Opportunities</span>
+                </li>
+                <li class="pricing-feature-item">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">Real-World Application Focus</span>
+                </li>
+                <li class="pricing-feature-item">
+                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-text">Certification Exam Preparation</span>
+                  </li>
+              </ng-template>
+                </ul>
+          </div>
+        </div>
+      </div>
+      <div class="d-block d-sm-none footer">
+        <a [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
+          class="course-detail__cta"
+          [class.course-detail__cta--enroll]="isFreeCourse"
+          [class.course-detail__cta--buy]="!isFreeCourse"
+          (click)="isFreeCourse ? handleEnrollNowClick($event) : handleMobileBuyClick($event)"
+          target="_self">
+          <i class="fa" [class.fa-user-plus]="isFreeCourse" [class.fa-shopping-cart]="!isFreeCourse" aria-hidden="true"></i>
+          <span class="course-detail__cta-text">{{ isFreeCourse ? (enrollInProgress ? 'Enrolling…' : 'Enroll Now') : 'Buy Now' }}</span>
+        </a>
+        <p class="pricing-enroll-error" *ngIf="enrollError">{{ enrollError }}</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Sample certificate - shown on all public course pages before Related Courses -->
+  <section class="sample-certificate-section" *ngIf="course">
+    <h3 class="sample-certificate-section__title">Sample certificate</h3>
+    <p class="sample-certificate-section__intro">Complete this course to earn your certificate. Below is a preview of how it will look.</p>
+    <div class="sample-certificate-preview">
+      <div class="sample-certificate-preview__watermark" aria-hidden="true">SAMPLE</div>
+      <div class="sample-certificate-preview__logo">
+        <img src="assets/s3/oilandgas_club.svg" alt="Oilandgas Club" class="sample-certificate-preview__logo-img">
+      </div>
+      <h4 class="sample-certificate-preview__heading">Declaration of Completion</h4>
+      <p class="sample-certificate-preview__body">
+        <strong>[Your Name]</strong> has successfully completed the online course:
+      </p>
+      <p class="sample-certificate-preview__course-name">{{ course?.title || courseDetails?.title || 'Course' }}</p>
+      <p class="sample-certificate-preview__body sample-certificate-preview__body--small">
+        [Your Name] completed oilandgasclub self-learning courses, showing good effort to improve skills and grow their professional career. Well done!
+      </p>
+      <div class="sample-certificate-preview__footer">
+        <div class="sample-certificate-preview__meta">
+          <span>Completion date: [Upon completion]</span>
+          <span>Certificate code: XXXXXXXX</span>
+        </div>
+        <div class="sample-certificate-preview__signatory">
+          <div class="sample-certificate-preview__seal" aria-hidden="true">
+            <svg class="sample-certificate-preview__seal-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="46" fill="#1e40af" stroke="#1e40af" stroke-width="1"/>
+              <circle cx="50" cy="50" r="40" fill="#fff"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#1e40af" stroke-width="0.8"/>
+              <path id="seal-arc-top" fill="none" d="M 50 7 A 43 43 0 1 1 49.99 7"/>
+              <text font-size="5.5" font-weight="700" fill="#fff" letter-spacing="0.4">
+                <textPath href="#seal-arc-top" startOffset="0" text-anchor="middle">oilandgasclub</textPath>
+              </text>
+              <path id="seal-arc-bottom" fill="none" d="M 93 50 A 43 43 0 0 1 7 50"/>
+              <text font-size="2.9" font-weight="600" fill="#fff">
+                <textPath href="#seal-arc-bottom" startOffset="0" text-anchor="middle">upgrade your skills anywhere, anytime</textPath>
+              </text>
+              <g transform="translate(20, 50)">
+                <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="scale(0.9)"/>
+                <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,4) scale(0.9)"/>
+                <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,8) scale(0.9)"/>
+              </g>
+              <g transform="translate(80, 50)">
+                <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="scale(0.9)"/>
+                <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,4) scale(0.9)"/>
+                <path d="M0 -1.2 L0.35 0.2 L1.2 0.2 L0.5 0.9 L0.75 1.8 L0 1.3 L-0.75 1.8 L-0.5 0.9 L-1.2 0.2 L-0.35 0.2 Z" fill="#fff" transform="translate(0,8) scale(0.9)"/>
+              </g>
+              <g transform="translate(50, 50)">
+                <path d="M -14 -2 L 14 -2 L 12 4 L -12 4 Z" fill="#1e3a8a"/>
+                <path d="M -10 4 L -8 11 L 8 11 L 10 4 Z" fill="#1e40af"/>
+                <circle cx="12" cy="0" r="2" fill="#1e3a8a"/>
+                <path d="M 12 1.5 Q 14 5 12 7" stroke="#1e3a8a" stroke-width="0.8" fill="none"/>
+                <text x="1" y="4" text-anchor="middle" font-size="5.5" font-style="italic" fill="#1e40af" font-family="cursive, 'Brush Script MT', Georgia, serif">Anush</text>
+              </g>
+            </svg>
+          </div>
+          <div>
+            <strong>Anush</strong>
+            <div class="sample-certificate-preview__signatory-role">CEO</div>
+            <div class="sample-certificate-preview__signatory-org">Oil and Gas Club</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Related Courses - Full Width Section -->
+  <!-- ✅ Related courses using lightweight endpoint (getRelatedCourses) -->
+  <!-- Uses /api/related-courses?category=xyz endpoint (minimal data only) -->
+  <!-- NOT individual /api/course/{slug} calls - prevents multiple course API requests -->
+  <div class="related-courses-wrapper" *ngIf="course && (courseCategoryId || categoryName)">
+    <div class="related-courses-inner">
+      <app-public-related-courses
+        [categoryId]="courseCategoryId"
+        [categoryName]="categoryName"
+        [courseId]="courseId">
+      </app-public-related-courses>
+    </div>
+  </div>
+
+  <!-- Promo video overlay: click thumbnail to play -->
+  <div class="promo-video-overlay" *ngIf="showPromoVideoModal && courseDetails?.promoVideoUrl" (click)="closePromoVideo()" role="dialog" aria-label="Promo video" aria-modal="true">
+    <div class="promo-video-overlay__backdrop"></div>
+    <div class="promo-video-overlay__box" (click)="$event.stopPropagation()">
+      <button type="button" class="promo-video-overlay__close" (click)="closePromoVideo()" aria-label="Close">
+        <i class="fa fa-times"></i>
+      </button>
+      <video class="promo-video-overlay__video" controls controlsList="nodownload" playsinline crossorigin="anonymous">
+        <source [src]="getPromoVideoSrc(courseDetails.promoVideoUrl) | safeUrl" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+</div>

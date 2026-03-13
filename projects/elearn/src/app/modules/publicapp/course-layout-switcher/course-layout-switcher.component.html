@@ -1,0 +1,17 @@
+<!-- NOT logged in: Oilandgas header + footer + same public course landing design. URL stays canonical e.g. /courses/api-580 -->
+<ng-container *ngIf="!isLoggedIn">
+  <section class="main-content course-switcher-public">
+    <app-public-topbar class="top-bar"></app-public-topbar>
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+    <app-public-footer></app-public-footer>
+  </section>
+</ng-container>
+
+<!-- Logged in: same public course page + same canonical URL, but with Elearn sidebar + topbar. No redirect to /Elearn/... -->
+<ng-container *ngIf="isLoggedIn">
+  <app-elearn-layout-wrapper>
+    <router-outlet></router-outlet>
+  </app-elearn-layout-wrapper>
+</ng-container>

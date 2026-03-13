@@ -1,0 +1,21 @@
+<div class="course-player" [class.course-player--fullpage]="isFullPage" [class.course-player--lessons-open]="mobileLessonsOpen">
+  <div class="course-player__grid">
+    <!-- Mobile: video first (order in CSS), then collapsible lesson list -->
+    <div class="course-player__video">
+      <button type="button" class="course-player__lessons-toggle" (click)="mobileLessonsOpen = !mobileLessonsOpen" aria-label="Toggle lesson list" aria-expanded="{{ mobileLessonsOpen }}">
+        <i class="fa" [class.fa-chevron-down]="!mobileLessonsOpen" [class.fa-chevron-up]="mobileLessonsOpen"></i>
+        <span>Lessons ({{ lessons?.length || 0 }})</span>
+      </button>
+      <app-lesson-video
+        [curriculumId]="currentLessonId"
+        [lessonTitle]="currentLessonTitle">
+      </app-lesson-video>
+    </div>
+    <app-curriculum-sidebar
+      [lessons]="lessons"
+      [currentLessonId]="currentLessonId"
+      [redirectTo]="redirectTo"
+      class="course-player__sidebar">
+    </app-curriculum-sidebar>
+  </div>
+</div>

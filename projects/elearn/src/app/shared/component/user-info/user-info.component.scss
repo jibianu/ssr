@@ -1,0 +1,325 @@
+
+  ::ng-deep .E-datepicker.input-group{
+      width: 200px;
+  }
+  ::ng-deep.modal-right .modal-dialog {
+    position: fixed !important;
+    margin: auto;
+    width: 500px;
+    height: 100%;
+    -webkit-transform: translate3d(0%, 0, 0);
+        -ms-transform: translate3d(0%, 0, 0);
+         -o-transform: translate3d(0%, 0, 0);
+            transform: translate3d(0%, 0, 0);
+}
+::ng-deep.modal-right .modal-header {
+    padding: 9px 9px;
+}
+::ng-deep.modal-right .modal-body {
+		padding: 15px 15px 80px;
+        min-height:calc(100vh - 174px);
+        overflow-y: auto;
+	}
+
+    ::ng-deep .modal-right .modal-content {
+		height: 100%;
+		overflow-y: auto;
+	}
+
+    ::ng-deep.modal-right.fade .modal-dialog {
+    right: 0;
+    -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+       -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+         -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+            transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+::ng-deep.modal-right.fade.in .modal-dialog {
+    right: 0 !important;
+}
+
+// =============================================================================
+// Permissions UI Styling
+// =============================================================================
+
+// Ensure modal content is clickable - fix for backdrop blocking clicks
+::ng-deep.modal-right {
+  // Modal dialog should be above backdrop
+  .modal-dialog {
+    z-index: 1056 !important;
+    pointer-events: auto !important;
+  }
+  
+  .modal-content {
+    pointer-events: auto !important;
+    z-index: 1057 !important;
+  }
+  
+  .modal-body {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1058 !important;
+    
+    * {
+      pointer-events: auto !important;
+    }
+    
+    // Ensure form elements are always clickable
+    input, button, label, select, textarea, a {
+      pointer-events: auto !important;
+      position: relative;
+      z-index: 1059 !important;
+    }
+  }
+  
+  .modal-header,
+  .modal-footer {
+    pointer-events: auto !important;
+    z-index: 1058 !important;
+  }
+}
+
+// Make sure backdrop doesn't block the modal content area
+::ng-deep .modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.permissions-container {
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 5;
+  pointer-events: auto !important;
+}
+
+.permissions-main-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.permission-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #d1d5db;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.permission-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.permission-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.content-permission .form-check-input {
+  min-width: 18px;
+  min-height: 18px;
+  cursor: pointer !important;
+}
+
+.permission-item {
+  padding: 0.5rem 0.75rem;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  
+  &:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+  }
+  
+  .form-check-input {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    position: relative;
+    z-index: 20;
+    pointer-events: auto !important;
+    
+    &:checked {
+      background-color: #3b82f6;
+      border-color: #3b82f6;
+    }
+    
+    &:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
+  }
+  
+  .form-check-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+    margin-left: 0.25rem;
+    position: relative;
+    z-index: 20;
+    pointer-events: auto !important;
+  }
+}
+
+.permission-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #d1d5db, transparent);
+  margin: 1.5rem 0;
+}
+
+.permission-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  
+  .btn {
+    min-width: 140px;
+    padding: 0.625rem 1.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 20;
+    pointer-events: auto !important;
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    
+    &:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Full Admin Student Drawer (sections A–E)
+::ng-deep.modal-right--wide .modal-dialog {
+  width: 720px !important;
+  max-width: 95vw;
+}
+.drawer-loading, .drawer-error { padding: 1rem; text-align: center; color: #666; }
+.drawer-error { color: #c00; }
+.drawer-card {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  .drawer-card__title {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: #f3f4f6;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .drawer-card__body { padding: 1rem; }
+}
+.drawer-grid {
+  display: grid;
+  gap: 0.75rem 1.5rem;
+  &.drawer-grid--2 { grid-template-columns: repeat(2, 1fr); }
+}
+.drawer-field {
+  label { display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; }
+  span { font-size: 0.9rem; }
+}
+.drawer-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  &.drawer-badge--active { background: #d1fae5; color: #065f46; }
+  &.drawer-badge--inactive { background: #fee2e2; color: #991b1b; }
+}
+.drawer-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+.drawer-stat {
+  text-align: center;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  .drawer-stat__value { display: block; font-weight: 600; font-size: 1.1rem; }
+  .drawer-stat__label { font-size: 0.75rem; color: #6b7280; }
+}
+.drawer-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem 0.75rem;
+  label { margin: 0 0.25rem 0 0; font-size: 0.85rem; }
+  input[type="date"] { padding: 0.25rem 0.5rem; }
+}
+.drawer-table-wrap { padding: 0 1rem 1rem; overflow-x: auto; }
+.drawer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+  th { background: #f9fafb; font-weight: 600; }
+}
+.drawer-empty { padding: 0.75rem 1rem; color: #6b7280; margin: 0; }
+.drawer-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  .drawer-pagination__text { font-size: 0.9rem; }
+}
+.drawer-timeline {
+  list-style: none;
+  padding: 0 1rem 1rem;
+  margin: 0;
+  .drawer-timeline__item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.85rem;
+  }
+  .drawer-timeline__type { text-transform: capitalize; font-weight: 600; color: #4b5563; }
+  .drawer-timeline__title { color: #111; }
+  .drawer-timeline__date { color: #6b7280; font-size: 0.8rem; }
+  .drawer-timeline__entity { grid-column: 2; color: #6b7280; font-size: 0.8rem; }
+}

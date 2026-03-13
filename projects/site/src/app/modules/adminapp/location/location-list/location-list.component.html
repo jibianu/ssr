@@ -1,0 +1,115 @@
+<!-- ✅ COMMON ADMIN LIST: Modern Admin Panel Location List -->
+<div class="admin-list-container">
+  <!-- Header Section with Title and Add Button -->
+  <div class="admin-list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="fas fa-map-marker-alt"></i>
+          Location List
+        </h1>
+        <p class="page-subtitle">Manage and organize your locations</p>
+      </div>
+      <a class="btn-add-item" [routerLink]="['/app/location/add']">
+        <i class="fas fa-plus"></i>
+        <span>Add Location</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="admin-list-search-bar">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search locations..." 
+          [(ngModel)]="term"
+          (ngModelChange)="onSearchChange()">
+        <button class="search-btn" (click)="onSearchChange()" title="Search">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="stats-badge" *ngIf="filteredLocations.length > 0">
+      <i class="fas fa-chart-line"></i>
+      <span>{{ filteredLocations.length }} {{ filteredLocations.length === 1 ? 'Location' : 'Locations' }}</span>
+    </div>
+  </div>
+
+  <!-- Location Table Card -->
+  <div class="admin-list-table-card">
+    <table class="admin-list-table">
+      <thead>
+        <tr>
+          <th>
+            <span class="th-content">Name</span>
+          </th>
+          <th class="actions-column">
+            <span class="th-content">Action</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredLocations | paginate: config; trackBy: trackByLocationId">
+          <td>{{ item.name }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button 
+                type="button" 
+                class="btn-action btn-edit" 
+                [routerLink]="['/app/location/edit', item.id]"
+                title="Edit Location">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button 
+                type="button" 
+                class="btn-action btn-delete" 
+                (click)="deleteLocation(item.id)"
+                title="Delete Location">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <!-- Empty State -->
+        <tr *ngIf="filteredLocations.length === 0" class="empty-row">
+          <td colspan="2" class="empty-state">
+            <div class="empty-state-content">
+              <i class="fas fa-inbox empty-icon"></i>
+              <p class="empty-title">No locations found</p>
+              <p class="empty-description">Get started by creating your first location</p>
+              <a class="btn-empty-action" [routerLink]="['/app/location/add']">
+                <i class="fas fa-plus"></i>
+                Add Location
+              </a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination and Page Size Controls -->
+    <div class="admin-list-table-footer">
+      <div class="pagination-wrapper">
+        <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+      </div>
+      <div class="page-size-control">
+        <label for="pageSize" class="page-size-label">
+          <i class="fas fa-list-ol"></i>
+          Items per page:
+        </label>
+        <select 
+          id="pageSize"
+          (change)="onTableSizeChange($event)" 
+          class="page-size-select">
+          <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [ngValue]="size">
+            {{ size }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

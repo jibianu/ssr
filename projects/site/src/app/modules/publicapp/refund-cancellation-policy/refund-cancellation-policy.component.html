@@ -1,0 +1,86 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static page -->
+<div class="refund-page" ngSkipHydration>
+  <section class="refund-hero">
+    <div class="refund-hero__copy">
+      <p class="refund-eyebrow">Refund &amp; cancellation policy</p>
+      <h1>Transparent refunds for <span>self-learning courses</span></h1>
+      <p>Our goal is to keep policies simple, fair, and learner friendly. Review the summary below and reach out if you need clarification.</p>
+      <div class="refund-hero__highlights">
+        @for (item of highlights; track item.title) {
+          <article class="refund-card">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+    <div class="refund-hero__summary">
+      <h3>Quick snapshot</h3>
+      <ul>
+        <li>Most self-learning fees are non-refundable once course content is consumed.</li>
+        <li>Refund eligibility exists for unused access, platform issues, or content mismatches.</li>
+        <li>Technical problems on our side? We’ll validate and make it right.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="refund-section">
+    <header class="refund-section__header">
+      <p class="refund-eyebrow">Eligibility</p>
+      <h2>When refunds may apply</h2>
+    </header>
+    <div class="refund-grid">
+      <article class="refund-eligibility">
+        <h3>Course access</h3>
+        <p>If you never logged in or never started the curriculum, you may qualify for a refund.</p>
+      </article>
+      <article class="refund-eligibility">
+        <h3>Technical issues</h3>
+        <p>Unable to access the platform due to confirmed technical issues on our side? Contact support for resolution.</p>
+      </article>
+      <article class="refund-eligibility">
+        <h3>Content accuracy</h3>
+        <p>If the delivered course deviates significantly from the advertised curriculum, and our team verifies the issue, a refund may be granted.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="refund-section">
+    <header class="refund-section__header">
+      <p class="refund-eyebrow">How to request</p>
+      <h2>Refund process in three steps</h2>
+    </header>
+    <div class="refund-steps">
+      @for (step of refundSteps; track step.title) {
+        <article class="refund-step">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="refund-section">
+    <header class="refund-section__header">
+      <p class="refund-eyebrow">Important notes</p>
+      <h2>Before you submit a request</h2>
+    </header>
+    <ul class="refund-notes">
+      @for (note of importantNotes; track note) {
+        <li>{{ note }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="refund-section refund-section--cta">
+    <div class="refund-cta">
+      <div>
+        <p class="refund-eyebrow">Need assistance?</p>
+        <h2>We’re here to help</h2>
+        <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> or call +91-9840287919 with your order number and details.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Contact support</a>
+    </div>
+  </section>
+</div>
+

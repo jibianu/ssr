@@ -1,0 +1,41 @@
+<div class="admin-list-container">
+  <div class="admin-list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="fas fa-users"></i>
+          Event User List
+        </h1>
+        <p class="page-subtitle">Select an event to view its registrations</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-list-table-card" *ngIf="!loading">
+    <table class="admin-list-table">
+      <thead>
+        <tr>
+          <th><span class="th-content">Event Title</span></th>
+          <th><span class="th-content">Start Date</span></th>
+          <th class="actions-column"><span class="th-content">Action</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let event of events">
+          <td>{{ getEventTitle(event) }}</td>
+          <td>{{ event?.startDate | date:'mediumDate' }}</td>
+          <td class="actions-column">
+            <a [routerLink]="['/app/event/users', getEventId(event)]" class="btn btn-sm btn-primary">
+              <i class="fas fa-list"></i> View registrations
+            </a>
+          </td>
+        </tr>
+        <tr *ngIf="events.length === 0">
+          <td colspan="3" class="text-center text-muted py-4">No events found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5 text-muted">Loading events…</div>
+</div>

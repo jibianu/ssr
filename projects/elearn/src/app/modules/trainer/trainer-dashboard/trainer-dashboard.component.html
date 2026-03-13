@@ -1,0 +1,95 @@
+<div class="course-page-scroll">
+  <div class="course-container manage-courses">
+    <div class="list-page__loading" *ngIf="loading">
+      <div class="list-page__loading-spinner"></div>
+      <p class="list-page__loading-text">Loading courses…</p>
+    </div>
+
+    <div *ngIf="!loading">
+      <!-- Course Grid – same card design as My Courses -->
+      <div class="course-grid">
+        <div class="course-card lms-card" *ngFor="let item of course; trackBy: trackByCourseId">
+          <div class="lms-card__banner" [class.lms-card__banner--api]="isApiCategory(item)" [class.lms-card__banner--ndt]="!isApiCategory(item)">
+            <span class="lms-card__badge">{{ item?.category?.name || 'Course' }}</span>
+            <div class="trainer-actions lms-card__trainer-actions" *ngIf="!isAssignedView">
+              <button type="button" class="btn-progress" (click)="changeProgress(item.id, item.courseCreationProgress); $event.stopPropagation()" title="Change Progress">
+                <i class="fa fa-tasks"></i>
+              </button>
+              <button type="button" class="btn-edit" (click)="openCourseDetails(item); $event.stopPropagation()" title="View / Edit">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button type="button" class="btn-delete" (click)="deleteCourse(item.id); $event.stopPropagation()" title="Delete">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="lms-card__body" (click)="openCourseDetails(item)">
+            <h3 class="lms-card__title">{{ item.title | slice:0:120 }}{{ item.title?.length > 120 ? '...' : '' }}</h3>
+            <p class="lms-card__meta" *ngIf="item.courseCreationProgress != null">{{ item.courseCreationProgress }}% complete</p>
+            <p class="lms-card__meta" *ngIf="item.courseCreationProgress == null">—</p>
+            <div class="lms-progress">
+              <button type="button" class="lms-cta" (click)="openCourseDetails(item); $event.preventDefault(); $event.stopPropagation()">
+                {{ isAssignedView ? 'View course' : 'Manage course' }} →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <p class="course-empty-msg" *ngIf="!loading && (!course || course.length === 0)">{{ isAssignedView ? 'No assigned courses.' : 'No courses yet. Create one to get started.' }}</p>
+
+      <!-- Pagination – same as My Courses -->
+      <div class="pagination-container" *ngIf="totalPageCount > 0">
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            <li class="page-item" *ngFor="let n of [].constructor(totalPageCount); let i = index">
+              <button type="button" class="page-link" [class.active]="page === i + 1" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #cContent let-modal>
+  <div class="modal-header create-course-modal__header">
+    <h4 class="modal-title">Create Course</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="courseForm">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" formControlName="title" class="form-control" [class.is-invalid]="submitted && courseF?.title?.errors" />
+        <div *ngIf="submitted && courseF?.title?.errors" class="invalid-feedback">
+          <div *ngIf="courseF.title.errors.required">Title is required</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea type="text" formControlName="description" class="form-control" [class.is-invalid]="submitted && courseF?.description?.errors"></textarea>
+        <div *ngIf="submitted && courseF?.description?.errors" class="invalid-feedback">
+          <div *ngIf="courseF.description.errors.required">Description is required</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select formControlName="categoryId" class="form-control" id="sel1" [class.is-invalid]="submitted && courseF?.categoryId?.errors">
+          <option value="">Select Category</option>
+          <option *ngFor="let item of (categories$ | async) ?? []; trackBy: trackByCategoryId" [value]="item.id">{{ item?.name }}</option>
+        </select>
+        <div *ngIf="submitted && courseF?.categoryId?.errors" class="invalid-feedback">
+          <div *ngIf="courseF.categoryId.errors.required">Category is required</div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" type="button" (click)="createCourse()">Create</button>
+    <button type="button" class="btn btn-danger ml-1" (click)="modal.close('Close click')">Cancel</button>
+  </div>
+</ng-template>

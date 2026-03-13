@@ -1,0 +1,149 @@
+@use '../public-course-common' as *;
+
+.category-page {
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 2.6rem);
+  padding-block: clamp(2rem, 5vw, 3rem);
+}
+
+.category-page__header {
+  @include course-header-panel(
+    linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(208, 231, 255, 0.55)),
+    rgba(59, 130, 246, 0.25)
+  );
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.category-page__eyebrow {
+  @include course-eyebrow($course-color-accent-blue);
+}
+
+.category-page__title {
+  @include course-title();
+}
+
+.category-page__subtitle {
+  @include course-subtitle();
+}
+
+.category-page__metrics {
+  @include course-metrics(
+    $course-color-accent-blue,
+    '.category-page__metric-label',
+    '.category-page__metric-value'
+  );
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.75rem, 5vw, 2.4rem);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.category-card {
+  @include course-card-shell(
+    $hover-border-color: rgba(59, 130, 246, 0.3),
+    $hover-shadow: $course-shadow-card-hover-category,
+    $min-height: 460px
+  );
+}
+
+.category-card__media {
+  @include course-card-media();
+
+  .category-card__badge {
+    @include course-card-badge();
+  }
+}
+
+.category-card__body {
+  @include course-card-body(clamp(1.2rem, 3vw, 1.5rem));
+}
+
+.category-card__title {
+  @include course-card-title(
+    1.15rem,
+    $course-color-text-primary,
+    $course-color-accent-blue,
+    3
+  );
+}
+
+.category-card__highlights {
+  @include course-bullet-list(
+    $course-color-accent-blue,
+    0.4rem,
+    0.92rem,
+    1.5,
+    5rem
+  );
+}
+
+.category-card__footer {
+  @include course-card-footer(
+    clamp(0.95rem, 2.5vw, 1.2rem),
+    space-between,
+    center,
+    1rem
+  );
+}
+
+.category-card__cta {
+  @include course-cta-button(0.85rem 1.5rem);
+
+  .category-card__cta-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+
+  .category-card__cta-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.category-pagination {
+  @include course-pagination();
+
+  &__btn {
+    @include course-pagination-button();
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
+  &__status {
+    @include course-pagination-status();
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    border-radius: 24px;
+    width: min(100%, 320px);
+
+    &__btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    &__status {
+      width: 100%;
+    }
+  }
+}
+

@@ -1,0 +1,18 @@
+
+<div *ngFor="let item of concepts" class="concept-container">
+  <div class="concept-card">
+    <div class="concept-header">
+      <h3 class="concept-main-title">{{item?.title}}</h3>
+    </div>
+    
+    <div class="concept-content" *ngFor="let x of item.concepts">
+      <h4 class="concept-subtitle">{{x?.title}}</h4>
+      
+      <div class="image-container" *ngIf="x.imageLink">
+        <img [src]="x.imageLink" alt="" class="concept-image">
+      </div>
+      
+      <div class="description" [innerHTML]="x?.description"></div>
+    </div>
+  </div>
+</div>

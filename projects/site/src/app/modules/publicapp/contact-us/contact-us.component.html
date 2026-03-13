@@ -1,0 +1,122 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="contact-page" ngSkipHydration>
+  <section class="contact-hero">
+    <div class="contact-hero__copy">
+      <p class="contact-eyebrow contact-eyebrow--soft">📬 Talk to us</p>
+      <div class="contact-hero__badge-row">
+        <span class="contact-badge">Always-on mentors</span>
+        <span class="contact-badge contact-badge--soft">Avg. response 24h</span>
+      </div>
+      <h1 class="contact-hero__title">We’re here to help you <span>launch, learn, and lead</span></h1>
+      <p class="contact-hero__lead contact-hero__lead--muted">
+        Oilandgasclub teams across India, GCC, and North America are available for course guidance, enterprise solutions,
+        partnerships, and media queries.
+      </p>
+      <div class="contact-hero__contact">
+        <a class="btn-primary btn-primary--ghost" href="mailto:anush@oilandgasclub.com">Email support</a>
+        <span>or call <strong>+91 98402 87919</strong></span>
+      </div>
+      <div class="contact-hero__stats">
+        @for (stat of heroStats; track stat.label) {
+          <article class="contact-stat">
+            <span class="contact-stat__value">{{ stat.value }}</span>
+            <span class="contact-stat__label">{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+    </div>
+    <figure class="contact-hero__visual" aria-hidden="true">
+      <svg class="contact-svg contact-svg--hero" viewBox="0 0 360 300" role="presentation">
+        <defs>
+          <linearGradient id="contactHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#dbeafe" />
+            <stop offset="100%" stop-color="#f5d0fe" />
+          </linearGradient>
+        </defs>
+        <rect x="32" y="32" width="296" height="220" rx="32" fill="url(#contactHeroBg)" />
+        <rect x="70" y="70" width="220" height="64" rx="18" fill="#fff" opacity="0.95" />
+        <rect x="70" y="150" width="220" height="74" rx="22" fill="#0f172a" opacity="0.9" />
+        <circle cx="118" cy="102" r="18" fill="#3b82f6" opacity="0.9" />
+        <rect x="148" y="90" width="64" height="12" rx="6" fill="#dbe3ff" />
+        <rect x="148" y="112" width="90" height="10" rx="5" fill="#eef2ff" />
+        <rect x="90" y="170" width="48" height="26" rx="10" fill="#10b981" />
+        <rect x="150" y="170" width="48" height="26" rx="10" fill="#fde68a" />
+        <rect x="210" y="170" width="48" height="26" rx="10" fill="#a5b4fc" />
+        <path d="M82 240c32-48 172-48 204 0" fill="none" stroke="#f472b6" stroke-width="16" stroke-linecap="round" />
+      </svg>
+    </figure>
+  </section>
+
+  <section class="contact-section">
+    <header class="contact-section__header">
+      <p class="contact-eyebrow">✨ Quick links</p>
+      <h2>Tell us how we can support you</h2>
+    </header>
+    <div class="contact-grid">
+      @for (card of contactCards; track card.title) {
+        <article class="contact-card">
+          <div class="contact-card__icon">
+            <svg viewBox="0 0 60 60" role="presentation">
+              <defs>
+                <linearGradient id="contactGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#c7d2fe" />
+                  <stop offset="100%" stop-color="#bae6fd" />
+                </linearGradient>
+              </defs>
+              <rect x="8" y="12" width="44" height="36" rx="14" fill="url(#contactGradient)" opacity="0.6" />
+              <path d="M20 30h20" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+              <path d="M24 40h12" stroke="#10b981" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+            </svg>
+          </div>
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+          <a [href]="card.link">Learn more</a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="contact-section contact-section--split">
+    <article class="contact-panel">
+      <header>
+        <p class="contact-eyebrow">📞 Regional desks</p>
+        <h2>Call or write to us</h2>
+      </header>
+      <div class="contact-details">
+        @for (office of offices; track office.region) {
+          <div>
+            <h3>{{ office.region }}</h3>
+            <p>{{ office.phone }}</p>
+            <p>{{ office.email }}</p>
+          </div>
+        }
+      </div>
+    </article>
+    <article class="contact-panel">
+      <header>
+        <p class="contact-eyebrow">🤝 Direct support</p>
+        <h2>We reply within one business day</h2>
+      </header>
+      <ul class="contact-list">
+        @for (support of supportChannels; track support) {
+          <li>
+            <span class="contact-list__bullet"></span>
+            {{ support }}
+          </li>
+        }
+      </ul>
+    </article>
+  </section>
+
+  <section class="contact-section contact-section--cta">
+    <div class="contact-cta">
+      <div>
+        <p class="contact-eyebrow">🚀 Let’s collaborate</p>
+        <h2>Book a discovery call</h2>
+        <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> or call +91 98402 87919.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Contact support</a>
+    </div>
+  </section>
+</div>
+

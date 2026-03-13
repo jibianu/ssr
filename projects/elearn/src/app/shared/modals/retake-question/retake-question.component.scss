@@ -1,0 +1,87 @@
+.chapter-complete-modal {
+  max-width: 520px;
+  padding: 2.25rem 2.5rem 2rem;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.25);
+  text-align: center;
+  font-family: "PT Sans", sans-serif;
+}
+
+.chapter-complete-modal__subtitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.chapter-complete-modal__title {
+  margin: 0 0 1.75rem;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #111827;
+}
+
+.chapter-complete-modal__actions {
+  margin-bottom: 1.75rem;
+}
+
+.chapter-complete-modal__next {
+  margin-top: 0.5rem;
+}
+
+.chapter-complete-modal__label {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.chapter-complete-modal__next-title {
+  margin: 0 0 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.chapter-complete-modal__btn {
+  min-width: 190px;
+  padding: 0.6rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.chapter-complete-modal__btn--primary {
+  background: linear-gradient(
+    135deg,
+    var(--app-primary, #f57722) 0%,
+    var(--app-primary-light, #ff9d2a) 100%
+  );
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(245, 119, 34, 0.35);
+}
+
+.chapter-complete-modal__btn--primary:hover {
+  box-shadow: 0 14px 32px rgba(245, 119, 34, 0.45);
+}
+
+.chapter-complete-modal__btn--secondary {
+  background: #ffffff;
+  color: var(--app-primary, #f57722);
+  border-color: rgba(245, 119, 34, 0.7);
+}
+
+.chapter-complete-modal__btn--secondary:hover {
+  background: rgba(245, 119, 34, 0.06);
+}

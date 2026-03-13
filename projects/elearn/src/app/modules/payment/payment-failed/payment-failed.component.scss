@@ -1,0 +1,232 @@
+/* Payment failed – recovery page (EdTech style, Udemy/Coursera-like) */
+
+$primary: var(--app-primary, #f57722);
+$primary-hover: #e06b1e;
+$failure-bg: #ffe9e9;
+$failure-icon: #e53935;
+$page-bg-start: #f5f7fb;
+$page-bg-end: #eef2f7;
+$order-box-bg: #f7f9fc;
+$dark: var(--app-dark, #393939);
+$gray: var(--gray, #79758f);
+
+.payment-failed-page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 48px;
+  background: linear-gradient(180deg, $page-bg-start 0%, $page-bg-end 100%);
+}
+
+.payment-failed-card {
+  max-width: 520px;
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.payment-failed__icon-wrap {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  background: $failure-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-failed__icon {
+  font-size: 42px;
+  color: $failure-icon;
+}
+
+.payment-failed__title {
+  font-size: 26px;
+  font-weight: 700;
+  color: $dark;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.payment-failed__subtitle {
+  font-size: 17px;
+  font-weight: 600;
+  color: $dark;
+  margin: 0 0 12px 0;
+}
+
+.payment-failed__description {
+  font-size: 14px;
+  color: $gray;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.payment-failed__timer {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: $order-box-bg;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.payment-failed__timer-label {
+  display: block;
+  font-size: 12px;
+  color: $gray;
+  margin-bottom: 4px;
+}
+
+.payment-failed__timer-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: $primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.payment-failed__expired {
+  margin-top: 20px;
+  font-size: 14px;
+  color: $failure-icon;
+  font-weight: 600;
+}
+
+.payment-failed__order-box {
+  background: $order-box-bg;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.payment-failed__order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 8px 0;
+  font-size: 14px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.payment-failed__order-label {
+  color: $gray;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.payment-failed__order-value {
+  font-weight: 600;
+  color: $dark;
+  text-align: right;
+  word-break: break-all;
+}
+
+.payment-failed__btn {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin-top: 24px;
+  padding: 0 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+
+  &--primary {
+    background: $primary;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: $primary-hover;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.payment-failed__secondary {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-failed__link {
+  font-size: 14px;
+  color: $primary;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $primary-hover;
+    text-decoration: underline;
+  }
+}
+
+.payment-failed__help {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.payment-failed__help-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $dark;
+  margin: 0 0 4px 0;
+}
+
+.payment-failed__help-text {
+  font-size: 13px;
+  color: $gray;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .payment-failed-card {
+    width: 92%;
+    max-width: none;
+    padding: 20px;
+  }
+
+  .payment-failed__icon-wrap {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+  }
+
+  .payment-failed__icon {
+    font-size: 34px;
+  }
+
+  .payment-failed__title {
+    font-size: 22px;
+  }
+
+  .payment-failed__subtitle {
+    font-size: 16px;
+  }
+
+  .payment-failed__description {
+    font-size: 13px;
+  }
+
+  .payment-failed__timer-value {
+    font-size: 18px;
+  }
+}

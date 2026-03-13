@@ -1,0 +1,102 @@
+<div class="lesson-editor" [class.lesson-editor--author]="isAuthorMode">
+  <!-- Add block toolbar (always visible in author mode) -->
+  <div class="lesson-editor__toolbar" *ngIf="isAuthorMode">
+    <span class="lesson-editor__toolbar-label">Add block:</span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="isBlockTypeAllowed('text')" (click)="addBlock('text')">Text</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="isBlockTypeAllowed('video')" (click)="addBlock('video')">Video</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="isBlockTypeAllowed('quiz')" (click)="addBlock('quiz')">Quiz</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="isBlockTypeAllowed('assignment')" (click)="addBlock('assignment')">Assignment</button>
+  </div>
+
+  <!-- Block-specific toolbar navbar (shows only for active block type) -->
+  <div class="lesson-editor__navbar" *ngIf="isAuthorMode && (blockSelection.activeBlock | async) as active">
+    <!-- Text block toolbar -->
+    <div class="lesson-editor__navbar-toolbar" *ngIf="active.blockType === 'text'" (mousedown)="$event.preventDefault()">
+      <select class="lesson-editor__navbar-select" (change)="onFormatBlock($event)" (mousedown)="$event.preventDefault()">
+        <option value="p">Paragraph</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+      </select>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('bold')" title="Bold"><b>B</b></button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('italic')" title="Italic"><i>I</i></button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('underline')" title="Underline"><u>U</u></button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('strikeThrough')" title="Strikethrough"><s>S</s></button>
+      <span class="lesson-editor__navbar-sep"></span>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('insertUnorderedList')" title="Bullet list">&#8226;</button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('insertOrderedList')" title="Numbered list">1.</button>
+      <span class="lesson-editor__navbar-sep"></span>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('justifyLeft')" title="Align left">&#8676;</button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('justifyCenter')" title="Center">&#8645;</button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); blockSelection.execCmdForTextBlock('justifyRight')" title="Align right">&#8677;</button>
+      <span class="lesson-editor__navbar-sep"></span>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); onInsertLink()" title="Insert link">&#128279;</button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); onInsertImage()" *ngIf="uploadImage" title="Insert image">&#128247;</button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); onInsertCodeBlock()" title="Code block">&lt;/&gt;</button>
+      <button type="button" class="lesson-editor__navbar-btn" (mousedown)="$event.preventDefault(); onInsertTable()" title="Insert table">&#8862;</button>
+    </div>
+    <!-- Video block toolbar (placeholder for future) -->
+    <div class="lesson-editor__navbar-toolbar lesson-editor__navbar-toolbar--muted" *ngIf="active.blockType === 'video'">
+      <span class="small text-muted">Video block selected – edit URL and details below</span>
+    </div>
+    <!-- Quiz block toolbar (placeholder for future) -->
+    <div class="lesson-editor__navbar-toolbar lesson-editor__navbar-toolbar--muted" *ngIf="active.blockType === 'quiz'">
+      <span class="small text-muted">Quiz block selected – edit details below</span>
+    </div>
+    <!-- Assignment block toolbar (placeholder for future) -->
+    <div class="lesson-editor__navbar-toolbar lesson-editor__navbar-toolbar--muted" *ngIf="active.blockType === 'assignment'">
+      <span class="small text-muted">Assignment block selected – edit details below</span>
+    </div>
+  </div>
+
+  <!-- Blocks (no min-height when empty in author mode – removes blocker space) -->
+  <div class="lesson-editor__blocks" [class.lesson-editor__blocks--empty]="blocks.length === 0" (click)="onBlocksAreaClick($event)">
+    <ng-container *ngFor="let block of blocks; trackBy: trackByBlockId">
+      <div class="lesson-editor__block-wrapper" (click)="blockSelection.setActiveBlock(block.id, block.type)">
+        <div class="lesson-editor__block-actions" *ngIf="isAuthorMode">
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeBlock(block.id)" title="Remove block">
+            ×
+          </button>
+        </div>
+        <div class="lesson-editor__block">
+          <!-- Text block -->
+          <app-text-block
+            *ngIf="isTextBlock(block)"
+            [block]="block"
+            [mode]="mode"
+            [uploadImage]="uploadImage"
+            [deleteImage]="deleteImage"
+            [onUploadStateChange]="onUploadStateChange"
+            (contentChange)="onTextContentChange(block.id, $event)"
+            (imageUrlChange)="onTextImageUrlChange(block.id, $event)"
+          ></app-text-block>
+          <!-- Video block -->
+          <app-video-block
+            *ngIf="isVideoBlock(block)"
+            [block]="block"
+            [mode]="mode"
+            (blockChange)="updateBlock(block.id, $event)"
+          ></app-video-block>
+          <!-- Quiz block -->
+          <app-quiz-block
+            *ngIf="isQuizBlock(block)"
+            [block]="block"
+            [mode]="mode"
+            (blockChange)="updateBlock(block.id, $event)"
+          ></app-quiz-block>
+          <!-- Assignment block -->
+          <app-assignment-block
+            *ngIf="isAssignmentBlock(block)"
+            [block]="block"
+            [mode]="mode"
+            (blockChange)="updateBlock(block.id, $event)"
+          ></app-assignment-block>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="lesson-editor__empty" *ngIf="blocks.length === 0 && !isAuthorMode">
+    <p class="text-muted mb-0">No content in this lesson.</p>
+  </div>
+</div>

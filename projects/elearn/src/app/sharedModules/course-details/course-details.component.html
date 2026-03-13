@@ -1,0 +1,146 @@
+<!-- Video Focus Mode: full viewport lesson player shell (sidebar + video) -->
+<app-lesson-player-shell *ngIf="playerState.focusMode$ | async"></app-lesson-player-shell>
+
+<!-- Normal course layout: sidebar + content (sidebar hidden on curriculum-list) -->
+<div class="course-layout" *ngIf="!(playerState.focusMode$ | async)">
+  <aside class="course-layout__sidebar" *ngIf="!isCurriculumListRoute">
+    <nav class="navbar navbar-expand-md none-flex navbar-light shadow-sm sidenav">
+        
+        <button class="navbar-toggler d-md-none icon-shape icon-sm rounded bg-primary text-light" type="button"
+          data-toggle="collapse" data-target="#sidenav" aria-controls="sidenav" aria-expanded="false"
+          aria-label="Toggle navigation">
+          <span class="fe fe-menu"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="sidenav">
+          <div class="navbar-nav flex-column">
+           
+
+            <ul class="list-unstyled ml-n2 mb-4">
+              <div class="closebutton-tabs">
+                <button class="navbar-toggler zindexbg d-md-none icon-shape icon-sm rounded  text-light" type="button"
+                data-toggle="collapse" data-target="#sidenav" aria-controls="sidenav" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="icon-bar top-bar mt-0"></span>
+                <span class="icon-bar bottom-bar "></span>
+                <span class="line"></span>
+              </button>
+              </div>
+              <div class="position-fixed  courseHeading">
+               
+              </div>
+              <li class="nav-item" routerLinkActive="active"
+
+              data-toggle="collapse" data-target="#sidenav" aria-controls="sidenav" aria-expanded="false"
+          aria-label="Toggle navigation"
+                (click)="showCurriculumList=!showCurriculumList; isTest=false; isCurriculum=true"
+                *ngIf="showCurriculum">
+                <a class="nav-link nav-heading mt-4"
+                  routerLink='/app/{{redirectTo}}/details/curriculum-list/{{courseId}}'><i
+                    class="fe fe-book nav-icon"></i>
+                  Course Structure</a>
+              </li>
+              <!-- Progress bar: curricula + question sets (completed when video ≥90% or quiz passed by pass mark) -->
+              <li class="nav-item px-3 mt-2 mb-2" *ngIf="totalTask > 0 && (redirectTo === 'student' || redirectTo === 'company')">
+                <div class="progress-container w-100">
+                  <div class="progress-bar" [style.width.%]="(completedTask * 100) / totalTask"></div>
+                </div>
+                <div class="progress-status small text-muted mt-1">
+                  {{ completedTask }}/{{ totalTask }} completed
+                </div>
+              </li>
+
+              <div *ngIf="isCurriculum">
+
+                <li class="nav-item sub-menu curriculum-sidebar-item"
+                data-toggle="collapse" data-target="#sidenav" aria-controls="sidenav" aria-expanded="false"
+          aria-label="Toggle navigation"
+                
+                routerLinkActive="active"
+                  *ngFor="let item of curriculumList; index as i;">
+                  <a class="nav-link customNavLink" (click)="goToCurriculumDetails(item,i)"
+                    routerLink="/app/{{redirectTo}}/details/curriculum-details/{{item.id}}" (click)="itemOptions(item)">
+                    <i class="fa fa-check-circle curriculum-sidebar-item__icon curriculum-sidebar-item__icon--completed" *ngIf="item.isCompleted"></i>
+                    <!-- With questions: no manual mark complete; only pass quiz to complete -->
+                    <i class="fa fa-exclamation-circle curriculum-sidebar-item__icon curriculum-sidebar-item__icon--incomplete curriculum-sidebar-item__icon--clickable"
+                      *ngIf="!item.isCompleted && !hasQuestions(item)"
+                      (click)="markCurriculumComplete(item, $event)"
+                      title="Mark as complete"
+                      role="button"
+                      tabindex="0"
+                      aria-label="Mark as complete"
+                      (keydown.enter)="markCurriculumComplete(item, $event)"></i>
+                    <i class="fa fa-exclamation-circle curriculum-sidebar-item__icon curriculum-sidebar-item__icon--incomplete"
+                      *ngIf="!item.isCompleted && hasQuestions(item)"
+                      title="Complete the quiz to mark as complete"
+                      aria-hidden="true"></i>
+                    &nbsp;{{item?.title}}
+                  </a>
+                </li>
+              </div>
+
+              <!-- Topic counts: only show when there is at least one content type; hide items with 0 count -->
+              <div class="sidebar-counts" *ngIf="selectedCurriculumItem && isCurriculum && hasAnyTopicContent(selectedCurriculumItem)">
+                <div class="sidebar-counts__title">This topic</div>
+                <div class="sidebar-counts__grid">
+                  <div class="sidebar-counts__item" *ngIf="(selectedCurriculumItem.curriculumConceptCount ?? 0) > 0">
+                    <i class="fa fa-lightbulb-o sidebar-counts__icon"></i>
+                    <span class="sidebar-counts__label">Concepts</span>
+                    <span class="sidebar-counts__value">{{ selectedCurriculumItem.curriculumConceptCount }}</span>
+                  </div>
+                  <div class="sidebar-counts__item" *ngIf="(selectedCurriculumItem.curriculumStudyMaterialCount ?? 0) > 0">
+                    <i class="fa fa-book sidebar-counts__icon"></i>
+                    <span class="sidebar-counts__label">Study Material</span>
+                    <span class="sidebar-counts__value">{{ selectedCurriculumItem.curriculumStudyMaterialCount }}</span>
+                  </div>
+                  <div class="sidebar-counts__item" *ngIf="(selectedCurriculumItem.curriculumVideoLectureCount ?? 0) > 0">
+                    <i class="fa fa-video-camera sidebar-counts__icon"></i>
+                    <span class="sidebar-counts__label">Videos</span>
+                    <span class="sidebar-counts__value">{{ selectedCurriculumItem.curriculumVideoLectureCount }}</span>
+                  </div>
+                  <div class="sidebar-counts__item" *ngIf="(selectedCurriculumItem.curriculumQuestionCount ?? 0) > 0">
+                    <i class="fa fa-question-circle sidebar-counts__icon"></i>
+                    <span class="sidebar-counts__label">Questions</span>
+                    <span class="sidebar-counts__value">{{ selectedCurriculumItem.curriculumQuestionCount }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <li class="nav-item" routerLinkActive="active" *ngIf="showTest" (click)="isCurriculum=false;isTest=true">
+                <a class="nav-link nav-heading" routerLink='/app/{{redirectTo}}/details/test-list/{{courseId}}'><i
+                    class="fe fe-book nav-icon"></i>
+                  Test</a>
+              </li>
+              <div *ngIf="isTest">
+                <li class="nav-item sub-menu" routerLinkActive="active"
+                  *ngFor="let item of questionsSetList; index as i;">
+                  <a class="nav-link customNavLink" (click)="goToCurriculumDetails(item)"
+                    routerLink="/app/{{redirectTo}}/details/test-details/{{item.id}}">
+                    
+                    <i class="fa fa-check-circle" *ngIf="item.isCompleted"></i>
+                    <i class="fa fa-exclamation-circle" aria-hidden="true" *ngIf="!item.isCompleted"></i>
+                    &nbsp;{{item?.title}}
+                    
+                  </a>
+                </li>
+              </div>
+              <li class="nav-item" routerLinkActive="active" *ngIf="showPracticeTest">
+                <a class="nav-link nav-heading" routerLink="/app/{{redirectTo}}/details/question-bank/{{courseId}}"><i
+                    class="fe fe-book nav-icon"></i>
+                  Practice</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+    </nav>
+  </aside>
+  <main class="course-layout__content" [class.course-layout__content--full-width]="isCurriculumListRoute">
+    <!-- Inner wrapper forced slightly taller than container so scrollbar shows
+         even when there is very little content -->
+    <div class="course-layout__content-inner">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

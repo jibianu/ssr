@@ -1,0 +1,18 @@
+<aside class="player-sidebar" role="navigation">
+  <h2 class="player-sidebar__title">Course Structure</h2>
+  <ul class="player-sidebar__list">
+    <li
+      *ngFor="let lesson of lessons; trackBy: trackByLessonId"
+      class="player-sidebar__item"
+      [class.player-sidebar__item--active]="lesson.id === currentLessonId">
+      <button
+        type="button"
+        class="player-sidebar__link"
+        (click)="goToLesson(lesson)">
+        <i class="fa fa-check-circle player-sidebar__icon" *ngIf="lesson.isCompleted"></i>
+        <i class="fa fa-exclamation-circle player-sidebar__icon" *ngIf="!lesson.isCompleted"></i>
+        <span class="player-sidebar__text">{{ lesson.title }}</span>
+      </button>
+    </li>
+  </ul>
+</aside>

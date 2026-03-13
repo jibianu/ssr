@@ -1,0 +1,70 @@
+// Same design as course add page
+.card-header {
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+}
+.card-header h2 {
+  font-size: 56px;
+  color: white;
+  padding: 20px 0;
+  margin: 0;
+}
+.card-body {
+  padding: 10px 60px;
+  background: #ebf1f8;
+}
+
+.event-section {
+  margin-bottom: 1.5rem;
+}
+.event-section__title {
+  color: #153e7c;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #147fa0;
+}
+
+.event-upload {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  &:hover {
+    border-color: var(--app-primary, #f57722);
+    background: var(--app-primary-bg, rgba(245, 119, 34, 0.08));
+  }
+  &--video .event-upload__icon { font-size: 2rem; }
+  &--loading { pointer-events: none; opacity: 0.85; }
+}
+.event-upload__icon {
+  font-size: 2.5rem;
+  color: var(--app-primary, #f57722);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.event-upload__text {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+.event-upload__preview {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.event-video-preview__player {
+  max-width: 100%;
+  width: 100%;
+  max-height: 320px;
+  background: #000;
+  border-radius: 8px;
+}
+
+.invalid-feedback.d-block {
+  display: block;
+}

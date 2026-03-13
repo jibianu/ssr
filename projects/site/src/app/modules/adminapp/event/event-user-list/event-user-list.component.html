@@ -1,0 +1,98 @@
+<!-- <div class="d-sm-flex align-items-center justify-content-between ">
+  <h1 class="h3 mb-0 text-gray-800">Event User List</h1>
+  
+  </div>
+  
+
+<div class="form-group pull-right">
+  <input type="text" class="search form-control" placeholder="Search" name="search" [(ngModel)]="term">
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col" style="width:30%"> Name <i (click)="onSortClick($event, 'title')" class="fa fa-caret-up"></i></th>
+      <th scope="col" style="width:30%"> Email</th>
+      <th scope="col" style="width:30%"> Mobile</th>
+      <th scope="col" style="width:30%"> CompanyName</th>
+      <th scope="col" style="width:30%"> PaymentRefNo</th>
+      
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of categories |filter:term | paginate: config">
+      <td>{{item.name}}</td>
+      <td>{{item.email}}</td>
+      <td>{{item.mobile}}</td>
+      <td>{{item.companyName}}</td>
+      <td>{{item.paymentRefNo}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="d-flex bd-highlight mb-3">
+  <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+  <div class="ml-auto p-2 bd-highlight">
+    <select (change)="onTableSizeChange($event)" class="custom-select">
+      <option *ngFor="let size of tableSizes" [ngValue]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+</div> -->
+
+<div class="d-sm-flex align-items-center justify-content-between mb-3">
+  <h1 class="h3 text-gray-800">Event User List</h1>
+</div>
+
+<div class="form-group mb-3">
+  <input 
+    type="text" 
+    class="form-control" 
+    placeholder="Search" 
+    name="search" 
+    [(ngModel)]="term"
+  >
+</div>
+
+<table class="table table-bordered table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col" style="width: 20%">
+        Name 
+        <i 
+          class="fa fa-caret-up ml-1 cursor-pointer"
+          (click)="onSortClick($event, 'name')"
+        ></i>
+      </th>
+      <th scope="col" style="width: 20%">Email</th>
+      <th scope="col" style="width: 15%">Mobile</th>
+      <th scope="col" style="width: 25%">Company Name</th>
+      <th scope="col" style="width: 20%">Payment Ref No</th>
+      <!-- <th scope="col" style="width:10%">Action</th> -->
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of categories | paginate: config">
+      <td>{{ item.name }}</td>
+      <td>{{ item.email }}</td>
+      <td>{{ item.mobile }}</td>
+      <td>{{ item.companyName }}</td>
+      <td>{{ item.paymentRefNo }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+  
+  <div class="form-inline">
+    <label class="mr-2">Rows per page:</label>
+    <select 
+      class="custom-select" 
+      (change)="onTableSizeChange($event)">
+      <option *ngFor="let size of tableSizes" [value]="size">
+        {{ size }}
+      </option>
+    </select>
+  </div>
+</div>

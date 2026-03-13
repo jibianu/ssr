@@ -1,0 +1,67 @@
+.list-page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+}
+
+.list-page-title--orange {
+  color: #ff5722;
+}
+
+.defaultTable i{
+    font-size: 18px;
+}
+
+
+table{
+    border: 1px solid #ddd8d8;
+    table-layout: fixed;
+    white-space: nowrap;
+    overflow-y: scroll;
+    width: 100%;
+}
+
+// .customDesign{
+//     height: 50vh;
+// }
+
+.customBtn{
+    padding: 3px 5px!important;
+    width: 28px;
+}
+
+
+.studentHeading{
+    background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+    text-align: center;
+}
+
+.studentHeading h1{
+    color:white;
+    padding: 43px 0px;
+    font-size: 56px;
+    margin-left: 20vw;
+}
+
+.mainClass{
+    height: 83vh;
+    overflow: auto;
+}
+
+.studentHeading a{
+    transition: box-shadow 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    padding: 5px 10px;
+    width: 100%;
+    transition: all ease 0.2s;
+    background-color: transparent;
+    color: white !important;
+    border: 1px solid white;
+}
+
+.studentHeading a:hover{
+    transform: translateY(-2px);
+}

@@ -1,0 +1,129 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="mission-page" ngSkipHydration>
+  <section class="mission-hero">
+    <div class="mission-hero__copy">
+      <p class="mission-eyebrow">🌍 Purpose &amp; direction</p>
+      <h1>Fueling <span>lifelong capability</span> for every oil &amp; gas professional</h1>
+      <p class="mission-hero__lead">
+        We align industry-grade learning, talent intelligence, and human mentorship so that teams stay future ready,
+        compliant, and inspired across every basin.
+      </p>
+      <div class="mission-hero__stats">
+        @for (stat of heroStats; track stat.label) {
+          <article class="mission-stat">
+            <span class="mission-stat__value">{{ stat.value }}</span>
+            <span class="mission-stat__label">{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+    </div>
+    <figure class="mission-hero__visual" aria-hidden="true">
+      <svg class="mission-svg mission-svg--hero" viewBox="0 0 360 300" role="presentation">
+        <defs>
+          <linearGradient id="missionHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e0f2ff" />
+            <stop offset="100%" stop-color="#e9defc" />
+          </linearGradient>
+        </defs>
+        <rect x="32" y="32" width="296" height="220" rx="32" fill="url(#missionHeroBg)" />
+        <rect x="72" y="86" width="216" height="46" rx="16" fill="#ffffff" opacity="0.95" />
+        <rect x="72" y="146" width="216" height="66" rx="20" fill="#111c33" opacity="0.9" />
+        <circle cx="120" cy="109" r="18" fill="#6a94f1" />
+        <rect x="150" y="95" width="60" height="12" rx="6" fill="#c2d3ff" />
+        <rect x="150" y="117" width="80" height="10" rx="5" fill="#e4ebff" />
+        <rect x="94" y="164" width="44" height="26" rx="10" fill="#ffffff" />
+        <rect x="148" y="164" width="44" height="26" rx="10" fill="#a7f3d0" />
+        <rect x="202" y="164" width="44" height="26" rx="10" fill="#fde68a" />
+        <path d="M82 236c34-46 174-46 208 0" fill="none" stroke="#8dd3ff" stroke-width="16" stroke-linecap="round" />
+      </svg>
+    </figure>
+  </section>
+
+  <section class="mission-section">
+    <header class="mission-section__header">
+      <p class="mission-eyebrow">✨ Vision</p>
+      <h2>Where we are going</h2>
+      <p>Our vision anchors every partnership, product sprint, and classroom moment.</p>
+    </header>
+    <div class="mission-grid">
+      @for (vision of visionStatements; track vision.title) {
+        <article class="mission-card">
+          <div class="mission-card__icon">
+            <svg viewBox="0 0 60 60" role="presentation">
+              <defs>
+                <linearGradient id="visionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#c7d2fe" />
+                  <stop offset="100%" stop-color="#bae6fd" />
+                </linearGradient>
+              </defs>
+              <rect x="8" y="12" width="44" height="36" rx="14" fill="url(#visionGradient)" opacity="0.6" />
+              <path d="M18 30h24" stroke="#4338ca" stroke-width="3" stroke-linecap="round" />
+              <path d="M24 40h12" stroke="#0f172a" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+            </svg>
+          </div>
+          <h3>{{ vision.title }}</h3>
+          <p>{{ vision.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="mission-section mission-section--dual">
+    <article class="mission-panel">
+      <header>
+        <p class="mission-eyebrow">🎯 Mission</p>
+        <h2>What we deliver every day</h2>
+      </header>
+      <ul class="mission-list">
+        @for (item of missionPillars; track item) {
+          <li>
+            <span class="mission-list__bullet"></span>
+            {{ item }}
+          </li>
+        }
+      </ul>
+    </article>
+    <article class="mission-panel">
+      <header>
+        <p class="mission-eyebrow">🤝 Stakeholder promise</p>
+        <h2>How we stay accountable</h2>
+      </header>
+      <div class="mission-commitments">
+        @for (commitment of commitments; track commitment.title) {
+          <div>
+            <h3>{{ commitment.title }}</h3>
+            <p>{{ commitment.description }}</p>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="mission-section mission-section--impact">
+    <header class="mission-section__header">
+      <p class="mission-eyebrow">📌 Strategic priorities</p>
+      <h2>Impact pillars</h2>
+    </header>
+    <div class="mission-impact">
+      @for (impact of impactHighlights; track impact.title) {
+        <article class="mission-impact__card">
+          <div class="mission-impact__badge">{{ impact.badge }}</div>
+          <h3>{{ impact.title }}</h3>
+          <p>{{ impact.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="mission-section mission-section--cta">
+    <div class="mission-cta">
+      <div>
+        <p class="mission-eyebrow">🚀 Join the journey</p>
+        <h2>Together we can reskill entire workforces</h2>
+        <p>Partner with Oilandgasclub to bring modern curricula, coaching, and analytics to your teams worldwide.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Partner with us</a>
+    </div>
+  </section>
+</div>
+

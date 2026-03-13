@@ -1,0 +1,41 @@
+<div class="student-events-page">
+  <section class="student-events-hero">
+    <span class="student-events-hero__badge"><i class="fa fa-calendar-check-o"></i> Events</span>
+    <h1 class="student-events-hero__title">Upcoming Events</h1>
+    <p class="student-events-hero__subtitle">Join expert-led workshops and grow your expertise with peers and industry veterans.</p>
+  </section>
+
+  <div *ngIf="loading" class="student-events-loading">
+    <i class="fa fa-spinner fa-spin"></i> Loading events…
+  </div>
+  <div *ngIf="error" class="student-events-error alert alert-warning">{{ error }}</div>
+
+  <div *ngIf="!loading && !error && events.length === 0" class="student-events-empty">
+    <p>No upcoming events at the moment. Check back soon.</p>
+  </div>
+
+  <div *ngIf="!loading && !error && events.length > 0" class="student-events-grid">
+    <article class="student-event-card" *ngFor="let event of events; trackBy: $index">
+      <a [routerLink]="['event', event.id]" class="student-event-card__link">
+        <div
+          class="student-event-card__media"
+          [style.background-image]="getEventImage(event) ? 'url(' + getEventImage(event) + ')' : ''"
+        >
+          <span class="student-event-card__badge" *ngIf="event?.badge">{{ event.badge }}</span>
+        </div>
+        <div class="student-event-card__content">
+          <div class="student-event-card__meta">
+            <span><i class="fa fa-calendar"></i> {{ event?.startDate | date: 'EEE, dd MMM' }}</span>
+            <span><i class="fa fa-map-marker"></i> {{ event?.location || 'Join from anywhere' }}</span>
+          </div>
+          <h3 class="student-event-card__title">{{ event?.title }}</h3>
+          <p class="student-event-card__description">{{ getEventDescription(event) }}</p>
+          <div class="student-event-card__footer">
+            <span class="student-event-card__price" *ngIf="event?.amount != null">From ₹{{ event.amount | number:'1.0-0' }}</span>
+            <span class="student-event-card__cta">View details</span>
+          </div>
+        </div>
+      </a>
+    </article>
+  </div>
+</div>

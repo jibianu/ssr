@@ -1,0 +1,74 @@
+a{
+    cursor: pointer;
+}
+a.disabled {
+    pointer-events: none;
+    cursor: default;
+   //  backdrop-filter: blur(5px);
+ }
+ .disabledTest{
+    background: rgb(96 93 93 / 20%);
+ }
+ p span{
+    margin-left: 172px;
+    color: green;
+ }
+
+ .card-header{
+   padding: 26px 0px;
+   background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+   border:none;
+   box-shadow: 1px 1px 11px rgba(33,33,33,.2);  ;
+ }
+ 
+ .card-header h5{
+   font-size: 2.5rem !important;
+   // line-height: 4;
+   text-align: center;
+   color:white!important;
+  //  font-weight:bolder;
+   
+ }
+ .card-header h3{
+   font-size: 1rem!important;
+ }
+
+ .customTestLink h5{
+   color: #142031!important;
+   text-decoration: none;
+   font-size: 20px;
+ }
+ .btntype a{
+width: 130px;
+background-color: #60bdeb;
+color: white!important;
+
+ }
+ 
+ .btn{
+  transition: box-shadow .3s;
+cursor: pointer;
+ }
+
+ .customTestLink a{
+  text-decoration: none;
+  color: #490206!important;
+ }
+ .btn:hover{
+  box-shadow: 0 0 11px rgba(33,33,33,.2);   
+ }
+
+ .customTestLink p{
+  color: #7f7f7f;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+ }
+
+ .backBtn{
+  height: 20px;
+  position: absolute;
+  top:50px;
+  left: 30px;
+  cursor: pointer;
+}

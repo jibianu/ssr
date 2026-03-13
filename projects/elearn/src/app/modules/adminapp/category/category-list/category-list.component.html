@@ -1,0 +1,40 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="list-page__table-wrap list-table-modern__wrap">
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">
+              <span class="list-table-modern__sort">Name</span>
+              <span class="list-table-modern__sort-icon fa" [ngClass]="sortDir === 1 ? 'fa-caret-up' : 'fa-caret-down'" (click)="onSortClick($event, 'name')" aria-hidden="true"></span>
+            </th>
+            <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!categories?.length" class="list-table-modern__row">
+            <td colspan="2" class="list-table-modern__empty">No categories found</td>
+          </tr>
+          <tr *ngFor="let item of paginatedCategories" class="list-table-modern__row">
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.name }}</td>
+            <td class="list-table-modern__td list-table-modern__td--action">
+              <div class="list-table-modern__actions">
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--success" routerLink="/app/{{ txtRoute }}/category/edit/{{ item.id }}" title="Edit"><i class="fa fa-edit"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="getCourse(item)" title="View Courses"><i class="fa fa-book"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteCategory(item.id)" title="Delete"><i class="fa fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <app-common-pagination class="list-page__pagination"
+    [pageNumber]="config.currentPage"
+    [pageSize]="config.itemsPerPage"
+    [totalCount]="filteredCategoryCount"
+    [pageSizeOptions]="tableSizes"
+    (pageChange)="pageChanged($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-common-pagination>
+</div>

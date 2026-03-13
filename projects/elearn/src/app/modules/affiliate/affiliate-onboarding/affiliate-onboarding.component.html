@@ -1,0 +1,124 @@
+<div class="onboarding">
+  <div class="onboarding__inner" *ngIf="!loading">
+    <h1 class="onboarding__title">Complete your affiliate profile</h1>
+    <p class="onboarding__subtitle">Tell us how you promote – this helps us tailor your experience.</p>
+
+    <div class="onboarding__steps">
+      <div class="onboarding__step-indicator">
+        <span [class.active]="step >= 0">1</span>
+        <span [class.active]="step >= 1">2</span>
+        <span [class.active]="step >= 2">3</span>
+      </div>
+
+      <div class="onboarding__step" *ngIf="step === 0">
+        <h2 class="onboarding__step-title">How would you categorize your business?</h2>
+        <div class="onboarding__cards">
+          <label *ngFor="let cat of businessCategories" class="onboarding__card" [class.selected]="businessCategory === cat.value">
+            <input type="radio" name="businessCategory" [value]="cat.value" [(ngModel)]="businessCategory">
+            <span class="onboarding__card-title">{{ cat.label }}</span>
+            <span class="onboarding__card-desc">{{ cat.description }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="onboarding__step" *ngIf="step === 1">
+        <h2 class="onboarding__step-title">Which methods do you use to promote? Choose all that apply.</h2>
+        <div class="onboarding__promo-list">
+          <div *ngFor="let ch of channelTypes" class="onboarding__promo-row">
+            <button type="button" class="onboarding__promo-add" (click)="addPromotion(ch.value)">Add {{ ch.label }}</button>
+          </div>
+        </div>
+        <div class="onboarding__added" *ngIf="promotionLinks.length">
+          <h3 class="onboarding__added-title">Added</h3>
+          <div *ngFor="let link of promotionLinks; let i = index" class="onboarding__added-item">
+            <span class="onboarding__added-label">{{ channelLabel(link) }}</span>
+            <span class="onboarding__added-url" *ngIf="link.url">{{ link.url }}</span>
+            <button type="button" class="onboarding__added-remove" (click)="removePromotionLink(i)" aria-label="Remove">×</button>
+          </div>
+        </div>
+        <div class="onboarding__add-form" *ngIf="addingChannel">
+          <h3 class="onboarding__add-form-title">Add {{ addingChannel }}</h3>
+          <div class="onboarding__add-form-row" *ngIf="addingChannel === 'Social'">
+            <label>Platform</label>
+            <select [(ngModel)]="addPlatform" class="form-control">
+              <option value="">Select</option>
+              <option *ngFor="let p of socialPlatforms" [value]="p.value">{{ p.label }}</option>
+            </select>
+          </div>
+          <div class="onboarding__add-form-row">
+            <label>URL</label>
+            <input type="url" [(ngModel)]="addUrl" class="form-control" placeholder="https://...">
+          </div>
+          <div class="onboarding__add-form-actions">
+            <button type="button" class="btn btn--primary" (click)="savePromotionLink()">Save</button>
+            <button type="button" class="btn btn--secondary" (click)="cancelAdd()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="onboarding__step" *ngIf="step === 2">
+        <h2 class="onboarding__step-title">Tell us about yourself</h2>
+        <div class="onboarding__form">
+          <div class="onboarding__radio-group">
+            <label class="onboarding__radio"><input type="radio" name="entityType" value="Individual" [(ngModel)]="entityType"> Individual</label>
+            <label class="onboarding__radio"><input type="radio" name="entityType" value="Company" [(ngModel)]="entityType"> Company</label>
+          </div>
+          <div class="onboarding__field">
+            <label>Account display name *</label>
+            <input type="text" [(ngModel)]="accountDisplayName" class="form-control">
+          </div>
+          <div class="onboarding__field">
+            <label>Country / Region *</label>
+            <input type="text" [(ngModel)]="countryRegion" class="form-control">
+          </div>
+          <div class="onboarding__field">
+            <label>Street address 1</label>
+            <input type="text" [(ngModel)]="streetAddress1" class="form-control">
+          </div>
+          <div class="onboarding__field">
+            <label>Street address 2</label>
+            <input type="text" [(ngModel)]="streetAddress2" class="form-control">
+          </div>
+          <div class="onboarding__field onboarding__field--half">
+            <label>City</label>
+            <input type="text" [(ngModel)]="city" class="form-control">
+          </div>
+          <div class="onboarding__field onboarding__field--half">
+            <label>State/Province</label>
+            <input type="text" [(ngModel)]="stateProvince" class="form-control">
+          </div>
+          <div class="onboarding__field">
+            <label>Zip</label>
+            <input type="text" [(ngModel)]="zip" class="form-control">
+          </div>
+          <div class="onboarding__field">
+            <label>Timezone</label>
+            <input type="text" [(ngModel)]="timezone" class="form-control">
+          </div>
+          <div class="onboarding__field">
+            <label>Currency *</label>
+            <select [(ngModel)]="currency" class="form-control" [disabled]="profile?.currencyLocked">
+              <option *ngFor="let c of currencies" [value]="c.value">{{ c.label }}</option>
+            </select>
+            <p class="onboarding__hint" *ngIf="!profile?.currencyLocked">Currency cannot be changed after you continue.</p>
+          </div>
+          <div class="onboarding__field">
+            <label class="onboarding__checkbox">
+              <input type="checkbox" [(ngModel)]="acceptAgreement">
+              I have read and accept the Partner Agreement and the Program terms. *
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="onboarding__error" *ngIf="error">{{ error }}</p>
+    <div class="onboarding__actions">
+      <button type="button" class="btn btn--secondary" *ngIf="step > 0" (click)="prevStep()">Back</button>
+      <button type="button" class="btn btn--primary" (click)="nextStep()" [disabled]="submitting || (step === 0 && !businessCategory)">
+        {{ submitting ? 'Saving…' : (step < 2 ? 'Continue' : 'Submit') }}
+      </button>
+    </div>
+  </div>
+  <div class="onboarding__loading" *ngIf="loading"><p>Loading…</p></div>
+</div>

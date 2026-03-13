@@ -1,0 +1,52 @@
+.checkout-page {
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.checkout-card {
+  max-width: 400px;
+  padding: 2rem;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  p {
+    margin: 0 0 1rem;
+    color: #333;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto;
+    border: 3px solid #eee;
+    border-top-color: #0066cc;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .error-message {
+    color: #c00;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #0066cc;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

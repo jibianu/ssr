@@ -1,0 +1,194 @@
+<div class="purchase-history">
+  <header class="purchase-history__header">
+    <h1 class="purchase-history__title">Purchase history</h1>
+  </header>
+
+  <nav class="purchase-history__tabs">
+    <button type="button" class="purchase-history__tab purchase-history__tab--active">Purchases</button>
+    <button type="button" class="purchase-history__tab">Subscriptions</button>
+    <button type="button" class="purchase-history__tab">Refunds</button>
+  </nav>
+
+  <div class="purchase-history__table-wrap" [class.purchase-history__table-wrap--loading]="loading">
+    <table class="purchase-history__table">
+      <thead>
+        <tr>
+          <th class="purchase-history__th purchase-history__th--icon" scope="col"></th>
+          <th class="purchase-history__th" scope="col">Item</th>
+          <th class="purchase-history__th" scope="col">Date</th>
+          <th class="purchase-history__th" scope="col">Total price</th>
+          <th class="purchase-history__th" scope="col">Payment type</th>
+          <th class="purchase-history__th purchase-history__th--actions" scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="loading">
+          <tr *ngFor="let i of skeletonRows" class="purchase-history__skeleton-row">
+            <td colspan="6"><div class="purchase-history__skeleton purchase-history__skeleton--cell"></div></td>
+          </tr>
+        </ng-container>
+        <tr *ngIf="!loading && items?.length === 0">
+          <td colspan="6" class="purchase-history__empty">No purchases yet. Enroll in courses from Explore or book events to see them here.</td>
+        </tr>
+        <ng-container *ngIf="!loading">
+          <tr *ngFor="let item of items; trackBy: trackByItem" class="purchase-history__row">
+            <td class="purchase-history__td purchase-history__td--icon">
+              <i [class]="(item.itemType === 'Event') ? 'fa fa-calendar-check-o purchase-history__cart-icon' : 'fa fa-shopping-cart purchase-history__cart-icon'" aria-hidden="true"></i>
+            </td>
+            <td class="purchase-history__td purchase-history__td--item">
+              <a *ngIf="item.itemType === 'Event' && item.eventId" [routerLink]="['/app/student/events/event', item.eventId]" class="purchase-history__item-link">{{ item.eventTitle || 'Event' }}</a>
+              <a *ngIf="item.itemType !== 'Event' || !item.eventId" [routerLink]="['/app/student/details/curriculum-list', item.courseId]" class="purchase-history__item-link">{{ item.courseTitle || '—' }}</a>
+            </td>
+            <td class="purchase-history__td">{{ item.purchaseDate | date:'MMM d, y' }}</td>
+            <td class="purchase-history__td purchase-history__td--price">
+              <span [class.purchase-history__price--free]="item.totalPrice === null || item.totalPrice === 0">
+                {{ item.totalPrice != null && item.totalPrice > 0 ? (item.totalPrice | currency:'INR':'symbol':'1.2-2') : 'Free' }}
+              </span>
+            </td>
+            <td class="purchase-history__td">{{ item.paymentTypeName || '—' }}</td>
+            <td class="purchase-history__td purchase-history__td--actions">
+              <button type="button" class="purchase-history__btn purchase-history__btn--outline" [disabled]="!item.hasReceipt" title="Receipt" (click)="item.hasReceipt && openReceipt(item)">
+                Receipt
+              </button>
+              <button type="button" class="purchase-history__btn purchase-history__btn--outline" *ngIf="item.hasInvoice" title="Invoice" (click)="openInvoice(item)">
+                Invoice
+              </button>
+              <span class="purchase-history__unavailable" *ngIf="!item.hasInvoice">Invoice unavailable</span>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <app-common-pagination
+    class="purchase-history__pagination"
+    [pageNumber]="page"
+    [pageSize]="pageSize"
+    [totalCount]="totalCount"
+    [pageSizeOptions]="pageSizeOptions"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-common-pagination>
+
+  <!-- Receipt modal (reference: Receipt - date, Seller, Order #, Sold To, Item table, Subtotal, Tax, Total) -->
+  <div class="purchase-history__modal-backdrop" *ngIf="showReceiptModal && selectedItem" (click)="closeReceipt()" role="button" tabindex="0" aria-label="Close"></div>
+  <div class="purchase-history__modal purchase-history__modal--receipt" *ngIf="showReceiptModal && selectedItem" role="dialog" aria-labelledby="receipt-title">
+    <div class="purchase-history__modal-inner" (click)="$event.stopPropagation()">
+      <div class="purchase-history__modal-header">
+        <h2 id="receipt-title" class="purchase-history__modal-title">Receipt</h2>
+        <p class="purchase-history__modal-date">Receipt – {{ selectedItem.purchaseDate | date:'MMM. d, y' }}</p>
+        <button type="button" class="purchase-history__modal-close" (click)="closeReceipt()" aria-label="Close">&times;</button>
+      </div>
+      <div class="purchase-history__receipt-body">
+        <div class="purchase-history__receipt-grid">
+          <div class="purchase-history__receipt-seller">
+            <strong>{{ sellerName }}</strong><br>
+            <span class="purchase-history__receipt-address">—</span><br>
+            <a [href]="sellerWebsite" target="_blank" rel="noopener">{{ sellerWebsite }}</a>
+          </div>
+          <div class="purchase-history__receipt-meta">
+            <strong>Date:</strong> {{ selectedItem.purchaseDate | date:'MMM. d, y' }}<br>
+            <strong>Order #:</strong> {{ selectedItem.transactionNumber || selectedItem.enrollmentId }}
+          </div>
+        </div>
+        <p class="purchase-history__receipt-soldto"><strong>Sold To:</strong> {{ buyerName }}</p>
+        <table class="purchase-history__receipt-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Ordered</th>
+              <th>Coupon Codes</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ selectedItem.itemType === 'Event' ? (selectedItem.eventTitle || 'Event') : (selectedItem.courseTitle || '—') }}</td>
+              <td>{{ selectedItem.purchaseDate | date:'MMM. d, y' }}</td>
+              <td>—</td>
+              <td>1</td>
+              <td>{{ (selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td>{{ (selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="purchase-history__receipt-summary">
+          <p><strong>Subtotal:</strong> {{ receiptSubtotal(selectedItem) | currency:'INR':'symbol':'1.2-2' }}</p>
+          <p><strong>Tax*:</strong> {{ receiptTax(selectedItem) | currency:'INR':'symbol':'1.2-2' }}</p>
+          <p><strong>Total Paid:</strong> {{ (selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</p>
+        </div>
+        <p class="purchase-history__receipt-disclaimer">*For any users charged VAT, the Tax amount is calculated on the Subtotal, not the Total Amount.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice modal (reference: TAX INVOICE, Supplier, Recipient, Invoice #, table with Description, HSN, Qty, Taxable Value, IGST, Total) -->
+  <div class="purchase-history__modal-backdrop" *ngIf="showInvoiceModal && selectedItem" (click)="closeInvoice()" role="button" tabindex="0" aria-label="Close"></div>
+  <div class="purchase-history__modal purchase-history__modal--invoice" *ngIf="showInvoiceModal && selectedItem" role="dialog" aria-labelledby="invoice-title">
+    <div class="purchase-history__modal-inner" (click)="$event.stopPropagation()">
+      <div class="purchase-history__modal-header">
+        <p class="purchase-history__invoice-original">ORIGINAL FOR RECIPIENT</p>
+        <h2 id="invoice-title" class="purchase-history__modal-title">TAX INVOICE</h2>
+        <p class="purchase-history__modal-meta">Invoice #: {{ selectedItem.transactionNumber || selectedItem.enrollmentId }}</p>
+        <p class="purchase-history__modal-meta">Invoice date: {{ selectedItem.purchaseDate | date:'dd/MM/y' }}</p>
+        <button type="button" class="purchase-history__modal-close" (click)="closeInvoice()" aria-label="Close">&times;</button>
+      </div>
+      <div class="purchase-history__invoice-body">
+        <div class="purchase-history__invoice-grid">
+          <div>
+            <strong>Supplier details:</strong><br>
+            {{ sellerName }}<br>
+            <span class="purchase-history__receipt-address">—</span><br>
+            GSTIN: —<br>PAN no. —
+          </div>
+          <div>
+            <strong>Recipient details:</strong><br>
+            {{ buyerName }}<br>
+            {{ buyerEmail }}<br>
+            —
+          </div>
+        </div>
+        <table class="purchase-history__invoice-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>HSN Code</th>
+              <th>Quantity</th>
+              <th>Taxable Value</th>
+              <th>CGST (0%)</th>
+              <th>SGST/UGST (0%)</th>
+              <th>IGST (18%)</th>
+              <th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ selectedItem.itemType === 'Event' ? (selectedItem.eventTitle || 'Event') : (selectedItem.courseTitle || '—') }}</td>
+              <td>9984 33</td>
+              <td>1.0</td>
+              <td>{{ invoiceTaxableValue(selectedItem) | number:'1.2-2' }}</td>
+              <td>—</td>
+              <td>—</td>
+              <td>{{ invoiceIgst(selectedItem) | number:'1.2-2' }}</td>
+              <td>{{ (selectedItem.totalPrice ?? 0) | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="purchase-history__invoice-total">
+              <td colspan="3">Total</td>
+              <td>{{ invoiceTaxableValue(selectedItem) | number:'1.2-2' }}</td>
+              <td>—</td>
+              <td>—</td>
+              <td>{{ invoiceIgst(selectedItem) | number:'1.2-2' }}</td>
+              <td><strong>INR {{ (selectedItem.totalPrice ?? 0) | number:'1.2-2' }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+        <p class="purchase-history__receipt-disclaimer">This is a system generated invoice and does not require a signature or a digital signature.</p>
+      </div>
+    </div>
+  </div>
+</div>

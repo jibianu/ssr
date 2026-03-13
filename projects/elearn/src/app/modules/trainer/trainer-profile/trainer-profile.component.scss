@@ -1,0 +1,8 @@
+/* Fill layout main area so embedded profile can use flex and internal scroll */
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}

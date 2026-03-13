@@ -1,0 +1,50 @@
+<div class="d-flex align-items-end justify-content-between bg-white px-4 pt-4 pb-4 rounded-top rounded-bottom shadow-sm  mb-4">
+    <div class="d-flex align-items-center">
+        <div class="lh-1">
+            <h2 class="mb-0">
+                {{curriculumDetails?.title}}
+            </h2>
+        </div>
+    </div>
+</div>
+
+<div class="card d-flex align-items-end justify-content-between">
+    <div class="card-body row">
+        <div class="col-md-12">
+            <ul class="nav nav-lb-tab" id="tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="concepts-tab" data-toggle="pill" href="#concepts" role="tab"
+                        aria-controls="concepts" aria-selected="false">Concepts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="study-tab" data-toggle="pill" href="#study" role="tab" aria-controls="study"
+                        aria-selected="false">Study Material</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="video-tab" data-toggle="pill" href="#video" role="tab" aria-controls="video"
+                        aria-selected="false">Videos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="question-tab" data-toggle="pill" [routerLink]="['/app/student/curriculum-questions',curriculumId]" role="tab"
+                        aria-controls="question" aria-selected="false">Questions</a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="tabContent">
+                <div class="tab-pane fade show active" id="concepts" role="tabpanel" aria-labelledby="concepts-tab">
+                    <app-student-curriculum-concepts [curriculumId]="curriculumId"></app-student-curriculum-concepts>
+                </div>
+                <div class="tab-pane fade" id="study" role="tabpanel" aria-labelledby="study-tab">
+                    <app-student-curriculum-study-material [curriculumId]="curriculumId"></app-student-curriculum-study-material>
+                </div>
+                <div class="tab-pane fade" id="video" role="tabpanel" aria-labelledby="video-tab">
+                    <app-student-curriculum-videos [curriculumId]="curriculumId"></app-student-curriculum-videos>
+                </div>
+
+                <!-- <div class="tab-pane fade" id="questionset" role="tabpanel" aria-labelledby="question-tab">
+                    <app-student-curriculum-questions [curriculumId]="curriculumId"></app-student-curriculum-questions>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>

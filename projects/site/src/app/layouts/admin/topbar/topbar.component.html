@@ -1,0 +1,60 @@
+<!-- ✅ BEAUTIFUL DESIGN: Modern Fixed Topbar -->
+<header class="admin-topbar">
+  <div class="topbar-container">
+    <!-- Left Section: Brand -->
+    <div class="topbar-left">
+      <div class="topbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        <span class="brand-text">Course Management</span>
+      </div>
+    </div>
+
+    <!-- Right Section: User Menu & Actions -->
+    <div class="topbar-right">
+      <!-- Notifications (Optional - can be added later) -->
+      <!-- <button class="topbar-icon-btn" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge">3</span>
+      </button> -->
+
+      <!-- User Dropdown -->
+      <div class="user-menu" ngbDropdown display="dynamic" placement="bottom-right">
+        <button 
+          class="user-menu-btn" 
+          ngbDropdownToggle 
+          id="userDropdown" 
+          aria-label="User menu"
+          type="button">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ userName || 'User' }}</span>
+            <span class="user-role">Administrator</span>
+          </div>
+          <i class="fas fa-chevron-down dropdown-icon"></i>
+        </button>
+        <div 
+          ngbDropdownMenu 
+          aria-labelledby="userDropdown" 
+          class="dropdown-menu-modern">
+          <a 
+            ngbDropdownItem 
+            [routerLink]="['/app/user/profile']" 
+            class="dropdown-item-modern">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </a>
+          <a 
+            ngbDropdownItem 
+            href="javascript:void(0)" 
+            (click)="logout()" 
+            class="dropdown-item-modern dropdown-item-danger">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

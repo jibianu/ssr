@@ -1,0 +1,49 @@
+<div class="login-page">
+  <div class="login-card">
+    <header class="login-header">
+      <div class="login-header__brand-row">
+        <a routerLink="/" class="login-brand" aria-label="oilandgasclub home">
+          <img [src]="logoUrl" alt="oilandgasclub" class="login-brand__logo" width="130" height="42" fetchpriority="high">
+        </a>
+        <span class="login-header__separator" aria-hidden="true">|</span>
+        <span class="login-header__subtitle">Sign up as an affiliate today!</span>
+      </div>
+      <p class="login-header__prompt">
+        Already have an account? <a routerLink="/auth/login" class="login-header__link">Log in</a>
+      </p>
+    </header>
+
+    <div class="login-info-box">
+      <h1 class="login-info-box__title">Did you know?</h1>
+      <p class="login-info-box__text">Share our courses and earn 10% commission on every purchase. After approval you'll get your referral link and can complete your application in the app.</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="register()" aria-label="Affiliate sign up">
+      <div class="login-form__field">
+        <label class="login-form__label" for="affiliate-email">Email address</label>
+        <input id="affiliate-email" type="email" name="email" [(ngModel)]="email" required
+          placeholder="you@company.com" class="login-form__input" autocomplete="email" inputmode="email">
+      </div>
+      <div class="login-form__field">
+        <label class="login-form__label" for="affiliate-password">Password</label>
+        <input id="affiliate-password" type="password" name="password" [(ngModel)]="password" required
+          placeholder="Create a password" class="login-form__input" autocomplete="new-password">
+      </div>
+
+      <p class="login-form__error" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <button type="submit" class="login-form__submit" [disabled]="submitting">Register</button>
+    </form>
+
+    <p class="login-signup">
+      Already a member? <a routerLink="/auth/login" class="login-signup__link">Log in</a>
+    </p>
+  </div>
+
+  <footer class="login-footer">
+    <p class="login-footer__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
+    <div class="login-footer__links">
+      <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="login-footer__link">Privacy Policy</a>
+      <a href="https://www.oilandgasclub.com/cookies/" target="_blank" rel="noopener" class="login-footer__link">Manage Cookies</a>
+    </div>
+  </footer>
+</div>

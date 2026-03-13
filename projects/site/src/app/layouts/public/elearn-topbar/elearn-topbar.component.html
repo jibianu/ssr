@@ -1,0 +1,26 @@
+<div class="elearn-topbar">
+  <!-- Breadcrumb: Explore / Category / Course title (no logo in topbar) -->
+  <ng-container *ngIf="context$ | async as ctx">
+    <div class="elearn-topbar__breadcrumb" *ngIf="ctx && (ctx.breadcrumb?.length || ctx.courseTitle)">
+      <ng-container *ngFor="let item of ctx.breadcrumb; let last = last; let first = first">
+        <a *ngIf="item.link" [href]="item.link" class="elearn-topbar__breadcrumb-link" [class.elearn-topbar__breadcrumb-link--explore]="first">{{ item.label }}</a>
+        <span *ngIf="!item.link" class="elearn-topbar__breadcrumb-text">{{ item.label }}</span>
+        <span class="elearn-topbar__breadcrumb-sep" *ngIf="!last">/</span>
+      </ng-container>
+      <span class="elearn-topbar__breadcrumb-sep" *ngIf="ctx.breadcrumb?.length && ctx.courseTitle">/</span>
+      <span class="elearn-topbar__breadcrumb-title">{{ ctx.courseTitle }}</span>
+    </div>
+  </ng-container>
+  <div class="elearn-topbar__spacer"></div>
+  <div class="elearn-topbar__actions">
+    <a [href]="elearnUrl + '/app/student/notifications'" class="elearn-topbar__notifications" title="Notifications" aria-label="Notifications">
+      <i class="fa fa-bell" aria-hidden="true"></i>
+      <span class="elearn-topbar__notifications-badge" aria-hidden="true"></span>
+    </a>
+    <a [href]="elearnUrl + '/app/student/profile'" class="elearn-topbar__profile" title="Profile" aria-label="Profile">
+      <span class="elearn-topbar__profile-avatar">
+        <i class="fa fa-user" aria-hidden="true"></i>
+      </span>
+    </a>
+  </div>
+</div>

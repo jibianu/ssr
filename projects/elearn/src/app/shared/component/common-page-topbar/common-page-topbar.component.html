@@ -1,0 +1,97 @@
+<header class="common-topbar">
+  <div class="common-topbar__left">
+    <button *ngIf="showSidebarToggler" type="button" class="common-topbar__toggler" (click)="onSidebarTogglerClick()" aria-label="Toggle menu">
+      <i class="fa fa-bars"></i>
+    </button>
+    <a [routerLink]="homeRoute" class="common-topbar__logo-link" aria-label="Go to home">
+      <img [src]="logoUrl" alt="Logo" class="common-topbar__logo" (error)="onLogoError($event)">
+    </a>
+    <button *ngIf="showBack" type="button" class="common-topbar__back" (click)="goBack()" aria-label="Go back">
+      <i class="fa fa-arrow-left"></i>
+    </button>
+  </div>
+  <h1 class="common-topbar__title" *ngIf="displayTitle">{{ displayTitle }}</h1>
+  <div class="common-topbar__curriculum-wrap" *ngIf="showCurriculumToolbar">
+    <nav class="common-topbar__curriculum-tabs" role="tablist">
+      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'concepts'" (click)="onCurriculumTabClick('concepts')">CURRICULUM</button>
+      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'description'" (click)="onCurriculumTabClick('description')">DESCRIPTION</button>
+      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'questionset'" (click)="onCurriculumTabClick('questionset')">TEST INFORMATION</button>
+      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'question'" (click)="onCurriculumTabClick('question')">QUESTION</button>
+      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'prices'" (click)="onCurriculumTabClick('prices')">PRICES</button>
+    </nav>
+    <div class="common-topbar__curriculum-actions">
+    <input type="text" class="common-topbar__search" placeholder="Search curriculum..." [ngModel]="curriculumSearchTerm" (ngModelChange)="onCurriculumSearchChange($event)" />
+    <button *ngIf="showCurriculumEditActions" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumEditCourseClick()" title="Edit course"><i class="fa fa-pencil"></i> Edit course</button>
+    <button *ngIf="showCurriculumEditActions" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumEditPriceClick()" title="Edit price"><i class="fa fa-pencil"></i> Edit price</button>
+    <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumCheckCourseClick()">Check Course UI</button>
+    <button *ngIf="showCurriculumEditActions" type="button" class="common-topbar__action-btn common-topbar__action-btn--primary" (click)="onCurriculumAddCurriculumClick()"><i class="fa fa-plus"></i> Add Curriculum</button>
+    </div>
+  </div>
+  <div class="common-topbar__right">
+    <div class="common-topbar__student-search" *ngIf="showStudentCourseSearch" #studentSearchContainer>
+      <span class="common-topbar__student-search__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input
+        type="text"
+        class="common-topbar__student-search__input"
+        [ngModel]="studentSearchText"
+        (input)="onStudentSearchInput($event)"
+        (focus)="onStudentSearchFocus()"
+        placeholder="Search courses"
+        aria-label="Search courses"
+        autocomplete="off"
+      />
+      <div
+        class="common-topbar__student-search__dropdown"
+        *ngIf="studentSearchDropdown && (studentSearchResults.length > 0 || studentSearchLoading)"
+        role="listbox"
+      >
+        <div *ngIf="studentSearchLoading" class="common-topbar__student-search__loading">Searching...</div>
+        <button
+          *ngFor="let course of studentSearchResults"
+          type="button"
+          class="common-topbar__student-search__item"
+          (click)="onStudentSelectCourse(course)"
+          role="option"
+        >
+          {{ course.title }}
+        </button>
+      </div>
+    </div>
+    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerDashboardToolbar || topbarPrimaryAction">
+      <a *ngIf="topbarPrimaryAction" [routerLink]="topbarPrimaryAction.routerLink" class="common-topbar__action-btn common-topbar__action-btn--primary">
+        <i class="fa" [ngClass]="topbarPrimaryAction.icon || 'fa-plus'" aria-hidden="true"></i> {{ topbarPrimaryAction.label }}
+      </a>
+      <ng-container *ngIf="showTrainerDashboardToolbar">
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--primary" (click)="onTrainerAddCourseClick()"><i class="fa fa-plus"></i> Add Course</button>
+      </ng-container>
+      <ng-container *ngIf="showCourseListToolbar">
+        <div class="common-topbar__course-list-search">
+          <input type="text" class="common-topbar__search" placeholder="Search courses..." [ngModel]="courseListSearchTerm" (ngModelChange)="onCourseListSearchChange($event)" (keyup.enter)="onCourseListSearchTrigger()" />
+          <button type="button" class="common-topbar__search-btn" (click)="onCourseListSearchTrigger()" title="Search"><i class="fa fa-search"></i></button>
+        </div>
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCourseListFilterClick()"><i class="fa fa-filter"></i> Filter</button>
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--primary" (click)="onCourseListAddCourseClick()"><i class="fa fa-plus"></i> Add Course</button>
+      </ng-container>
+      <button *ngIf="showAddCategoryButton" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onAddCategoryClick()"><i class="fa fa-plus"></i> ADD CATEGORY</button>
+      <button *ngIf="showUserMappingButton" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onUserMappingClick()">USER MAPPING</button>
+    </div>
+    <div class="common-topbar__user-wrap" [class.common-topbar__user-wrap--open]="dropdownOpen">
+    <button type="button" class="common-topbar__user-trigger" (click)="toggleDropdown(); $event.stopPropagation()" [attr.aria-expanded]="dropdownOpen" aria-haspopup="true">
+      <span class="common-topbar__user-name">{{ userDisplayName || 'User' }}</span>
+      <i class="fa fa-chevron-down common-topbar__user-chevron" aria-hidden="true"></i>
+    </button>
+    <div class="common-topbar__dropdown-backdrop" *ngIf="dropdownOpen" (click)="closeDropdown()" aria-hidden="true"></div>
+    <div class="common-topbar__dropdown" *ngIf="dropdownOpen" (click)="$event.stopPropagation()">
+      <div class="common-topbar__dropdown-email" *ngIf="userEmail">{{ userEmail }}</div>
+      <a routerLink="/app/profile" class="common-topbar__dropdown-item" (click)="closeDropdown()">
+        <i class="fa fa-user"></i> My Profile
+      </a>
+      <button type="button" class="common-topbar__dropdown-item" (click)="logout()">
+        <i class="fa fa-sign-out"></i> Logout
+      </button>
+    </div>
+  </div>
+  </div>
+</header>

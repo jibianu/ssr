@@ -1,0 +1,150 @@
+.lesson-editor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  &__toolbar {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+
+    &-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #475569;
+      margin-right: 0.25rem;
+    }
+    .btn-outline-secondary {
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      &:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+      }
+    }
+  }
+
+  &__navbar {
+    flex-shrink: 0;
+    padding: 0.5rem 1rem;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  &__navbar-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+
+    &--muted {
+      color: #64748b;
+    }
+  }
+
+  &__navbar-select {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-right: 4px;
+    background: #fff;
+  }
+
+  &__navbar-btn {
+    padding: 4px 8px;
+    min-width: 32px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+
+  &__navbar-sep {
+    width: 1px;
+    height: 20px;
+    background: #cbd5e1;
+    margin: 0 4px;
+  }
+
+  &__blocks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    overflow-y: auto;
+    max-height: min(450px, 55vh);
+    min-height: 120px;
+
+    &--empty {
+      min-height: 0;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  }
+
+  &__block-wrapper {
+    position: relative;
+    padding-left: 2rem;
+    flex-shrink: 0;
+
+    .lesson-editor--author & {
+      padding-left: 2.5rem;
+    }
+  }
+
+  &__block-actions {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+  }
+
+  &__block {
+    min-height: 1rem;
+  }
+
+  &__empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border: 2px dashed #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.9rem;
+    min-height: 120px;
+  }
+}

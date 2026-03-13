@@ -1,0 +1,154 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{name}}
+    <br />
+    <small>{{email}}</small>
+  </h4>
+
+  <!--Role  Section start-->
+  <div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+      aria-haspopup="true" aria-expanded="false">
+      {{selectedCategory}}
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <span class="dropdown-item" *ngFor="let item of categories"
+        (click)="getCourseByCategory(item)">{{item.name}}</span>
+    </div>
+  </div>
+
+  <!-- Permission column headers (Assign | View | Edit | Course) when assigning to trainer -->
+  <div *ngIf="showViewEditPermissions" class="student-course-list__permission-headers mt-2">
+    <span class="student-course-list__permission-hdr student-course-list__permission-hdr--assign">Assign</span>
+    <span class="student-course-list__permission-hdr student-course-list__permission-hdr--view">View</span>
+    <span class="student-course-list__permission-hdr student-course-list__permission-hdr--edit">Edit</span>
+    <span class="student-course-list__permission-hdr student-course-list__permission-hdr--course">Course</span>
+  </div>
+</div>
+<div class="modal-body">
+  <div style="padding: 5px;">
+
+
+    <!--Role  Section end-->
+
+    <!--Permission section Start -->
+
+    <!-- <strong>Permissions</strong> -->
+    <div class="row">
+      
+      <div class="form-group student-course-list__row" *ngFor="let item of modalcourseList; let i=index"
+        [ngClass]="(i%2)==0 ? 'evenDiv' :'oddDiv'" style="padding-left: 6px;padding-right: 6px;padding-bottom: 10px;">
+        <div class="student-course-list__row-inner" [class.student-course-list__row-inner--permissions]="showViewEditPermissions">
+          <label class="student-course-list__cell student-course-list__cell--assign" [for]="'assign-' + i">
+            <input class="form-check-input" type="checkbox" [id]="'assign-' + i" [(ngModel)]="item.isChecked"
+              [checked]="item.isChecked" title="Assign course">
+          </label>
+          <ng-container *ngIf="showViewEditPermissions">
+            <label class="student-course-list__cell student-course-list__cell--view" [for]="'view-' + i" title="Can view course content">
+              <input class="form-check-input" type="checkbox" [id]="'view-' + i" [(ngModel)]="item.canView"
+                [disabled]="!item.isChecked">
+              <span class="student-course-list__cell-label">View</span>
+            </label>
+            <label class="student-course-list__cell student-course-list__cell--edit" [for]="'edit-' + i" title="Can edit course content">
+              <input class="form-check-input" type="checkbox" [id]="'edit-' + i" [(ngModel)]="item.canEdit"
+                [disabled]="!item.isChecked">
+              <span class="student-course-list__cell-label">Edit</span>
+            </label>
+          </ng-container>
+          <span class="student-course-list__cell student-course-list__cell--course">
+            {{item.title}} <i *ngIf="item.isPublished" class="fa fa-star"></i>
+          </span>
+        </div>
+
+        <div *ngIf="showNoOfUserField">
+
+          <input [disabled]="!item.isChecked" type="number" class="form-control form-control-sm" [(ngModel)]="item.noOfUsers"
+            >
+            <div class="invalid-feedback" *ngIf="submitted && !item.noOfUsers && item.isChecked" style="display: unset;">
+              <div>No Of Users is required</div>
+            </div> 
+        </div>
+        <!-- <div class="row"></div> -->
+
+        <!-- Start/End date start -->
+
+        <div class="E-datepicker mt-2" >
+          <table class="table" style="margin: 0;" *ngIf="showNoOfUserField">
+            <tr>
+              <td style="padding: 0;">
+                <div class="input-group input-group-sm ">
+                  <input type="text" class="form-control" placeholder="Start Date(yyyy-mm-dd)" name="startDate"
+                    [(ngModel)]="item.startDate" ngbDatepicker #s="ngbDatepicker" readonly
+                    [minDate]="{year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate()}">
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary  btn-sm" [disabled]="!item.isChecked" type="button" (click)="s.toggle()">
+                      <i class="fa fa-calendar" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                  <div class="invalid-feedback" *ngIf="submitted && !item.startDate && item.isChecked" style="display: unset;">
+                    <div>Start Date is required</div>
+                  </div>
+                </div>
+              </td>
+              <td style="padding: 0; padding-left: 2px;">
+                <div class="input-group input-group-sm ">
+                  <input type="text" class="form-control" placeholder="End Date(yyyy-mm-dd)" name="dp"
+                    [(ngModel)]="item.endDate" ngbDatepicker #e="ngbDatepicker" readonly
+                    [minDate]="{year: getDate(item.startDate).getFullYear(), month: getDate(item.startDate).getMonth()+1, day: getDate(item.startDate).getDate()}">
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary btn-sm" [disabled]="!item.isChecked" type="button" (click)="e.toggle()">
+                      <i class="fa fa-calendar" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="submitted && !item.endDate  && item.isChecked" class="invalid-feedback" style="display: unset;">
+                    <div>End Date is required</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <!-- <form class="form-inline" *ngIf="false">
+            <div class="form-group">
+              <div class="input-group input-group-sm" style="width: 250px;">
+                <input class="form-control" placeholder="Start Date(yyyy-mm-dd)" name="startDate" [(ngModel)]="item.startDate"
+                  ngbDatepicker #s="ngbDatepicker">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="s.toggle()" type="button"
+                    style="padding: 0.5rem 1.1rem;">
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <div *ngIf="submitted && !startDate" class="invalid-feedback">
+                  <div>Start Date is required</div>
+                </div>
+              </div>
+              <div class="input-group" style="width: 200px;margin-left: 20px;">
+                <input class="form-control" placeholder="End Date(yyyy-mm-dd)" name="dp" [(ngModel)]="item.endDate"
+                  ngbDatepicker #e="ngbDatepicker">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="e.toggle()" type="button"
+                    style="padding: 0.5rem 1.1rem;">
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <div *ngIf="submitted && !endDate" class="invalid-feedback">
+                  <div>End Date is required</div>
+                </div>
+              </div>
+            </div>
+          </form> -->
+        </div>
+      </div>
+      <!-- Start/End date start -->
+    </div>
+
+
+    <!--Permission section Ends -->
+
+  </div>
+
+</div>
+<div class="modal-footer">
+  <!-- <button type="button" class="btn btn-outline-dark" >Close</button>-->
+  <button type="button" class="btn btn-danger" (click)="closeModal('ok')">Cancel</button>
+  <button type="button" class="btn btn-success" (click)="updateCourse()">Submit</button>
+</div>

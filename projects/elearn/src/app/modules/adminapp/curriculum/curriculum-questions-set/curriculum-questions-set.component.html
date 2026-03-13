@@ -1,0 +1,196 @@
+<div class="test-info-page">
+  <header class="test-info-page__header">
+    <div class="test-info-page__header-main">
+      <button type="button" class="test-info-page__back" (click)="goBack()" title="Back">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      </button>
+      <h2 class="test-info-page__title">Test Information</h2>
+    </div>
+    <div class="test-info-page__header-actions">
+      <button type="button" class="test-info-page__add-btn" (click)="addQuetionSet(content); $event.preventDefault()">
+        <i class="fa fa-plus" aria-hidden="true"></i> Add Test Information
+      </button>
+    </div>
+  </header>
+
+  <div class="test-info-page__table-wrap">
+    <div class="table-responsive">
+      <table class="test-info-page__table">
+        <thead>
+          <tr>
+            <th class="test-info-page__th">Title</th>
+            <th class="test-info-page__th test-info-page__th--actions">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!questionSet?.length" class="test-info-page__empty-row">
+            <td colspan="2">
+              <div class="test-info-page__empty">
+                <i class="fa fa-file-text-o test-info-page__empty-icon" aria-hidden="true"></i>
+                <p class="test-info-page__empty-text">No test information yet. Click "Add Test Information" to create one.</p>
+              </div>
+            </td>
+          </tr>
+          <tr *ngFor="let item of questionSet; trackBy: trackByQuestionSetId" class="test-info-page__row">
+            <td class="test-info-page__cell">
+              <a [routerLink]="['/app/admin/course/curriculum/questionlist', item.id]" class="test-info-page__link">{{item?.title}}</a>
+            </td>
+            <td class="test-info-page__cell test-info-page__cell--actions">
+              <button type="button" class="test-info-page__icon-btn test-info-page__icon-btn--edit" (click)="updateQuetionSet(content, item)" title="Edit">
+                <i class="fa fa-edit" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="test-info-page__icon-btn test-info-page__icon-btn--danger" (click)="deleteQuetionSet(item.id)" title="Delete">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<ng-template #content let-modal>
+  <div class="test-info-modal__header curriculum-navbar-header">
+    <h4 class="test-info-modal__title">{{pageTitle}}</h4>
+    <button type="button" class="test-info-modal__close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <i class="fa fa-times" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="test-info-modal__body">
+    <form [formGroup]="questionSetForm" class="test-info-modal__form">
+      <section class="test-info-modal__section">
+        <h5 class="test-info-modal__section-title">Basic details</h5>
+        <div class="form-group test-info-modal__field">
+          <label class="test-info-modal__label">Title</label>
+          <input type="text" formControlName="title" class="form-control test-info-modal__input"
+            placeholder="Enter test title"
+            [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
+          <div *ngIf="submitted && f.title.errors" class="invalid-feedback d-block">
+            <div *ngIf="f.title.errors.required">Title is required</div>
+          </div>
+        </div>
+        <div class="form-group test-info-modal__field">
+          <label class="test-info-modal__label">Description</label>
+          <textarea formControlName="description" class="form-control test-info-modal__textarea"
+            placeholder="Brief description of the test"
+            rows="3"
+            [ngClass]="{ 'is-invalid': submitted && f.description.errors }"></textarea>
+          <div *ngIf="submitted && f.description.errors" class="invalid-feedback d-block">
+            <div *ngIf="f.description.errors.required">Description is required</div>
+          </div>
+        </div>
+        <div class="form-group test-info-modal__field">
+          <label class="test-info-modal__label">Difficulty Level</label>
+          <select formControlName="difficultyLevelId" class="form-control test-info-modal__input" id="sel1"
+            [ngClass]="{ 'is-invalid': submitted && f.difficultyLevelId.errors }" (change)="changeDifficulty($event)">
+            <option value="0">Select Difficulty Level</option>
+            <option value="1">Easy</option>
+            <option value="2">Medium</option>
+            <option value="3">Hard</option>
+          </select>
+          <div *ngIf="submitted && f.difficultyLevelId.errors" class="invalid-feedback d-block">
+            <div *ngIf="f.difficultyLevelId.errors.required">Difficulty Level is required</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="test-info-modal__section" formGroupName="questionSetTestInformation">
+        <h5 class="test-info-modal__section-title">Test settings</h5>
+        <div class="test-info-modal__row">
+          <div class="form-group test-info-modal__field test-info-modal__field--half">
+            <label class="test-info-modal__label">Duration (minutes)</label>
+            <input type="number" formControlName="durationInMinute" class="form-control test-info-modal__input"
+              placeholder="0"
+              [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.durationInMinute').errors }" />
+            <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.durationInMinute').errors"
+              class="invalid-feedback d-block">
+              <div *ngIf="questionSetForm.get('questionSetTestInformation.durationInMinute').errors.required">
+                Duration is required</div>
+            </div>
+          </div>
+          <div class="form-group test-info-modal__field test-info-modal__field--half">
+            <label class="test-info-modal__label">Max Attempts Allowed</label>
+            <input type="number" formControlName="maxAttemptsAllowed" class="form-control test-info-modal__input"
+              placeholder="0"
+              [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.maxAttemptsAllowed').errors }" />
+            <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.maxAttemptsAllowed').errors"
+              class="invalid-feedback d-block">
+              <div *ngIf="questionSetForm.get('questionSetTestInformation.maxAttemptsAllowed').errors.required">
+                Max Attempts Allowed is required</div>
+            </div>
+          </div>
+        </div>
+        <div class="test-info-modal__row">
+          <div class="form-group test-info-modal__field test-info-modal__field--half">
+            <label class="test-info-modal__label">Question Count</label>
+            <select class="form-control test-info-modal__input" formControlName="questionCount" id="questionCount_"
+              [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.questionCount').errors }"
+              (change)="changeQuestionCount($event)">
+              <option *ngFor="let i of questionsList; trackBy: trackById" value="{{i.id}}">{{i.name}}</option>
+            </select>
+            <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.questionCount').errors"
+              class="invalid-feedback d-block">
+              <div *ngIf="questionSetForm.get('questionSetTestInformation.questionCount').errors.required">
+                Question Count is required</div>
+            </div>
+          </div>
+          <div class="form-group test-info-modal__field test-info-modal__field--half">
+            <label class="test-info-modal__label">Pass Question Counts</label>
+            <select class="form-control test-info-modal__input" formControlName="passQuestionCounts" id="passQuestionCounts_"
+              [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.passQuestionCounts').errors }"
+              (change)="changePassQuestionCounts($event)">
+              <option *ngFor="let i of questionsPassMarkList; trackBy: trackById" value="{{i.id}}">{{i.name}}</option>
+            </select>
+            <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.passQuestionCounts').errors"
+              class="invalid-feedback d-block">
+              <div *ngIf="questionSetForm.get('questionSetTestInformation.passQuestionCounts').errors.required">
+                Pass Question Counts is required</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group test-info-modal__field">
+          <label class="test-info-modal__label">Terms And Conditions</label>
+          <input type="text" formControlName="termsAndConditions" class="form-control test-info-modal__input"
+            placeholder="e.g. No external resources allowed"
+            [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.termsAndConditions').errors }" />
+          <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.termsAndConditions').errors"
+            class="invalid-feedback d-block">
+            <div *ngIf="questionSetForm.get('questionSetTestInformation.termsAndConditions').errors.required">
+              Terms And Conditions is required</div>
+          </div>
+        </div>
+        <div class="form-group test-info-modal__field">
+          <label class="test-info-modal__label">Topics</label>
+          <input type="text" formControlName="topics" class="form-control test-info-modal__input"
+            placeholder="Comma-separated topics"
+            [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.topics').errors }" />
+          <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.topics').errors"
+            class="invalid-feedback d-block">
+            <div *ngIf="questionSetForm.get('questionSetTestInformation.topics').errors.required">
+              Topics is required</div>
+          </div>
+        </div>
+        <div class="form-group test-info-modal__field">
+          <label class="test-info-modal__label">About</label>
+          <input type="text" formControlName="about" class="form-control test-info-modal__input"
+            placeholder="Short summary or instructions"
+            [ngClass]="{ 'is-invalid': submitted && questionSetForm.get('questionSetTestInformation.about').errors }" />
+          <div *ngIf="submitted && questionSetForm.get('questionSetTestInformation.about').errors"
+            class="invalid-feedback d-block">
+            <div *ngIf="questionSetForm.get('questionSetTestInformation.about').errors.required">
+              About is required</div>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+  <div class="test-info-modal__footer">
+    <button class="test-info-modal__btn test-info-modal__btn--primary" type="button" (click)="onSubmit()">
+      <i class="fa fa-check" aria-hidden="true"></i> {{btntext}}
+    </button>
+    <button type="button" class="test-info-modal__btn test-info-modal__btn--secondary" (click)="modal.close('Close click')">
+      Cancel
+    </button>
+  </div>
+</ng-template>

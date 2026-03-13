@@ -1,0 +1,38 @@
+<div class="quiz-block" [class.quiz-block--author]="isEditable">
+  <div class="quiz-block__meta" *ngIf="isEditable">
+    <input
+      type="text"
+      class="form-control form-control-sm mb-2"
+      placeholder="Quiz / Question Set ID (optional)"
+      [ngModel]="block.quizId"
+      (ngModelChange)="onQuizIdChange($event)"
+    />
+    <input
+      type="text"
+      class="form-control form-control-sm mb-2"
+      placeholder="Title"
+      [ngModel]="block.title"
+      (ngModelChange)="onTitleChange($event)"
+    />
+    <textarea
+      class="form-control form-control-sm mb-2"
+      rows="2"
+      placeholder="Instructions"
+      [ngModel]="block.instructions"
+      (ngModelChange)="onInstructionsChange($event)"
+    ></textarea>
+  </div>
+  <div class="quiz-block__header" *ngIf="!isEditable">
+    <span class="quiz-block__icon">📝</span>
+    <span class="quiz-block__title">{{ block.title || 'Quiz' }}</span>
+  </div>
+  <p class="quiz-block__instructions" *ngIf="!isEditable && block.instructions">{{ block.instructions }}</p>
+  <div class="quiz-block__action" *ngIf="!isEditable && mode === 'student'">
+    <button type="button" class="btn btn-primary btn-sm" disabled>
+      {{ block.quizId ? 'Start Quiz' : 'Quiz (link to question set)' }}
+    </button>
+  </div>
+  <div class="quiz-block__action" *ngIf="!isEditable && mode === 'preview'">
+    <span class="text-muted">Preview: quiz would appear here for students.</span>
+  </div>
+</div>

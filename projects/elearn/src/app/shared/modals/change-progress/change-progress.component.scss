@@ -1,0 +1,171 @@
+// Change Progress modal – same popup design as reference (orange header, white body, grey/orange buttons)
+:host {
+  display: block;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+// Reference: solid orange header (#FF7F27-like), white body, dark grey label, orange selected/Update
+$orange: #ff7f27;
+$orange-app: var(--app-primary, #f57722);
+$orange-solid: #f57722;
+$text: #1e293b;
+$text-dark: #334155;
+$grey-border: #d1d5db;
+$grey-bg: #f1f5f9;
+$grey-text: #475569;
+$body-bg: #fff;
+
+.change-progress__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: none;
+  background: $orange-solid;
+}
+
+.change-progress__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+  font-family: inherit;
+}
+
+.change-progress__close {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  opacity: 0.95;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+    color: #fff;
+  }
+}
+
+.change-progress__body {
+  padding: 1.25rem 1.25rem 1rem;
+  background: $body-bg;
+}
+
+.change-progress__label {
+  margin: 0 0 0.875rem 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-dark;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.change-progress__options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.change-progress__option {
+  padding: 0.75rem 1rem;
+  border: 1px solid $grey-border;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: $text;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: $orange-solid;
+    background: rgba(245, 119, 34, 0.08);
+    color: $orange-solid;
+  }
+
+  &--active {
+    border-color: $orange-solid;
+    background: $orange-solid;
+    color: #fff;
+
+    &:hover {
+      background: #ea580c;
+      border-color: #ea580c;
+      color: #fff;
+    }
+  }
+}
+
+.change-progress__bar-wrap {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.change-progress__bar {
+  height: 100%;
+  background: $orange-solid;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.change-progress__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.change-progress__btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &--secondary {
+    background: $grey-bg;
+    border: 1px solid $grey-border;
+    color: $grey-text;
+
+    &:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      color: $text-dark;
+    }
+  }
+
+  &--primary {
+    background: $orange-solid;
+    border: none;
+    color: #fff;
+
+    &:hover {
+      background: #ea580c;
+      color: #fff;
+    }
+  }
+}

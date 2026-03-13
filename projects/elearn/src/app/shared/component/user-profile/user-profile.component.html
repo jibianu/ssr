@@ -1,0 +1,319 @@
+<!-- <div class="container-fluid">
+  <div class="row">
+    
+
+    <div class=" row">
+      <div class="col-lg-12 col-md-12 col-sm-12">
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="child d-flex justify-content-between">
+          <div class="row">
+            <div class="media  mt-2 mb-2 col-lg-4 col-md-4 col-sm-12" style="padding: 50px 0px;">
+              <div class="image-cropper">
+                <img [src]="uploadedFilePath" alt="" (error)="onUserImgError($event)">
+              </div>
+              <div class="media-body ml-4">
+                <label class="btn imglabel">
+                  <div style="position: relative; height: 50px; width: 50px;">
+                    <img src="assets/img/icons8-compact-camera-50.png" alt="" height="20px" width="20px"
+                      style="margin-top: 8px; margin-right: 14px;">
+                    <input type="file" accept="image/*" (change)="fileProgress($event)"
+                      class="account-settings-fileinput" style="position: absolute; z-index: -1; display: none;"></div>
+                </label>
+              </div>
+
+            </div>
+            <div class="formInputs col-lg-8 col-md-8 col-sm-12">
+              <div class="row">
+                <div class="form-group col-lg-6 col-sm-6 col-md-6">
+                  <label>First Name</label>
+                  <input type="text" formControlName="firstName" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+                  <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                    <div *ngIf="f.firstName.errors.required">First Name is required</div>
+                  </div>
+                </div>
+                <div class="form-group col-lg-6 col-sm-6 col-md-6">
+                  <label>Last Name</label>
+                  <input type="text" formControlName="lastName" class="form-control"
+                    [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+                  <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                    <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="text" formControlName="email" class="form-control"
+                  [ngClass]="{ 'is-invalid': submitted && f.email.errors }" disabled />
+                <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                  <div *ngIf="f.email.errors.required">Email is required</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" formControlName="userName" class="form-control"
+                  [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
+                <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+                  <div *ngIf="f.userName.errors.required">Username is required</div>
+                </div>
+              </div>
+              <button type="submit" class="btnn">Update</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div> -->
+
+    <!-- Embedded: inside Student/Trainer/Company/Management layout – content only, layout provides topbar/sidebar -->
+    <div *ngIf="embeddedMode" class="profile-page profile-page--embedded">
+      <div class="profile-page__main profile-page__main--embedded">
+        <header class="profile-page__header">
+          <p class="profile-page__subtitle">Update your account details</p>
+        </header>
+        <div class="profile-page__content profile-page__content--embedded">
+          <div class="profile-card profile-card--embedded">
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="profile-form profile-form--embedded">
+              <div class="profile-form__body">
+                <div class="profile-form__avatar-section">
+                  <span class="avatar-section__label">Profile photo</span>
+                  <div class="avatar-wrap">
+                    <div class="avatar-wrap__circle">
+                      <img *ngIf="uploadedFilePath" [src]="uploadedFilePath" alt="Profile" (error)="onUserImgError($event)" class="avatar-wrap__img" referrerPolicy="no-referrer" loading="eager">
+                      <span *ngIf="!uploadedFilePath" class="avatar-wrap__initial" aria-hidden="true">{{ profileInitial }}</span>
+                    </div>
+                    <label class="avatar-wrap__change">
+                      <i class="fa fa-camera avatar-wrap__change-icon"></i>
+                      <span class="avatar-wrap__change-text">Change photo</span>
+                      <input type="file" accept="image/*" (change)="fileProgress($event)" class="avatar-wrap__file">
+                    </label>
+                  </div>
+                </div>
+                <div class="profile-form__fields">
+                  <h2 class="profile-form__section-title">Account details</h2>
+                  <div class="profile-form__row profile-form__row--half">
+                    <div class="form-group">
+                      <label class="form-label">First Name</label>
+                      <input type="text" formControlName="firstName" class="form-control" placeholder="First name"
+                        [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+                      <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                        <div *ngIf="f.firstName.errors.required">First name is required</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Last Name</label>
+                      <input type="text" formControlName="lastName" class="form-control" placeholder="Last name"
+                        [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+                      <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                        <div *ngIf="f.lastName.errors.required">Last name is required</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="text" formControlName="email" class="form-control form-control--disabled" placeholder="Email"
+                      [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+                    <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                      <div *ngIf="f.email.errors.required">Email is required</div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" formControlName="userName" class="form-control" placeholder="Username"
+                      [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
+                    <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+                      <div *ngIf="f.userName.errors.required">Username is required</div>
+                    </div>
+                  </div>
+                  <div class="profile-form__actions">
+                    <button type="submit" class="btn btn--primary">
+                      <i class="fa fa-check"></i> Update
+                    </button>
+                    <button type="button" class="btn btn--secondary" (click)="goBack()">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <!-- Affiliate section (embedded mode) -->
+          <div *ngIf="isAffiliateUser && affiliateDashboard" class="profile-affiliate profile-card profile-card--embedded">
+            <h2 class="profile-affiliate__title">Affiliate program</h2>
+            <p class="profile-affiliate__subtitle">Your referral stats and earnings.</p>
+            <div class="profile-affiliate__meta">
+              <span class="profile-affiliate__badge" [class.profile-affiliate__badge--approved]="affiliateDashboard.status === 'Approved'" [class.profile-affiliate__badge--pending]="affiliateDashboard.status === 'Pending'">{{ affiliateDashboard.status }}</span>
+            </div>
+            <div class="profile-affiliate__row" *ngIf="affiliateDashboard.referralLink">
+              <label class="profile-affiliate__label">Referral link</label>
+              <div class="profile-affiliate__link-wrap">
+                <input type="text" [value]="affiliateDashboard.referralLink" readonly class="profile-affiliate__input form-control">
+                <a [routerLink]="['/app/affiliate/dashboard']" class="btn btn--primary profile-affiliate__cta">Dashboard</a>
+              </div>
+            </div>
+            <div class="profile-affiliate__row" *ngIf="affiliateDashboard.affiliateCode">
+              <label class="profile-affiliate__label">Referral code</label>
+              <span class="profile-affiliate__value">{{ affiliateDashboard.affiliateCode }}</span>
+            </div>
+            <div class="profile-affiliate__stats">
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ affiliateDashboard.totalClicks }}</span>
+                <span class="profile-affiliate__stat-label">Total Clicks</span>
+              </div>
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ affiliateDashboard.totalSignups }}</span>
+                <span class="profile-affiliate__stat-label">Signups</span>
+              </div>
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ affiliateDashboard.totalPurchases }}</span>
+                <span class="profile-affiliate__stat-label">Purchases</span>
+              </div>
+              <div class="profile-affiliate__stat profile-affiliate__stat--highlight">
+                <span class="profile-affiliate__stat-value">{{ formatCurrency(affiliateDashboard.pendingEarnings) }}</span>
+                <span class="profile-affiliate__stat-label">Pending Earnings</span>
+              </div>
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ formatCurrency(affiliateDashboard.paidEarnings) }}</span>
+                <span class="profile-affiliate__stat-label">Paid Earnings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full page: /app/profile (no parent layout) – own topbar + sidebar -->
+    <div *ngIf="!embeddedMode" class="profile-page" [class.profile-page--sidebar-visible]="showSidebarToggler && !hideSideNav">
+      <app-common-page-topbar
+        pageTitle="My Profile"
+        [showBack]="true"
+        [showSidebarToggler]="showSidebarToggler"
+        [homeRouteOverride]="isAffiliateUser ? '/app/affiliate/dashboard' : ''"
+        (sidebarToggle)="toggleSideNav()">
+      </app-common-page-topbar>
+
+      <!-- Sidebar backdrop (mobile: close when sidebar is open) -->
+      <div class="profile-page__sidebar-backdrop" *ngIf="showSidebarToggler && hideSideNav" (click)="toggleSideNav()" role="button" aria-label="Close menu"></div>
+
+      <!-- Common sidebar (Admin, Trainer, Company, Management) -->
+      <app-navbar-sidebar
+        *ngIf="showSidebarToggler"
+        [menuItems]="menuItems"
+        [userDisplayName]="userDisplayName"
+        [userEmail]="userEmail"
+        [userImageUrl]="uploadedFilePath || null"
+        [sidebarToggled]="hideSideNav">
+      </app-navbar-sidebar>
+
+      <!-- Main content (with margin when sidebar visible) -->
+      <div class="profile-page__main">
+        <header class="profile-page__header">
+          <p class="profile-page__subtitle">Update your account details</p>
+        </header>
+
+        <div class="profile-page__content">
+          <div class="profile-card">
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="profile-form">
+              <div class="profile-form__avatar-section">
+                <span class="avatar-section__label">Profile photo</span>
+                <div class="avatar-wrap">
+                  <div class="avatar-wrap__circle">
+                    <img *ngIf="uploadedFilePath" [src]="uploadedFilePath" alt="Profile" (error)="onUserImgError($event)" class="avatar-wrap__img" referrerPolicy="no-referrer" loading="eager">
+                    <span *ngIf="!uploadedFilePath" class="avatar-wrap__initial" aria-hidden="true">{{ profileInitial }}</span>
+                  </div>
+                  <label class="avatar-wrap__change">
+                    <i class="fa fa-camera avatar-wrap__change-icon"></i>
+                    <span class="avatar-wrap__change-text">Change photo</span>
+                    <input type="file" accept="image/*" (change)="fileProgress($event)" class="avatar-wrap__file">
+                  </label>
+                </div>
+              </div>
+
+              <div class="profile-form__fields">
+                <h2 class="profile-form__section-title">Account details</h2>
+                <div class="profile-form__row profile-form__row--half">
+                  <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" formControlName="firstName" class="form-control" placeholder="First name"
+                      [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+                    <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                      <div *ngIf="f.firstName.errors.required">First name is required</div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" formControlName="lastName" class="form-control" placeholder="Last name"
+                      [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+                    <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                      <div *ngIf="f.lastName.errors.required">Last name is required</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="text" formControlName="email" class="form-control form-control--disabled" placeholder="Email"
+                    [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+                  <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                    <div *ngIf="f.email.errors.required">Email is required</div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Username</label>
+                  <input type="text" formControlName="userName" class="form-control" placeholder="Username"
+                    [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
+                  <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+                    <div *ngIf="f.userName.errors.required">Username is required</div>
+                  </div>
+                </div>
+                <div class="profile-form__actions">
+                  <button type="submit" class="btn btn--primary">
+                    <i class="fa fa-check"></i> Update
+                  </button>
+                  <button type="button" class="btn btn--secondary" (click)="goBack()">Cancel</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Affiliate program section (when user is affiliate) -->
+          <div *ngIf="isAffiliateUser && affiliateDashboard" class="profile-affiliate profile-card">
+            <h2 class="profile-affiliate__title">Affiliate program</h2>
+            <p class="profile-affiliate__subtitle">Your referral stats and earnings.</p>
+            <div class="profile-affiliate__meta">
+              <span class="profile-affiliate__badge" [class.profile-affiliate__badge--approved]="affiliateDashboard.status === 'Approved'" [class.profile-affiliate__badge--pending]="affiliateDashboard.status === 'Pending'">{{ affiliateDashboard.status }}</span>
+            </div>
+            <div class="profile-affiliate__row" *ngIf="affiliateDashboard.referralLink">
+              <label class="profile-affiliate__label">Referral link</label>
+              <div class="profile-affiliate__link-wrap">
+                <input type="text" [value]="affiliateDashboard.referralLink" readonly class="profile-affiliate__input form-control">
+                <a [routerLink]="['/app/affiliate/dashboard']" class="btn btn--primary profile-affiliate__cta">Dashboard</a>
+              </div>
+            </div>
+            <div class="profile-affiliate__row" *ngIf="affiliateDashboard.affiliateCode">
+              <label class="profile-affiliate__label">Referral code</label>
+              <span class="profile-affiliate__value">{{ affiliateDashboard.affiliateCode }}</span>
+            </div>
+            <div class="profile-affiliate__stats">
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ affiliateDashboard.totalClicks }}</span>
+                <span class="profile-affiliate__stat-label">Total Clicks</span>
+              </div>
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ affiliateDashboard.totalSignups }}</span>
+                <span class="profile-affiliate__stat-label">Signups</span>
+              </div>
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ affiliateDashboard.totalPurchases }}</span>
+                <span class="profile-affiliate__stat-label">Purchases</span>
+              </div>
+              <div class="profile-affiliate__stat profile-affiliate__stat--highlight">
+                <span class="profile-affiliate__stat-value">{{ formatCurrency(affiliateDashboard.pendingEarnings) }}</span>
+                <span class="profile-affiliate__stat-label">Pending Earnings</span>
+              </div>
+              <div class="profile-affiliate__stat">
+                <span class="profile-affiliate__stat-value">{{ formatCurrency(affiliateDashboard.paidEarnings) }}</span>
+                <span class="profile-affiliate__stat-label">Paid Earnings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

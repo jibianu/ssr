@@ -1,0 +1,78 @@
+<nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mb-4 mb-lg-0 sidenav">
+  <div class="d-flex justify-content-between align-items-center w-100 d-md-none px-3 py-2">
+    <span class="navbar-header text-muted small font-weight-bold">Menu</span>
+    <button class="navbar-toggler icon-shape icon-sm rounded bg-primary text-light p-2" type="button"
+      data-toggle="collapse" data-target="#sidenav" aria-controls="sidenav" aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span class="fe fe-menu"></span>
+    </button>
+  </div>
+
+  <div class="collapse navbar-collapse bg-white" id="sidenav">
+    <div class="navbar-nav flex-column px-3">
+      <div class="py-2">
+        <span class="navbar-header text-muted small font-weight-bold">NAVIGATION</span>
+        <ul class="list-unstyled ml-n2 mb-4">
+          <li class="nav-item" *ngFor="let item of menuItems">
+            <a class="nav-link d-flex align-items-center py-2" [routerLink]="item.link" routerLinkActive="router-link-active">
+              <i class="nav-icon mr-3" [ngClass]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="py-2">
+        <span class="navbar-header text-muted small font-weight-bold">ACCOUNT</span>
+        <ul class="list-unstyled ml-n2 mb-0">
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center py-2" [routerLink]="['/app/profile']">
+              <i class="fe fe-settings nav-icon mr-3"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center py-2" href="javascript:void(0)" (click)="logout()">
+              <i class="fe fe-power nav-icon mr-3"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mb-4 mb-lg-0 sidenav d-none d-md-block">
+  <div class="navbar-nav flex-column w-100 px-3">
+    <div class="py-3">
+      <span class="navbar-header text-muted small font-weight-bold">NAVIGATION</span>
+      <ul class="list-unstyled ml-n2 mb-4">
+        <li class="nav-item" *ngFor="let item of menuItems">
+          <a class="nav-link d-flex align-items-center py-2 px-3 rounded" [routerLink]="item.link" routerLinkActive="router-link-active">
+            <i class="nav-icon mr-3" [ngClass]="item.icon"></i>
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="py-3">
+      <span class="navbar-header text-muted small font-weight-bold">ACCOUNT</span>
+      <ul class="list-unstyled ml-n2 mb-0">
+        <li class="nav-item">
+          <a class="nav-link d-flex align-items-center py-2 px-3 rounded" [routerLink]="['/app/profile']">
+            <i class="fe fe-settings nav-icon mr-3"></i>
+            <span>Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link d-flex align-items-center py-2 px-3 rounded" href="javascript:void(0)" (click)="logout()">
+            <i class="fe fe-power nav-icon mr-3"></i>
+            <span>Sign Out</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

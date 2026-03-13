@@ -1,0 +1,8 @@
+@use '../../../../shared/component/dashboard/dashboard-shared.scss';
+
+.dashboard__td--small {
+  font-size: 0.8rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

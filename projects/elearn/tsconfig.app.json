@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/elearn-app"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/test.ts", "**/*.spec.ts", "src/main.server.ts", "src/app/app.server.module.ts"]
+}
+

@@ -1,0 +1,36 @@
+<div class="video-block" [class.video-block--author]="isEditable">
+  <div class="video-block__meta" *ngIf="isEditable">
+    <input
+      type="text"
+      class="form-control form-control-sm mb-2"
+      placeholder="Video URL (YouTube or Vimeo)"
+      [ngModel]="block.url"
+      (ngModelChange)="onUrlChange($event)"
+    />
+    <input
+      type="text"
+      class="form-control form-control-sm mb-2"
+      placeholder="Title (optional)"
+      [ngModel]="block.title"
+      (ngModelChange)="onTitleChange($event)"
+    />
+    <input
+      type="text"
+      class="form-control form-control-sm mb-2"
+      placeholder="Caption (optional)"
+      [ngModel]="block.caption"
+      (ngModelChange)="onCaptionChange($event)"
+    />
+  </div>
+  <div class="video-block__title" *ngIf="!isEditable && block.title">{{ block.title }}</div>
+  <div class="video-block__embed" *ngIf="embedUrl">
+    <iframe [src]="embedUrl" frameborder="0" allowfullscreen></iframe>
+  </div>
+  <div class="video-block__caption" *ngIf="!isEditable && block.caption">{{ block.caption }}</div>
+  <div class="video-block__placeholder text-muted" *ngIf="!embedUrl && isEditable">
+    Enter a YouTube or Vimeo URL above.
+  </div>
+  <div class="video-block__placeholder text-muted" *ngIf="!embedUrl && !isEditable">
+    No video URL provided.
+  </div>
+</div>

@@ -1,0 +1,107 @@
+<div class="student-layout">
+  <!-- Desktop sidebar -->
+  <aside class="student-layout__sidebar">
+    <div class="student-layout__sidebar-inner">
+    <div class="student-layout__logo">
+      <img class="student-layout__logo-icon" [src]="logoIconUrl" alt="Logo" width="32" height="32" (error)="onLogoIconError($event)" />
+      <img class="student-layout__logo-full" [src]="logoUrl" alt="Logo" (error)="onLogoError($event)" />
+    </div>
+    <nav class="student-layout__nav">
+      <a routerLink="dashboard" routerLinkActive="active" title="Dashboard">
+        <i class="fa fa-tachometer"></i>
+        <span class="student-layout__nav-text">Dashboard</span>
+      </a>
+      <a routerLink="courses" [class.active]="isMyCoursesActive()" title="My Courses">
+        <i class="fa fa-book"></i>
+        <span class="student-layout__nav-text">My Courses</span>
+      </a>
+      <div class="student-layout__sub-nav">
+        <a routerLink="courses" [class.active]="isCourseFilter(1) && isOnCoursesRoute()" (click)="setCourseFilter(1)" class="student-layout__sub-link" title="In Progress">
+          <i class="fa fa-play"></i>
+          <span class="student-layout__nav-text">In Progress</span>
+        </a>
+        <a routerLink="courses" [class.active]="isCourseFilter(2) && isOnCoursesRoute()" (click)="setCourseFilter(2)" class="student-layout__sub-link" title="Completed">
+          <i class="fa fa-check-circle"></i>
+          <span class="student-layout__nav-text">Completed</span>
+        </a>
+        <a routerLink="courses" [class.active]="isCourseFilter(3) && isOnCoursesRoute()" (click)="setCourseFilter(3)" class="student-layout__sub-link" title="Wishlisted">
+          <i class="fa fa-heart"></i>
+          <span class="student-layout__nav-text">Wishlisted</span>
+        </a>
+      </div>
+      <a routerLink="categories" routerLinkActive="active" title="Explore">
+        <i class="fa fa-compass"></i>
+        <span class="student-layout__nav-text">Explore</span>
+      </a>
+      <a routerLink="events" routerLinkActive="active" title="Events">
+        <i class="fa fa-calendar-check-o"></i>
+        <span class="student-layout__nav-text">Events</span>
+      </a>
+      <a routerLink="profile" routerLinkActive="active" title="Profile">
+        <i class="fa fa-user-circle"></i>
+        <span class="student-layout__nav-text">Profile</span>
+      </a>
+      <a routerLink="certificate" routerLinkActive="active" title="Certificates">
+        <i class="fa fa-certificate"></i>
+        <span class="student-layout__nav-text">Certificates</span>
+      </a>
+      <a routerLink="purchase-history" routerLinkActive="active" title="Purchase History">
+        <i class="fa fa-shopping-cart"></i>
+        <span class="student-layout__nav-text">Purchase History</span>
+      </a>
+      <a routerLink="notifications" routerLinkActive="active" title="Notifications">
+        <i class="fa fa-bell"></i>
+        <span class="student-layout__nav-text">Notifications</span>
+      </a>
+    </nav>
+    <div class="student-layout__user">
+      <a routerLink="profile" routerLinkActive="active" class="student-layout__user-link" title="Profile">
+        <div class="student-layout__avatar">
+          <img
+            *ngIf="profileImageUrl && !sidebarAvatarError"
+            [src]="profileImageUrl"
+            alt="Profile"
+            (error)="sidebarAvatarError = true"
+          >
+          <span *ngIf="!profileImageUrl || sidebarAvatarError" class="student-layout__avatar-initial">{{ userInitial }}</span>
+        </div>
+        <span class="student-layout__nav-text student-layout__user-name">Profile</span>
+      </a>
+    </div>
+    </div>
+  </aside>
+
+  <!-- Mobile bottom nav (visible only &lt; 768px): Home, My Courses, Explore, Profile -->
+  <nav class="student-layout__mobile-bar" aria-label="Mobile navigation">
+    <a routerLink="dashboard" routerLinkActive="active" class="student-layout__mobile-link" title="Home">
+      <i class="fa fa-home student-layout__mobile-icon"></i>
+      <span class="student-layout__mobile-label">Home</span>
+    </a>
+    <a routerLink="courses" [class.active]="isMyCoursesActive()" class="student-layout__mobile-link" title="My Courses">
+      <i class="fa fa-book student-layout__mobile-icon"></i>
+      <span class="student-layout__mobile-label">My Courses</span>
+    </a>
+    <a routerLink="categories" routerLinkActive="active" class="student-layout__mobile-link" title="Explore">
+      <i class="fa fa-compass student-layout__mobile-icon"></i>
+      <span class="student-layout__mobile-label">Explore</span>
+    </a>
+    <a routerLink="events" routerLinkActive="active" class="student-layout__mobile-link" title="Events">
+      <i class="fa fa-calendar-check-o student-layout__mobile-icon"></i>
+      <span class="student-layout__mobile-label">Events</span>
+    </a>
+    <a routerLink="profile" routerLinkActive="active" class="student-layout__mobile-link" title="Profile">
+      <i class="fa fa-user-circle student-layout__mobile-icon"></i>
+      <span class="student-layout__mobile-label">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Main content -->
+  <main class="student-layout__main">
+    <header class="student-layout__topbar" *ngIf="!(playerState.focusMode$ | async)">
+      <app-common-topbar></app-common-topbar>
+    </header>
+    <div class="student-layout__content" [class.student-layout__content--player]="playerState.focusMode$ | async">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

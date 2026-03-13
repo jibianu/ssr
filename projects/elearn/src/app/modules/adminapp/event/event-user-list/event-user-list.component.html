@@ -1,0 +1,55 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="event-list__header-row">
+    <div class="event-list__header">
+      <h1 class="event-list__title"><i class="fas fa-user-friends"></i> Event registrations</h1>
+      <p class="event-list__subtitle">All users registered for this event</p>
+    </div>
+    <a class="event-list__add-btn btn btn-outline-secondary" [routerLink]="[eventsListPath]">
+      <i class="fas fa-arrow-left"></i> Back to Event list
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="event-list__loading">Loading registrations…</div>
+  <div *ngIf="error" class="event-list__error alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="list-page__table-wrap list-table-modern__wrap">
+      <div class="list-table-modern__table-responsive">
+        <table class="list-table-modern__table">
+          <thead>
+            <tr>
+              <th class="sortable" (click)="onSortClick($event, 'name')">
+                <span class="th-content">Name <i class="fas fa-sort"></i></span>
+              </th>
+              <th><span class="th-content">Email</span></th>
+              <th><span class="th-content">Mobile</span></th>
+              <th><span class="th-content">Company</span></th>
+              <th><span class="th-content">Payment Ref</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of users | paginate: config">
+              <td>{{ item.name ?? item.Name }}</td>
+              <td>{{ item.email ?? item.Email }}</td>
+              <td>{{ item.mobile ?? item.Mobile }}</td>
+              <td>{{ item.companyName ?? item.CompanyName }}</td>
+              <td>{{ item.paymentRefNo ?? item.PaymentRefNo }}</td>
+            </tr>
+            <tr *ngIf="users.length === 0">
+              <td colspan="5" class="text-center text-muted py-4">No registrations yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="event-list__footer" *ngIf="users.length > 0">
+        <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+        <div class="event-list__page-size">
+          <label class="event-list__page-size-label">Items per page:</label>
+          <select class="form-select event-list__page-size-select" (change)="onTableSizeChange($event)">
+            <option *ngFor="let size of tableSizes" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,23 @@
+<div *ngFor="let item of studyMaterials">
+    <div class="list-group mb-2 mt-2">
+        <div class="list-group-item">
+            <div class="row align-items-center">
+                <div class="col">
+                    <p class="heading text-primary">{{item?.title}}</p>
+                    <div class="mt-2" *ngFor="let x of item.studyMaterials">
+                        <p class="heading">{{x?.title}}</p>
+                        <img [src]="x.imageLink" alt="" *ngIf="x.imageLink">
+                        <!-- Block-based lesson content (author/preview/student) -->
+                        <app-lesson-editor
+                          *ngIf="isLessonContent(x?.description)"
+                          [content]="x.description"
+                          mode="student"
+                        ></app-lesson-editor>
+                        <!-- Legacy HTML description -->
+                        <p class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+
+ <ul class="video-list">
+  <li class="video-list-item" *ngFor="let item of videos; index as i;">
+    <div class="video-lecture-wrapper" *ngFor="let x of item?.videoLectures; index as j">
+      <div class="video-content-container">
+        <!-- Main video title/header at the top of the card -->
+        <h3 class="video-main-title">
+          {{ videoObj?.title || x?.title || 'Video' }}
+        </h3>
+
+        <div class="video-player-container">
+          <video width="100%" controls controlsList="nodownload" *ngIf="videoObj?.providerType=='local'">
+            <source [src]="getVideoSrc(videoObj?.videoLink) | safeUrl" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <iframe width="100%" height="100%" *ngIf="videoObj?.providerType=='youtube'"
+            [src]="videoObj?.videoLink|safeUrl" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+        
+        <div class="video-info-container">
+          <div class="video-info-card">
+            <div class="video-description">
+              <h4>Description</h4>
+              <p>{{videoObj?.description}}</p>
+            </div>
+            <div *ngIf="item?.videoLectures?.length > 1" class="video-switcher mt-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary me-1" *ngFor="let v of item.videoLectures"
+                (click)="setVideoObj(v)" [class.active]="videoObj?.videoLink === v.videoLink">{{v.title || 'Video'}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr class="video-separator" *ngIf="item?.videoLectures?.length > 1" />
+    </div>
+  </li>
+</ul>

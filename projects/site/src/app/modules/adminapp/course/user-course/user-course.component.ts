@@ -1,0 +1,117 @@
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Subscription } from 'rxjs';
+import { CookieService } from 'src/app/core/services/cookie.service';
+import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
+import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { AdminAppService } from '../../adminapp.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { NgxPaginationModule } from "ngx-pagination";
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-user-course',
+  templateUrl: './user-course.component.html',
+  styleUrls: ['./user-course.component.scss'],
+  standalone: true,
+  imports: [CommonModule, NgxPaginationModule, RouterModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
+})
+export class UserCourseComponent implements OnInit, OnDestroy {
+
+  config: any;
+  tableSizes = [5, 10, 25, 50];
+  subscription: Subscription = new Subscription();
+  userCourses = new Array();
+  term = '';
+  currentUser: any;
+  constructor(
+    private appService: AdminAppService,
+    private toasterService: ToasterService,
+    private modalService: NgbModal,
+    private cookieService: CookieService,
+    private cdr: ChangeDetectorRef // ✅ PERFORMANCE: For manual change detection trigger
+  ) { }
+
+  ngOnInit(): void {
+    // FIXED: Add error handling for cookie parsing
+    try {
+      const userCookie = this.cookieService.getCookie('currentUser');
+      if (userCookie) {
+        this.currentUser = JSON.parse(userCookie);
+      }
+    } catch (error) {
+      console.error('Error parsing currentUser cookie:', error);
+      this.currentUser = null;
+    }
+    this.config = {
+      itemsPerPage: 5,
+      currentPage: 1,
+    };
+    this.fetchUserCourses();
+  }
+
+  deleteCourse(id) {
+    this.open(id);
+  }
+
+  fetchUserCourses() {
+    this.subscription.add(this.appService.getBlogByUser()
+      .subscribe(
+        response => {
+          this.userCourses = response;
+          this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
+        },
+        error => {
+          console.log(error);
+        }));
+  }
+
+  pageChanged(event) {
+    this.config.currentPage = event;
+  }
+
+  onTableSizeChange(event): void {
+    this.config.itemsPerPage = event.target.value;
+    this.config.currentPage = 1;
+  }
+
+  open(id) {
+    const modalRef = this.modalService.open(ConfirmationModalComponent);
+    modalRef.componentInstance.title = 'Blog Deletion';
+    modalRef.componentInstance.descText = '<strong>Are you sure you want to delete?</strong>'
+    modalRef.result.then((result) => {
+      if (result === 'ok') {
+        this.subscription.add(this.appService.deleteCourseById(id)
+          .subscribe(
+            response => {
+              this.toasterService.showSuccess('Blog deleted successfully');
+              this.fetchUserCourses();
+              this.cdr.markForCheck(); // ✅ PERFORMANCE: Manual change detection trigger for OnPush
+            },
+            error => {
+              console.log(error);
+              this.toasterService.showError('Something went wrong');
+            }));
+      }
+    }, (reason) => {
+
+    });
+  }
+
+  // ✅ PERFORMANCE: TrackBy functions for ngFor optimization
+  trackByCourseId(index: number, course: any): string {
+    return course?.id || index.toString();
+  }
+
+  trackByTableSize(index: number, size: number): number {
+    return size;
+  }
+
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+}

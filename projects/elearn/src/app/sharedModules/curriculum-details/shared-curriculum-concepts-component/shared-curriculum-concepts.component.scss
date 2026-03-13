@@ -1,0 +1,125 @@
+
+
+/* Base Styles */
+.concept-container {
+    margin: 1rem 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .concept-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .concept-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  }
+  
+  .concept-header {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .concept-main-title {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .concept-content {
+    padding: 1.5rem;
+  }
+  
+  .concept-subtitle {
+    color: #3498db;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .image-container {
+    margin: 1.5rem 0;
+    text-align: center;
+  }
+  
+  .concept-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .concept-image:hover {
+    transform: scale(1.02);
+  }
+  
+  .description {
+    color: #495057;
+    line-height: 1.6;
+    font-size: 1rem;
+  }
+  
+  .description ::ng-deep p {
+    margin-bottom: 1rem;
+  }
+  
+  .description ::ng-deep a {
+    color: #3498db;
+    text-decoration: none;
+  }
+  
+  .description ::ng-deep a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .concept-card {
+      border-radius: 6px;
+    }
+    
+    .concept-header {
+      padding: 0.8rem 1rem;
+    }
+    
+    .concept-main-title {
+      font-size: 1.2rem;
+    }
+    
+    .concept-content {
+      padding: 1rem;
+    }
+    
+    .concept-subtitle {
+      font-size: 1.1rem;
+    }
+    
+    .image-container {
+      margin: 1rem 0;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .concept-main-title {
+      font-size: 1.1rem;
+    }
+    
+    .concept-subtitle {
+      font-size: 1rem;
+    }
+    
+    .description {
+      font-size: 0.9rem;
+    }
+  }

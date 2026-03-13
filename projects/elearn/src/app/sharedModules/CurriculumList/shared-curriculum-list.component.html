@@ -1,0 +1,29 @@
+<div class="curriculum-list-page" *ngIf="curriculumList.length">
+  <h2 class="curriculum-list-page__title">Curriculum</h2>
+  <p class="curriculum-list-page__subtitle">Select a topic to view concepts, study material, videos, and questions.</p>
+
+  <div class="curriculum-list">
+    <a class="curriculum-card" *ngFor="let item of curriculumList; index as i" href="javascript:void(0)"
+      (click)="goToCurriculumDetails(item); $event.preventDefault()">
+      <span class="curriculum-card__number">{{ i + 1 }}</span>
+      <div class="curriculum-card__body">
+        <h3 class="curriculum-card__title">{{ item?.title }}</h3>
+        <div class="curriculum-card__meta">
+          <span class="curriculum-card__meta-item" *ngIf="item.curriculumConceptCount"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> {{ item.curriculumConceptCount }} Concepts</span>
+          <span class="curriculum-card__meta-item" *ngIf="item.curriculumQuestionCount"><i class="fa fa-question-circle" aria-hidden="true"></i> {{ item.curriculumQuestionCount }} Questions</span>
+          <span class="curriculum-card__meta-item" *ngIf="item.curriculumStudyMaterialCount"><i class="fa fa-book" aria-hidden="true"></i> {{ item.curriculumStudyMaterialCount }} Study</span>
+          <span class="curriculum-card__meta-item" *ngIf="item.curriculumVideoLectureCount"><i class="fa fa-video-camera" aria-hidden="true"></i> {{ item.curriculumVideoLectureCount }} Videos</span>
+        </div>
+      </div>
+      <i class="fa fa-chevron-right curriculum-card__arrow" aria-hidden="true"></i>
+    </a>
+  </div>
+</div>
+
+<div class="curriculum-list-page curriculum-list-page--empty" *ngIf="curriculumList.length === 0">
+  <div class="curriculum-list-empty">
+    <i class="fa fa-folder-open-o curriculum-list-empty__icon" aria-hidden="true"></i>
+    <h3 class="curriculum-list-empty__title">No curriculum yet</h3>
+    <p class="curriculum-list-empty__text">Topics for this course will appear here once they are added.</p>
+  </div>
+</div>

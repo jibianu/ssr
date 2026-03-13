@@ -1,0 +1,322 @@
+/* Same design as My Courses (common-course): scroll, container, grid, cards, pagination */
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.course-page-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #e2e8f0;
+}
+
+.course-page-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.course-page-scroll::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 5px;
+}
+
+.course-page-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 5px;
+}
+
+$app-primary: var(--app-primary, #f57722);
+$app-primary-light: var(--app-primary-light, #ff9d2a);
+$app-primary-bg: rgba(245, 119, 34, 0.08);
+$white: #ffffff;
+$lms-orange: #f97316;
+$lms-orange-light: #ffedd5;
+$lms-orange-border: #fdba74;
+
+.course-container {
+  padding: 24px 20px 40px;
+  max-width: 1300px;
+  margin: 0 auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.trainer-add-btn .btn-primary {
+  background: linear-gradient(135deg, $app-primary 0%, $app-primary-light 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(245, 119, 34, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(245, 119, 34, 0.4);
+  }
+}
+
+/* Loading state */
+.list-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+}
+
+.list-page__loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e9ecef;
+  border-top-color: $app-primary;
+  border-radius: 50%;
+  animation: list-page-spin 0.8s linear infinite;
+}
+
+.list-page__loading-text {
+  margin: 1rem 0 0;
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+@keyframes list-page-spin {
+  to { transform: rotate(360deg); }
+}
+
+.course-empty-msg {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+  margin: 0;
+}
+
+/* Course Grid – 4 cards per row (same as My Courses) */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.course-card.lms-card {
+  background: $white;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  height: 100%;
+  cursor: pointer;
+  border: 1px solid $lms-orange-border;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(249, 115, 22, 0.2);
+    border-color: $lms-orange;
+  }
+}
+
+.lms-card__banner,
+.lms-card__banner--api,
+.lms-card__banner--ndt {
+  height: 60px;
+  min-height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  position: relative;
+  background: #E9EDF5;
+  border: 1px solid #ADD8E6;
+  border-radius: 18px 18px 0 0;
+}
+
+.lms-card__badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #333333;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  border: 1px solid rgba(173, 216, 230, 0.5);
+}
+
+.lms-card__trainer-actions {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.btn-progress,
+.btn-edit,
+.btn-delete {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-progress {
+  background: rgba(124, 58, 237, 0.12);
+  color: #6d28d9;
+
+  &:hover {
+    background: rgba(124, 58, 237, 0.22);
+  }
+}
+
+.btn-edit {
+  background: $app-primary-bg;
+  color: $app-primary;
+
+  &:hover {
+    background: rgba(245, 119, 34, 0.2);
+  }
+}
+
+.btn-delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+}
+
+.lms-card__body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.lms-card__title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark, #18113c);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lms-card__meta {
+  margin: 0 0 12px 0;
+  font-size: 0.8125rem;
+  color: var(--gray, #64748b);
+  font-weight: 500;
+}
+
+.lms-progress {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.lms-cta {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid $lms-orange-border;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #c2410c;
+  background: $lms-orange-light;
+  box-shadow: 0 1px 4px rgba(249, 115, 22, 0.12);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lms-cta:hover {
+  background: #fed7aa;
+  border-color: $lms-orange;
+  color: #9a3412;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+
+/* Pagination – same as My Courses */
+.pagination-container {
+  margin-top: 36px;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination-container .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+  margin: 0;
+}
+
+.pagination-container .page-item .page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--dark, #18113c);
+  background: $white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.pagination-container .page-item .page-link:hover {
+  background: $app-primary-bg;
+  border-color: rgba(245, 119, 34, 0.25);
+  color: $app-primary;
+}
+
+.pagination-container .page-item .page-link.active {
+  background: linear-gradient(135deg, $app-primary 0%, $app-primary-light 100%);
+  color: $white;
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgba(245, 119, 34, 0.35);
+}
+
+@media (max-width: 1200px) {
+  .course-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+}

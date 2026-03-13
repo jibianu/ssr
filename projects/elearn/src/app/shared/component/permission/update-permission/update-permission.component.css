@@ -1,0 +1,67 @@
+::ng-deep.modal-right .modal-dialog {
+    position: fixed !important;
+    margin: auto;
+    width: 500px;
+    height: 100%;
+    transform: translate3d(0%, 0, 0);
+    z-index: 1056 !important;
+    pointer-events: auto !important;
+}
+
+::ng-deep.modal-right .modal-header {
+    pointer-events: auto !important;
+}
+
+::ng-deep.modal-right .modal-header button,
+::ng-deep.modal-right .modal-header .close {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+::ng-deep.modal-right .modal-body {
+    padding: 15px 15px 80px;
+    min-height: 500px;
+    pointer-events: auto !important;
+}
+
+::ng-deep.modal-right .modal-body input,
+::ng-deep.modal-right .modal-body button,
+::ng-deep.modal-right .modal-body label,
+::ng-deep.modal-right .modal-body .form-check-input,
+::ng-deep.modal-right .modal-body .form-check-label,
+::ng-deep.modal-right .modal-body .dropdown,
+::ng-deep.modal-right .modal-body .dropdown-toggle,
+::ng-deep.modal-right .modal-body .dropdown-menu,
+::ng-deep.modal-right .modal-body .dropdown-item {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+::ng-deep.modal-right .modal-content {
+    height: 100%;
+    overflow-y: auto;
+    pointer-events: auto !important;
+    z-index: 1057 !important;
+}
+
+::ng-deep.modal-right .modal-footer {
+    pointer-events: auto !important;
+}
+
+::ng-deep.modal-right .modal-footer button {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+::ng-deep.modal-right.fade .modal-dialog {
+    right: 0;
+    transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+::ng-deep.modal-right.fade.in .modal-dialog {
+    right: 0 !important;
+}
+
+::ng-deep .modal-backdrop {
+    z-index: 1050 !important;
+}

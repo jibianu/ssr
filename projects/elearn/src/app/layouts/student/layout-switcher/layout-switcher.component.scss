@@ -1,0 +1,5 @@
+/* Layout switcher is a pure container; no layout styles here. */
+:host {
+  display: block;
+  height: 100%;
+}

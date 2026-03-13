@@ -1,0 +1,122 @@
+<div class="course-list mainClass list-page-with-pagination list-table-modern">
+  <div *ngIf="!isManagementContext" class="mb-2 d-flex align-items-center gap-2">
+    <button type="button" class="btn btn-primary btn-sm" (click)="publishAllToPublic()" [disabled]="publishAllToPublicInProgress" title="Make all published (LMS) courses also visible on the Public marketing site">
+      <span *ngIf="!publishAllToPublicInProgress">Publish all to Public site</span>
+      <span *ngIf="publishAllToPublicInProgress"><i class="fa fa-spinner fa-spin"></i> Updating...</span>
+    </button>
+  </div>
+  <div *ngIf="searchTags?.length" class="course-list__tags-wrap">
+    <span *ngFor="let tag of searchTags" class="course-list__tag">
+      {{ tag.value }}
+      <a href="javascript:void(0)" class="course-list__tag-remove" (click)="onTagRemoved(tag)">&times;</a>
+    </span>
+  </div>
+
+  <div class="list-page__table-wrap list-table-modern__wrap">
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Title')">
+                Title
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Category')">
+                Category
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">Price</th>
+            <th class="list-table-modern__th">Author</th>
+            <th class="list-table-modern__th">Created</th>
+            <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!course?.length" class="list-table-modern__row">
+            <td colspan="6" class="list-table-modern__empty">{{ isManagementContext ? 'No courses assigned yet' : 'No courses found' }}</td>
+          </tr>
+          <tr *ngFor="let item of course; trackBy: trackByCourseId" class="list-table-modern__row">
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">
+              <a class="list-table-modern__link" routerLink="/app/{{ txtRoute }}/course/curriculum/list/{{ item.id }}" [attr.title]="item?.title || ''">{{ item.title }}</a>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item?.category?.name }}</td>
+            <td class="list-table-modern__td">{{ item?.price }}</td>
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item?.createdByUser?.email || '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn | date: 'short' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--action">
+              <div class="list-table-modern__actions">
+                <button *ngIf="managerListEnbale && !isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--warning course-list__action-tooltip" title="Remove from Management" (click)="openRemoveFromManagement(item)"><i class="fa fa-user-times"></i><span class="course-list__tooltip-text">Remove from Management</span></button>
+                <button *ngIf="!isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip" title="Delete course" (click)="deleteCourse(item.id)"><i class="fa fa-trash"></i><span class="course-list__tooltip-text">Delete course</span></button>
+                <button *ngIf="!isManagementContext && !item.isPublished" type="button" class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip" (click)="openPublishUnpublishModal(item)"><i class="fa fa-flag"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Not published. Click to publish on Elearn LMS and optionally on Public marketing site.</span></button>
+                <button *ngIf="!isManagementContext && item.isPublished" type="button" class="list-table-modern__btn list-table-modern__btn--success course-list__action-tooltip" (click)="openPublishUnpublishModal(item)"><i class="fa fa-flag-o"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Published on Elearn LMS. Public site: {{ (item.showOnPublicListing ?? item.ShowOnPublicListing) ? 'Yes' : 'No' }}. Click to change or unpublish.</span></button>
+                <button type="button" class="course-list__progress-ring-wrap course-list__action-tooltip" (click)="changeProgress(item.id, item.courseCreationProgress)" title="Set course creation progress ({{ item.courseCreationProgress ?? 0 }}%)">
+                  <span class="course-list__progress-ring">
+                    <svg class="course-list__progress-ring-svg" viewBox="0 0 36 36">
+                      <path class="course-list__progress-ring-bg" pathLength="100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="course-list__progress-ring-fill" pathLength="100" [attr.stroke-dasharray]="(item.courseCreationProgress ?? 0) + ' ' + (100 - (item.courseCreationProgress ?? 0))" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="course-list__progress-ring-pct">{{ item.courseCreationProgress ?? 0 }}%</span>
+                  </span>
+                  <span class="course-list__tooltip-text">Progress {{ item.courseCreationProgress ?? 0 }}% – Click to change</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <app-common-pagination class="list-page__pagination"
+    [pageNumber]="page"
+    [pageSize]="tableSize"
+    [totalCount]="count ?? 0"
+    [pageSizeOptions]="tableSizes"
+    (pageChange)="pageChanged($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-common-pagination>
+</div>
+
+<ng-template #cContent let-modal>
+  <div class="modal-header create-course-modal__header">
+    <h4 class="modal-title">Create Course</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="courseForm">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" formControlName="title" class="form-control" [ngClass]="{ 'is-invalid': submitted && courseF.title.errors }" />
+        <div *ngIf="submitted && courseF.title.errors" class="invalid-feedback">
+          <div *ngIf="courseF.title.errors.required">Title is required</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea type="text" formControlName="description" class="form-control" [ngClass]="{ 'is-invalid': submitted && courseF.description.errors }"></textarea>
+        <div *ngIf="submitted && courseF.description.errors" class="invalid-feedback">
+          <div *ngIf="courseF.description.errors.required">Description is required</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select formControlName="categoryId" class="form-control" id="sel1" [ngClass]="{ 'is-invalid': submitted && courseF.categoryId.errors }">
+          <option value="">Select Category</option>
+          <option *ngFor="let item of categories; trackBy: trackByCategoryId" [value]="item.id">{{ item?.name }}</option>
+        </select>
+        <div *ngIf="submitted && courseF.categoryId.errors" class="invalid-feedback">
+          <div *ngIf="courseF.categoryId.errors.required">Category is required</div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" type="button" (click)="createCourse()">Create</button>
+    <button type="button" class="btn btn-danger ml-1" (click)="modal.close('Close click')">Cancel</button>
+  </div>
+</ng-template>

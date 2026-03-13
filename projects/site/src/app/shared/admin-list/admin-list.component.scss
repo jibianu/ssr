@@ -1,0 +1,856 @@
+// ✅ COMMON ADMIN LIST: Shared styles for all admin list pages
+// Beautiful, modern, full-width design with consistent UI
+@use 'sass:color';
+
+// Color Variables
+$admin-list-primary: #5e72e4;
+$admin-list-primary-hover: #4851d4;
+$admin-list-success: #2dce89;
+$admin-list-success-hover: #26d07c;
+$admin-list-danger: #f5365c;
+$admin-list-danger-hover: #ec0c38;
+$admin-list-info: #11cdef;
+$admin-list-warning: #fb6340;
+$admin-list-dark: #32325d;
+$admin-list-light: #f7fafc;
+$admin-list-border: #e9ecef;
+$admin-list-text-primary: #2d3748;
+$admin-list-text-secondary: #718096;
+$admin-list-bg: #ffffff;
+$admin-list-bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
+$border-radius: 12px;
+$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ✅ RIGHT EDGE FIXED: Main container extends to right edge of browser window (no right sidebar)
+.admin-list-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: calc(100vh - 64px); // Account for topbar
+  height: 100%; // ✅ RIGHT EDGE: Full height to reach bottom
+  background: $admin-list-bg-gradient;
+  padding: 0 !important; // ✅ RIGHT EDGE: No padding - content touches edges
+  margin: 0 !important; // ✅ RIGHT EDGE: No margins
+  margin-left: 0 !important; // ✅ LEFT: No left margin - touches sidebar
+  margin-right: 0 !important; // ✅ RIGHT EDGE: No right margin - touches browser edge (no right sidebar)
+  margin-top: 0 !important; // ✅ TOP: No top margin - touches topbar
+  margin-bottom: 0 !important; // ✅ BOTTOM: No bottom margin - touches bottom edge
+  box-sizing: border-box;
+  position: relative;
+  right: 0 !important; // ✅ RIGHT EDGE: Explicitly position at right edge
+  
+  // ✅ RIGHT EDGE: Ensure container extends to full available width and right edge
+  display: block;
+  overflow-x: hidden; // ✅ RIGHT EDGE: Prevent horizontal scroll
+
+  // ✅ CENTERED TABLE: Equal spacing on left AND right sides - table centered with same gap on both sides
+  // Sidebar has: header/footer padding: 1.5rem 1.25rem (horizontal padding = 1.25rem)
+  // Table should be centered with equal spacing: same gap from sidebar edge and same gap to right edge
+  $content-horizontal-spacing: 1.25rem; // ✅ CENTERED: Same spacing on both left and right sides (matches sidebar)
+  
+  .admin-list-header {
+    padding: 2rem $content-horizontal-spacing 0 $content-horizontal-spacing !important; // ✅ CENTERED: Equal left and right padding
+  }
+
+  .admin-list-search-bar {
+    padding: 1.5rem $content-horizontal-spacing !important; // ✅ CENTERED: Equal left and right padding
+  }
+
+  .admin-list-table-card {
+    // ✅ CENTERED TABLE: Left and right margins EXACTLY the same - centers the table
+    margin-left: $content-horizontal-spacing !important; // ✅ LEFT: 1.25rem gap from sidebar edge
+    margin-right: $content-horizontal-spacing !important; // ✅ RIGHT: 1.25rem gap to browser edge (EXACTLY same as left - centers table)
+    margin-top: 0 !important;
+    margin-bottom: 2rem !important;
+    
+    // ✅ CENTERED: Calculate width to account for margins (ensures proper centering)
+    width: calc(100% - #{$content-horizontal-spacing * 2}) !important; // ✅ CENTERED: Full width minus both margins
+    max-width: calc(100% - #{$content-horizontal-spacing * 2}) !important; // ✅ CENTERED: Ensures table is centered
+    
+    // Ensure no padding overrides that would break centering
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    
+    // ✅ CENTERED: Table footer uses same spacing to maintain centering
+    .admin-list-table-footer {
+      padding: 1.25rem $content-horizontal-spacing !important; // ✅ CENTERED: Same left and right padding
+      padding-left: $content-horizontal-spacing !important; // ✅ CENTERED: Explicit left padding
+      padding-right: $content-horizontal-spacing !important; // ✅ CENTERED: Explicit right padding (SAME as left)
+    }
+  }
+
+  @media (max-width: 768px) {
+    $content-horizontal-spacing-mobile: 1rem; // ✅ SYMMETRICAL: Slightly smaller on tablet, but equal on both sides
+    
+    .admin-list-header {
+      padding: 1rem $content-horizontal-spacing-mobile 0 $content-horizontal-spacing-mobile !important; // ✅ SYMMETRICAL: Equal left and right
+    }
+
+    .admin-list-search-bar {
+      padding: 1rem $content-horizontal-spacing-mobile !important; // ✅ SYMMETRICAL: Equal left and right
+    }
+
+    .admin-list-table-card {
+      // ✅ SYMMETRICAL: Left and right margins must be EXACTLY the same
+      margin-left: $content-horizontal-spacing-mobile !important; // ✅ LEFT: 1rem gap from sidebar edge
+      margin-right: $content-horizontal-spacing-mobile !important; // ✅ RIGHT: 1rem gap to browser edge (SAME as left)
+      margin-top: 0 !important;
+      margin-bottom: 1rem !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+    $content-horizontal-spacing-mobile: 0.75rem; // ✅ SYMMETRICAL: Smaller on mobile, but equal on both sides
+    
+    .admin-list-header {
+      padding: 0.75rem $content-horizontal-spacing-mobile 0 $content-horizontal-spacing-mobile !important; // ✅ SYMMETRICAL: Equal left and right
+    }
+
+    .admin-list-search-bar {
+      padding: 0.75rem $content-horizontal-spacing-mobile !important; // ✅ SYMMETRICAL: Equal left and right
+    }
+
+    .admin-list-table-card {
+      // ✅ SYMMETRICAL: Left and right margins must be EXACTLY the same
+      margin-left: $content-horizontal-spacing-mobile !important; // ✅ LEFT: 0.75rem gap from sidebar edge
+      margin-right: $content-horizontal-spacing-mobile !important; // ✅ RIGHT: 0.75rem gap to browser edge (SAME as left)
+      margin-top: 0 !important;
+      margin-bottom: 0.75rem !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+}
+
+// Header Section - BALANCED SPACING
+.admin-list-header {
+  margin-bottom: 0; // ✅ BALANCED: No margin - padding handled by container
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  .title-section {
+    flex: 1;
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: $admin-list-dark;
+      margin: 0 0 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      i {
+        font-size: 1.75rem;
+        color: $admin-list-primary;
+        font-style: normal;
+        font-weight: 900;
+      }
+
+      @media (max-width: 768px) {
+        font-size: 1.5rem;
+
+        i {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .page-subtitle {
+      color: $admin-list-text-secondary;
+      font-size: 0.95rem;
+      margin: 0;
+      font-weight: 400;
+    }
+  }
+
+  .btn-add-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, $admin-list-primary 0%, $admin-list-primary-hover 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: $border-radius;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: $shadow-md;
+    transition: $transition;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+
+    i {
+      font-size: 0.875rem;
+      font-style: normal;
+      font-weight: 900;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+      background: linear-gradient(135deg, $admin-list-primary-hover 0%, $admin-list-primary 100%);
+      color: white;
+      text-decoration: none;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba($admin-list-primary, 0.3);
+    }
+  }
+}
+
+// Search and Filter Bar - BALANCED SPACING
+.admin-list-search-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0; // ✅ BALANCED: No margin - padding handled by container
+  flex-wrap: wrap;
+
+  .search-container {
+    flex: 1;
+    min-width: 300px;
+    max-width: 600px;
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: $border-radius;
+      box-shadow: $shadow-sm;
+      transition: $transition;
+
+      &:focus-within {
+        box-shadow: $shadow-md;
+        border-color: $admin-list-primary;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 1rem;
+        color: $admin-list-text-secondary;
+        font-size: 1rem;
+        pointer-events: none;
+        font-style: normal;
+        font-weight: 900;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid transparent;
+        border-radius: $border-radius;
+        font-size: 0.95rem;
+        color: $admin-list-text-primary;
+        background: transparent;
+        transition: $transition;
+
+        &:focus {
+          outline: none;
+          border-color: $admin-list-primary;
+        }
+
+        &::placeholder {
+          color: $admin-list-text-secondary;
+        }
+      }
+
+      .search-btn {
+        padding: 0.875rem 1.25rem;
+        background: $admin-list-primary;
+        color: white;
+        border: none;
+        border-radius: 0 $border-radius $border-radius 0;
+        cursor: pointer;
+        transition: $transition;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: $admin-list-primary-hover;
+        }
+
+        i {
+          font-size: 0.875rem;
+          font-style: normal;
+          font-weight: 900;
+        }
+      }
+    }
+  }
+
+  .stats-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: white;
+    border-radius: $border-radius;
+    box-shadow: $shadow-sm;
+    color: $admin-list-text-primary;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+
+    i {
+      color: $admin-list-info;
+      font-style: normal;
+      font-weight: 900;
+    }
+  }
+}
+
+// ✅ STEP 4: Table Card - Centered with equal left and right spacing
+.admin-list-table-card {
+  background: white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+  transition: $transition;
+  width: calc(100% - 2.5rem) !important; // ✅ CENTERED: Full width minus left and right margins (1.25rem each = 2.5rem total)
+  max-width: calc(100% - 2.5rem) !important; // ✅ CENTERED: Ensures table is centered
+  // ✅ CENTERED: Margin left and right are controlled by container (.admin-list-container .admin-list-table-card)
+  // Both margins are 1.25rem, creating equal spacing and centering the table
+
+  &:hover {
+    box-shadow: $shadow-lg;
+  }
+}
+
+// Admin List Table - SYMMETRICAL SPACING
+.admin-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  // ✅ SYMMETRICAL: Table extends fully within card, card has equal left/right margins
+
+  thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+    tr {
+      border-bottom: 2px solid $admin-list-border;
+    }
+
+    th {
+      padding: 1.25rem 1rem;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $admin-list-text-primary;
+      position: relative;
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: $transition;
+
+        &:hover {
+          background: rgba($admin-list-primary, 0.05);
+          color: $admin-list-primary;
+        }
+
+        a {
+          color: inherit;
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          &:hover {
+            color: inherit;
+            text-decoration: none;
+          }
+        }
+      }
+
+      .th-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .sort-icon {
+          color: $admin-list-primary;
+          font-size: 0.75rem;
+          font-style: normal;
+          font-weight: 900;
+        }
+
+        .sort-icon-placeholder {
+          color: $admin-list-text-secondary;
+          font-size: 0.75rem;
+          opacity: 0.5;
+          font-style: normal;
+          font-weight: 900;
+        }
+      }
+
+      &.actions-column {
+        text-align: center;
+      }
+
+      // Sort icons
+      i {
+        font-style: normal;
+        font-weight: 900;
+        cursor: pointer;
+        transition: $transition;
+
+        &:hover {
+          color: $admin-list-primary;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $admin-list-border;
+      transition: $transition;
+
+      &:hover {
+        background: rgba($admin-list-primary, 0.02);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.empty-row {
+        &:hover {
+          background: transparent;
+        }
+      }
+    }
+
+    td {
+      padding: 1.25rem 1rem;
+      font-size: 0.95rem;
+      color: $admin-list-text-primary;
+      vertical-align: middle;
+
+      &.actions-cell {
+        .action-buttons {
+          display: flex;
+          justify-content: center;
+          gap: 0.5rem;
+        }
+
+        .btn-action {
+          width: 36px;
+          height: 36px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: $transition;
+          font-size: 0.875rem;
+          color: white;
+
+          &.btn-edit {
+            background: $admin-list-success;
+
+            &:hover {
+              background: $admin-list-success-hover;
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+          }
+
+          &.btn-delete {
+            background: $admin-list-danger;
+
+            &:hover {
+              background: $admin-list-danger-hover;
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+          }
+
+          &.btn-view {
+            background: $admin-list-info;
+
+            &:hover {
+              background: color.adjust($admin-list-info, $lightness: -10%);
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+          }
+
+          &.btn-primary-action {
+            background: $admin-list-primary;
+
+            &:hover {
+              background: $admin-list-primary-hover;
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+          }
+
+          &.btn-dark-action {
+            background: $admin-list-dark;
+
+            &:hover {
+              background: color.adjust($admin-list-dark, $lightness: -10%);
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+          }
+
+          i {
+            pointer-events: none;
+            font-style: normal;
+            font-weight: 900;
+          }
+        }
+      }
+
+      &.empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+
+        .empty-state-content {
+          .empty-icon {
+            font-size: 4rem;
+            color: $admin-list-text-secondary;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+            font-style: normal;
+            font-weight: 900;
+          }
+
+          .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: $admin-list-text-primary;
+            margin: 0 0 0.5rem 0;
+          }
+
+          .empty-description {
+            color: $admin-list-text-secondary;
+            margin: 0 0 1.5rem 0;
+          }
+
+          .btn-empty-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: $admin-list-primary;
+            color: white;
+            text-decoration: none;
+            border-radius: $border-radius;
+            font-weight: 600;
+            transition: $transition;
+
+            &:hover {
+              background: $admin-list-primary-hover;
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+              color: white;
+              text-decoration: none;
+            }
+
+            i {
+              font-style: normal;
+              font-weight: 900;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Table Footer - SYMMETRICAL SPACING (matches content horizontal spacing - same as sidebar)
+.admin-list-table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.25rem !important; // ✅ SYMMETRICAL: Equal left and right padding (1.25rem) - matches content horizontal spacing
+  background: #f8f9fa;
+  border-top: 1px solid $admin-list-border;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .pagination-wrapper {
+    flex: 1;
+
+    ::ng-deep {
+      .ngx-pagination {
+        margin: 0;
+        padding: 0;
+
+        li {
+          margin: 0 0.25rem;
+
+          a,
+          .current {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            transition: $transition;
+          }
+
+          a {
+            background: white;
+            color: $admin-list-text-primary;
+            border: 1px solid $admin-list-border;
+
+            &:hover {
+              background: $admin-list-primary;
+              color: white;
+              border-color: $admin-list-primary;
+            }
+          }
+
+          .current {
+            background: $admin-list-primary;
+            color: white;
+            border: 1px solid $admin-list-primary;
+          }
+
+          &.pagination-previous,
+          &.pagination-next {
+            a {
+              background: white;
+              color: $admin-list-primary;
+              font-weight: 600;
+
+              &:hover {
+                background: $admin-list-primary;
+                color: white;
+              }
+            }
+
+            &.disabled {
+              a {
+                opacity: 0.5;
+                cursor: not-allowed;
+
+                &:hover {
+                  background: white;
+                  color: $admin-list-primary;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .page-size-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .page-size-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: $admin-list-text-secondary;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin: 0;
+
+      i {
+        color: $admin-list-info;
+        font-style: normal;
+        font-weight: 900;
+      }
+    }
+
+    .page-size-select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid $admin-list-border;
+      border-radius: 8px;
+      background: white;
+      color: $admin-list-text-primary;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: $transition;
+
+      &:focus {
+        outline: none;
+        border-color: $admin-list-primary;
+        box-shadow: 0 0 0 3px rgba($admin-list-primary, 0.1);
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 992px) {
+  .admin-list-table {
+    thead {
+      display: none;
+    }
+
+    tbody {
+      tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid $admin-list-border;
+        border-radius: $border-radius;
+        padding: 1rem;
+        background: white;
+        box-shadow: $shadow-sm;
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border: none;
+        border-bottom: 1px solid $admin-list-border;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: $admin-list-text-primary;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.05em;
+        }
+
+        &.actions-cell {
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-list-header {
+    .header-content {
+      .title-section {
+        .page-title {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+
+  .admin-list-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+
+    .search-container {
+      max-width: 100%;
+    }
+  }
+
+  .admin-list-table-footer {
+    flex-direction: column;
+    align-items: stretch;
+
+    .pagination-wrapper {
+      width: 100%;
+    }
+
+    .page-size-control {
+      justify-content: center;
+    }
+  }
+}
+
+// Animation for smooth loading
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-list-table tbody tr {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Badge Styles (for status indicators)
+.badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.badge-success {
+    background: rgba($admin-list-success, 0.1);
+    color: $admin-list-success;
+  }
+
+  &.badge-secondary {
+    background: rgba($admin-list-text-secondary, 0.1);
+    color: $admin-list-text-secondary;
+  }
+
+  &.badge-primary {
+    background: rgba($admin-list-primary, 0.1);
+    color: $admin-list-primary;
+  }
+
+  &.badge-danger {
+    background: rgba($admin-list-danger, 0.1);
+    color: $admin-list-danger;
+  }
+
+  &.badge-warning {
+    background: rgba($admin-list-warning, 0.1);
+    color: $admin-list-warning;
+  }
+}
+
+// Print Styles
+@media print {
+  .admin-list-header .btn-add-item,
+  .admin-list-search-bar,
+  .admin-list-table-footer,
+  .actions-cell {
+    display: none !important;
+  }
+
+  .admin-list-table-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+

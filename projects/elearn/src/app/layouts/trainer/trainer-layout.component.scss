@@ -1,0 +1,5 @@
+/* Layout uses global .app-single-layout (same as admin profile) – topbar + sidebar, full size, only data changes */
+:host {
+  display: block;
+  width: 100%;
+}

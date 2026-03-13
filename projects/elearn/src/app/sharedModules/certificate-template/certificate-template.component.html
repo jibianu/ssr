@@ -1,0 +1,46 @@
+<div class="certificate-page" *ngIf="course">
+  <div class="certificate-page__content">
+    <div class="text-center m-3" *ngIf="loading">
+      <p class="mb-0 text-muted">Loading...</p>
+    </div>
+    <div *ngIf="!loading && courseCompleted" class="certificate-page__actions">
+      <div class="certificate-page__info mb-3">
+        <p class="mb-1"><strong>Course:</strong> {{ course?.title }}</p>
+        <p class="mb-0 text-muted small">Complete the course to earn your certificate.</p>
+      </div>
+      <div class="certificate-page__buttons">
+        <button type="button" class="btn btn-view" (click)="viewCertificate()">
+          View Certificate
+        </button>
+        <button type="button" class="btn btn-download" (click)="downloadCertificate()">
+          Download (PDF)
+        </button>
+        <button type="button" class="btn btn-linkedin" (click)="shareOnLinkedIn()" title="Share certificate on LinkedIn">
+          Share on LinkedIn
+        </button>
+      </div>
+      <div class="certificate-page__linkedin-info mt-3">
+        <p class="small text-muted mb-1"><strong>Add to your LinkedIn profile:</strong></p>
+        <p class="small text-muted mb-1">Go to LinkedIn → Profile → Add profile section → Licenses &amp; Certifications. Use course name <strong>{{ course?.title }}</strong>, organization <strong>oilandgasclub</strong>, and paste the certificate link.</p>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="copyCertificateLink()">Copy certificate link</button>
+        <span class="small text-success ms-2" *ngIf="copySuccessMessage">{{ copySuccessMessage }}</span>
+      </div>
+    </div>
+    <div class="alert text-center m-3 mb-0"
+         *ngIf="!loading && !courseCompleted && statusMessage"
+         [ngClass]="{
+           'alert-info': messageType === 'info',
+           'alert-warning': messageType === 'warning',
+           'alert-danger': messageType === 'error'
+         }">
+      <p class="mb-0">{{ statusMessage }}</p>
+    </div>
+  </div>
+</div>
+<div class="certificate-page" *ngIf="courseLoadError">
+  <div class="certificate-page__content">
+    <div class="alert alert-warning text-center m-3">
+      <p class="mb-0">Course could not be loaded. Please check the link or try again later.</p>
+    </div>
+  </div>
+</div>

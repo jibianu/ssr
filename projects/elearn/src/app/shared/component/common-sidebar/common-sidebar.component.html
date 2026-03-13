@@ -1,0 +1,29 @@
+<nav id="sidebar" class="common-sidebar" [ngClass]="{ 'common-sidebar--toggled': sidebarToggled }">
+  <div class="common-sidebar__header">
+    <h3>Menu</h3>
+  </div>
+  <ul class="common-sidebar__menu">
+    <li class="common-sidebar__item" *ngFor="let item of menuItems">
+      <a class="common-sidebar__link" [routerLink]="item.link" [fragment]="item.fragment ?? null" routerLinkActive="active" (click)="onNavClick($event, item)">
+        <i class="common-sidebar__icon" [ngClass]="item.icon || 'fa fa-circle'"></i>
+        <span class="common-sidebar__text">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+  <div class="common-sidebar__footer">
+    <div class="common-sidebar__user">
+      <div class="common-sidebar__avatar">
+        <img
+          *ngIf="userImageUrl && !avatarImageError"
+          [src]="userImageUrl"
+          alt="{{ userDisplayName || 'User' }}"
+          width="36"
+          height="36"
+          (error)="avatarImageError = true"
+        >
+        <span *ngIf="!userImageUrl || avatarImageError" class="common-sidebar__avatar-initial" [attr.aria-hidden]="true">{{ userInitial }}</span>
+      </div>
+      <span class="common-sidebar__user-name">{{ userDisplayName || 'User' }}</span>
+    </div>
+  </div>
+</nav>

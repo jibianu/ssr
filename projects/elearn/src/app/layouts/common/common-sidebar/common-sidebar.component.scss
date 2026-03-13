@@ -1,0 +1,74 @@
+/* Base styles */
+.sidenav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 1000;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+/* Mobile specific */
+@media (max-width: 767.98px) {
+    .sidenav {
+        width: 100%;
+        height: auto;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #sidenav {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    #sidenav.show {
+        max-height: 500px;
+    }
+    
+    .navbar-header {
+        padding: 0.75rem 1rem;
+        display: block;
+    }
+}
+
+/* Desktop specific */
+@media (min-width: 768px) {
+    .sidenav {
+        padding-top: 20px;
+    }
+    
+    .nav-link {
+        transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .nav-link.router-link-active {
+        background-color: #e9ecef;
+        color: #007bff;
+    }
+    
+    .navbar-header {
+        padding: 0.5rem 1rem;
+        display: block;
+    }
+}
+
+/* Common styles */
+.nav-icon {
+    width: 20px;
+    text-align: center;
+}
+
+.icon-shape {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}

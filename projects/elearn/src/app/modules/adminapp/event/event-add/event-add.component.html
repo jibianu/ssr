@@ -1,0 +1,219 @@
+<div class="mb-2 event-add-page mainClass">
+  <div class="card-header d-flex align-items-center justify-content-center mb-2 p-0">
+    <h2>Create Event</h2>
+  </div>
+
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Event Basic Details -->
+    <div class="event-section">
+      <h5 class="event-section__title">Event Basic Details</h5>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label>Event Title <span class="text-danger">*</span></label>
+            <input type="text" formControlName="title" class="form-control" placeholder="Enter event title"
+              [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
+            <div *ngIf="submitted && f.title.errors" class="invalid-feedback">Event title is required.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Canonical URL <span class="text-danger">*</span></label>
+            <input type="text" formControlName="canonicalUrl" class="form-control" placeholder="event-url"
+              [ngClass]="{ 'is-invalid': submitted && f.canonicalUrl.errors }" />
+            <div *ngIf="submitted && f.canonicalUrl.errors" class="invalid-feedback">Canonical URL is required.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Language <span class="text-danger">*</span></label>
+            <select formControlName="language" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.language.errors }">
+              <option value="" disabled>Select language</option>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Other">Other</option>
+            </select>
+            <div *ngIf="submitted && f.language.errors" class="invalid-feedback">Language is required.</div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="form-group">
+            <label>Badge</label>
+            <input type="text" formControlName="badge" class="form-control" placeholder="Enter badge" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event-section">
+      <h5 class="event-section__title">Event Media</h5>
+      <div class="form-group mb-3">
+        <label>Title Image (optional)</label>
+        <div class="event-upload" (click)="fileInput.click()" (dragover)="$event.preventDefault()" (drop)="onTitleImageDrop($event)">
+          <input #fileInput type="file" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp" (change)="onTitleImageChange($event)" class="d-none" />
+          <ng-container *ngIf="!titleImagePreview && !titleImageUploadedUrl">
+            <i class="fas fa-cloud-upload-alt event-upload__icon"></i>
+            <p class="event-upload__text">Click to upload or drag and drop (PNG, JPG, SVG, WEBP max 10MB)</p>
+          </ng-container>
+          <ng-container *ngIf="titleImagePreview || titleImageUploadedUrl">
+            <img [src]="titleImagePreview || titleImageUploadedUrl" alt="Preview" class="event-upload__preview" />
+            <button type="button" class="btn btn-sm btn-outline-danger mt-2" (click)="removeTitleImage(); $event.stopPropagation()">Remove</button>
+          </ng-container>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Video (optional)</label>
+        <div class="event-upload event-upload--video mb-2" (click)="videoFileInput.click()" [class.event-upload--loading]="videoUploading">
+          <input #videoFileInput type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" (change)="onVideoFileChange($event)" class="d-none" />
+          <ng-container *ngIf="!videoUploading">
+            <i class="fas fa-video event-upload__icon"></i>
+            <p class="event-upload__text">Click to upload a video (MP4, WebM, MOV). File is saved to S3 and URL stored.</p>
+          </ng-container>
+          <ng-container *ngIf="videoUploading">
+            <i class="fas fa-spinner fa-spin event-upload__icon"></i>
+            <p class="event-upload__text">Uploading video…</p>
+          </ng-container>
+        </div>
+        <div class="mb-2">
+          <label class="small text-muted">Or paste a video URL</label>
+          <div class="d-flex align-items-center gap-2">
+            <input type="url" formControlName="videoUrl" class="form-control" placeholder="e.g. YouTube, Vimeo, or S3 video URL" />
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeVideo()" [disabled]="mediaDeleting || !f.videoUrl.value">Remove video</button>
+          </div>
+        </div>
+        <div class="event-video-preview mt-2" *ngIf="f.videoUrl.value">
+          <label class="small text-muted d-block mb-1">Preview</label>
+          <video class="event-video-preview__player" controls playsinline [src]="getVideoPreviewSrc()">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <small class="form-text text-muted">Upload a video file (saved in S3) or paste a link. The URL is stored with the event.</small>
+      </div>
+    </div>
+
+    <div class="event-section">
+      <h5 class="event-section__title">Event Information</h5>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label>About Event <span class="text-danger">*</span></label>
+            <textarea formControlName="aboutEvent" class="form-control" rows="4" placeholder="Enter event description"
+              [ngClass]="{ 'is-invalid': submitted && f.aboutEvent.errors }"></textarea>
+            <div *ngIf="submitted && f.aboutEvent.errors" class="invalid-feedback">About event is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Offer Info <span class="text-danger">*</span></label>
+            <textarea formControlName="eventInfo" class="form-control" rows="3" placeholder="Enter offer information"
+              [ngClass]="{ 'is-invalid': submitted && f.eventInfo.errors }"></textarea>
+            <div *ngIf="submitted && f.eventInfo.errors" class="invalid-feedback">Offer info is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Meta Description</label>
+            <textarea formControlName="metaDescription" class="form-control" rows="2" placeholder="Meta description for SEO"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event-section">
+      <h5 class="event-section__title">Event Format Information</h5>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label>Skill Level</label>
+            <input type="text" formControlName="skillLevel" class="form-control" placeholder="e.g. All levels, Beginner" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label>Certification</label>
+            <input type="text" formControlName="certification" class="form-control" placeholder="e.g. Included, Available" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label>Mode</label>
+            <input type="text" formControlName="mode" class="form-control" placeholder="e.g. Hybrid, Online, In-person" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event-section">
+      <h5 class="event-section__title">Event Timing</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Start Date <span class="text-danger">*</span></label>
+            <input type="date" formControlName="startDate" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.startDate.errors }" />
+            <div *ngIf="submitted && f.startDate.errors" class="invalid-feedback">Start date is required.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>End Date <span class="text-danger">*</span></label>
+            <input type="date" formControlName="endDate" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.endDate.errors }" />
+            <div *ngIf="submitted && f.endDate.errors" class="invalid-feedback">End date is required.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Duration</label>
+            <input type="text" formControlName="duration" class="form-control" placeholder="e.g. 7 days" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Timing</label>
+            <input type="text" formControlName="timing" class="form-control" placeholder="e.g. 9:00 AM - 5:00 PM" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event-section">
+      <h5 class="event-section__title">Pricing & Location</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Amount <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" formControlName="amount" class="form-control" placeholder="0" min="0" step="0.01"
+                [ngClass]="{ 'is-invalid': submitted && f.amount.errors }" />
+            </div>
+            <div *ngIf="submitted && f.amount.errors" class="invalid-feedback d-block">Amount is required.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Discount</label>
+            <div class="input-group">
+              <input type="number" formControlName="discount" class="form-control" placeholder="0" min="0" max="100" step="0.01" />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="form-group">
+            <label>Location <span class="text-danger">*</span></label>
+            <input type="text" formControlName="location" class="form-control" placeholder="Enter event location"
+              [ngClass]="{ 'is-invalid': submitted && f.location.errors }" />
+            <div *ngIf="submitted && f.location.errors" class="invalid-feedback">Location is required.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group d-flex">
+      <button class="btn btn-outline-add" type="submit" [disabled]="saving">
+        <span *ngIf="!saving">Create Event</span>
+        <span *ngIf="saving"><i class="fas fa-spinner fa-spin"></i> Saving...</span>
+      </button>
+      <button type="button" class="btn btn-outline-add ml-2" (click)="goBack()">Cancel</button>
+    </div>
+    </form>
+  </div>
+</div>

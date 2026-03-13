@@ -1,0 +1,20 @@
+
+ .card-header{
+    padding: 10x 0px;
+   background-image: linear-gradient(to bottom right, #8080ff , #d580ff);
+    border:none;
+    box-shadow: 1px 1px 11px rgba(33,33,33,.2);  
+    text-align: center;
+  }
+  .card-header h3{
+    color: white!important;
+    font-size: 1.35rem;
+  }
+
+.backBtn{
+    height: 20px;
+    position: absolute;
+    top:15px;
+    left: 30px;
+    cursor: pointer;
+  }

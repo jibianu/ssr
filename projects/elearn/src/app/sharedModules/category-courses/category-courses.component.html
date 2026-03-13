@@ -1,0 +1,77 @@
+<div class="category-courses-scroll">
+  <div class="category-courses-page">
+    <header class="category-page-header" *ngIf="categoryName">
+    <h1 class="category-page-title">{{ categoryName }}</h1>
+    <p class="category-page-subtitle">Explore expert-led programs curated for this category.</p>
+  </header>
+
+    <div class="course-grid">
+    <div class="category-course-card" 
+         *ngFor="let item of gadata | paginate : { itemsPerPage : 20, currentPage : page, totalItems : count }"
+         (click)="checkToRedirect(item)">
+      <div class="card-header">
+        <span class="course-category-tag">{{ item?.category?.name }}</span>
+        <span class="card-badge card-badge--complete" *ngIf="item?.courseEnrollmentsResponse && item.testProgressResponse?.totalTask > 0 && (item.testProgressResponse.completedTask * 100 / item.testProgressResponse.totalTask) >= 100">100% Complete</span>
+        <span class="card-badge card-badge--progress" *ngIf="item?.courseEnrollmentsResponse && ((item.testProgressResponse?.totalTask ?? 0) === 0 || ((item.testProgressResponse?.completedTask ?? 0) * 100 / (item.testProgressResponse?.totalTask || 1)) < 100)">
+          {{ ((item.testProgressResponse?.completedTask ?? 0) * 100) / (item.testProgressResponse?.totalTask || 1) | number:'1.0-0' }}% Complete
+        </span>
+        <span class="card-badge card-badge--seller" *ngIf="item?.isBestSeller && !item?.courseEnrollmentsResponse">BEST SELLER</span>
+      </div>
+
+      <div class="card-content">
+        <h3 class="course-title">{{ item.title | slice:0:70 }}{{ item.title.length > 70 ? '...' : '' }}</h3>
+
+        <!-- Enrolled: progress + CTA -->
+        <div class="course-progress" *ngIf="item?.courseEnrollmentsResponse">
+          <div class="progress-container">
+            <div class="progress-bar" 
+                 [style.width.%]="(item.testProgressResponse?.totalTask > 0) ? (item.testProgressResponse.completedTask * 100 / item.testProgressResponse.totalTask) : 0"></div>
+          </div>
+          <div class="progress-status">
+            <span>{{ item.testProgressResponse?.completedTask ?? 0 }}/{{ item.testProgressResponse?.totalTask ?? 0 }} completed</span>
+            <button type="button" class="btn-resume" 
+                    (click)="fnResume(item); $event.stopPropagation()" 
+                    *ngIf="(item.testProgressResponse?.totalTask ?? 0) !== (item.testProgressResponse?.completedTask ?? 0)">Resume</button>
+            <button type="button" class="btn-completed" 
+                    *ngIf="(item.testProgressResponse?.totalTask ?? 0) > 0 && (item.testProgressResponse?.completedTask ?? 0) === item.testProgressResponse?.totalTask">Completed</button>
+          </div>
+        </div>
+
+        <!-- Not enrolled: price + actions -->
+        <ng-container *ngIf="!item?.courseEnrollmentsResponse">
+          <div class="card-price-block">
+            <span class="price-actual" *ngIf="getDisplayOriginalPrice(item) as orig">{{ orig | currency:currencyCode:'symbol':'1.2-2' }}</span>
+            <span class="price-offer">{{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="card-actions">
+            <button type="button" class="btn-buy" (click)="goToCheckout(item); $event.stopPropagation()">
+              <i class="fa fa-shopping-cart"></i> Buy {{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}
+            </button>
+            <button type="button" class="wishlist-badge" 
+                    *ngIf="item.wishListsResponse"
+                    (click)="fnUpdateWishList(item); $event.stopPropagation()"
+                    title="Remove from wishlist">
+              <i class="fa fa-heart"></i>
+            </button>
+            <button type="button" class="wishlist-badge add" 
+                    *ngIf="!item.wishListsResponse"
+                    (click)="fnAddWishList(item); $event.stopPropagation()"
+                    title="Add to wishlist">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
+        </ng-container>
+
+        <button type="button" class="card-cta card-cta--secondary" 
+                (click)="redirectToDescription(item); $event.stopPropagation()">
+          View course
+        </button>
+      </div>
+    </div>
+    </div>
+
+    <div class="pagination-container">
+      <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+    </div>
+  </div>
+</div>

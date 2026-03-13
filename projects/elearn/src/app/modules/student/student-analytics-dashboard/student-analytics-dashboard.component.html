@@ -1,0 +1,147 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__title">Student Dashboard</h1>
+    <div class="dashboard__filter">
+      <div class="dashboard__presets">
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'today'" (click)="onPresetChange('today')">Today</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last7'" (click)="onPresetChange('last7')">Last 7 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last30'" (click)="onPresetChange('last30')">Last 30 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'thisMonth'" (click)="onPresetChange('thisMonth')">This Month</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'custom'" (click)="setDateRangeFromPreset('custom')">Custom Range</button>
+      </div>
+      <div class="dashboard__custom" *ngIf="dateRangePreset === 'custom'">
+        <input type="date" class="dashboard__date" [(ngModel)]="customFrom" />
+        <span class="dashboard__date-sep">–</span>
+        <input type="date" class="dashboard__date" [(ngModel)]="customTo" />
+        <button type="button" class="dashboard__apply" (click)="applyCustomRange()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__cards">
+    <div class="dashboard__card" *ngFor="let card of [
+      { label: 'Courses Purchased', value: summary?.coursesPurchased, icon: 'fa fa-shopping-cart', iconClass: 'dashboard__card-icon--created' },
+      { label: 'Courses In Progress', value: summary?.coursesInProgress, icon: 'fa fa-spinner', iconClass: 'dashboard__card-icon--edited' },
+      { label: 'Courses Completed', value: summary?.coursesCompleted, icon: 'fa fa-check-circle', iconClass: 'dashboard__card-icon--purchases' },
+      { label: 'Certificates Earned', value: summary?.certificatesEarned, icon: 'fa fa-certificate', iconClass: 'dashboard__card-icon--revenue' }
+    ]">
+      <div class="dashboard__card-inner" *ngIf="loadingSummary">
+        <div class="dashboard__skeleton dashboard__skeleton--value"></div>
+        <div class="dashboard__skeleton dashboard__skeleton--sub"></div>
+      </div>
+      <div class="dashboard__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="dashboard__card-icon" [ngClass]="card.iconClass"><i [class]="card.icon"></i></span>
+        <span class="dashboard__card-value">{{ card.value }}</span>
+        <span class="dashboard__card-label">{{ card.label }}</span>
+        <span class="dashboard__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+    <!-- Time in app & days active (session tracking) -->
+    <div class="dashboard__card">
+      <div class="dashboard__card-inner" *ngIf="loadingSessionAnalytics">
+        <div class="dashboard__skeleton dashboard__skeleton--value"></div>
+        <div class="dashboard__skeleton dashboard__skeleton--sub"></div>
+      </div>
+      <div class="dashboard__card-inner" *ngIf="!loadingSessionAnalytics">
+        <span class="dashboard__card-icon dashboard__card-icon--session"><i class="fa fa-clock-o"></i></span>
+        <span class="dashboard__card-value">{{ formatTimeInApp(sessionAnalytics?.totalSecondsInApp ?? 0) }}</span>
+        <span class="dashboard__card-label">Time in app</span>
+        <span class="dashboard__card-sub">All time</span>
+      </div>
+    </div>
+    <div class="dashboard__card">
+      <div class="dashboard__card-inner" *ngIf="loadingSessionAnalytics">
+        <div class="dashboard__skeleton dashboard__skeleton--value"></div>
+        <div class="dashboard__skeleton dashboard__skeleton--sub"></div>
+      </div>
+      <div class="dashboard__card-inner" *ngIf="!loadingSessionAnalytics">
+        <span class="dashboard__card-icon dashboard__card-icon--days"><i class="fa fa-calendar"></i></span>
+        <span class="dashboard__card-value">{{ sessionAnalytics?.daysActive ?? 0 }}</span>
+        <span class="dashboard__card-label">Days active</span>
+        <span class="dashboard__card-sub">All time</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__charts">
+    <div class="dashboard__chart-card">
+      <h2 class="dashboard__chart-title">Learning progress over time</h2>
+      <div class="dashboard__chart-wrap" *ngIf="loadingProgressChart">
+        <div class="dashboard__skeleton dashboard__skeleton--chart"></div>
+      </div>
+      <div class="dashboard__chart-wrap dashboard__chart-wrap--canvas" *ngIf="!loadingProgressChart">
+        <canvas #progressChartCanvas></canvas>
+        <p class="dashboard__empty" *ngIf="!progressChartData?.length">No progress data in this range.</p>
+      </div>
+    </div>
+    <div class="dashboard__chart-card">
+      <h2 class="dashboard__chart-title">Completed vs pending courses</h2>
+      <div class="dashboard__chart-wrap" *ngIf="loadingCompletedVsPending">
+        <div class="dashboard__skeleton dashboard__skeleton--chart"></div>
+      </div>
+      <div class="dashboard__chart-wrap dashboard__chart-wrap--canvas" *ngIf="!loadingCompletedVsPending">
+        <canvas #completedVsPendingCanvas></canvas>
+        <p class="dashboard__empty" *ngIf="!completedVsPending">No data.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__table-section">
+    <h2 class="dashboard__chart-title">Recent learning activity</h2>
+    <div class="dashboard__table-toolbar">
+      <input type="text" class="dashboard__search" placeholder="Search..." [(ngModel)]="activitySearch" (input)="onActivitySearchInput()" />
+    </div>
+    <div class="dashboard__table-wrap" [class.dashboard__table-wrap--loading]="loadingTable">
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Activity</th>
+            <th class="dashboard__th">Course</th>
+            <th class="dashboard__th">Date &amp; Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="loadingTable">
+            <tr *ngFor="let i of skeletonRows" class="dashboard__skeleton-row">
+              <td colspan="3"><div class="dashboard__skeleton dashboard__skeleton--cell"></div></td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="!loadingTable && !activityRows?.length">
+            <td colspan="3" class="dashboard__empty-cell">No activity in this range.</td>
+          </tr>
+          <ng-container *ngIf="!loadingTable">
+            <tr *ngFor="let row of activityRows; trackBy: trackByActivity">
+              <td class="dashboard__td">{{ row.activityType }}</td>
+              <td class="dashboard__td">{{ row.courseName }}</td>
+              <td class="dashboard__td">{{ row.dateUtc | date:'short' }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <app-common-pagination
+      class="dashboard__pagination"
+      [pageNumber]="activityPage"
+      [pageSize]="activityPageSize"
+      [totalCount]="activityTotalCount"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onActivityPageChange($event)"
+      (pageSizeChange)="onActivityPageSizeChange($event)">
+    </app-common-pagination>
+  </div>
+
+  <div class="dashboard__table-section">
+    <h2 class="dashboard__chart-title">My Events</h2>
+    <p class="dashboard__subtitle">Events you have registered for.</p>
+    <div class="dashboard__table-wrap" [class.dashboard__table-wrap--loading]="loadingMyEvents">
+      <div *ngIf="loadingMyEvents" class="dashboard__skeleton dashboard__skeleton--chart"></div>
+      <div *ngIf="!loadingMyEvents && !myEvents?.length" class="dashboard__empty-cell">No events yet. <a routerLink="/student/events">Browse events</a>.</div>
+      <div *ngIf="!loadingMyEvents && myEvents?.length" class="dashboard__events-list">
+        <a *ngFor="let ev of myEvents; trackBy: trackByEventId" [routerLink]="['/student/events/event', ev.canonicalUrl || ev.id]" class="dashboard__event-item">
+          <span class="dashboard__event-title">{{ ev.title }}</span>
+          <span class="dashboard__event-date" *ngIf="ev.startDate">{{ ev.startDate | date:'mediumDate' }}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

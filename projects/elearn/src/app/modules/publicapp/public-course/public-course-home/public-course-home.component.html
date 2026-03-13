@@ -1,0 +1,90 @@
+<div class="landing-page">
+  <main class="landing-main">
+    <section class="landing-hero" aria-label="Welcome">
+    <div class="landing-container landing-hero__container">
+      <div class="landing-hero__grid">
+        <!-- Left: Login / Signup form (oilandgasclub design) -->
+        <aside class="landing-hero__login">
+          <header class="landing-login__header">
+            <a routerLink="/" class="landing-login__brand" aria-label="oilandgasclub home">
+              <img [src]="logoUrl" alt="oilandgasclub" class="landing-login__logo" width="130" height="42" fetchpriority="high">
+            </a>
+            <p class="landing-login__prompt">Don't have an account? <a routerLink="/auth/register" class="landing-login__link">Get started free</a></p>
+          </header>
+          <div class="landing-login__info">
+            <h2 class="landing-login__info-title">Grow your skills with industry-recognized courses.</h2>
+            <p class="landing-login__info-text">Self-paced oil & gas learning from industry experts. Get certified and advance your career.</p>
+          </div>
+          <form class="landing-login__form" (ngSubmit)="onLoginSubmit()" aria-label="Sign in">
+            <div class="landing-login__field" *ngIf="googleEnabled">
+              <button type="button" class="landing-login__google" (click)="continueWithGoogle()" [disabled]="!googleEnabled" aria-label="Continue with Google">
+                <span class="landing-login__google-icon" aria-hidden="true"></span>
+                <span>Continue with Google</span>
+              </button>
+            </div>
+            <div class="landing-login__divider" aria-hidden="true">OR</div>
+            <div class="landing-login__field">
+              <label class="landing-login__label" for="landing-email">Email address</label>
+              <input id="landing-email" type="email" name="email" [(ngModel)]="loginEmail" required placeholder="you@example.com" class="landing-login__input" autocomplete="email">
+            </div>
+            <div class="landing-login__field">
+              <label class="landing-login__label" for="landing-password">Password</label>
+              <input id="landing-password" type="password" name="password" [(ngModel)]="loginPassword" required placeholder="Enter your password" class="landing-login__input" autocomplete="current-password">
+            </div>
+            <div class="landing-login__options">
+              <label class="landing-login__remember">
+                <input type="checkbox" name="remember" aria-label="Remember me">
+                <span>Remember me</span>
+              </label>
+              <a routerLink="/auth/forget-password" class="landing-login__forgot">Forgot password</a>
+            </div>
+            <button type="submit" class="landing-login__submit">LOG IN</button>
+          </form>
+          <p class="landing-login__signup">Don't have an account yet? <a routerLink="/auth/register" class="landing-login__link">Sign up</a></p>
+          <div class="landing-login__footer">
+            <p class="landing-login__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
+            <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="landing-login__footer-link">Privacy Policy</a>
+            <a href="https://www.oilandgasclub.com/cookies/" target="_blank" rel="noopener" class="landing-login__footer-link">Manage Cookies</a>
+          </div>
+        </aside>
+
+        <!-- Right: Promo content + illustration -->
+        <div class="landing-hero__right">
+          <div class="landing-hero__content">
+            <h1 class="landing-hero__headline">Master Oil &amp; Gas skills with <span>top industry trainers</span></h1>
+            <p class="landing-hero__subtext">Trusted by professionals for training, upskilling, and career growth</p>
+          </div>
+          <div class="landing-hero__visual" aria-hidden="true">
+          <svg class="landing-hero__illustration" viewBox="0 0 420 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="hero-c1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#dbeafe"/><stop offset="100%" stop-color="#bfdbfe"/></linearGradient>
+              <linearGradient id="hero-c2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/></linearGradient>
+              <linearGradient id="hero-c3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d1fae5"/><stop offset="100%" stop-color="#a7f3d0"/></linearGradient>
+              <linearGradient id="hero-c4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fed7aa"/><stop offset="100%" stop-color="#fdba74"/></linearGradient>
+            </defs>
+            <circle cx="120" cy="100" r="70" fill="url(#hero-c1)"/>
+            <circle cx="300" cy="90" r="65" fill="url(#hero-c2)"/>
+            <circle cx="110" cy="230" r="68" fill="url(#hero-c3)"/>
+            <circle cx="310" cy="235" r="72" fill="url(#hero-c4)"/>
+            <circle cx="120" cy="100" r="32" fill="#fff" opacity="0.95"/>
+            <circle cx="300" cy="90" r="28" fill="#fff" opacity="0.95"/>
+            <circle cx="110" cy="230" r="30" fill="#fff" opacity="0.95"/>
+            <circle cx="310" cy="235" r="34" fill="#fff" opacity="0.95"/>
+            <path d="M105 95 l8 8 l-8 8 l-4-4 l4-4 z" fill="#1f2937" opacity="0.6"/>
+            <path d="M288 88 l6 6 l-6 6 l-3-3 l3-3 z" fill="#1f2937" opacity="0.5"/>
+            <rect x="95" y="218" width="28" height="22" rx="4" fill="#1f2937" opacity="0.25"/>
+            <rect x="298" y="222" width="22" height="24" rx="4" fill="#1f2937" opacity="0.25"/>
+            <circle cx="210" cy="160" r="22" fill="#0ea5e9" opacity="0.9"/>
+            <path d="M203 160 l6 6 l10-12" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="350" cy="70" r="18" fill="#93c5fd" opacity="0.8"/>
+            <text x="350" y="75" text-anchor="middle" fill="#1f2937" font-size="14" font-weight="700">A+</text>
+            <circle cx="70" cy="260" r="14" fill="#fde68a" opacity="0.9"/>
+            <path d="M66 258 l8 4 l-8 4 z" fill="#1f2937"/>
+          </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    </section>
+  </main>
+</div>

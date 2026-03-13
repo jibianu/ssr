@@ -1,0 +1,66 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="list-page__table-wrap list-table-modern__wrap">
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Email')">
+                Email
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('UserName')">
+                Username
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('CreatedOn')">
+                Created on
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('LastLoggedIn')">
+                Last login
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!users?.length && !count" class="list-table-modern__row">
+            <td colspan="6" class="list-table-modern__empty">{{ isManagementContext ? 'No companies assigned yet' : 'No companies found' }}</td>
+          </tr>
+          <tr *ngFor="let item of users" class="list-table-modern__row">
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">
+              <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.email">{{ item?.email }}</a>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--ellipsis" [title]="item?.userName">{{ item?.userName }}</td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn ? (item.createdOn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.lastLoggedIn ? (item.lastLoggedIn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--action">
+              <div class="list-table-modern__actions">
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteUser(item.id)" title="Delete"><i class="fa fa-trash"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--primary" (click)="openPermisionModal(item)" title="Lock / Unlock"><i class="fa fa-unlock"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="openCourseModal(item)" title="Edit Course"><i class="fa fa-book"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--view" (click)="openStudentInfo(item)" title="View Info"><i class="fa fa-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <app-common-pagination class="list-page__pagination"
+    [pageNumber]="page"
+    [pageSize]="tableSize"
+    [totalCount]="count ?? 0"
+    [pageSizeOptions]="tableSizes"
+    (pageChange)="pageChanged($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-common-pagination>
+</div>

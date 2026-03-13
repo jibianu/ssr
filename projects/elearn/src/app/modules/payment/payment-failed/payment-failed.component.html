@@ -1,0 +1,76 @@
+<div class="payment-failed-page">
+  <div class="payment-failed-card">
+    <!-- Failure icon -->
+    <div class="payment-failed__icon-wrap" aria-hidden="true">
+      <i class="fa fa-times-circle payment-failed__icon"></i>
+    </div>
+
+    <!-- Text content -->
+    <h1 class="payment-failed__title">Payment Failed</h1>
+    <p class="payment-failed__subtitle">We couldn't complete your payment.</p>
+    <p class="payment-failed__description">
+      This usually happens due to bank decline, network interruption, or incorrect card details. Don't worry — your course is still reserved.
+    </p>
+
+    <!-- Reservation timer -->
+    <div class="payment-failed__timer" *ngIf="!reservationExpired">
+      <span class="payment-failed__timer-label">Your seat is reserved for:</span>
+      <span class="payment-failed__timer-value">{{ formattedTime }}</span>
+    </div>
+    <p class="payment-failed__expired" *ngIf="reservationExpired">
+      Reservation expired. Please enroll again.
+    </p>
+
+    <!-- Order details -->
+    <div class="payment-failed__order-box">
+      <p class="payment-failed__order-row" *ngIf="courseName">
+        <span class="payment-failed__order-label">Course Name</span>
+        <span class="payment-failed__order-value">{{ courseName }}</span>
+      </p>
+      <p class="payment-failed__order-row" *ngIf="orderId">
+        <span class="payment-failed__order-label">Order ID</span>
+        <span class="payment-failed__order-value">{{ orderId }}</span>
+      </p>
+      <p class="payment-failed__order-row" *ngIf="amount != null">
+        <span class="payment-failed__order-label">Amount</span>
+        <span class="payment-failed__order-value">₹{{ amount | number:'1.2-2' }}</span>
+      </p>
+    </div>
+
+    <!-- Primary CTA -->
+    <button
+      type="button"
+      class="payment-failed__btn payment-failed__btn--primary"
+      [disabled]="reservationExpired || !orderId"
+      (click)="retryPayment()"
+      aria-label="Retry payment"
+    >
+      Retry Payment
+    </button>
+
+    <!-- Secondary actions -->
+    <div class="payment-failed__secondary">
+      <a
+        *ngIf="orderId"
+        [routerLink]="['/checkout', orderId]"
+        class="payment-failed__link"
+        aria-label="Choose another payment method"
+      >
+        Choose another payment method
+      </a>
+      <a
+        href="mailto:support&#64;oilandgasclub.com"
+        class="payment-failed__link"
+        aria-label="Contact support"
+      >
+        Contact Support
+      </a>
+    </div>
+
+    <!-- Help section -->
+    <div class="payment-failed__help">
+      <p class="payment-failed__help-title">Need help completing your purchase?</p>
+      <p class="payment-failed__help-text">Our support team will assist you within 24 hours.</p>
+    </div>
+  </div>
+</div>

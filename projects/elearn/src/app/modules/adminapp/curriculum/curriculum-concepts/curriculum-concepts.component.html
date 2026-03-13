@@ -1,0 +1,159 @@
+<div class="card-header bodyHeader">
+  <div class="d-flex">
+    <h4 class="mb-0 pl-4">
+      <span style="font-size: 12px;display: block;">{{course?.title}}</span>
+      <div class="back-button d-inline-block" (click)="goBack()"><i class="fa fa-arrow-left" aria-hidden="true"
+          id="backarrow"></i></div>Concepts
+    </h4>
+    <div class="ml-auto p-2">
+      <a class="p-2 btn btn-outline-custom" (click)="AddConcept(content)">Add Concept</a>
+    </div>
+  </div>
+</div>
+<div class="card-body">
+  <!-- <ul class="list-group list-group-flush">
+        <li class="list-group-item px-0 py-3" *ngFor="let item of concepts; index as i;">
+            <div class="d-flex">
+                <div class="align-self-center mr-auto">
+                    <h5 class="mb-0 ">{{item?.title}}</h5>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success" (click)="updateConcept(content,item)"><i
+                            class="fa fa-edit"></i></button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-danger ml-1" (click)="deleteConcept(item.id)"><i
+                            class="fa fa-trash"></i></button>
+                </div>
+            </div>
+        </li>
+        <hr>
+    </ul> -->
+
+  <div class="table-responsive border-0 customDesign">
+    <table class="table mb-0" style="width: 100%;">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 5%;"> SlNo</th>
+          <th scope="col" style="width: 10%;"> Sort Order</th>
+          <th scope="col" style="width: 75%;"> Title</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of concepts; index as i;">
+          <td>
+            {{i+1}}
+            </td>
+            <td>
+            {{item?.sortOrder}}
+            </td>
+          <td>
+            <div class="tdtitle"><a>{{item?.title}}</a></div>
+          </td>
+          <td>
+            <button type="button" class="btn btn-success customBtn" (click)="updateConcept(content,item)"><i
+                class="fa fa-edit"></i></button>
+            <button type="button" class="btn btn-danger customBtn ml-1" (click)="deleteConcept(item.id)"><i
+                class="fa fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<ng-template #content let-modal>
+  <div class="modal-header curriculum-navbar-header">
+    <h4 class="modal-title">{{pageTitle}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)=" asktosave()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="conceptForm">
+      <div class="form-group">
+        <label>Title</label>
+        <!-- <input type="text" formControlName="title" class="form-control addshowmore"
+                    [ngClass]="{ 'is-invalid': submitted && f.title.errors }" /> -->
+        <textarea type="text" formControlName="title" class="form-control addshowmore"
+          onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
+          [ngClass]="{ 'is-invalid': submitted && f.title.errors }"> </textarea>
+        <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
+          <div *ngIf="f.title.errors.required">Title is required</div>
+        </div>
+      </div>
+
+      <div formArrayName="concepts">
+        <div *ngFor="let item of courseConceptsArrayControls(); index as i" class="mb-3">
+          <div class="w-100 mb-2">
+            <!-- <h6>Concept Section {{i + 1}}</h6> -->
+            <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm"
+              (click)="removeCourseConceptItems(i)">
+              <span>Concept Section {{i + 1}}</span> <span>
+                <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</span></a>
+            <!-- <i class="fa fa-times-circle-o fa-sm text-white-50"></i>  Remove</a> -->
+          </div>
+
+          <div class="mb-3">
+            <div [formGroupName]="i" class="h-100">
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" formControlName="title" class="form-control"
+                  [ngClass]="{ 'is-invalid': submitted && item.controls.title.errors }" />
+                <div *ngIf="submitted && item.controls.title.errors" class="invalid-feedback">
+                  <div *ngIf="item.controls.title.errors.required">Title is required</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Content (block-based lesson editor)</label>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span class="small text-muted">View:</span>
+                  <button type="button" class="btn btn-sm" [class.btn-primary]="sectionViewMode(i) === 'author'" [class.btn-outline-secondary]="sectionViewMode(i) !== 'author'" (click)="setSectionViewMode(i, 'author')">Author</button>
+                  <button type="button" class="btn btn-sm" [class.btn-primary]="sectionViewMode(i) === 'preview'" [class.btn-outline-secondary]="sectionViewMode(i) !== 'preview'" (click)="setSectionViewMode(i, 'preview')">Preview</button>
+                </div>
+                <app-lesson-editor
+                  [content]="item.controls.description.value"
+                  [mode]="sectionViewMode(i)"
+                  [uploadImage]="uploadImageFn"
+                  [deleteImage]="deleteImageFn"
+                  (uploadInProgressChange)="onUploadInProgress($event)"
+                  (jsonChange)="onConceptDescriptionChange(i, $event)"
+                ></app-lesson-editor>
+                <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback d-block">
+                  <div *ngIf="item.controls.description.errors.required">Content is required (add at least one block)</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Image</label>
+                <br>
+                <input type="file" name="image" accept="image/*" (change)="fileProgress($event, i)" />
+              </div>
+              <div *ngIf="fileUploadProgress">
+                Upload progress: {{ fileUploadProgress }}
+              </div>
+              <div class="image-preview mb-3" *ngIf="item.controls.imageLink.value">
+                <img [src]="item.controls.imageLink.value" height="200" />
+              </div>
+
+              <div class="mb-3" *ngIf="item.controls.imageLink.value">
+                {{item.controls.imageLink.value}}
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-success w-100 ml-2 mb-2" (click)="addCourseConceptItems()">Add
+          Concept</button>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div class="form-group">
+      <button class="btn btn-primary" type="button" (click)="onSubmit()" [disabled]="uploadInProgress">{{btntext}}</button>
+      <button type="button" class="btn btn-danger ml-1" (click)="asktosave()">Cancel</button>
+    </div>
+  </div>
+</ng-template>

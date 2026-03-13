@@ -1,0 +1,67 @@
+<div class="card mb-1 courseName ">
+  <div class="d-flex cardheader">
+    <div class="back-button d-inline-block ml-4 pointer" (click)="backPage()" style="color: white;">
+      <i class="fa fa-arrow-left" aria-hidden="true" id="backarrow"></i>
+    </div>
+
+    <div class="courseHeading">
+    <h2 class="m-0 p-0">
+      Course Name <h3>Test name</h3>
+    </h2>
+  </div>
+  </div>
+</div>
+<div class="container">
+  <div class="card mb-1 resultCard">
+    <table class="table result">
+      <thead class="thead-light">
+        <tr>
+          <th scope="col">Question Count</th>
+          <th scope="col">Pass Marks</th>
+          <th scope="col">Attempts Available</th>
+          <th scope="col">Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">{{questionSetDetails?.questionCount}}</th>
+          <td>{{questionSetDetails?.passQuestionCounts}}</td>
+          <td>{{questionSetDetails?.maxAttemptsAllowed}}</td>
+          <td>{{questionSetDetails?.durationInMinute}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mb-4">
+
+  <div class="card-header customGradient">
+    <h3 class="mb-0">My Attempts</h3>
+  </div>
+
+  <div class="card-body customHeight">
+    <table class="table myAttempts">
+      <thead class="thead-light">
+        <tr>
+          <th scope="col">Attempted On</th>
+          <th scope="col">Submision On</th>
+          <th scope="col">Attempted Count</th>
+          <th scope="col">Attempted Duration</th>
+          <th scope="col">Marks Obtained</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of userTestResponse">
+          <th scope="row">{{item.attempStartDateTime | date:'dd-MM-yyyy hh:mm:ss a'}}</th>
+          <td>{{item.submittedDateTime | date:'dd-MM-yyyy hh:mm:ss a'}}</td>
+          <td>{{item.attemptCount}}</td>
+          <td>{{totalSecondToTime(item.attemptDuration)}}</td>
+          <td>{{item.score}}</td>
+          <td>{{item.resultStatusDescription}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

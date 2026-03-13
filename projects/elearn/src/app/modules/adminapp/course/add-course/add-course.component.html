@@ -1,0 +1,65 @@
+<div class="mb-2">
+
+    <div class="card-header d-flex align-items-center justify-content-center mb-2 p-0">
+            <h2>{{pageTitle}}</h2>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form [formGroup]="courseForm" (ngSubmit)="onSubmit()">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" formControlName="title" class="form-control"
+                            [ngClass]="{ 'is-invalid': submitted && f.title.errors }" />
+                        <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
+                            <div *ngIf="f.title.errors.required">Title is required</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea type="text" formControlName="description" class="form-control"
+                            [ngClass]="{ 'is-invalid': submitted && f.description.errors }"></textarea>
+                        <div *ngIf="submitted && f.description.errors" class="invalid-feedback">
+                            <div *ngIf="f.description.errors.required">Description is required</div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="form-group">
+                        <label>Course Image</label>
+                        <br>
+                        <input type="file" name="image" accept="image/*" (change)="fileProgress($event)" />
+                    </div>
+                    <div *ngIf="fileUploadProgress">
+                        Upload progress: {{ fileUploadProgress }}
+                    </div>
+                    <div class="image-preview mb-3" *ngIf="uploadedFilePath">
+                        <img [src]="uploadedFilePath" height="200" />
+                    </div>
+
+                    <div class="mb-3" *ngIf="uploadedFilePath">
+                        {{uploadedFilePath}}
+                    </div> -->
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select formControlName="categoryId" class="form-control add-course__select" id="sel1"
+                            [class.add-course__select--placeholder]="!f.categoryId.value"
+                            [ngClass]="{ 'is-invalid': submitted && f.categoryId.errors }">
+                            <option value="" disabled>Select a category</option>
+                            <option *ngFor="let item of categories" [value]="item.id">{{item?.name}}</option>
+                        </select>
+                        <div *ngIf="submitted && f.categoryId.errors" class="invalid-feedback">
+                            <div *ngIf="f.categoryId.errors.required">Category is required</div>
+                        </div>
+                    </div>
+                    <div class="form-group d-flex">
+                        <button class="btn btn-outline-add " type="submit">{{btntext}}</button>
+                        <button type="button" class="btn btn-outline-add  ml-2" (click)="goBack()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

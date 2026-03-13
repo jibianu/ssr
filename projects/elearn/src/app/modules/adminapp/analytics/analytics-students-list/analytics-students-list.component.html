@@ -1,0 +1,203 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__title">Student Analytics</h1>
+    <div class="dashboard__filter">
+      <a routerLink="/app/admin/analytics/dashboard" class="dashboard__preset">Analytics Dashboard</a>
+      <a routerLink="/app/admin/analytics/courses" class="dashboard__preset">Course Analytics</a>
+      <div class="dashboard__presets">
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'today'" (click)="onPresetChange('today')">Today</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last7'" (click)="onPresetChange('last7')">Last 7 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last30'" (click)="onPresetChange('last30')">Last 30 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'thisMonth'" (click)="onPresetChange('thisMonth')">This Month</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'custom'" (click)="setDateRangeFromPreset('custom')">Custom Range</button>
+      </div>
+      <div class="dashboard__custom" *ngIf="dateRangePreset === 'custom'">
+        <input type="date" class="dashboard__date" [(ngModel)]="customFrom" />
+        <span class="dashboard__date-sep">–</span>
+        <input type="date" class="dashboard__date" [(ngModel)]="customTo" />
+        <button type="button" class="dashboard__apply" (click)="applyCustomRange()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and sort bar -->
+  <div class="filters-bar">
+    <input type="text" class="filters-bar__search" placeholder="Search name or email…" [(ngModel)]="search" (keyup.enter)="applyFilters()" />
+    <select class="filters-bar__sort" [(ngModel)]="sortBy" (change)="onSortChange()">
+      <option *ngFor="let o of sortOptions" [value]="o.value">{{ o.label }}</option>
+    </select>
+    <label class="filters-bar__desc">
+      <input type="checkbox" [(ngModel)]="sortDesc" (change)="onSortChange()" /> Desc
+    </label>
+    <button type="button" class="filters-bar__toggle" (click)="filtersExpanded = !filtersExpanded">
+      {{ filtersExpanded ? 'Hide' : 'Show' }} advanced filters
+    </button>
+  </div>
+
+  <!-- Advanced filters panel -->
+  <div class="advanced-filters" *ngIf="filtersExpanded">
+    <div class="advanced-filters__grid">
+      <div class="advanced-filters__group">
+        <label>Activity status</label>
+        <select [(ngModel)]="activityStatus">
+          <option *ngFor="let o of activityOptions" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Total time (min)</label>
+        <div class="advanced-filters__range">
+          <input type="number" min="0" placeholder="Min" [(ngModel)]="totalTimeMinMinutes" />
+          <span>–</span>
+          <input type="number" min="0" placeholder="Max" [(ngModel)]="totalTimeMaxMinutes" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Avg session (min)</label>
+        <div class="advanced-filters__range">
+          <input type="number" min="0" placeholder="Min" [(ngModel)]="avgSessionMinMinutes" />
+          <span>–</span>
+          <input type="number" min="0" placeholder="Max" [(ngModel)]="avgSessionMaxMinutes" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Sessions count</label>
+        <div class="advanced-filters__range">
+          <input type="number" min="0" placeholder="Min" [(ngModel)]="sessionsCountMin" />
+          <span>–</span>
+          <input type="number" min="0" placeholder="Max" [(ngModel)]="sessionsCountMax" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Purchase status</label>
+        <select [(ngModel)]="purchaseStatus">
+          <option *ngFor="let o of purchaseStatusOptions" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Purchase date</label>
+        <div class="advanced-filters__range">
+          <input type="date" [(ngModel)]="purchaseFrom" />
+          <span>–</span>
+          <input type="date" [(ngModel)]="purchaseTo" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Repeat buyer</label>
+        <select [(ngModel)]="repeatBuyer">
+          <option [ngValue]="null">Any</option>
+          <option [ngValue]="true">Yes</option>
+          <option [ngValue]="false">No</option>
+        </select>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Total spent</label>
+        <div class="advanced-filters__range">
+          <input type="number" min="0" step="0.01" placeholder="Min" [(ngModel)]="totalSpentMin" />
+          <span>–</span>
+          <input type="number" min="0" step="0.01" placeholder="Max" [(ngModel)]="totalSpentMax" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Progress bucket</label>
+        <select [(ngModel)]="progressBucket">
+          <option *ngFor="let o of progressBucketOptions" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Course (scope)</label>
+        <select [(ngModel)]="courseIdFilter">
+          <option value="">All courses</option>
+          <option *ngFor="let c of courses" [value]="c.courseId">{{ c.courseName }}</option>
+        </select>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Quiz attempts</label>
+        <div class="advanced-filters__range">
+          <input type="number" min="0" placeholder="Min" [(ngModel)]="quizAttemptsMin" />
+          <span>–</span>
+          <input type="number" min="0" placeholder="Max" [(ngModel)]="quizAttemptsMax" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Quiz score</label>
+        <div class="advanced-filters__range">
+          <input type="number" min="0" max="100" placeholder="Min" [(ngModel)]="quizScoreMin" />
+          <span>–</span>
+          <input type="number" min="0" max="100" placeholder="Max" [(ngModel)]="quizScoreMax" />
+        </div>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Funnel stage</label>
+        <select [(ngModel)]="funnelStage">
+          <option *ngFor="let o of funnelOptions" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+      <div class="advanced-filters__group">
+        <label>Funnel course</label>
+        <select [(ngModel)]="funnelCourseId">
+          <option value="">Select course</option>
+          <option *ngFor="let c of courses" [value]="c.courseId">{{ c.courseName }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="advanced-filters__actions">
+      <button type="button" class="dashboard__apply" (click)="applyFilters()">Apply filters</button>
+      <button type="button" class="filters-bar__clear" (click)="clearFilters()">Clear all</button>
+    </div>
+  </div>
+
+  <div class="dashboard__table-section">
+    <div class="dashboard__table-wrap" [class.dashboard__table-wrap--loading]="loading">
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Student</th>
+            <th class="dashboard__th">Email</th>
+            <th class="dashboard__th">Sessions</th>
+            <th class="dashboard__th">Total time</th>
+            <th class="dashboard__th">Active time</th>
+            <th class="dashboard__th">Active days</th>
+            <th class="dashboard__th">Enrolled courses</th>
+            <th class="dashboard__th">Last seen</th>
+            <th class="dashboard__th"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="9" class="dashboard__empty-cell">Loading…</td>
+          </tr>
+          <tr *ngIf="!loading && !students?.length">
+            <td colspan="9" class="dashboard__empty-cell">No students match the current filters.</td>
+          </tr>
+          <tr *ngFor="let row of students; trackBy: trackByUserId" (click)="goToStudent(row.userId)" class="dashboard__row-click">
+            <td class="dashboard__td">{{ row.firstName }} {{ row.lastName }}</td>
+            <td class="dashboard__td">{{ row.email }}</td>
+            <td class="dashboard__td">{{ row.sessionCount }}</td>
+            <td class="dashboard__td">{{ formatDuration(row.totalSessionSeconds) }}</td>
+            <td class="dashboard__td">{{ formatDuration(row.totalActiveSeconds) }}</td>
+            <td class="dashboard__td">{{ row.activeDaysCount }}</td>
+            <td class="dashboard__td">{{ row.enrolledCourseCount }}</td>
+            <td class="dashboard__td">{{ row.lastSeenUtc | date:'short' }}</td>
+            <td class="dashboard__td"><a [routerLink]="['/app/admin/analytics/student', row.userId]" [queryParams]="{ from: fromDate, to: toDate }" class="dashboard__link" (click)="$event.stopPropagation()">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="!loading && totalCount > 0">
+      <span class="pagination__info">Showing {{ startRow() }}–{{ endRow() }} of {{ totalCount }}</span>
+      <div class="pagination__size">
+        <label>Per page</label>
+        <select [ngModel]="pageSize" (ngModelChange)="pageSize = $event; onPageSizeChange()">
+          <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+      <div class="pagination__nav">
+        <button type="button" [disabled]="page <= 1" (click)="goToPage(page - 1)">Previous</button>
+        <span class="pagination__page">Page {{ page }} of {{ totalPages() }}</span>
+        <button type="button" [disabled]="page >= totalPages()" (click)="goToPage(page + 1)">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

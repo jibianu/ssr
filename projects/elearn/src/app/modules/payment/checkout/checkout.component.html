@@ -1,0 +1,131 @@
+<section class="checkout" *ngIf="data">
+  <div class="checkout__container">
+    <!-- Header: logo -->
+    <header class="checkout__header">
+      <a [routerLink]="['/']" class="checkout__logo-link">
+        <img [src]="logoUrl" alt="Logo" class="checkout__logo" (error)="onLogoError($event)" />
+      </a>
+      <span class="checkout__badge">Secure checkout · All prices in INR (₹)</span>
+    </header>
+
+    <div class="checkout__grid">
+      <!-- Left: Greeting + order summary + payment methods -->
+      <div class="checkout__payment-col">
+        <h1 class="checkout__welcome">You can now make your purchase{{ userName ? ', ' + userName : '' }}</h1>
+        <p class="checkout__welcome-note">Review your order on the right and choose a payment method below.</p>
+
+        <div class="checkout__order-box">
+          <h2 class="checkout__order-heading">Order summary</h2>
+          <div class="checkout__order-row">
+            <span>Subtotal</span>
+            <span><span aria-label="INR">₹</span>{{ data.course.price | number:'1.2-2' }}</span>
+          </div>
+          <div class="checkout__order-row" *ngIf="data.course.price != data.course.discountedPrice">
+            <span>Discount</span>
+            <span><span aria-label="INR">₹</span>{{ data.course.price - data.course.discountedPrice | number:'1.2-2' }}</span>
+          </div>
+          <div class="checkout__order-divider"></div>
+          <div class="checkout__order-row checkout__order-total">
+            <span>Total (Incl. taxes)</span>
+            <span><span aria-label="INR">₹</span>{{ data.course.discountedPrice | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <p class="checkout__error" *ngIf="loadError">{{ loadError }}</p>
+
+        <!-- Optional instructor discount code; apply before proceeding to payment -->
+        <div class="checkout__coupon" *ngIf="!clientSecret">
+          <label for="coupon-code" class="checkout__coupon-label">Discount code (optional)</label>
+          <div class="checkout__coupon-row">
+            <input id="coupon-code" type="text" class="checkout__coupon-input" [(ngModel)]="couponCode"
+              placeholder="e.g. save 18" maxlength="50" />
+            <button type="button" class="checkout__btn checkout__btn--secondary" (click)="createIntentAndMountPayment()"
+              [disabled]="creatingIntent" aria-label="Proceed to payment">
+              {{ creatingIntent ? 'Loading…' : 'Proceed to payment' }}
+            </button>
+          </div>
+          <p class="checkout__coupon-hint">If your instructor gave you a code, enter it above. The discount will be applied when you proceed.</p>
+        </div>
+
+        <!-- Payment Element – cards and UPI (Google Pay, PhonePe, Paytm apps) -->
+        <div class="checkout__methods" *ngIf="clientSecret">
+          <div class="checkout__method checkout__method--payment-element">
+            <div id="payment-element" class="checkout__payment-element"></div>
+            <button type="button" class="checkout__btn checkout__btn--complete" id="submit" (click)="payNow()"
+              [disabled]="!paymentElementReady || paying"
+              aria-label="Complete purchase">
+              <i class="fas fa-shopping-cart checkout__btn-icon" *ngIf="!paying"></i>
+              <span class="checkout__btn-text">{{ paying ? 'Processing…' : 'Complete purchase' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="checkout__trust">
+          <p class="checkout__trust-line"><i class="fas fa-lock"></i> 100% secure payment</p>
+          <p class="checkout__trust-note">Powered by Stripe. Your payment details are encrypted and secure.</p>
+        </div>
+
+        <p class="checkout__help">
+          Any questions? <a routerLink="/app/student/profile" class="checkout__help-link">Visit your profile</a> or contact support.
+        </p>
+      </div>
+
+      <!-- Right: Cart + item + what you're buying + terms -->
+      <div class="checkout__cart-col">
+        <div class="checkout__cart-card">
+          <h2 class="checkout__cart-heading">Cart</h2>
+          <a routerLink="/app/student/category-courses-description/{{ data.course?.id }}" class="checkout__back">
+            <i class="fas fa-arrow-left"></i> Back to course
+          </a>
+          <div class="checkout__divider"></div>
+
+          <div class="checkout__item">
+            <div class="checkout__item-media">
+              <img *ngIf="data.course.imageLink"
+                [src]="data.course.imageLink"
+                class="checkout__item-img" alt="{{ data.course.title }}">
+              <div *ngIf="!data.course.imageLink" class="checkout__item-placeholder">
+                <i class="fas fa-book-open"></i>
+              </div>
+            </div>
+            <div class="checkout__item-body">
+              <h3 class="checkout__item-title">{{ data.course.title }}</h3>
+              <p class="checkout__item-meta">{{ data.course.category?.name }}</p>
+              <p class="checkout__item-desc" *ngIf="data.course.description">{{ (data.course.description | slice:0:120) }}{{ (data.course.description?.length > 120) ? '...' : '' }}</p>
+            </div>
+            <div class="checkout__item-prices">
+              <span class="checkout__price-old" *ngIf="data.course.price != data.course.discountedPrice">
+                <span aria-label="INR">₹</span>{{ data.course.price | number:'1.2-2' }}
+              </span>
+              <span class="checkout__price-current"><span aria-label="INR">₹</span>{{ data.course.discountedPrice | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="checkout__what-you-get">
+            <h3 class="checkout__what-title">What are you buying?</h3>
+            <ul class="checkout__what-list">
+              <li><i class="fas fa-check checkout__what-icon"></i> Unlimited access to this course, whenever you want.</li>
+              <li><i class="fas fa-check checkout__what-icon"></i> All lessons, materials, and resources included.</li>
+              <li><i class="fas fa-check checkout__what-icon"></i> Certificate of completion when you finish the course.</li>
+              <li><i class="fas fa-check checkout__what-icon"></i> Lifetime access to purchased content.</li>
+            </ul>
+          </div>
+
+          <p class="checkout__discount-hint">Have a discount code from your instructor? Enter it on the left and click "Proceed to payment" to apply it.</p>
+
+          <div class="checkout__terms">
+            <p>By completing your purchase you agree to our terms of use and privacy policy. All charges are in INR (₹).</p>
+          </div>
+        </div>
+
+        <p class="checkout__help checkout__help--bottom">
+          Need help? <a routerLink="/app/student/profile" class="checkout__help-link">Profile &amp; support</a>
+        </p>
+      </div>
+    </div>
+
+    <footer class="checkout__footer">
+      <p>&copy; {{ appName }} {{ currentYear }}. Secure checkout powered by Stripe.</p>
+    </footer>
+  </div>
+</section>

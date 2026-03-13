@@ -1,0 +1,73 @@
+<div class="login-page">
+  <!-- Blocking modal: role not configured -->
+  <div class="login-alert-overlay" *ngIf="showAlert" role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-message">
+    <div class="login-alert-backdrop" (click)="closeAlert()"></div>
+    <div class="login-alert-card">
+      <div class="login-alert-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h2 id="alert-title" class="login-alert-title">Role not configured</h2>
+      <p id="alert-message" class="login-alert-message">{{ alertMessage }}</p>
+      <button type="button" class="login-alert-btn" (click)="closeAlertAndLogout()">OK</button>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <header class="login-header">
+      <a routerLink="/" class="login-brand" aria-label="oilandgasclub home">
+        <img [src]="logoUrl" alt="oilandgasclub" class="login-brand__logo" width="130" height="42" fetchpriority="high">
+      </a>
+      <p class="login-header__prompt">
+        Don't have an account? <a routerLink="/auth/register" class="login-header__link">Get started free</a>
+      </p>
+    </header>
+
+    <div class="login-info-box">
+      <h1 class="login-info-box__title">Grow your skills with industry-recognized courses.</h1>
+      <p class="login-info-box__text">Self-paced oil & gas learning from industry experts. Get certified and advance your career.</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="loginWithCognito()" aria-label="Sign in">
+      <div class="login-form__field login-form__google-wrap" *ngIf="googleEnabled">
+        <button type="button" class="login-form__google-btn" (click)="continueWithGoogle()" [disabled]="!googleEnabled" aria-label="Continue with Google">
+          <span class="login-form__google-icon" aria-hidden="true"></span>
+          <span class="login-form__google-text">Continue with Google</span>
+        </button>
+      </div>
+      <div class="login-form__divider" aria-hidden="true">OR</div>
+
+      <div class="login-form__field">
+        <label class="login-form__label" for="login-email">Email address</label>
+        <input id="login-email" type="email" name="email" [(ngModel)]="email" required
+          placeholder="you@example.com" class="login-form__input" autocomplete="email" inputmode="email">
+      </div>
+      <div class="login-form__field">
+        <label class="login-form__label" for="login-password">Password</label>
+        <input id="login-password" type="password" name="password" [(ngModel)]="password" required
+          placeholder="Enter your password" class="login-form__input" autocomplete="current-password">
+      </div>
+
+      <div class="login-form__options">
+        <label class="login-form__remember">
+          <input type="checkbox" name="remember" aria-label="Remember me">
+          <span>Remember me</span>
+        </label>
+        <a routerLink="/auth/forget-password" class="login-form__forgot">Forgot password</a>
+      </div>
+
+      <button type="submit" class="login-form__submit">Log In</button>
+    </form>
+
+    <p class="login-signup">
+      Don't have an account yet? <a routerLink="/auth/register" class="login-signup__link">Sign up</a>
+    </p>
+  </div>
+
+  <footer class="login-footer">
+    <p class="login-footer__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
+    <div class="login-footer__links">
+      <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="login-footer__link">Privacy Policy</a>
+      <a href="https://www.oilandgasclub.com/cookies/" target="_blank" rel="noopener" class="login-footer__link">Manage Cookies</a>
+    </div>
+  </footer>
+</div>

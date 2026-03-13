@@ -1,0 +1,34 @@
+<div class="chapter-complete-modal">
+  <p class="chapter-complete-modal__subtitle">
+    You have completed this chapter
+  </p>
+
+  <h2 class="chapter-complete-modal__title">
+    {{ completedCurriculamName }}
+  </h2>
+
+  <div class="chapter-complete-modal__actions">
+    <button
+      type="button"
+      class="chapter-complete-modal__btn chapter-complete-modal__btn--secondary"
+      [routerLink]="completedCurriculamURL"
+      (click)="activeModal.dismiss('Cross click')">
+      Retake Test
+    </button>
+  </div>
+
+  <div *ngIf="nextCurriculamURL" class="chapter-complete-modal__next">
+    <p class="chapter-complete-modal__label">Next curriculum</p>
+    <p class="chapter-complete-modal__next-title">
+      {{ nextCurriculamName }}
+    </p>
+
+    <button
+      type="button"
+      class="chapter-complete-modal__btn chapter-complete-modal__btn--primary"
+      [routerLink]="nextCurriculamURL"
+      (click)="activeModal.dismiss('Cross click')">
+      Next Curriculum
+    </button>
+  </div>
+</div>

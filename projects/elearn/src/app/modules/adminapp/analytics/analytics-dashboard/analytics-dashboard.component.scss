@@ -1,0 +1,60 @@
+@use '../../../../shared/component/dashboard/dashboard-shared.scss';
+
+.analytics-dashboard {
+  position: relative;
+  z-index: 1;
+  .dashboard__card-icon--dau,
+  .dashboard__card-icon--mau {
+    background: rgba(20, 127, 160, 0.12);
+    color: #147fa0;
+  }
+  .dashboard__card-icon--conversion,
+  .dashboard__card-icon--completion {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+  }
+  .dashboard__card-icon--enrollments {
+    background: rgba(245, 119, 34, 0.12);
+    color: #f57722;
+  }
+  .dashboard__card-icon--session {
+    background: rgba(99, 102, 241, 0.12);
+    color: #6366f1;
+  }
+  .dashboard__card-icon--danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+  }
+  .dashboard__card-icon--refund {
+    background: rgba(251, 146, 60, 0.12);
+    color: #fb923c;
+  }
+  .dashboard__cards--wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+  .dashboard__course-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dashboard__filter-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .dashboard__select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    min-width: 180px;
+  }
+  .dashboard__chart-wrap--canvas {
+    height: 280px;
+  }
+  .dashboard__table-section {
+    margin-top: 1.5rem;
+  }
+}

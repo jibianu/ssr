@@ -1,0 +1,112 @@
+/* Header bar with Student Analytics button (same as student-list) */
+.management-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.management-list__header-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.management-list__header-title i {
+  color: #147fa0;
+  font-size: 0.875rem;
+}
+.management-list__header .student-list__btn {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.management-list__header .student-list__btn--primary {
+  background: linear-gradient(135deg, #147fa0 0%, #0d5a72 100%);
+  color: #fff;
+}
+.management-list__header .student-list__btn--primary:hover {
+  opacity: 0.95;
+}
+
+.list-page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+}
+
+.list-page-title--orange {
+  color: #ff5722;
+}
+
+.defaultTable i{
+    font-size: 18px;
+}
+
+
+table{
+    border: 1px solid #ddd8d8;
+    table-layout: fixed;
+    white-space: nowrap;
+    overflow-y: scroll;
+    width: 100%;
+}
+
+// .customDesign{
+//     height: 50vh;
+// }
+
+.customBtn{
+    padding: 3px 5px!important;
+    width: 28px;
+}
+
+
+.studentHeading{
+    background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+    text-align: center;
+}
+
+.studentHeading h1{
+    color:white;
+    padding: 43px 0px;
+    font-size: 56px;
+    margin-left: 20vw;
+}
+
+.mainClass{
+    height: 83vh;
+    overflow: auto;
+}
+.studentHeading a{
+    transition: box-shadow 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    padding: 5px 10px;
+    width: 100%;
+    transition: all ease 0.2s;
+    background-color: transparent;
+    color: white !important;
+    border: 1px solid white;
+}
+
+.studentHeading a:hover{
+    transform: translateY(-2px);
+    box-shadow: 0px 10px 20px 2px rgba(0, 0, 0, 0.25);
+}

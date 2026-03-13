@@ -1,0 +1,210 @@
+<div class="trainer-analytics">
+  <div class="trainer-analytics__header">
+    <h1 class="trainer-analytics__title">Trainer Dashboard</h1>
+    <div class="trainer-analytics__quick-links">
+      <a *ngFor="let link of quickLinks" [routerLink]="link.route" class="trainer-analytics__quick-link">
+        <i class="fa {{ link.icon }}"></i>
+        <span>{{ link.label }}</span>
+      </a>
+    </div>
+    <div class="trainer-analytics__filter">
+      <div class="trainer-analytics__presets">
+        <button type="button" class="trainer-analytics__preset" [class.trainer-analytics__preset--active]="dateRangePreset === 'today'" (click)="onPresetChange('today')">Today</button>
+        <button type="button" class="trainer-analytics__preset" [class.trainer-analytics__preset--active]="dateRangePreset === 'last7'" (click)="onPresetChange('last7')">Last 7 Days</button>
+        <button type="button" class="trainer-analytics__preset" [class.trainer-analytics__preset--active]="dateRangePreset === 'last30'" (click)="onPresetChange('last30')">Last 30 Days</button>
+        <button type="button" class="trainer-analytics__preset" [class.trainer-analytics__preset--active]="dateRangePreset === 'thisMonth'" (click)="onPresetChange('thisMonth')">This Month</button>
+        <button type="button" class="trainer-analytics__preset" [class.trainer-analytics__preset--active]="dateRangePreset === 'allTime'" (click)="onPresetChange('allTime')">All time</button>
+        <button type="button" class="trainer-analytics__preset" [class.trainer-analytics__preset--active]="dateRangePreset === 'custom'" (click)="setDateRangeFromPreset('custom')">Custom Range</button>
+      </div>
+      <div class="trainer-analytics__custom" *ngIf="dateRangePreset === 'custom'">
+        <input type="date" class="trainer-analytics__date" [(ngModel)]="customFrom" />
+        <span class="trainer-analytics__date-sep">–</span>
+        <input type="date" class="trainer-analytics__date" [(ngModel)]="customTo" />
+        <button type="button" class="trainer-analytics__apply" (click)="applyCustomRange()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="trainer-analytics__payout-widget">
+    <div class="trainer-analytics__payout-inner">
+      <span class="trainer-analytics__payout-icon"><i class="fa fa-money-check-alt"></i></span>
+      <div class="trainer-analytics__payout-text">
+        <span class="trainer-analytics__payout-title">Payout methods</span>
+        <span class="trainer-analytics__payout-desc" *ngIf="payoutLoading">Loading…</span>
+        <ng-container *ngIf="!payoutLoading">
+          <span class="trainer-analytics__payout-desc">{{ payoutMethodsCount }} connected</span>
+          <span class="trainer-analytics__payout-pending" *ngIf="payoutPendingCount > 0">{{ payoutPendingCount }} pending approval</span>
+        </ng-container>
+      </div>
+      <a [routerLink]="['/app/trainer/payout']" class="trainer-analytics__payout-btn">Manage</a>
+    </div>
+  </div>
+
+  <div class="trainer-analytics__cards trainer-analytics__cards--primary">
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--enrollments"><i class="fa fa-users"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalEnrollments }}</span>
+        <span class="trainer-analytics__card-label">People Enrolled</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+        <div class="trainer-analytics__enrollments-by-course" *ngIf="summary.enrollmentsByCourse?.length">
+          <span class="trainer-analytics__enrollments-by-course-title">By course:</span>
+          <ul class="trainer-analytics__enrollments-list">
+            <li *ngFor="let item of summary.enrollmentsByCourse" class="trainer-analytics__enrollments-item">
+              <a [routerLink]="['/app/trainer/course-details', item.courseId]" class="trainer-analytics__enrollments-link">{{ item.courseName || 'Course' }}</a>
+              <span class="trainer-analytics__enrollments-count">({{ item.enrollmentCount }})</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--earnings"><i class="fa fa-wallet"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalEarnings | number:'1.2-2' }}</span>
+        <span class="trainer-analytics__card-label">Earnings (INR)</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--payout"><i class="fa fa-money-check-alt"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalPaidOut | number:'1.2-2' }}</span>
+        <span class="trainer-analytics__card-label">Total Paid Out (INR)</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="trainer-analytics__cards">
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--purchases"><i class="fa fa-shopping-cart"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalPurchases }}</span>
+        <span class="trainer-analytics__card-label">Total Purchases</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--revenue"><i class="fa fa-dollar"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalRevenue | number:'1.2-2' }}</span>
+        <span class="trainer-analytics__card-label">Total Revenue (INR)</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--created"><i class="fa fa-plus-circle"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalCoursesCreated }}</span>
+        <span class="trainer-analytics__card-label">Courses Created</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+    <div class="trainer-analytics__card">
+      <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--value"></div>
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--sub"></div>
+      </div>
+      <div class="trainer-analytics__card-inner" *ngIf="!loadingSummary && summary">
+        <span class="trainer-analytics__card-icon trainer-analytics__card-icon--edited"><i class="fa fa-edit"></i></span>
+        <span class="trainer-analytics__card-value">{{ summary.totalCoursesEdited }}</span>
+        <span class="trainer-analytics__card-label">Courses Edited</span>
+        <span class="trainer-analytics__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="trainer-analytics__charts">
+    <div class="trainer-analytics__chart-card">
+      <h2 class="trainer-analytics__chart-title">Purchases over time</h2>
+      <div class="trainer-analytics__chart-wrap" *ngIf="loadingPurchasesChart">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--chart"></div>
+      </div>
+      <div class="trainer-analytics__chart-wrap trainer-analytics__chart-wrap--canvas" *ngIf="!loadingPurchasesChart">
+        <canvas #purchasesChartCanvas></canvas>
+        <p class="trainer-analytics__empty" *ngIf="!purchasesChartData?.data?.length">No purchase data in this range.</p>
+      </div>
+    </div>
+    <div class="trainer-analytics__chart-card">
+      <h2 class="trainer-analytics__chart-title">Courses created vs edited</h2>
+      <div class="trainer-analytics__chart-wrap" *ngIf="loadingActivityChart">
+        <div class="trainer-analytics__skeleton trainer-analytics__skeleton--chart"></div>
+      </div>
+      <div class="trainer-analytics__chart-wrap trainer-analytics__chart-wrap--canvas" *ngIf="!loadingActivityChart">
+        <canvas #activityChartCanvas></canvas>
+        <p class="trainer-analytics__empty" *ngIf="!(courseActivityChartData?.created?.length || courseActivityChartData?.edited?.length)">No activity in this range.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="trainer-analytics__table-section">
+    <h2 class="trainer-analytics__chart-title">Activity</h2>
+    <div class="trainer-analytics__table-toolbar">
+      <input type="text" class="trainer-analytics__search" placeholder="Search course or performer..." [(ngModel)]="activitySearch" (input)="onActivitySearchInput()" />
+    </div>
+    <div class="trainer-analytics__table-wrap" [class.trainer-analytics__table-wrap--loading]="loadingTable">
+      <div class="trainer-analytics__table-responsive">
+        <table class="trainer-analytics__table">
+          <thead>
+            <tr>
+              <th class="trainer-analytics__th">Course Name</th>
+              <th class="trainer-analytics__th">Action Type</th>
+              <th class="trainer-analytics__th">Date &amp; Time</th>
+              <th class="trainer-analytics__th">Performed By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="loadingTable">
+              <tr *ngFor="let i of skeletonRows" class="trainer-analytics__skeleton-row">
+                <td colspan="4"><div class="trainer-analytics__skeleton trainer-analytics__skeleton--cell"></div></td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="!loadingTable && !activityRows?.length">
+              <td colspan="4" class="trainer-analytics__empty-cell">No activity in this range.</td>
+            </tr>
+            <tr *ngFor="let row of activityRows; trackBy: trackByActivityId" class="trainer-analytics__row">
+              <td class="trainer-analytics__td trainer-analytics__td--name">{{ row.courseName }}</td>
+              <td class="trainer-analytics__td"><span class="trainer-analytics__badge" [class.trainer-analytics__badge--created]="row.actionType === 'Created'" [class.trainer-analytics__badge--edited]="row.actionType === 'Edited'">{{ row.actionType }}</span></td>
+              <td class="trainer-analytics__td trainer-analytics__td--date">{{ row.dateUtc | date:'short' }}</td>
+              <td class="trainer-analytics__td">{{ row.performedBy }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <app-common-pagination
+      class="trainer-analytics__pagination"
+      [pageNumber]="activityPage"
+      [pageSize]="activityPageSize"
+      [totalCount]="activityTotalCount"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onActivityPageChange($event)"
+      (pageSizeChange)="onActivityPageSizeChange($event)">
+    </app-common-pagination>
+  </div>
+</div>

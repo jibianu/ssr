@@ -1,0 +1,57 @@
+<div class="card mb-4">
+    <!-- Card header -->
+    <!-- Card body -->
+    <!-- Table -->
+    <div class="table-responsive border-0 customDesign">
+        <table class="table mb-0" style="width: 100%;">
+            <thead>
+                <tr>
+                  <th style="width:50%">
+                    <a href="javascript:void(0)" (click)="sortByHeading('Username')">Username
+                      <span *ngIf="sortBy == 'Username'" class="fa"
+                        [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                    </a>
+                  </th>
+                  <th style="width:25%">
+                    <a href="javascript:void(0)" (click)="sortByHeading('Email')">Email
+                      <span *ngIf="sortBy == 'Email'" class="fa"
+                        [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                    </a>
+                  </th>
+                  <th style="width:25%">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+            <tbody>
+                <tr *ngFor="let item of students | paginate : { itemsPerPage : tableSize,currentPage : page_std,totalItems : count_std };">
+                    <td>{{item?.email}}</td>
+                    <td>{{item?.userName}}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm customBtn ml-1" (click)="deleteUser(item.id)"><i
+                            class="fa fa-trash"></i></button>
+                            <button type="button" class="btn btn-sm btn-primary customBtn ml-1" (click)="openPermisionModal(item)"><i
+                                class="fa fa-unlock"></i></button>
+                                <button type="button" class="btn btn-sm btn-info customBtn ml-1" (click)="openCourseModal(item)"
+                                title="Edit Course"><i
+                                    class="fa fa-book"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-dark customBtn ml-1" (click)="openStudentInfo(item)"
+                                title="View Info"><i
+                                    class="fa fa-eye"></i></button>
+                    </td>
+                  </tr>
+            </tbody>
+        </table>
+
+        <div class="d-flex bd-highlight mb-3">
+            <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+            <div class="ml-auto p-2 bd-highlight">
+              <select (change)="onTableSizeChange($event)" class="custom-select">
+                <option *ngFor="let size of tableSizes" [ngValue]="size">
+                  {{ size }}
+                </option>
+              </select>
+            </div>
+          </div>
+    </div>
+</div>

@@ -1,0 +1,589 @@
+/* Trainer curriculum page – same card design as curriculum list page */
+.trainer-curriculum-page {
+  min-height: calc(100vh - 120px);
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Single aligned container: header, list, footer share same width and horizontal alignment */
+.trainer-curriculum-page__wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+  box-sizing: border-box;
+}
+
+.trainer-curriculum-page__header {
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.trainer-curriculum-page__course-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--app-primary, #f57722);
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+}
+
+.trainer-curriculum-page__progress-stage {
+  margin-top: 0.25rem;
+}
+
+.trainer-curriculum-page__progress-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6d28d9;
+  background: rgba(109, 40, 217, 0.1);
+  border: 1px solid rgba(109, 40, 217, 0.25);
+
+  &--clickable {
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+
+    &:hover {
+      background: rgba(109, 40, 217, 0.18);
+      border-color: rgba(109, 40, 217, 0.4);
+    }
+  }
+}
+
+.trainer-curriculum-page__progress-icon {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.trainer-curriculum-page .tab-content {
+  background: transparent;
+}
+
+.trainer-curriculum-page .tab-pane {
+  padding-bottom: 1rem;
+}
+
+/* Curriculum list – aligned with header above */
+.trainer-curriculum-page__list {
+  padding: 24px 0 0;
+  margin: 0;
+}
+
+.trainer-curriculum-page__list-title {
+  margin: 0 0 6px 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.trainer-curriculum-page__list-subtitle {
+  margin: 0 0 24px 0;
+  font-size: 0.9375rem;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.trainer-curriculum-page__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trainer-curriculum-page__card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #fdba74;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.trainer-curriculum-page__card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  border-color: #f97316;
+}
+
+.trainer-curriculum-page__card-number {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.trainer-curriculum-page__card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.trainer-curriculum-page__card-title {
+  margin: 0 0 8px 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.trainer-curriculum-page__card-desc {
+  margin: 0 0 8px 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.trainer-curriculum-page__card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.trainer-curriculum-page__card-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.trainer-curriculum-page__card-meta-item i {
+  color: #f97316;
+  font-size: 0.875rem;
+}
+
+.trainer-curriculum-page__card-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trainer-curriculum-page__card-arrow {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.trainer-curriculum-page__card:hover .trainer-curriculum-page__card-arrow {
+  color: #f97316;
+  transform: translateX(4px);
+}
+
+/* Empty state – same as curriculum list */
+.trainer-curriculum-page__list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.trainer-curriculum-page__empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #6c757d;
+  max-width: 360px;
+}
+
+.trainer-curriculum-page__empty-icon {
+  font-size: 3rem;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.trainer-curriculum-page__empty-title {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.trainer-curriculum-page__empty-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.trainer-curriculum-page__icon-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin-left: 0.25rem;
+
+  &--edit {
+    background: #34c759;
+    color: #fff;
+
+    &:hover {
+      background: #2db84e;
+      color: #fff;
+    }
+  }
+
+  &--danger {
+    background: rgba(220, 53, 69, 0.9);
+    color: #fff;
+
+    &:hover {
+      background: #dc3545;
+      color: #fff;
+    }
+  }
+}
+
+.trainer-curriculum-page__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0;
+  margin-top: 24px;
+  background: transparent;
+  border-top: 1px solid #e9ecef;
+}
+
+.trainer-curriculum-page__page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.trainer-curriculum-page__page-size-label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+@media (max-width: 767px) {
+  .trainer-curriculum-page__wrap {
+    padding: 20px 16px 32px;
+  }
+
+  .trainer-curriculum-page__list {
+    padding-top: 20px;
+  }
+
+  .trainer-curriculum-page__card {
+    padding: 16px 18px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .trainer-curriculum-page__card-number {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .trainer-curriculum-page__card-title {
+    font-size: 1rem;
+  }
+
+  .trainer-curriculum-page__card-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+/* Curriculum detail modal – same width and layout as admin (reference image) */
+::ng-deep .curriculum-detail-modal.modal-right .modal-dialog {
+  max-width: 1140px;
+  width: 90vw;
+  margin: 0 auto;
+  height: 100%;
+}
+
+::ng-deep .curriculum-detail-modal .modal-content {
+  height: 100%;
+  max-height: 100vh;
+}
+
+::ng-deep .curriculum-detail-modal .modal-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Inline edit Title/Description – full width like admin */
+.curriculum-modal-header {
+  &__container {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  &__title-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title-edit {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+
+    .form-group {
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    textarea.form-control {
+      min-height: 80px;
+    }
+  }
+
+  &__title-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  &__edit-btn {
+    white-space: nowrap;
+    margin-right: 0.75rem;
+  }
+
+  &__tabs-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__tab {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid #dee2e6;
+    background: #fff;
+
+    i {
+      margin-right: 0.35rem;
+    }
+
+    &:hover {
+      color: #147fa0;
+      background: #f0f7f9;
+      border-color: #147fa0;
+    }
+
+    &--active {
+      color: #fff;
+      background: linear-gradient(135deg, #153e7c 0%, #147fa0 100%);
+      border-color: #147fa0;
+    }
+  }
+
+  &__close {
+    margin-left: 0.5rem;
+  }
+}
+
+/* Section headers and content – full width like admin */
+.curriculum-view {
+  &__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #153e7c 0%, #147fa0 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  &__section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__card-body,
+  &__content-list {
+    width: 100%;
+  }
+}
+
+/* Modal and edit UI – keep existing overrides */
+.info_c span {
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+.info_c span::before {
+  content: "• ";
+}
+
+.curiculumHeading {
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+}
+
+.curiculumHeading h3 {
+  font-size: 21px;
+  padding: 31px;
+  color: white;
+}
+
+.subTab a,
+.subTab .nav-link {
+  text-decoration: none;
+  color: white;
+  font-size: 20px;
+  background-color: #000;
+  padding: 10px 20px;
+  text-align: center;
+  display: block;
+  pointer-events: none;
+}
+
+.nav-link {
+  box-shadow: none !important;
+}
+
+.checkOption {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.editOperation {
+  cursor: pointer;
+  pointer-events: auto;
+  margin-bottom: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.edit-menu-wrapper {
+  padding: 1rem 0;
+  pointer-events: auto;
+}
+
+.edit-menu .editOperation:hover {
+  text-decoration: underline;
+}
+
+.modal-header {
+  position: relative;
+}
+
+.modal-header .d-flex {
+  position: relative;
+  z-index: 2;
+}
+
+.modal-header .close {
+  position: relative;
+  z-index: 1;
+}
+
+.modalEditBtn {
+  position: absolute;
+  right: 60px;
+  top: 30px;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+
+  i {
+    pointer-events: none;
+  }
+}
+
+.contentEditBtn {
+  height: 27px;
+  min-width: 32px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  pointer-events: auto;
+
+  i {
+    pointer-events: none;
+  }
+}
+
+.d-flex.justify-content-between .heading {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 0.5rem;
+}
+
+.customScroll {
+  max-height: 65vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 0.5rem;
+}
+
+.list-group-item .d-flex.justify-content-between {
+  position: relative;
+  z-index: 1;
+}
+
+#Questions .mb-1 > .d-flex.justify-content-between {
+  position: relative;
+  z-index: 1;
+}

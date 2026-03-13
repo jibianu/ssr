@@ -1,0 +1,124 @@
+.common-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.common-pagination__info {
+  flex-shrink: 0;
+}
+
+.common-pagination__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.common-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #fff;
+  color: #495057;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.common-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.common-pagination__page {
+  min-width: 2rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #fff;
+  color: #495057;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(.common-pagination__page--active) {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+  }
+
+  &--active {
+    background: #ff5722;
+    border-color: #ff5722;
+    color: #fff;
+    cursor: default;
+  }
+}
+
+.common-pagination__size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.common-pagination__size-label {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.common-pagination__size-select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: #fff;
+  color: #495057;
+  cursor: pointer;
+}
+
+@media (max-width: 576px) {
+  .common-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .common-pagination__nav {
+    justify-content: center;
+  }
+
+  .common-pagination__size {
+    justify-content: center;
+  }
+
+  .common-pagination__pages .common-pagination__page:not(.common-pagination__page--active) {
+    display: none;
+  }
+
+  .common-pagination__pages .common-pagination__page--active {
+    display: inline-block;
+  }
+}

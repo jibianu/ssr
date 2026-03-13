@@ -1,0 +1,173 @@
+<div class="payment-modal">
+  <div class="payment-modal__header">
+    <h2 class="payment-modal__title">2. Secure Payment</h2>
+    <button type="button" class="payment-modal__close" (click)="closeModal()" aria-label="Close">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+
+  <div class="payment-modal__content">
+    <!-- Left Sidebar - Payment Methods -->
+    <div class="payment-methods">
+      <div class="payment-methods__section">
+        <h3 class="payment-methods__title">PAY NOW</h3>
+        <ul class="payment-methods__list">
+          <li 
+            *ngFor="let method of paymentMethods.payNow" 
+            class="payment-methods__item"
+            [class.payment-methods__item--active]="selectedPaymentMethod === method.id"
+            (click)="selectPaymentMethod(method.id)">
+            <i class="fa" [ngClass]="method.icon"></i>
+            <span>{{ method.label }}</span>
+            <i class="fa fa-chevron-right" *ngIf="selectedPaymentMethod === method.id"></i>
+          </li>
+        </ul>
+      </div>
+
+      <div class="payment-methods__section">
+        <h3 class="payment-methods__title">PAY IN INSTALLMENTS</h3>
+        <ul class="payment-methods__list">
+          <li 
+            *ngFor="let method of paymentMethods.payInstallments" 
+            class="payment-methods__item"
+            [class.payment-methods__item--active]="selectedPaymentMethod === method.id"
+            (click)="selectPaymentMethod(method.id)">
+            <i class="fa" [ngClass]="method.icon"></i>
+            <span>{{ method.label }}</span>
+            <i class="fa fa-chevron-right" *ngIf="selectedPaymentMethod === method.id"></i>
+          </li>
+        </ul>
+      </div>
+
+      <div class="payment-methods__section">
+        <h3 class="payment-methods__title">OTHER OPTIONS</h3>
+        <ul class="payment-methods__list">
+          <li 
+            *ngFor="let method of paymentMethods.otherOptions" 
+            class="payment-methods__item payment-methods__item--external"
+            [class.payment-methods__item--active]="selectedPaymentMethod === method.id"
+            (click)="selectPaymentMethod(method.id)">
+            <span>{{ method.label }}</span>
+            <i class="fa fa-chevron-right" *ngIf="selectedPaymentMethod === method.id"></i>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Section - Payment Form -->
+    <div class="payment-form-section">
+      <div class="payment-form__header">
+        <h3 class="payment-form__title">Enter your credit card details</h3>
+        <div class="payment-form__logos">
+          <img src="assets/images/mastercard-logo.svg" alt="MasterCard" class="card-logo" onerror="this.style.display='none'">
+          <img src="assets/images/visa-logo.svg" alt="VISA" class="card-logo" onerror="this.style.display='none'">
+        </div>
+      </div>
+
+      <form [formGroup]="paymentForm" (ngSubmit)="makePayment()" class="payment-form">
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input 
+            type="text" 
+            id="cardNumber"
+            formControlName="cardNumber"
+            class="form-control"
+            placeholder="1234 5678 9012 3456"
+            maxlength="19"
+            (input)="formatCardNumber($event)">
+          <div class="form-error" *ngIf="paymentForm.get('cardNumber')?.touched && paymentForm.get('cardNumber')?.errors">
+            <span *ngIf="paymentForm.get('cardNumber')?.errors?.['required']">Card number is required</span>
+            <span *ngIf="paymentForm.get('cardNumber')?.errors?.['pattern']">Invalid card number</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cardName">Name as on card</label>
+          <input 
+            type="text" 
+            id="cardName"
+            formControlName="cardName"
+            class="form-control"
+            placeholder="John Doe">
+          <div class="form-error" *ngIf="paymentForm.get('cardName')?.touched && paymentForm.get('cardName')?.errors">
+            Name is required
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valid thru MM YYYY</label>
+            <div class="expiry-inputs">
+              <select formControlName="expiryMonth" class="form-control">
+                <option value="">MM</option>
+                <option *ngFor="let month of monthOptions" [value]="month.value">{{ month.label }}</option>
+              </select>
+              <select formControlName="expiryYear" class="form-control">
+                <option value="">YYYY</option>
+                <option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option>
+              </select>
+            </div>
+            <div class="form-error" *ngIf="(paymentForm.get('expiryMonth')?.touched || paymentForm.get('expiryYear')?.touched) && 
+              (paymentForm.get('expiryMonth')?.errors || paymentForm.get('expiryYear')?.errors)">
+              Expiry date is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input 
+              type="text" 
+              id="cvv"
+              formControlName="cvv"
+              class="form-control"
+              placeholder="123"
+              maxlength="4"
+              (input)="formatCVV($event)">
+            <div class="form-error" *ngIf="paymentForm.get('cvv')?.touched && paymentForm.get('cvv')?.errors">
+              <span *ngIf="paymentForm.get('cvv')?.errors?.['required']">CVV is required</span>
+              <span *ngIf="paymentForm.get('cvv')?.errors?.['pattern']">Invalid CVV</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-amount">
+          <div class="payment-amount__label">Amount to Pay</div>
+          <div class="payment-amount__value">₹ {{ amount | number:'1.2-2' }}</div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn-payment"
+          [disabled]="isProcessing || paymentForm.invalid">
+          <span *ngIf="!isProcessing">Make Payment</span>
+          <span *ngIf="isProcessing">
+            <i class="fa fa-spinner fa-spin"></i> Processing...
+          </span>
+        </button>
+
+        <div class="security-info">
+          <div class="security-info__badge">
+            <i class="fa fa-shield"></i>
+            <span>Safe and Secure Payment. Our Check-out is PCI-DSS Compliant.</span>
+          </div>
+          <div class="security-info__logos">
+            <span class="security-logo">MasterCard SecureCode</span>
+            <span class="security-logo">VERIFIED by VISA</span>
+            <span class="security-logo">SafeKey™</span>
+          </div>
+        </div>
+
+        <div class="terms-section">
+          <p class="terms-text">
+            By placing this order, you expressly confirm that you have read and you agree to 
+            <a routerLink="/terms-and-conditions" target="_blank">Terms of Use</a>, 
+            <a routerLink="/refund-cancellation-policy" target="_blank">Refund</a>, 
+            <a routerLink="/refund-cancellation-policy" target="_blank">Rescheduling</a> and 
+            <a routerLink="/privacy-policy" target="_blank">Privacy Policy</a>.
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,112 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="student-list__filter">
+    <div class="student-list__filter-header">
+      <span class="student-list__filter-title"><i class="fa fa-filter" aria-hidden="true"></i> Filters</span>
+      <button type="button" class="student-list__btn student-list__btn--primary" (click)="goToStudentAnalytics()" title="Open Student Analytics">
+        <i class="fa fa-bar-chart" aria-hidden="true"></i> Student Analytics
+      </button>
+    </div>
+    <div class="student-list__filter-body">
+      <div class="student-list__filter-group student-list__filter-group--search">
+        <label class="student-list__filter-label">Search</label>
+        <div class="student-list__search-wrap">
+          <i class="fa fa-search student-list__search-icon" aria-hidden="true"></i>
+          <input type="text"
+                 class="student-list__search"
+                 placeholder="Email, username or name..."
+                 [(ngModel)]="searchTitle"
+                 (keyup.enter)="applyFilters()" />
+        </div>
+      </div>
+      <div class="student-list__filter-group">
+        <label class="student-list__filter-label">Created on</label>
+        <div class="student-list__date-row">
+          <input type="date" class="student-list__date" [(ngModel)]="filterCreatedFrom" placeholder="From" />
+          <span class="student-list__date-sep">–</span>
+          <input type="date" class="student-list__date" [(ngModel)]="filterCreatedTo" placeholder="To" />
+        </div>
+      </div>
+      <div class="student-list__filter-group">
+        <label class="student-list__filter-label">Last login</label>
+        <div class="student-list__date-row">
+          <input type="date" class="student-list__date" [(ngModel)]="filterLastLoginFrom" />
+          <span class="student-list__date-sep">–</span>
+          <input type="date" class="student-list__date" [(ngModel)]="filterLastLoginTo" />
+        </div>
+      </div>
+      <div class="student-list__filter-actions">
+        <button type="button" class="student-list__btn student-list__btn--secondary" (click)="clearFilters()">
+          <i class="fa fa-times" aria-hidden="true"></i> Clear
+        </button>
+        <button type="button" class="student-list__btn student-list__btn--primary" (click)="applyFilters()">
+          <i class="fa fa-check" aria-hidden="true"></i> Apply
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="list-page__table-wrap list-table-modern__wrap">
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Email')">
+                Email
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('UserName')">
+                Username
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('CreatedOn')">
+                Created on
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('LastLoggedIn')">
+                Last login
+                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of users" class="list-table-modern__row">
+            <td class="list-table-modern__td" style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="list-table-modern__avatar" [title]="item?.email">{{ getInitial(item) }}</span>
+              <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.email">{{ item?.email | truncate:30 }}</a>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">
+              <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.userName">{{ item?.userName | truncate:25 }}</a>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn ? (item.createdOn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.lastLoggedIn ? (item.lastLoggedIn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--action">
+              <div class="list-table-modern__actions">
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteUser(item.id)" title="Delete"><i class="fa fa-trash"></i></button>
+                <button *ngIf="managerListEnbale && !isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--warning" title="Remove from Management" (click)="openRemoveFromManagement(item)"><i class="fa fa-user-times"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--primary" (click)="openPermisionModal(item)" title="Unlock"><i class="fa fa-unlock"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="openCourseModal(item)" title="Edit Course"><i class="fa fa-book"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--view" (click)="openStudentInfo(item)" title="View Info"><i class="fa fa-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <app-common-pagination class="list-page__pagination"
+    [pageNumber]="page"
+    [pageSize]="tableSize"
+    [totalCount]="count ?? 0"
+    [pageSizeOptions]="tableSizes"
+    (pageChange)="pageChanged($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-common-pagination>
+</div>

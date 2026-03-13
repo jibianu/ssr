@@ -1,0 +1,33 @@
+.customDesign{
+    padding: 10px 70px;
+    // background-color: gray;
+    height: 70vh;
+    // overflow-y: scroll;
+}
+
+table{
+    border: 1px solid #ddd8d8;
+    table-layout: fixed;
+    white-space: nowrap;
+}
+
+table tbody{
+    overflow-y: scroll;
+}
+.tdtitle{
+    display: inline-block;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}
+
+  .customBtn{
+    padding:3px 6px!important;
+    width: 28px;
+ }
+
+ table a{
+    text-decoration: none;
+    color: black;
+ }

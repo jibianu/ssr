@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.public-course-layout__main {
+  display: block;
+  width: 100%;
+  padding-inline: 0;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), #ffffff 55%);
+  overflow-x: hidden;
+}

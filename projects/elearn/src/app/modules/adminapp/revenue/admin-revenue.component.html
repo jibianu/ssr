@@ -1,0 +1,179 @@
+<div class="revenue-page">
+  <div class="revenue-page__header">
+    <h1 class="revenue-page__title">Revenue share</h1>
+    <p class="revenue-page__subtitle">Revenue by sale channel and by instructor (Udemy-style splits).</p>
+    <div class="revenue-page__filter">
+      <label class="revenue-page__label">From</label>
+      <input type="date" class="revenue-page__input" [(ngModel)]="fromDate" />
+      <label class="revenue-page__label">To</label>
+      <input type="date" class="revenue-page__input" [(ngModel)]="toDate" />
+      <button type="button" class="revenue-page__btn" (click)="applyRange()">Apply</button>
+    </div>
+  </div>
+
+  <section class="revenue-page__section">
+    <h2 class="revenue-page__section-title">By channel</h2>
+    <p class="revenue-page__error" *ngIf="errorChannel">{{ errorChannel }}</p>
+    <div class="revenue-page__loading" *ngIf="loadingChannel">Loading…</div>
+    <div class="revenue-page__table-wrap" *ngIf="!loadingChannel && !errorChannel">
+      <table class="revenue-page__table" *ngIf="byChannel?.length">
+        <thead>
+          <tr>
+            <th class="revenue-page__th">Channel</th>
+            <th class="revenue-page__th revenue-page__th--num">Orders</th>
+            <th class="revenue-page__th revenue-page__th--num">Total (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Instructor (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Platform (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Affiliate (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of byChannel; trackBy: trackByChannel">
+            <td class="revenue-page__td">{{ channelLabel(row.saleChannelType) }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.orderCount }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.totalAmount | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.instructorTotal | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.platformTotal | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ (row.affiliateTotal ?? 0) | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="revenue-page__empty" *ngIf="!byChannel?.length">No revenue data in this range.</p>
+    </div>
+  </section>
+
+  <section class="revenue-page__section">
+    <h2 class="revenue-page__section-title">By instructor</h2>
+    <p class="revenue-page__error" *ngIf="errorInstructor">{{ errorInstructor }}</p>
+    <div class="revenue-page__loading" *ngIf="loadingInstructor">Loading…</div>
+    <div class="revenue-page__table-wrap" *ngIf="!loadingInstructor && !errorInstructor">
+      <table class="revenue-page__table" *ngIf="byInstructor?.length">
+        <thead>
+          <tr>
+            <th class="revenue-page__th">Instructor</th>
+            <th class="revenue-page__th">Email</th>
+            <th class="revenue-page__th revenue-page__th--num">Orders</th>
+            <th class="revenue-page__th revenue-page__th--num">Total (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Earnings (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of byInstructor; trackBy: trackByInstructor">
+            <td class="revenue-page__td">{{ row.instructorName || '—' }}</td>
+            <td class="revenue-page__td">{{ row.instructorEmail || '—' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.orderCount }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.totalAmount | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.instructorEarnings | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="revenue-page__empty" *ngIf="!byInstructor?.length">No instructor revenue in this range.</p>
+    </div>
+  </section>
+
+  <section class="revenue-page__section">
+    <h2 class="revenue-page__section-title">By campaign</h2>
+    <p class="revenue-page__error" *ngIf="errorCampaign">{{ errorCampaign }}</p>
+    <div class="revenue-page__loading" *ngIf="loadingCampaign">Loading…</div>
+    <div class="revenue-page__table-wrap" *ngIf="!loadingCampaign && !errorCampaign">
+      <table class="revenue-page__table" *ngIf="byCampaign?.length">
+        <thead>
+          <tr>
+            <th class="revenue-page__th">Campaign</th>
+            <th class="revenue-page__th">Code</th>
+            <th class="revenue-page__th revenue-page__th--num">Orders</th>
+            <th class="revenue-page__th revenue-page__th--num">Total (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Instructor (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Platform (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of byCampaign; trackBy: trackByCampaign">
+            <td class="revenue-page__td">{{ row.campaignName || '—' }}</td>
+            <td class="revenue-page__td"><code>{{ row.trackingCode || '—' }}</code></td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.orderCount }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.totalAmount | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.instructorTotal | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.platformTotal | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="revenue-page__empty" *ngIf="!byCampaign?.length">No campaign revenue in this range.</p>
+    </div>
+  </section>
+
+  <section class="revenue-page__section">
+    <h2 class="revenue-page__section-title">By affiliate</h2>
+    <p class="revenue-page__error" *ngIf="errorAffiliate">{{ errorAffiliate }}</p>
+    <div class="revenue-page__loading" *ngIf="loadingAffiliate">Loading…</div>
+    <div class="revenue-page__table-wrap" *ngIf="!loadingAffiliate && !errorAffiliate">
+      <table class="revenue-page__table" *ngIf="byAffiliate?.length">
+        <thead>
+          <tr>
+            <th class="revenue-page__th">Affiliate</th>
+            <th class="revenue-page__th">Email</th>
+            <th class="revenue-page__th">Code</th>
+            <th class="revenue-page__th revenue-page__th--num">Orders</th>
+            <th class="revenue-page__th revenue-page__th--num">Total (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Commission (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Instructor (₹)</th>
+            <th class="revenue-page__th revenue-page__th--num">Platform (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of byAffiliate; trackBy: trackByAffiliate">
+            <td class="revenue-page__td">{{ row.affiliateName || '—' }}</td>
+            <td class="revenue-page__td">{{ row.affiliateEmail || '—' }}</td>
+            <td class="revenue-page__td"><code>{{ row.trackingCode || '—' }}</code></td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.orderCount }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.totalAmount | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.commissionTotal | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.instructorTotal | number:'1.2-2' }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.platformTotal | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="revenue-page__empty" *ngIf="!byAffiliate?.length">No affiliate revenue in this range.</p>
+    </div>
+  </section>
+
+  <section class="revenue-page__section">
+    <h2 class="revenue-page__section-title">Affiliate payouts</h2>
+    <div class="revenue-page__filter">
+      <label class="revenue-page__label">Status</label>
+      <select class="revenue-page__input" [(ngModel)]="payoutStatus" (ngModelChange)="applyPayoutFilter()">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="paid">Paid</option>
+      </select>
+    </div>
+    <p class="revenue-page__error" *ngIf="errorPayouts">{{ errorPayouts }}</p>
+    <div class="revenue-page__loading" *ngIf="loadingPayouts">Loading…</div>
+    <div class="revenue-page__table-wrap" *ngIf="!loadingPayouts && !errorPayouts">
+      <table class="revenue-page__table" *ngIf="payouts?.length">
+        <thead>
+          <tr>
+            <th class="revenue-page__th">Affiliate</th>
+            <th class="revenue-page__th">Order</th>
+            <th class="revenue-page__th revenue-page__th--num">Amount (₹)</th>
+            <th class="revenue-page__th">Status</th>
+            <th class="revenue-page__th">Created</th>
+            <th class="revenue-page__th">Paid on</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of payouts; trackBy: trackByPayoutId">
+            <td class="revenue-page__td">{{ row.affiliateName || row.affiliateId }}</td>
+            <td class="revenue-page__td">{{ row.transactionNumber || row.orderId }}</td>
+            <td class="revenue-page__td revenue-page__td--num">{{ row.amount | number:'1.2-2' }}</td>
+            <td class="revenue-page__td">{{ row.status }}</td>
+            <td class="revenue-page__td">{{ row.createdOn | date:'shortDate' }}</td>
+            <td class="revenue-page__td">{{ row.paidOn | date:'shortDate' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="revenue-page__empty" *ngIf="!payouts?.length">No payouts match the filter.</p>
+    </div>
+  </section>
+</div>

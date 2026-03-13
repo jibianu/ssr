@@ -1,0 +1,106 @@
+.affiliate-register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.affiliate-register-card {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+}
+
+.affiliate-register-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.affiliate-register-brand {
+  display: block;
+}
+
+.affiliate-register-logo {
+  display: block;
+  height: 42px;
+  width: auto;
+}
+
+.affiliate-register-header__prompt a {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.affiliate-register-header__prompt a:hover {
+  color: #0f172a;
+}
+
+.affiliate-register-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.affiliate-register-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.affiliate-register-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.affiliate-register-form label {
+  display: block;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.affiliate-register-form .required {
+  color: #dc2626;
+}
+
+.affiliate-register-form .form-control {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.affiliate-register-form .form-control:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.affiliate-register-form .btn-block {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.affiliate-register-footer-link {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.affiliate-register-footer-link a {
+  color: #3b82f6;
+  text-decoration: none;
+}

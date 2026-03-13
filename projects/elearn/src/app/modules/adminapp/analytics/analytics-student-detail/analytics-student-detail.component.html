@@ -1,0 +1,131 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__title">Student Analytics Detail</h1>
+    <div class="dashboard__filter">
+      <a routerLink="/app/admin/analytics" [queryParams]="{ from: fromDate, to: toDate }" class="dashboard__preset">← Back to list</a>
+      <div class="dashboard__presets">
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'today'" (click)="onPresetChange('today')">Today</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last7'" (click)="onPresetChange('last7')">Last 7 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last30'" (click)="onPresetChange('last30')">Last 30 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'thisMonth'" (click)="onPresetChange('thisMonth')">This Month</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'custom'" (click)="setDateRangeFromPreset('custom')">Custom</button>
+      </div>
+      <div class="dashboard__custom" *ngIf="dateRangePreset === 'custom'">
+        <input type="date" class="dashboard__date" [(ngModel)]="customFrom" />
+        <span class="dashboard__date-sep">–</span>
+        <input type="date" class="dashboard__date" [(ngModel)]="customTo" />
+        <button type="button" class="dashboard__apply" (click)="applyCustomRange()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="dashboard__empty-cell">Loading…</div>
+  <div *ngIf="!loading && notFound" class="dashboard__empty-cell">Student not found.</div>
+
+  <ng-container *ngIf="!loading && detail">
+    <div class="dashboard__cards">
+      <div class="dashboard__card">
+        <div class="dashboard__card-inner">
+          <span class="dashboard__card-label">{{ detail.firstName }} {{ detail.lastName }}</span>
+          <span class="dashboard__card-sub">{{ detail.email }}</span>
+        </div>
+      </div>
+      <div class="dashboard__card">
+        <div class="dashboard__card-inner">
+          <span class="dashboard__card-value">{{ detail.sessionCount }}</span>
+          <span class="dashboard__card-label">Sessions</span>
+        </div>
+      </div>
+      <div class="dashboard__card">
+        <div class="dashboard__card-inner">
+          <span class="dashboard__card-value">{{ formatDuration(detail.totalSessionSeconds) }}</span>
+          <span class="dashboard__card-label">Total time</span>
+        </div>
+      </div>
+      <div class="dashboard__card">
+        <div class="dashboard__card-inner">
+          <span class="dashboard__card-value">{{ formatDuration(detail.totalActiveSeconds) }}</span>
+          <span class="dashboard__card-label">Active time</span>
+        </div>
+      </div>
+      <div class="dashboard__card">
+        <div class="dashboard__card-inner">
+          <span class="dashboard__card-value">{{ detail.activeDaysCount }}</span>
+          <span class="dashboard__card-label">Active days</span>
+        </div>
+      </div>
+      <div class="dashboard__card">
+        <div class="dashboard__card-inner">
+          <span class="dashboard__card-value">{{ detail.lastSeenUtc | date:'short' }}</span>
+          <span class="dashboard__card-label">Last seen</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard__table-section" *ngIf="detail.sessions?.length">
+      <h2 class="dashboard__chart-title">Sessions</h2>
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Started</th>
+            <th class="dashboard__th">Ended</th>
+            <th class="dashboard__th">Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of detail.sessions">
+            <td class="dashboard__td">{{ s.startedAtUtc | date:'short' }}</td>
+            <td class="dashboard__td">{{ s.endedAtUtc | date:'short' }}</td>
+            <td class="dashboard__td">{{ s.durationSeconds != null ? formatDuration(s.durationSeconds) : '–' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dashboard__table-section" *ngIf="detail.events?.length">
+      <h2 class="dashboard__chart-title">Events</h2>
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Time</th>
+            <th class="dashboard__th">Type</th>
+            <th class="dashboard__th">Entity</th>
+            <th class="dashboard__th">Payload</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of detail.events">
+            <td class="dashboard__td">{{ e.createdUtc | date:'short' }}</td>
+            <td class="dashboard__td">{{ e.eventType }}</td>
+            <td class="dashboard__td">{{ e.entityType }} {{ e.entityId }}</td>
+            <td class="dashboard__td dashboard__td--small">{{ e.payload }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dashboard__table-section" *ngIf="detail.enrolledCourses?.length">
+      <h2 class="dashboard__chart-title">Enrolled courses</h2>
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Course</th>
+            <th class="dashboard__th">Enrolled</th>
+            <th class="dashboard__th">Progress</th>
+            <th class="dashboard__th">Last lesson</th>
+            <th class="dashboard__th">Completed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of detail.enrolledCourses">
+            <td class="dashboard__td">{{ c.courseName }}</td>
+            <td class="dashboard__td">{{ c.enrolledOn | date:'shortDate' }}</td>
+            <td class="dashboard__td">{{ c.progressPercent }}%</td>
+            <td class="dashboard__td">{{ c.lastAccessedLessonTitle || '–' }}</td>
+            <td class="dashboard__td">{{ c.isCompleted ? 'Yes' : 'No' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

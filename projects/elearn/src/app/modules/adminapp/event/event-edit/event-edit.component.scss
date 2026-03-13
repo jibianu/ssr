@@ -1,0 +1,173 @@
+// Same design as course page (test course): solid orange headers, white outline buttons
+.card-header {
+  background: var(--app-primary, #f57722);
+  border: none;
+}
+.card-header h2 {
+  font-size: 56px;
+  color: white;
+  padding: 20px 0;
+  margin: 0;
+}
+.card-body {
+  padding: 10px 60px;
+  background: var(--app-primary-bg, rgba(245, 119, 34, 0.08));
+}
+
+.event-section {
+  margin-bottom: 1.5rem;
+}
+.event-section__title {
+  color: var(--app-primary, #f57722);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--app-primary, #f57722);
+}
+
+.event-upload {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  &:hover {
+    border-color: var(--app-primary, #f57722);
+    background: var(--app-primary-bg, rgba(245, 119, 34, 0.08));
+  }
+  &--video .event-upload__icon { font-size: 2rem; }
+  &--loading { pointer-events: none; opacity: 0.85; }
+}
+.event-upload__icon {
+  font-size: 2.5rem;
+  color: var(--app-primary, #f57722);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.event-upload__text {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+.event-upload__preview {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+// Collapsible sections – solid orange header (same as course Key Points / Study Materials bars)
+.event-edit__card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+}
+.event-edit__card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--app-primary, #f57722);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  &--toggle {
+    cursor: pointer;
+    user-select: none;
+  }
+}
+.event-edit__card-icon {
+  font-size: 0.875rem;
+  opacity: 0.95;
+}
+.event-edit__card-chevron {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  &--open {
+    transform: rotate(180deg);
+  }
+}
+.event-edit__card-body {
+  padding: 1.25rem;
+  background: #fff;
+  border-top: none;
+}
+
+.event-edit__loading {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+// Inner curriculum / Q&A cards – light orange bar (like course section sub-headers)
+.event-edit__curriculum-card,
+.event-edit__qa-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.event-edit__curriculum-card-header,
+.event-edit__qa-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(90deg, rgba(255, 157, 42, 0.2) 0%, rgba(245, 119, 34, 0.15) 100%);
+  color: var(--app-primary, #f57722);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(245, 119, 34, 0.25);
+}
+.event-edit__curriculum-card-body,
+.event-edit__qa-card-body {
+  padding: 1rem;
+  background: #fafafa;
+}
+.event-edit__curriculum-extra summary {
+  cursor: pointer;
+}
+
+// Event edit page: outline buttons = white with orange border/text (same as course Edit/Delete/Add)
+.event-edit-page .btn-outline-add {
+  color: var(--app-primary, #f57722);
+  border-color: var(--app-primary, #f57722);
+  background-color: #fff;
+}
+.event-edit-page .btn-outline-add:hover {
+  color: #fff;
+  background-color: var(--app-primary, #f57722);
+  border-color: var(--app-primary, #f57722);
+}
+.event-edit-page .btn-outline-add i {
+  color: inherit;
+}
+.event-edit-page .btn-success.btn-outline-add,
+.event-edit-page .btn.btn-outline-add {
+  color: var(--app-primary, #f57722);
+  border-color: var(--app-primary, #f57722);
+  background: #fff;
+}
+.event-edit-page .btn-success.btn-outline-add:hover,
+.event-edit-page .btn.btn-outline-add:hover {
+  background: var(--app-primary, #f57722);
+  color: #fff;
+  border-color: var(--app-primary, #f57722);
+}
+
+.event-video-preview__player {
+  max-width: 100%;
+  width: 100%;
+  max-height: 320px;
+  background: #000;
+  border-radius: 8px;
+}
+
+.invalid-feedback.d-block {
+  display: block;
+}

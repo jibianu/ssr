@@ -1,0 +1,1023 @@
+<div class="event-details" *ngIf="event">
+  <section class="event-hero" role="banner" aria-label="Event header">
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-header">
+          <span class="hero-badge" *ngIf="event?.badge">
+            <i class="fa fa-star"></i>
+            {{ event.badge }}
+          </span>
+          <h1 class="hero-title">{{ event?.title }}</h1>
+        </div>
+
+        <div class="hero-meta">
+          <div class="hero-meta__item" *ngIf="event?.startDate">
+            <div class="hero-meta__icon hero-meta__icon--calendar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="18" rx="2" fill="#3B82F6" opacity="0.2"/>
+                <path d="M3 8h18M7 3v5M17 3v5" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <rect x="7" y="12" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="12" y="12" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="17" y="12" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="7" y="17" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+                <rect x="12" y="17" width="3" height="3" rx="0.5" fill="#3B82F6"/>
+              </svg>
+            </div>
+            <div class="hero-meta__content">
+              <span class="label">Starts</span>
+              <span class="value">
+                {{ event.startDate | date: 'fullDate' }}
+                <ng-container *ngIf="event?.startTime"> • {{ event.startTime }}</ng-container>
+              </span>
+            </div>
+          </div>
+          <div class="hero-meta__item">
+            <div class="hero-meta__icon hero-meta__icon--location">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#10B981" opacity="0.2"/>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="9" r="3" fill="#10B981"/>
+              </svg>
+            </div>
+            <div class="hero-meta__content">
+              <span class="label">Location</span>
+              <span class="value">
+                {{ getValue('location', 'city', 'description') || event?.locationName || 'Online' }}
+              </span>
+            </div>
+          </div>
+          <div class="hero-meta__item" *ngIf="event?.duration">
+            <div class="hero-meta__icon hero-meta__icon--clock">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="#F59E0B" opacity="0.2"/>
+                <circle cx="12" cy="12" r="10" stroke="#F59E0B" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="hero-meta__content">
+              <span class="label">Duration</span>
+              <span class="value">{{ event.duration }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="event-summary">
+    <div class="summary-container">
+      <ng-template #whyAttend>
+        <article class="summary-card">
+          <h2>Why attend</h2>
+          <p class="summary-text">
+            {{ getValue('description', 'About', 'description') || event?.description || event?.aboutEvent }}
+          </p>
+          <div class="summary-tags" *ngIf="getInfo('tags')?.length">
+            <span class="summary-tag" *ngFor="let tag of getInfo('tags'); trackBy: trackByTagId">
+              {{ tag.title || tag.tag }}
+            </span>
+          </div>
+        </article>
+      </ng-template>
+      <article class="summary-card">
+        <h2>Event snapshot</h2>
+        <dl class="snapshot">
+          <div>
+            <dt>Date</dt>
+            <dd>{{ event?.startDate | date: 'mediumDate' }}</dd>
+          </div>
+          <div *ngIf="event?.startTime">
+            <dt>Time</dt>
+            <dd>{{ event.startTime }}</dd>
+          </div>
+          <div>
+            <dt>Format</dt>
+            <dd>{{ getValue('format', 'Mode', 'description') || 'Instructor-led, live' }}</dd>
+          </div>
+          <div>
+            <dt>Seats left</dt>
+            <dd>{{ getValue('pricing', 'Seat Capacity', 'description') || 'Limited' }}</dd>
+          </div>
+          <div>
+            <dt>Language</dt>
+            <dd>{{ getValue('format', 'Language', 'description') || event?.language || 'English' }}</dd>
+          </div>
+        </dl>
+      </article>
+      <!-- ✅ NEW: Event Format Information Card -->
+      <article class="summary-card event-format-card">
+        <h2>Event Format</h2>
+        <dl class="snapshot">
+          <div>
+            <dt>Skill level</dt>
+            <dd>{{ getValue('format', 'Level', 'description') || 'All levels' }}</dd>
+          </div>
+          <div>
+            <dt>Certification</dt>
+            <dd>{{ getValue('format', 'Certification', 'description') || 'Included' }}</dd>
+          </div>
+          <div>
+            <dt>Mode</dt>
+            <dd>{{ getValue('format', 'Mode', 'description') || 'Hybrid' }}</dd>
+          </div>
+        </dl>
+      </article>
+      <article class="summary-card countdown-card" *ngIf="event?.startDate">
+        <h2>Countdown</h2>
+        <div class="countdown">
+          <div class="countdown__item">
+            <span class="count">{{ getRemaining(event.startDate).days }}</span>
+            <span class="label">Days</span>
+          </div>
+          <div class="countdown__item">
+            <span class="count">{{ getRemaining(event.startDate).hours }}</span>
+            <span class="label">Hours</span>
+          </div>
+        </div>
+        <p class="countdown-note">Seats fill fast—reserve yours today.</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="event-body">
+    <main class="event-main">
+      <section class="event-card" id="about">
+        <header>
+          <h2>About this event</h2>
+        </header>
+        <p class="event-text" #largeText [class.is-expanded]="isExpanded()">
+          {{ getValue('description', 'About', 'description') || event?.longDescription || event?.aboutEvent }}
+        </p>
+        <button
+          class="btn-link"
+          type="button"
+          (click)="onViewMoreInfo()"
+          #viewMoreBtn
+          *ngIf="(getValue('description', 'About', 'description') || event?.longDescription || event?.aboutEvent)?.length > 480"
+        >
+          {{ isExpanded() ? 'Show less' : 'Show more' }}
+        </button>
+        <ul class="about-metrics">
+          <li>
+            <span class="label">Skill level</span>
+            <span class="value">{{ getValue('format', 'Level', 'description') || 'All levels' }}</span>
+          </li>
+          <li>
+            <span class="label">Certification</span>
+            <span class="value">{{ getValue('format', 'Certification', 'description') || 'Included' }}</span>
+          </li>
+          <li>
+            <span class="label">Mode</span>
+            <span class="value">{{ getValue('format', 'Mode', 'description') || 'Hybrid' }}</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ✅ FIX: Meet your host - Full width event card (Multiple organizers support with slider) -->
+      <ng-container *ngIf="(getInfo('organized') || []) as hostList">
+        <section class="event-card" id="host" *ngIf="hostList.length > 0 || getInfo('organized_soc')?.length">
+          <header>
+            <div>
+              <h2>{{ hostList.length > 1 ? 'Meet your hosts' : 'Meet your host' }}</h2>
+            </div>
+            <div class="slider-controls" *ngIf="hostList.length >= 2">
+              <button
+                class="slider-btn"
+                type="button"
+                (click)="scrollHost(-1)"
+                [disabled]="!canScrollHostLeft"
+                aria-label="Previous host"
+              >
+                <i class="fa fa-chevron-left" aria-hidden="true"></i>
+              </button>
+              <button
+                class="slider-btn"
+                type="button"
+                (click)="scrollHost(1)"
+                [disabled]="!canScrollHostRight"
+                aria-label="Next host"
+              >
+                <i class="fa fa-chevron-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </header>
+          <!-- Slider layout when 2+ organizers -->
+          <div class="host-slider" #hostSlider (scroll)="updateHostControls()" *ngIf="hostList.length >= 2">
+            <div class="host-card" *ngFor="let host of hostList; trackBy: trackByOrganizerId; index as hostIndex">
+              <div class="host-card__top-row">
+                <div class="host-card__avatar-wrapper">
+                  <img
+                    class="host-card__avatar"
+                    [src]="host?.imageUrl || 'assets/img/placeholder-avatar.png'"
+                    [alt]="host?.title || 'Host'"
+                    loading="lazy"
+                  />
+                  <div class="host-card__avatar-badge">
+                    <i class="fa fa-check"></i>
+                  </div>
+                </div>
+                <div class="host-card__header">
+                  <h3 class="host-card__name">{{ host?.title || 'Event Host' }}</h3>
+                  <p class="host-card__role" *ngIf="host?.tag">
+                    <i class="fa fa-briefcase"></i>
+                    {{ host.tag }}
+                  </p>
+                </div>
+              </div>
+              <div class="host-card__content">
+                <p class="host-card__bio" *ngIf="host?.description">{{ host.description }}</p>
+              </div>
+              <!-- Social Links - Inside each host card (per organizer) -->
+              <div class="host-card__social" *ngIf="getOrganizerSocialLinks(hostIndex)?.length">
+                <span class="host-card__social-label">Connect:</span>
+                <div class="host-card__tags">
+                  <a
+                    class="host-card__tag"
+                    *ngFor="let social of getOrganizerSocialLinks(hostIndex); trackBy: trackBySocialId"
+                    [href]="getSocialUrl(social)"
+                    rel="noopener"
+                    target="_blank"
+                    [attr.aria-label]="'Follow on ' + (social.tag || 'Social link')"
+                  >
+                    <i class="fa" [ngClass]="getSocialIcon(social.tag)"></i>
+                    <span>{{ social.tag || 'Link' }}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Regular layout when only 1 organizer -->
+          <div class="hosts-container" *ngIf="hostList.length === 1">
+            <div class="host-card">
+              <div class="host-card__top-row">
+                <div class="host-card__avatar-wrapper">
+                  <img
+                    class="host-card__avatar"
+                    [src]="hostList[0]?.imageUrl || 'assets/img/placeholder-avatar.png'"
+                    [alt]="hostList[0]?.title || 'Host'"
+                    loading="lazy"
+                  />
+                  <div class="host-card__avatar-badge">
+                    <i class="fa fa-check"></i>
+                  </div>
+                </div>
+                <div class="host-card__header">
+                  <h3 class="host-card__name">{{ hostList[0]?.title || 'Event Host' }}</h3>
+                  <p class="host-card__role" *ngIf="hostList[0]?.tag">
+                    <i class="fa fa-briefcase"></i>
+                    {{ hostList[0].tag }}
+                  </p>
+                </div>
+              </div>
+              <div class="host-card__content">
+                <p class="host-card__bio" *ngIf="hostList[0]?.description">{{ hostList[0].description }}</p>
+              </div>
+              <!-- Social Links - Inside host card (for first organizer) -->
+              <div class="host-card__social" *ngIf="getOrganizerSocialLinks(0)?.length">
+                <span class="host-card__social-label">Connect:</span>
+                <div class="host-card__tags">
+                  <a
+                    class="host-card__tag"
+                    *ngFor="let social of getOrganizerSocialLinks(0); trackBy: trackBySocialId"
+                    [href]="getSocialUrl(social)"
+                    rel="noopener"
+                    target="_blank"
+                    [attr.aria-label]="'Follow on ' + (social.tag || 'Social link')"
+                  >
+                    <i class="fa" [ngClass]="getSocialIcon(social.tag)"></i>
+                    <span>{{ social.tag || 'Link' }}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Social Links - Display even if no organizers -->
+          <div class="host-card__social" *ngIf="hostList.length === 0 && getInfo('organized_soc')?.length">
+            <span class="host-card__social-label">Connect:</span>
+            <div class="host-card__tags">
+              <a
+                class="host-card__tag"
+                *ngFor="let social of getInfo('organized_soc'); trackBy: trackBySocialId"
+                [href]="social.title"
+                rel="noopener"
+                target="_blank"
+                [attr.aria-label]="'Follow on ' + social.tag"
+              >
+                <i class="fa" [ngClass]="getSocialIcon(social.tag)"></i>
+                <span>{{ social.tag }}</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </ng-container>
+
+      <section class="event-card" id="learning" *ngIf="getInfo('curriculum')?.length">
+        <header>
+          <h2>What you'll learn</h2>
+          <p class="section-subtitle">Real-world playbooks, tools and frameworks.</p>
+        </header>
+        <div class="learning-grid">
+          <article class="learning-item" *ngFor="let item of getLearningItems(); trackBy: trackByCurriculumId">
+            <div>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.description }}</p>
+            </div>
+          </article>
+        </div>
+        <button
+          class="btn-link learning-show-more"
+          type="button"
+          (click)="toggleLearningExpansion()"
+          *ngIf="hasMoreLearningItems()">
+          {{ learningExpanded ? 'Show less' : 'Show more' }}
+        </button>
+      </section>
+
+      <section class="event-card" *ngIf="getInfo('bonuse')?.length">
+        <header>
+          <h2>Included bonuses</h2>
+          <p class="section-subtitle">
+            Worth ₹{{ sumAmount('bonuse') | number: '1.0-0' }} for early registrations
+          </p>
+        </header>
+        <div class="bonus-grid">
+          <article class="bonus-item" *ngFor="let bonus of getInfo('bonuse'); trackBy: trackByBonusId">
+            <span class="bonus-tag">{{ bonus.tag }}</span>
+            <h3>{{ bonus.title }}</h3>
+            <p>{{ bonus.description }}</p>
+            <strong class="bonus-value" *ngIf="bonus.amount">₹{{ bonus.amount | number: '1.0-0' }}</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="event-card salary-section" *ngIf="getInfo('slary')?.length">
+        <header>
+          <div>
+            <h2>Salary Information</h2>
+            <p class="section-subtitle">
+              Expected salary ranges and career opportunities
+            </p>
+          </div>
+          <div class="slider-controls" *ngIf="getInfo('slary')?.length > 1">
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollSalary(-1)"
+              [disabled]="!canScrollSalaryLeft"
+              aria-label="Previous salary"
+            >
+              <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollSalary(1)"
+              [disabled]="!canScrollSalaryRight"
+              aria-label="Next salary"
+            >
+              <i class="fa fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <div class="salary-slider" #salarySlider (scroll)="updateSalaryControls()">
+          <article class="salary-card" *ngFor="let salary of getInfo('slary'); trackBy: trackBySalaryId">
+            <div class="salary-card__content">
+              <div class="salary-card__header">
+                <h3 class="salary-card__title">Salary Range</h3>
+                <div class="salary-card__amount" *ngIf="salary.amount">
+                  <span class="salary-currency">₹</span>
+                  <span class="salary-value">{{ salary.amount | number: '1.0-0' }}</span>
+                  <span class="salary-period">/year</span>
+                </div>
+              </div>
+              <p class="salary-card__description" *ngIf="salary.description">{{ salary.description }}</p>
+              <div class="salary-card__footer">
+                <span class="salary-badge">
+                  <i class="fa fa-chart-line"></i>
+                  <span>Competitive Package</span>
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="event-card" *ngIf="getInfo('qa')?.length">
+        <header>
+          <h2>Frequently asked questions</h2>
+        </header>
+        <div class="faq">
+          <details class="faq-item" *ngFor="let faq of getInfo('qa'); trackBy: trackByQaId">
+            <summary>{{ faq.title }}</summary>
+            <p>{{ faq.description }}</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="event-card testimonials" *ngIf="testimonials?.length">
+        <header>
+          <div>
+            <h2>Learners love the experience</h2>
+            <p class="section-subtitle">Stories from professionals who moved ahead faster.</p>
+          </div>
+          <div class="slider-controls">
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollTestimonials(-1)"
+              [disabled]="!canScrollLeft"
+              aria-label="Previous testimonial"
+            >
+              <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollTestimonials(1)"
+              [disabled]="!canScrollRight"
+              aria-label="Next testimonial"
+            >
+              <i class="fa fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <div class="testimonial-slider" #testimonialSlider (scroll)="updateTestimonialControls()">
+          <article class="testimonial-card" *ngFor="let testimonial of testimonials; trackBy: trackByTestimonial">
+            <div class="testimonial-card__header">
+              <div class="person">
+                <img [src]="testimonial.avatar" [alt]="testimonial.name" loading="lazy" />
+                <div>
+                  <div class="name">{{ testimonial.name }}</div>
+                  <div class="role">{{ testimonial.role }}</div>
+                </div>
+              </div>
+              <img class="brand" [src]="testimonial.brand" [alt]="testimonial.brandAlt" loading="lazy" />
+            </div>
+            <p class="quote">“{{ testimonial.quote }}”</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="event-card" *ngIf="events?.length">
+        <header>
+          <h2>More events you’ll like</h2>
+        </header>
+        <div class="related-grid">
+          <article class="related-card" *ngFor="let related of events; trackBy: trackByEventId">
+            <h3>{{ related.title }}</h3>
+            <p>{{ related.subTitle }}</p>
+            <div class="related-meta">
+              <span>{{ related.startDate | date: 'mediumDate' }}</span>
+              <span>{{ related.locationName || 'Online' }}</span>
+            </div>
+            <a class="btn btn-outline-primary btn-sm" [routerLink]="['/events', related.canonicalUrl]">View details</a>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <aside class="event-aside">
+      <div class="sticky-top d-none d-sm-block" 
+           [class.sidebar-fixed]="isSidebarFixed && isSidebarVisible" 
+           [class.sidebar-absolute]="!isSidebarFixed && isSidebarVisible"
+           [style.display]="isSidebarVisible ? 'flex' : 'none'">
+        <div class="card box-shadow mb-3 mb-4">
+          <div class="p-0">
+            <section class="aside-card price-card">
+          <header>
+            <h3>Secure your seat</h3>
+            <div class="price">
+              ₹{{ event?.amount | number: '1.0-0' }}
+              <span class="price-badge" *ngIf="event?.discount">Save ₹{{ event.discount | number: '1.0-0' }}</span>
+            </div>
+            <p class="price-note">Live cohort • Mentorship • Certification</p>
+          </header>
+          <dl class="aside-list">
+            <div>
+              <dt>Date &amp; time</dt>
+              <dd>
+                {{ event?.startDate | date: 'EEE, MMM d' }}
+                <ng-container *ngIf="event?.startTime"> • {{ event.startTime }}</ng-container>
+              </dd>
+            </div>
+            <div>
+              <dt>Format</dt>
+              <dd>{{ getValue('format', 'Mode', 'description') || 'Instructor-led, live' }}</dd>
+            </div>
+            <div>
+              <dt>Seats available</dt>
+              <dd>{{ getValue('pricing', 'Seat Capacity', 'description') || 'Limited' }}</dd>
+            </div>
+          </dl>
+          <div *ngIf="registrationCheckDone && isRegisteredForEvent" class="alert alert-success mb-0">
+            <i class="fa fa-check-circle"></i> Registration Completed
+          </div>
+          <div *ngIf="!isRegisteredForEvent" class="book-now-block">
+            <div class="book-now-row">
+              <span class="book-now-price">{{ getEventPriceText() }}</span>
+              <span class="book-now-available">Available</span>
+            </div>
+            <button type="button" class="btn btn-danger btn-block book-now-btn" (click)="goToEventCheckout()" [disabled]="event?.isEnded">
+              Book Now
+            </button>
+          </div>
+        </section>
+
+        <section class="aside-card support-card">
+          <header>
+            <h3>Need help?</h3>
+          </header>
+          <p>
+            Call <a href="tel:+919840287919">+91 98402 87919</a> or email
+            <a href="mailto:event@oilandgasclub.com">event@oilandgasclub.com</a>
+          </p>
+        </section>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Certificate Section -->
+  <section class="certificate-section">
+    <div class="certificate-container">
+      <div class="certificate-content">
+        <h2 class="certificate-title">Earn A Career Certificate</h2>
+        <ul class="certificate-benefits">
+          <li>
+            <i class="fa fa-check-circle"></i>
+            Add this credential to your LinkedIn profile, resume, or CV
+          </li>
+          <li>
+            <i class="fa fa-check-circle"></i>
+            Share it on social media and in your performance review
+          </li>
+        </ul>
+      </div>
+      <div class="certificate-preview">
+        <div class="certificate-sample">
+          <div class="certificate-watermark">SAMPLE</div>
+          <div class="certificate-header">
+            <div class="certificate-logo">
+              <img 
+                [src]="getLogoUrl()" 
+                alt="Oilandgas Club Logo" 
+                class="logo-image"
+                loading="lazy"
+                (error)="onLogoError($event)"
+              />
+            </div>
+          </div>
+          <div class="certificate-body">
+            <h3 class="certificate-main-title">CERTIFICATE</h3>
+            <p class="certificate-subtitle">of Completion</p>
+            <p class="certificate-text">This Certificate is Proudly Presented to the honorable achievement to</p>
+            <p class="certificate-name">PARTICIPANT NAME</p>
+            <p class="certificate-description">
+              Has successfully completed the training program of <strong>{{ event?.title || 'Event Training Program' }}</strong>.
+              The Program has Conducted during the period of {{ event?.startDate | date: 'dd MMM yyyy' }} to {{ event?.endDate ? (event.endDate | date: 'dd MMM yyyy') : 'Completion' }}.
+            </p>
+          </div>
+          <div class="certificate-footer">
+            <div class="certificate-seal">
+              <div class="seal-circle"></div>
+              <p class="seal-text">CENTER MANAGER</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<ng-template #longContent let-modal>
+  <!-- Checkout Header -->
+  <div class="checkout-header" *ngIf="event">
+    <button type="button" class="back-btn" aria-label="Go back" (click)="modal.dismiss('Back click')">
+      <i class="fa fa-arrow-left"></i>
+    </button>
+    <div class="checkout-title-section">
+      <h2 class="checkout-title">Checkout</h2>
+      <p class="checkout-timer" *ngIf="event?.startDate">
+        Time left {{ getTimeRemaining(event.startDate) }}
+      </p>
+    </div>
+  </div>
+
+  <div class="modal-body checkout-body" *ngIf="event">
+    <!-- Event Details Card -->
+    <div class="event-card-summary">
+      <div class="event-thumbnail">
+        <img [src]="getEventImage()" [alt]="event?.title" *ngIf="getEventImage(); else defaultThumbnail" />
+        <ng-template #defaultThumbnail>
+          <div class="default-thumbnail">
+            <i class="fa fa-calendar"></i>
+          </div>
+        </ng-template>
+      </div>
+      <div class="event-info">
+        <h3 class="event-title-truncated">{{ event?.title || 'Event Registration' }}</h3>
+        <p class="event-price">₹{{ (event?.amount || 0) | number: '1.2-2' }}</p>
+      </div>
+    </div>
+
+    <!-- Contact Information Section -->
+    <div class="contact-section">
+      <div class="section-header">
+        <h3 class="section-title">Contact information</h3>
+        <div class="header-actions">
+          <a href="#" class="login-link">Log in</a> for a faster experience.
+          <span class="required-indicator">* Required</span>
+        </div>
+      </div>
+
+      <form class="checkout-form" [formGroup]="eventUserForm" id="eventRegistrationForm">
+        <!-- First Row: First Name and Surname -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-firstname">
+              First name<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-firstname" 
+              formControlName="firstName" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('firstName')?.invalid && eventUserForm.get('firstName')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('firstName')?.invalid && eventUserForm.get('firstName')?.touched">
+              First name is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-surname">
+              Surname<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-surname" 
+              formControlName="surname" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('surname')?.invalid && eventUserForm.get('surname')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('surname')?.invalid && eventUserForm.get('surname')?.touched">
+              Surname is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row: Email and Confirm Email -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-email">
+              Email address<span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="reg-email" 
+              formControlName="email" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched">
+              <span *ngIf="eventUserForm.get('email')?.errors?.['required']">Email is required</span>
+              <span *ngIf="eventUserForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-confirm-email">
+              Confirm email<span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="reg-confirm-email" 
+              formControlName="confirmEmail" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('confirmEmail')?.invalid && eventUserForm.get('confirmEmail')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('confirmEmail')?.invalid && eventUserForm.get('confirmEmail')?.touched">
+              <span *ngIf="eventUserForm.get('confirmEmail')?.errors?.['required']">Please confirm your email</span>
+              <span *ngIf="eventUserForm.get('confirmEmail')?.errors?.['emailMismatch']">Emails do not match</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Third Row: Mobile Number and Company Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-mobile">
+              Mobile Number<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-mobile" 
+              formControlName="mobile" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched">
+              Mobile number is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-company">
+              Company Name<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-company" 
+              formControlName="companyName" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched">
+              Company name is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Fourth Row: Designation and Department -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-designation">
+              Designation<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-designation" 
+              formControlName="designation" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched">
+              Designation is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-department">
+              Department<span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="reg-department" 
+              formControlName="department" 
+              class="form-control" 
+              [class.is-invalid]="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched"
+              placeholder=""
+            />
+            <div class="invalid-feedback" *ngIf="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched">
+              Department is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Consent Checkboxes -->
+        <div class="consent-section">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="newsletterUpdates" checked />
+            <span>Keep me updated on more events and news from this event organiser.</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="nearbyEvents" />
+            <span>Send me emails about the best events happening nearby or online.</span>
+          </label>
+        </div>
+
+        <!-- Terms of Service -->
+        <div class="terms-section">
+          <p class="terms-text">
+            By selecting Register, I agree to the 
+            <a href="/terms-and-conditions" class="terms-link" (click)="openTermsAndConditions($event)">Terms of Service</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Button Footer -->
+  <div class="modal-footer checkout-footer" *ngIf="event">
+    <button 
+      type="button" 
+      class="btn-register" 
+      [disabled]="eventUserForm.invalid || isSubmitting"
+      (click)="paymentProcess()"
+    >
+      <span *ngIf="!isSubmitting">Register</span>
+      <span *ngIf="isSubmitting">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Processing...
+      </span>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #registrationsection>
+  <form class="form-wrapper" [formGroup]="eventUserForm" id="eventRegistrationForm">
+    <!-- Name Field -->
+    <div class="form-group">
+      <label for="reg-name">
+        <i class="fa fa-user"></i>
+        Full Name <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-name" 
+        formControlName="name" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('name')?.invalid && eventUserForm.get('name')?.touched"
+        placeholder="Enter your full name"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('name')?.invalid && eventUserForm.get('name')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Name is required
+      </div>
+    </div>
+
+    <!-- Email Field -->
+    <div class="form-group">
+      <label for="reg-email">
+        <i class="fa fa-envelope"></i>
+        Work Email ID <span class="required">*</span>
+      </label>
+      <input 
+        type="email" 
+        id="reg-email" 
+        formControlName="email" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched"
+        placeholder="your.email@company.com"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('email')?.invalid && eventUserForm.get('email')?.touched">
+        <i class="fa fa-exclamation-circle"></i>
+        <span *ngIf="eventUserForm.get('email')?.errors?.['required']">Email is required</span>
+        <span *ngIf="eventUserForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+      </div>
+    </div>
+
+    <!-- Mobile Number Field -->
+    <div class="form-group">
+      <label for="reg-mobile">
+        <i class="fa fa-phone"></i>
+        Mobile Number <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-mobile" 
+        formControlName="mobile" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched"
+        placeholder="+91 98765 43210"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('mobile')?.invalid && eventUserForm.get('mobile')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Mobile number is required
+      </div>
+    </div>
+
+    <!-- Company Name Field -->
+    <div class="form-group">
+      <label for="reg-company">
+        <i class="fa fa-building"></i>
+        Company Name <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-company" 
+        formControlName="companyName" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched"
+        placeholder="Enter your company name"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('companyName')?.invalid && eventUserForm.get('companyName')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Company name is required
+      </div>
+    </div>
+
+    <!-- Designation Field -->
+    <div class="form-group">
+      <label for="reg-designation">
+        <i class="fa fa-briefcase"></i>
+        Designation <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-designation" 
+        formControlName="designation" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched"
+        placeholder="Your job title"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('designation')?.invalid && eventUserForm.get('designation')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Designation is required
+      </div>
+    </div>
+
+    <!-- Department Field -->
+    <div class="form-group">
+      <label for="reg-department">
+        <i class="fa fa-sitemap"></i>
+        Department <span class="required">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="reg-department" 
+        formControlName="department" 
+        class="form-control" 
+        [class.is-invalid]="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched"
+        placeholder="Your department"
+      />
+      <div class="invalid-feedback" *ngIf="eventUserForm.get('department')?.invalid && eventUserForm.get('department')?.touched">
+        <i class="fa fa-exclamation-circle"></i> Department is required
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #ticketDetails>
+  <div class="ticket-details-wrapper">
+    <div class="ticket-header">
+      <i class="fa fa-ticket"></i>
+      <h5>Ticket Details</h5>
+    </div>
+    <div class="ticket-info">
+      <div class="ticket-info-item">
+        <div class="ticket-icon">
+          <i class="fa fa-map-marker"></i>
+        </div>
+        <div class="ticket-text">
+          <span class="ticket-label">Location</span>
+          <span class="ticket-value">{{ getValue('location', 'city', 'description') || event?.locationName || 'Online' }}</span>
+        </div>
+      </div>
+      <div class="ticket-info-item">
+        <div class="ticket-icon">
+          <i class="fa fa-calendar"></i>
+        </div>
+        <div class="ticket-text">
+          <span class="ticket-label">Date</span>
+          <span class="ticket-value">{{ event?.startDate | date: 'dd MMMM, yyyy' }} Onwards</span>
+        </div>
+      </div>
+      <div class="ticket-info-item">
+        <div class="ticket-icon">
+          <i class="fa fa-users"></i>
+        </div>
+        <div class="ticket-text">
+          <span class="ticket-label">Attendees</span>
+          <span class="ticket-value"><strong>1</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #totalTemplate let-fromSide="fromSide">
+  <div class="ticket-details-wrapper">
+    <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+      <div>Gross Amount</div>
+      <div class="ticket-subtext">&#8377;{{ ((event?.amount || 0) + (event?.discount || 0)) | number: '1.2-2' }}</div>
+    </div>
+    <div class="ticket-subtext-md d-flex justify-content-between align-items-center" *ngIf="event?.discount">
+      <div>Discount</div>
+      <div class="ticket-subtext">- &#8377;{{ (event?.discount || 0) | number: '1.2-2' }}</div>
+    </div>
+    <div class="ticket-subtext-md d-flex justify-content-between align-items-center">
+      <div>Total Amount</div>
+      <div class="total-val">&#8377;{{ (event?.amount || 0) | number: '1.2-2' }}</div>
+    </div>
+    <button 
+      *ngIf="!fromSide" 
+      type="button" 
+      class="btn-payment" 
+      [disabled]="eventUserForm.invalid || isSubmitting"
+      (click)="paymentProcess()"
+    >
+      <span *ngIf="!isSubmitting">
+        <i class="fa fa-credit-card"></i>
+        Proceed to Payment
+      </span>
+      <span *ngIf="isSubmitting">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Processing...
+      </span>
+    </button>
+    <button 
+      *ngIf="fromSide && event?.isEnded != true && !isRegisteredForEvent" 
+      type="button" 
+      class="btn btn-light form-control mt-3" 
+      (click)="openRegisterModal(longContent)"
+    >
+      Register Now
+    </button>
+  </div>
+</ng-template>
+

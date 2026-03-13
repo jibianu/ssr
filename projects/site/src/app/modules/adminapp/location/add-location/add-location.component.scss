@@ -1,0 +1,21 @@
+// ✅ COMMON ADMIN: Import shared styles
+@import '../../../../shared/admin-common/admin-common.scss';
+
+// Location-specific customizations (if needed)
+.add-location-container {
+  @extend .admin-page-wrapper;
+  
+  .add-location-content {
+    @extend .admin-page-content;
+  }
+  
+  .add-location-card {
+    @extend .admin-card;
+    @extend .admin-card-centered;
+  }
+  
+  .add-location-form {
+    @extend .admin-form;
+    @extend .admin-form-full-width;
+  }
+}

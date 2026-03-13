@@ -1,0 +1,122 @@
+<div class="dashboard analytics-dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__title">Analytics Dashboard</h1>
+    <div class="dashboard__filter">
+      <div class="dashboard__presets">
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last7'" (click)="onPresetChange('last7')">Last 7 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last30'" (click)="onPresetChange('last30')">Last 30 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'thisMonth'" (click)="onPresetChange('thisMonth')">This Month</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'custom'" (click)="setDateRangeFromPreset('custom')">Custom Range</button>
+      </div>
+      <div class="dashboard__custom" *ngIf="dateRangePreset === 'custom'">
+        <input type="date" class="dashboard__date" [(ngModel)]="customFrom" />
+        <span class="dashboard__date-sep">–</span>
+        <input type="date" class="dashboard__date" [(ngModel)]="customTo" />
+        <button type="button" class="dashboard__apply" (click)="applyCustomRange()">Apply</button>
+      </div>
+      <div class="dashboard__course-filter">
+        <label class="dashboard__filter-label">Course</label>
+        <select class="dashboard__select" [(ngModel)]="courseId" (ngModelChange)="onCourseFilterChange()">
+          <option value="">All courses</option>
+          <option *ngFor="let c of courses" [value]="c.courseId">{{ c.courseName }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__cards dashboard__cards--wrap">
+    <div class="dashboard__card" *ngFor="let card of kpiCards">
+      <div class="dashboard__card-inner" *ngIf="loadingOverview">
+        <div class="dashboard__skeleton dashboard__skeleton--value"></div>
+        <div class="dashboard__skeleton dashboard__skeleton--sub"></div>
+      </div>
+      <div class="dashboard__card-inner" *ngIf="!loadingOverview">
+        <span class="dashboard__card-icon" [ngClass]="card.iconClass"><i [class]="card.icon"></i></span>
+        <span class="dashboard__card-value">{{ card.format === 'currency' ? (card.value | number:'1.2-2') : card.value }}</span>
+        <span class="dashboard__card-label">{{ card.label }}</span>
+        <span class="dashboard__card-sub">{{ rangeSubtitle }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__charts">
+    <div class="dashboard__chart-card">
+      <h2 class="dashboard__chart-title">Revenue trend</h2>
+      <div class="dashboard__chart-wrap" *ngIf="loadingOverview">
+        <div class="dashboard__skeleton dashboard__skeleton--chart"></div>
+      </div>
+      <div class="dashboard__chart-wrap dashboard__chart-wrap--canvas" *ngIf="!loadingOverview">
+        <canvas #revenueChartCanvas></canvas>
+        <p class="dashboard__empty" *ngIf="!overview?.dailyRevenueSeries?.length">No revenue data in this range.</p>
+      </div>
+    </div>
+    <div class="dashboard__chart-card">
+      <h2 class="dashboard__chart-title">Orders trend</h2>
+      <div class="dashboard__chart-wrap" *ngIf="loadingOverview">
+        <div class="dashboard__skeleton dashboard__skeleton--chart"></div>
+      </div>
+      <div class="dashboard__chart-wrap dashboard__chart-wrap--canvas" *ngIf="!loadingOverview">
+        <canvas #ordersChartCanvas></canvas>
+        <p class="dashboard__empty" *ngIf="!overview?.dailyOrdersSeries?.length">No order data in this range.</p>
+      </div>
+    </div>
+    <div class="dashboard__chart-card">
+      <h2 class="dashboard__chart-title">Active users (daily)</h2>
+      <div class="dashboard__chart-wrap" *ngIf="loadingOverview">
+        <div class="dashboard__skeleton dashboard__skeleton--chart"></div>
+      </div>
+      <div class="dashboard__chart-wrap dashboard__chart-wrap--canvas" *ngIf="!loadingOverview">
+        <canvas #dauChartCanvas></canvas>
+        <p class="dashboard__empty" *ngIf="!overview?.dailyActiveUsersSeries?.length">No active user data in this range.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard__table-section">
+    <h2 class="dashboard__chart-title">Top selling courses</h2>
+    <div class="dashboard__table-wrap" [class.dashboard__table-wrap--loading]="loadingTopSelling">
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Course</th>
+            <th class="dashboard__th">Revenue</th>
+            <th class="dashboard__th">Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loadingTopSelling"><td colspan="3" class="dashboard__empty-cell"><div class="dashboard__skeleton dashboard__skeleton--cell"></div></td></tr>
+          <tr *ngIf="!loadingTopSelling && !topSelling?.length"><td colspan="3" class="dashboard__empty-cell">No data in this range.</td></tr>
+          <tr *ngFor="let row of topSelling">
+            <td class="dashboard__td">{{ row.courseName }}</td>
+            <td class="dashboard__td">{{ row.revenue | number:'1.2-2' }}</td>
+            <td class="dashboard__td">{{ row.orderCount }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="dashboard__table-section">
+    <h2 class="dashboard__chart-title">Top drop-off lessons</h2>
+    <div class="dashboard__table-wrap" [class.dashboard__table-wrap--loading]="loadingTopDropOff">
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">Course</th>
+            <th class="dashboard__th">Lesson</th>
+            <th class="dashboard__th">Drop-off count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loadingTopDropOff"><td colspan="3" class="dashboard__empty-cell"><div class="dashboard__skeleton dashboard__skeleton--cell"></div></td></tr>
+          <tr *ngIf="!loadingTopDropOff && !topDropOff?.length"><td colspan="3" class="dashboard__empty-cell">No data in this range.</td></tr>
+          <tr *ngFor="let row of topDropOff">
+            <td class="dashboard__td">{{ row.courseName }}</td>
+            <td class="dashboard__td">{{ row.lessonName }}</td>
+            <td class="dashboard__td">{{ row.dropOffCount }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

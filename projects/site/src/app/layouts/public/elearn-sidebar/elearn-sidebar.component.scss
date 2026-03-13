@@ -1,0 +1,151 @@
+.student-layout__sidebar {
+  width: 72px;
+  min-width: 72px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: #fafbfc;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.student-layout__sidebar:hover {
+  width: 240px;
+}
+
+.student-layout__sidebar-inner {
+  width: 240px;
+  min-width: 240px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.student-layout__logo {
+  padding: 20px 14px;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.student-layout__logo-link {
+  display: flex;
+  align-items: center;
+}
+
+/* Full logo (icon + text) same as Elearn topbar: when collapsed scale to fit, when expanded match header size */
+.student-layout__logo-img {
+  width: auto;
+  height: 22px;
+  max-width: 44px;
+  object-fit: contain;
+  object-position: left center;
+  border-radius: 6px;
+  display: block;
+}
+
+.student-layout__sidebar:hover .student-layout__logo-img {
+  height: 32px;
+  max-width: 140px;
+}
+
+.student-layout__nav {
+  margin-top: 12px;
+  flex: 1;
+  padding: 0 10px;
+  overflow-y: auto;
+}
+
+.student-layout__nav > a {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  color: #4b5563;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 12px;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.student-layout__nav > a:hover {
+  color: #1e293b;
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.student-layout__nav > a.active,
+.student-layout__nav > .nav-link.active {
+  color: #1e293b;
+  font-weight: 600;
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.student-layout__nav > a i {
+  font-size: 1.1rem;
+  min-width: 36px;
+  text-align: center;
+  margin-right: 0;
+}
+
+.student-layout__nav-text {
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.student-layout__sidebar:hover .student-layout__nav-text {
+  opacity: 1;
+}
+
+.student-layout__sub-nav {
+  margin: 0 0 12px 0;
+  padding: 0 0 0 8px;
+  border-left: 2px solid rgba(0, 0, 0, 0.06);
+  margin-left: 22px;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__sub-nav {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: none;
+}
+
+.student-layout__sub-link {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px 8px 10px;
+  margin-bottom: 2px;
+  color: #4b5563;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+}
+
+.student-layout__sub-link:hover {
+  color: #1e293b;
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.student-layout__sub-link .student-layout__nav-text {
+  opacity: 0;
+}
+
+.student-layout__sidebar:hover .student-layout__sub-link .student-layout__nav-text {
+  opacity: 1;
+}
+
+@media (max-width: 992px) {
+  .student-layout__sidebar {
+    display: none;
+  }
+}

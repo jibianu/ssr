@@ -1,0 +1,116 @@
+<div class="mobile-layout">
+  <!-- Left sidebar drawer (opens from profile icon in topbar) -->
+  <div class="mobile-layout__drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()" role="button" tabindex="0" aria-label="Close menu"></div>
+  <aside class="mobile-layout__drawer" [class.mobile-layout__drawer--open]="drawerOpen" role="navigation" aria-label="Main menu">
+    <div class="mobile-layout__drawer-inner">
+      <div class="mobile-layout__drawer-header">
+        <div class="mobile-layout__drawer-logo">
+          <img class="mobile-layout__drawer-logo-full" [src]="logoUrl" alt="Oilandgas Club" (error)="onLogoError($event)" />
+        </div>
+        <button type="button" class="mobile-layout__drawer-close" (click)="closeDrawer()" aria-label="Close menu">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <nav class="mobile-layout__drawer-nav">
+        <a routerLink="dashboard" routerLinkActive="active" (click)="closeDrawer()" title="Dashboard">
+          <i class="fa fa-tachometer"></i>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="search" routerLinkActive="active" (click)="closeDrawer()" title="Search">
+          <i class="fa fa-search"></i>
+          <span>Search</span>
+        </a>
+        <a routerLink="courses" [class.active]="isMyCoursesActive()" (click)="closeDrawer()" title="My Courses">
+          <i class="fa fa-book"></i>
+          <span>My Courses</span>
+        </a>
+        <div class="mobile-layout__drawer-sub">
+          <a routerLink="courses" [class.active]="isCourseFilter(1) && isOnCoursesRoute()" (click)="setCourseFilter(1); closeDrawer()" class="mobile-layout__drawer-sub-link" title="In Progress">
+            <i class="fa fa-play"></i>
+            <span>In Progress</span>
+          </a>
+          <a routerLink="courses" [class.active]="isCourseFilter(2) && isOnCoursesRoute()" (click)="setCourseFilter(2); closeDrawer()" class="mobile-layout__drawer-sub-link" title="Completed">
+            <i class="fa fa-check-circle"></i>
+            <span>Completed</span>
+          </a>
+          <a routerLink="courses" [class.active]="isCourseFilter(3) && isOnCoursesRoute()" (click)="setCourseFilter(3); closeDrawer()" class="mobile-layout__drawer-sub-link" title="Wishlisted">
+            <i class="fa fa-heart"></i>
+            <span>Wishlisted</span>
+          </a>
+        </div>
+        <a routerLink="categories" routerLinkActive="active" (click)="closeDrawer()" title="Explore">
+          <i class="fa fa-compass"></i>
+          <span>Explore</span>
+        </a>
+        <a routerLink="events" routerLinkActive="active" (click)="closeDrawer()" title="Events">
+          <i class="fa fa-calendar-check-o"></i>
+          <span>Events</span>
+        </a>
+        <a routerLink="profile" routerLinkActive="active" (click)="closeDrawer()" title="Profile">
+          <i class="fa fa-user-circle"></i>
+          <span>Profile</span>
+        </a>
+        <a routerLink="certificate" routerLinkActive="active" (click)="closeDrawer()" title="Certificates">
+          <i class="fa fa-certificate"></i>
+          <span>Certificates</span>
+        </a>
+        <a routerLink="purchase-history" routerLinkActive="active" (click)="closeDrawer()" title="Purchase History">
+          <i class="fa fa-shopping-cart"></i>
+          <span>Purchase History</span>
+        </a>
+        <a routerLink="notifications" routerLinkActive="active" (click)="closeDrawer()" title="Notifications">
+          <i class="fa fa-bell"></i>
+          <span>Notifications</span>
+        </a>
+        <button type="button" class="mobile-layout__drawer-logout" (click)="logout(); closeDrawer()" title="Logout">
+          <i class="fa fa-sign-out"></i>
+          <span>Logout</span>
+        </button>
+      </nav>
+      <div class="mobile-layout__drawer-user">
+        <a routerLink="profile" routerLinkActive="active" (click)="closeDrawer()" class="mobile-layout__drawer-user-link" title="Profile">
+          <div class="mobile-layout__drawer-avatar">
+            <img *ngIf="profileImageUrl && !sidebarAvatarError" [src]="profileImageUrl" alt="Profile" (error)="sidebarAvatarError = true" loading="eager" />
+            <span *ngIf="!profileImageUrl || sidebarAvatarError" class="mobile-layout__drawer-avatar-initial">{{ userInitial }}</span>
+          </div>
+          <span class="mobile-layout__drawer-user-name">Profile</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <header class="mobile-layout__topbar" *ngIf="!(playerState.focusMode$ | async)">
+    <app-common-topbar></app-common-topbar>
+  </header>
+
+  <main class="mobile-layout__content" [class.mobile-layout__content--player]="playerState.focusMode$ | async">
+    <ng-content></ng-content>
+  </main>
+
+  <nav class="mobile-layout__bottom-nav" aria-label="Mobile navigation" *ngIf="!(playerState.focusMode$ | async)">
+    <a routerLink="dashboard" routerLinkActive="active" class="mobile-layout__nav-link" title="Home">
+      <i class="fa fa-home mobile-layout__nav-icon"></i>
+      <span class="mobile-layout__nav-label">Home</span>
+    </a>
+    <a routerLink="search" routerLinkActive="active" class="mobile-layout__nav-link" title="Search">
+      <i class="fa fa-search mobile-layout__nav-icon"></i>
+      <span class="mobile-layout__nav-label">Search</span>
+    </a>
+    <a routerLink="courses" [class.active]="isMyCoursesActive()" class="mobile-layout__nav-link" title="My Courses">
+      <i class="fa fa-book mobile-layout__nav-icon"></i>
+      <span class="mobile-layout__nav-label">My Courses</span>
+    </a>
+    <a routerLink="categories" routerLinkActive="active" class="mobile-layout__nav-link" title="Explore">
+      <i class="fa fa-compass mobile-layout__nav-icon"></i>
+      <span class="mobile-layout__nav-label">Explore</span>
+    </a>
+    <a routerLink="events" routerLinkActive="active" class="mobile-layout__nav-link" title="Events">
+      <i class="fa fa-calendar-check-o mobile-layout__nav-icon"></i>
+      <span class="mobile-layout__nav-label">Events</span>
+    </a>
+    <a routerLink="profile" routerLinkActive="active" class="mobile-layout__nav-link" title="Profile">
+      <i class="fa fa-user-circle mobile-layout__nav-icon"></i>
+      <span class="mobile-layout__nav-label">Profile</span>
+    </a>
+  </nav>
+</div>

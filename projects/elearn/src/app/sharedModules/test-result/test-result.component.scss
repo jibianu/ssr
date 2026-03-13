@@ -1,0 +1,96 @@
+.card-body{
+    padding:0px!important;
+}
+// .courseName img{
+//     height: 20px;
+//     width: 20px;
+// }
+.customGradient{
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+}
+.customGradient h3{
+  color: white;
+}
+.pointer{
+  cursor: pointer;
+}
+.cardheader{
+    padding: 4px 0px;
+    background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+    border:none;
+    box-shadow: 1px 1px 11px rgba(33,33,33,.2);  
+    align-items: center;
+    width: 100%;
+  }
+
+  .courseHeading{
+    margin:0 auto;
+  }
+
+
+  .cardheader h2{
+    font-size: 2.5rem !important;
+    text-align: center;
+    color:white!important;
+    
+  }
+
+  .cardheader h3{
+    font-size: 1rem!important;
+  }
+ 
+.cardheader img{
+   
+    // display:inline;
+    color:white;
+    z-index: 1;
+    height: 30px;
+    width: 30px;
+    margin-left: 24px;
+    cursor: pointer;
+}
+// .card-body{
+//   height: 500px!important;
+// }
+.myAttempts{
+  height: calc(100vh - 20px);
+  border-collapse: collapse;
+}
+
+.myAttempts thead, tbody tr, .result thead, tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+.myAttempts tbody{
+display: block;
+height: calc(100vh - 50vh);
+overflow: auto;
+}
+// .customHeight{
+//   overflow:auto;
+// }
+.result{
+  height: 5vh;
+}
+td, th{
+  text-align: center;
+}
+.result th{
+  // line-break: unset!important;
+  white-space: nowrap;
+}
+.table{
+  margin-bottom: 0px!important;
+}
+.result tbody{
+  display: block;
+
+}
+.resultCard{
+  width: 100%;
+  margin:0 auto;
+}
+.container{
+  width:100%
+}

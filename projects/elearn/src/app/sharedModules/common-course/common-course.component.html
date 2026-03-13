@@ -1,0 +1,243 @@
+<!-- Scrollable area so course list and content below are viewable -->
+<div class="course-page-scroll">
+<!-- Empty state: student with no courses – same design for In Progress, Completed, Wishlisted -->
+<div class="course-empty-state" *ngIf="showEmptyState">
+  <div class="course-empty-state__wrap">
+    <div class="course-empty-state__content" [ngSwitch]="pageType">
+      <!-- In Progress (no enrolled courses) -->
+      <ng-container *ngSwitchCase="1">
+        <span class="course-empty-state__badge">Start your journey</span>
+        <h1 class="course-empty-state__headline">Update your skills without limits</h1>
+        <p class="course-empty-state__message">Till now you didn't enroll in any course. Explore our catalog and start learning at your own pace.</p>
+        <a [routerLink]="['/app/student/categories']" class="course-empty-state__btn">
+          <i class="fa fa-compass" aria-hidden="true"></i>
+          Explore courses
+        </a>
+        <div class="course-empty-state__stats">
+          <div class="course-empty-state__stat">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            <span><strong>100+</strong> courses</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+            <span><strong>Learn</strong> at your pace</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-certificate" aria-hidden="true"></i>
+            <span><strong>Certificates</strong> on completion</span>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Completed (no completed courses) -->
+      <ng-container *ngSwitchCase="2">
+        <span class="course-empty-state__badge">Keep learning</span>
+        <h1 class="course-empty-state__headline">No completed courses yet</h1>
+        <p class="course-empty-state__message">Complete courses to earn certificates and track your progress. Start or continue a course to see it here.</p>
+        <a [routerLink]="['/app/student/categories']" class="course-empty-state__btn">
+          <i class="fa fa-compass" aria-hidden="true"></i>
+          Explore courses
+        </a>
+        <div class="course-empty-state__stats">
+          <div class="course-empty-state__stat">
+            <i class="fa fa-certificate" aria-hidden="true"></i>
+            <span><strong>Certificates</strong> on completion</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-check-circle" aria-hidden="true"></i>
+            <span><strong>Track</strong> your progress</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            <span><strong>100+</strong> courses</span>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Wishlisted (no wishlisted courses) -->
+      <ng-container *ngSwitchCase="3">
+        <span class="course-empty-state__badge">Save for later</span>
+        <h1 class="course-empty-state__headline">Your wishlist is empty</h1>
+        <p class="course-empty-state__message">Add courses you're interested in to your wishlist and find them here when you're ready to enroll.</p>
+        <a [routerLink]="['/app/student/categories']" class="course-empty-state__btn">
+          <i class="fa fa-compass" aria-hidden="true"></i>
+          Explore courses
+        </a>
+        <div class="course-empty-state__stats">
+          <div class="course-empty-state__stat">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            <span><strong>100+</strong> courses</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-heart" aria-hidden="true"></i>
+            <span><strong>Save</strong> for later</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+            <span><strong>Learn</strong> at your pace</span>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Fallback (e.g. initial load) – same as In Progress -->
+      <ng-container *ngSwitchDefault>
+        <span class="course-empty-state__badge">Start your journey</span>
+        <h1 class="course-empty-state__headline">Update your skills without limits</h1>
+        <p class="course-empty-state__message">Till now you didn't enroll in any course. Explore our catalog and start learning at your own pace.</p>
+        <a [routerLink]="['/app/student/categories']" class="course-empty-state__btn">
+          <i class="fa fa-compass" aria-hidden="true"></i>
+          Explore courses
+        </a>
+        <div class="course-empty-state__stats">
+          <div class="course-empty-state__stat">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            <span><strong>100+</strong> courses</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+            <span><strong>Learn</strong> at your pace</span>
+          </div>
+          <div class="course-empty-state__stat">
+            <i class="fa fa-certificate" aria-hidden="true"></i>
+            <span><strong>Certificates</strong> on completion</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="course-empty-state__visual">
+      <div class="course-empty-state__blob" aria-hidden="true"></div>
+      <div class="course-empty-state__frame">
+        <img
+          *ngIf="pageType === 1 && !heroImageError"
+          [src]="emptyStateHeroImage"
+          alt="Explore courses"
+          class="course-empty-state__img"
+          (error)="heroImageError = true"
+        />
+        <img
+          *ngIf="pageType === 2 && !completedImageError"
+          [src]="emptyStateCompletedImage"
+          alt="Completed courses – keep learning"
+          class="course-empty-state__img"
+          (error)="completedImageError = true"
+        />
+        <img
+          *ngIf="pageType === 3 && !wishlistImageError"
+          [src]="emptyStateWishlistImage"
+          alt="Your wishlist – explore courses"
+          class="course-empty-state__img"
+          (error)="wishlistImageError = true"
+        />
+        <div *ngIf="(pageType === 1 && heroImageError) || (pageType === 2 && completedImageError) || (pageType === 3 && wishlistImageError)" class="course-empty-state__placeholder" aria-hidden="true">
+          <i class="fa fa-user-graduate" aria-hidden="true"></i>
+          <i class="fa fa-book" aria-hidden="true"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="course-container" *ngIf="!showEmptyState">
+  <!-- Trainer Add Course Button (only when viewing created courses, not My Courses enrolled) -->
+  <div class="trainer-add-btn" *ngIf="isTrainer && !isTrainerEnrolledView">
+    <a class="btn btn-primary" [routerLink]="['/app/trainer/course/add']">
+      <i class="fa fa-plus"></i> Add Course
+    </a>
+  </div>
+
+  <!-- Welcome banner + stats (student only) -->
+  <section class="lms-welcome" *ngIf="redirectUrl === 'student'">
+    <div class="lms-welcome__left">
+      <h1 class="lms-welcome__title">Welcome back, {{ userDisplayName }} 👋</h1>
+      <p class="lms-welcome__subtitle">Continue your learning journey today</p>
+    </div>
+    <div class="lms-welcome__stats">
+      <div class="lms-stat">
+        <i class="fa fa-book lms-stat__icon" aria-hidden="true"></i>
+        <span class="lms-stat__value">{{ statsEnrolled }}</span>
+        <span class="lms-stat__label">Enrolled</span>
+      </div>
+      <div class="lms-stat">
+        <i class="fa fa-play lms-stat__icon" aria-hidden="true"></i>
+        <span class="lms-stat__value">{{ statsInProgress }}</span>
+        <span class="lms-stat__label">In Progress</span>
+      </div>
+      <div class="lms-stat">
+        <i class="fa fa-check-circle lms-stat__icon" aria-hidden="true"></i>
+        <span class="lms-stat__value">{{ statsCompleted }}</span>
+        <span class="lms-stat__label">Completed</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Course Grid -->
+  <div class="course-grid">
+    <!-- Regular Courses (student/trainer enrolled) -->
+    <ng-container *ngIf="!isWishList">
+      <div class="course-card lms-card" *ngFor="let item of gadata">
+        <div class="lms-card__banner" [class.lms-card__banner--api]="isApiCategory(item)" [class.lms-card__banner--ndt]="!isApiCategory(item)">
+          <span class="lms-card__badge">{{ item?.category?.name || 'Course' }}</span>
+          <div class="lms-card__ring" *ngIf="item.testProgressResponse && !isTrainer">
+            <svg class="lms-progress-ring" viewBox="0 0 36 36" width="44" height="44">
+              <circle class="lms-progress-ring__bg" cx="18" cy="18" r="16" fill="none" stroke-width="3"/>
+              <circle class="lms-progress-ring__fill" cx="18" cy="18" r="16" fill="none" stroke-width="3" stroke-dasharray="100.53" [attr.stroke-dashoffset]="getProgressRingOffset(item)" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+            </svg>
+            <span class="lms-card__ring-value">{{ getProgressPercent(item) }}%</span>
+          </div>
+          <div class="trainer-actions lms-card__trainer-actions" *ngIf="isTrainer && !isTrainerEnrolledView">
+            <button class="btn-edit" [routerLink]="['/app/trainer/course/edit',item.id]">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn-delete" (click)="deleteCourse(item.id)">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        <div class="lms-card__body" routerLink="/app/{{redirectUrl}}/details/curriculum-list/{{item.id}}" (click)="setCourse(item)">
+          <h3 class="lms-card__title">{{ item.title | slice:0:120 }}{{ item.title.length > 120 ? '...' : '' }}</h3>
+          <p class="lms-card__meta" *ngIf="item.testProgressResponse">
+            {{ item.testProgressResponse.totalTask }} lessons
+          </p>
+          <div class="course-progress lms-progress" *ngIf="item.testProgressResponse && !isTrainer">
+            <div class="progress-container lms-progress__bar">
+              <div class="progress-bar lms-progress__fill" [style.width.%]="getProgressPercent(item)"></div>
+            </div>
+            <span class="lms-progress__text">{{ item.testProgressResponse.completedTask }} of {{ item.testProgressResponse.totalTask }} lessons completed</span>
+            <button type="button" class="lms-cta" (click)="fnResume(item); $event.preventDefault(); $event.stopPropagation();" *ngIf="item.testProgressResponse.totalTask !== item.testProgressResponse.completedTask">
+              Continue Learning →
+            </button>
+            <button type="button" class="lms-cta lms-cta--completed" *ngIf="item.testProgressResponse.totalTask === item.testProgressResponse.completedTask">
+              Completed
+            </button>
+          </div>
+          <div class="lms-progress" *ngIf="(!item.testProgressResponse || isTrainer) && !isWishList">
+            <button type="button" class="lms-cta" (click)="fnResume(item); $event.preventDefault(); $event.stopPropagation();">Continue Learning →</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Wishlisted Courses -->
+    <ng-container *ngIf="isWishList">
+      <div class="course-card lms-card" *ngFor="let item of wishlistedgadata">
+        <div class="lms-card__banner" [class.lms-card__banner--api]="isApiCategory(item)" [class.lms-card__banner--ndt]="!isApiCategory(item)">
+          <span class="lms-card__badge">{{ item?.course?.category?.name || 'Course' }}</span>
+        </div>
+        <div class="lms-card__body" routerLink="/app/{{redirectUrl}}/category-courses-description/{{item?.course?.id}}/{{item?.id}}">
+          <h3 class="lms-card__title">{{ item.course?.title | slice:0:120 }}{{ item.course?.title.length > 120 ? '...' : '' }}</h3>
+          <p class="lms-card__meta">Wishlisted</p>
+          <button type="button" class="lms-cta">View course →</button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="!isWishList">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <li class="page-item" *ngFor="let count of [].constructor(totalPageCount);let i = index">
+          <button class="page-link" (click)="fnFetchDataByPagination(i+1)">{{i+1}}</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+</div>

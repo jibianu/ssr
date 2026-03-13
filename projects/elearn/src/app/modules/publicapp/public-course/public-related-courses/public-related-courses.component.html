@@ -1,0 +1,26 @@
+<div class="table-responsive border-0 overflow-y-hidden">
+    <table class="table mb-0 text-nowrap">
+        <tbody>
+            <tr *ngFor="let item of courses">
+                <td class="border-top border-bottom">
+                    <div class="d-lg-flex">
+                        <div>
+                            <a [href]="item?.canonicalUrl">
+                                <img [src]="item?.titleImageUrl" (error)="onImgError($event)" alt=""
+                                    class="rounded img-4by3-lg">
+                            </a>
+                        </div>
+                        <div class="ml-lg-3 mt-2 mt-lg-0">
+                            <h4 class="mb-1 h5 truncate">
+                                <a [href]="item?.canonicalUrl" class="text-inherit">
+                                    {{item?.title}}
+                                </a>
+                            </h4>
+                        </div>
+                    </div>
+                </td>
+                <td class="border-top border-bottom">{{item?.amount | currency:"INR":"symbol"}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

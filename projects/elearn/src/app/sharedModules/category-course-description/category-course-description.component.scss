@@ -1,0 +1,749 @@
+/* Course detail – modern learning platform (Udemy/Coursera style)
+   Design: #F5F7FA bg, #FFFFFF card, #FF7A00 primary, #1F2937 text, #E5E7EB border
+*/
+@use 'sass:color';
+
+:host {
+  display: block;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #F5F7FA;
+}
+
+/* —— Design tokens —— */
+$cd-bg: #F5F7FA;
+$cd-card: #FFFFFF;
+$cd-primary: #FF7A00;
+$cd-primary-hover: #E66D00;
+$cd-text: #1F2937;
+$cd-text-muted: #6B7280;
+$cd-border: #E5E7EB;
+$cd-radius: 14px;
+$cd-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+$cd-btn-height: 52px;
+$cd-btn-radius: 12px;
+
+/* —— Page —— */
+.cd-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 6rem;
+  font-family: var(--font-family-sans-serif);
+  color: $cd-text;
+}
+
+/* —— Hero (two-column grid) —— */
+.cd-hero {
+  background: $cd-card;
+  border-radius: $cd-radius;
+  box-shadow: $cd-shadow;
+  padding: 2rem 2rem 2rem 2.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid $cd-border;
+}
+
+.cd-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.cd-hero__info {
+  min-width: 0;
+}
+
+.cd-badge {
+  display: inline-block;
+  background: $cd-primary;
+  color: #fff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.cd-hero__title {
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: $cd-text;
+  margin: 0 0 0.5rem;
+}
+
+.cd-hero__subtitle {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: $cd-text-muted;
+  margin: 0 0 1rem;
+}
+
+.cd-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: $cd-text-muted;
+}
+
+.cd-meta__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  i { color: #F59E0B; }
+}
+
+.cd-meta__dot {
+  color: $cd-border;
+  user-select: none;
+}
+
+.cd-meta__muted {
+  color: $cd-text-muted;
+}
+
+.cd-hero__tags {
+  margin-top: 0.75rem;
+}
+
+.cd-tag {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+/* —— Sticky purchase card (desktop) —— */
+.cd-purchase-card {
+  position: sticky;
+  top: 90px;
+  background: $cd-card;
+  border: 1px solid $cd-border;
+  border-radius: $cd-radius;
+  box-shadow: $cd-shadow;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cd-purchase-card__price {
+  text-align: center;
+  padding-bottom: 0.25rem;
+}
+
+.cd-price__old {
+  text-decoration: line-through;
+  color: $cd-text-muted;
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.cd-price__current {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: $cd-primary;
+  letter-spacing: -0.02em;
+}
+
+.cd-currency {
+  font-weight: 700;
+  margin-right: 0.15em;
+}
+
+/* —— Buttons —— */
+.cd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: $cd-btn-height;
+  padding: 0 1.25rem;
+  border-radius: $cd-btn-radius;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.cd-btn--primary {
+  background: $cd-primary;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 122, 0, 0.35);
+}
+.cd-btn--primary:hover {
+  background: $cd-primary-hover;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 122, 0, 0.4);
+}
+
+.cd-btn--success {
+  background: #10B981;
+  color: #fff;
+}
+.cd-btn--success:hover {
+  background: #0D9668;
+  transform: translateY(-1px);
+}
+
+.cd-btn--ghost {
+  background: #fff;
+  color: $cd-primary;
+  border: 1.5px solid $cd-border;
+}
+.cd-btn--ghost:hover {
+  background: #FFF7ED;
+  border-color: $cd-primary;
+}
+
+.cd-wishlist--active {
+  background: #FEE2E2 !important;
+  color: #DC2626 !important;
+  border-color: #FECACA !important;
+}
+.cd-wishlist--active:hover {
+  background: #FECACA !important;
+  border-color: #DC2626 !important;
+}
+
+/* —— This course includes —— */
+.cd-includes__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $cd-text;
+  margin: 0 0 0.5rem;
+}
+
+.cd-includes__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  color: $cd-text-muted;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  li i {
+    color: #10B981;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+}
+
+/* —— Content sections —— */
+.cd-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cd-section {
+  background: $cd-card;
+  border-radius: $cd-radius;
+  box-shadow: $cd-shadow;
+  padding: 1.75rem 2rem;
+  border: 1px solid $cd-border;
+}
+
+.cd-section__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: $cd-text;
+  margin: 0 0 0.5rem;
+}
+
+.cd-section__subtitle {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: $cd-text-muted;
+  margin: 0 0 1.5rem;
+}
+
+/* —— What you will learn —— */
+.cd-learn__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.6rem 1.5rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    color: $cd-text;
+  }
+  li i {
+    color: #10B981;
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+}
+
+/* —— Accordion —— */
+.cd-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cd-accordion__item {
+  border: 1px solid $cd-border;
+  border-radius: 10px;
+  overflow: hidden;
+  background: $cd-card;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.cd-accordion__item:hover {
+  border-color: color.adjust($cd-border, $lightness: -6%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.cd-accordion__item--open {
+  border-color: $cd-primary;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.12);
+}
+
+.cd-accordion__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+.cd-accordion__head:hover {
+  background: #FAFAFA;
+}
+
+.cd-accordion__num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #FFF7ED;
+  color: $cd-primary;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-accordion__head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cd-accordion__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $cd-text;
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+
+.cd-accordion__meta {
+  font-size: 0.85rem;
+  color: $cd-text-muted;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.cd-accordion__chevron {
+  flex-shrink: 0;
+  color: $cd-text-muted;
+  font-size: 0.85rem;
+  transition: transform 0.25s ease;
+}
+.cd-accordion__item--open .cd-accordion__chevron {
+  transform: rotate(180deg);
+}
+
+/* Accordion body: max-height transition for smooth open —— */
+.cd-accordion__body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.35s ease-out;
+}
+.cd-accordion__item--open .cd-accordion__body {
+  max-height: 2000px; /* enough for typical module content; smooth open animation */
+  transition: max-height 0.4s ease-in;
+}
+
+.cd-accordion__inner {
+  padding: 0 1.25rem 1.25rem;
+  padding-left: calc(36px + 1rem + 1.25rem);
+}
+
+@media (max-width: 768px) {
+  .cd-accordion__inner {
+    padding-left: 1.25rem;
+  }
+}
+
+.cd-lesson-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: $cd-text-muted;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #F3F4F6;
+  }
+  li:last-child { border-bottom: none; }
+}
+
+.cd-lesson-list__icon {
+  color: $cd-primary;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.cd-accordion__empty {
+  font-size: 0.9rem;
+  color: $cd-text-muted;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+/* —— Sample certificate (same design as backend certificate view/download) —— */
+.cd-certificate-sample {
+  margin-bottom: 2rem;
+}
+
+.cd-cert {
+  position: relative;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 12px;
+  border: 2px solid $cd-primary;
+  background: #fff;
+  box-shadow: 0 10px 40px rgba(255, 122, 0, 0.12);
+  overflow: hidden;
+}
+
+.cd-cert::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 24px, rgba(255, 122, 0, 0.03) 24px, rgba(255, 122, 0, 0.03) 25px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Diagonal "SAMPLE" watermark crossing the certificate */
+.cd-cert__watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-35deg);
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: rgba($cd-primary, 0.25);
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.cd-cert__accent {
+  height: 6px;
+  background: linear-gradient(90deg, $cd-primary 0%, #ff9800 50%, $cd-primary 100%);
+  position: relative;
+  z-index: 2;
+}
+
+.cd-cert__inner {
+  position: relative;
+  z-index: 2;
+  padding: 1.5rem 2rem 2rem;
+}
+
+.cd-cert__logo {
+  width: 120px;
+  height: auto;
+  max-height: 44px;
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+  display: block;
+  object-fit: contain;
+}
+
+.cd-cert__title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 1rem;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid $cd-primary;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.cd-cert__student {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0.5rem 0 0.2rem;
+}
+
+.cd-cert__intro {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 0.2rem;
+}
+
+.cd-cert__course {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $cd-primary;
+  margin: 0.35rem 0 0.5rem;
+}
+
+.cd-cert__desc {
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.55;
+  margin: 0.75rem 0 1.25rem;
+  max-width: 95%;
+}
+
+.cd-cert__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid $cd-border;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cd-cert__meta {
+  font-size: 0.8rem;
+  color: #666;
+  flex: 0 0 auto;
+}
+
+.cd-cert__meta p {
+  margin: 0 0 0.2rem;
+}
+
+.cd-cert__meta strong {
+  color: #333;
+}
+
+.cd-cert__seal-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.cd-cert__seal {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  min-height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-cert__seal-svg {
+  width: 100%;
+  height: 100%;
+  min-width: 48px;
+  min-height: 48px;
+  display: block;
+}
+
+.cd-cert__sig-block {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.cd-cert__sig-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0.1rem 0 0;
+}
+
+.cd-cert__sig-title {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.cd-cert__sig-org {
+  font-size: 0.7rem;
+  color: #666;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* —— Mobile bottom bar —— */
+.cd-mobile-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: $cd-card;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid $cd-border;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cd-mobile-bar__price {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cd-mobile-bar__price .cd-price__current {
+  font-size: 1.25rem;
+}
+
+.cd-mobile-bar__btn {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 1rem;
+}
+
+/* —— Responsive —— */
+@media (max-width: 1024px) {
+  .cd-hero__grid {
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+  }
+  .cd-purchase-card {
+    top: 80px;
+  }
+}
+
+@media (max-width: 900px) {
+  .cd-hero__grid {
+    grid-template-columns: 1fr;
+  }
+  .cd-purchase-card {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .cd-page {
+    padding: 0.75rem 1rem 5.5rem;
+  }
+
+  .cd-hero {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .cd-hero__title {
+    font-size: 1.35rem;
+  }
+
+  .cd-hero__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .cd-purchase-card {
+    display: none;
+  }
+
+  .cd-mobile-bar {
+    display: flex;
+  }
+
+  .cd-section {
+    padding: 1.25rem 1.25rem;
+  }
+
+  .cd-section__title {
+    font-size: 1.2rem;
+  }
+
+  .cd-learn__list {
+    grid-template-columns: 1fr;
+  }
+
+  .cd-accordion__head {
+    padding: 0.9rem 1rem;
+  }
+
+  .cd-accordion__num {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .cd-accordion__title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .cd-page {
+    padding-bottom: 5rem;
+  }
+  .cd-hero__title {
+    font-size: 1.25rem;
+  }
+  .cd-mobile-bar__btn {
+    font-size: 0.9rem;
+    padding: 0 0.75rem;
+  }
+}

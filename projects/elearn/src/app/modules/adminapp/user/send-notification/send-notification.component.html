@@ -1,0 +1,78 @@
+<div class="send-notification">
+  <div class="send-notification__toolbar" *ngIf="!isModal">
+    <button type="button" class="send-notification__menu-btn" (click)="openMenu()" aria-label="Open menu">
+      <i class="fa fa-bars"></i> Open menu
+    </button>
+  </div>
+  <div class="send-notification__modal-header" *ngIf="isModal">
+    <h2 class="send-notification__modal-title">Send Push Notification</h2>
+    <button type="button" class="send-notification__modal-close" (click)="closeModal()" aria-label="Close">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+  <h1 class="send-notification__title" *ngIf="!isModal">Send Push Notification</h1>
+  <p class="send-notification__subtitle">Send offers, events, or system messages to students. They will see them in the notification bell and on the Notifications page.</p>
+
+  <form [formGroup]="form" (ngSubmit)="send()" class="send-notification__form">
+    <div class="send-notification__field">
+      <label for="title">Title <span class="required">*</span></label>
+      <input id="title" type="text" formControlName="title" class="send-notification__input" placeholder="e.g. Special Offer" maxlength="200" />
+      <span class="send-notification__error" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">Title is required.</span>
+    </div>
+
+    <div class="send-notification__field">
+      <label for="message">Message <span class="required">*</span></label>
+      <textarea id="message" formControlName="message" class="send-notification__textarea" rows="4" placeholder="e.g. Get 20% off on all API courses this week."></textarea>
+      <span class="send-notification__error" *ngIf="form.get('message')?.invalid && form.get('message')?.touched">Message is required.</span>
+    </div>
+
+    <div class="send-notification__field">
+      <label for="type">Type</label>
+      <select id="type" formControlName="type" class="send-notification__select">
+        <option value="offer">Offer</option>
+        <option value="event">Event</option>
+        <option value="system">System</option>
+      </select>
+    </div>
+
+    <div class="send-notification__field">
+      <label for="linkUrl">Link URL (optional)</label>
+      <input id="linkUrl" type="text" formControlName="linkUrl" class="send-notification__input" placeholder="e.g. /app/student/categories" />
+    </div>
+
+    <div class="send-notification__field">
+      <label>Send to</label>
+      <div class="send-notification__radio-group">
+        <label class="send-notification__radio">
+          <input type="radio" formControlName="targetAudience" value="all_students" />
+          All students
+        </label>
+        <label class="send-notification__radio">
+          <input type="radio" formControlName="targetAudience" value="by_category" />
+          By category (students enrolled in courses in that category)
+        </label>
+        <label class="send-notification__radio">
+          <input type="radio" formControlName="targetAudience" value="selected" disabled />
+          Selected students (coming soon)
+        </label>
+      </div>
+      <div class="send-notification__field send-notification__field--indent" *ngIf="isByCategory">
+        <label for="categoryId">Category</label>
+        <select id="categoryId" formControlName="categoryId" class="send-notification__select">
+          <option value="">Select category</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+        <span class="send-notification__error" *ngIf="isByCategory && form.get('categoryId')?.invalid && form.get('categoryId')?.touched">Select a category.</span>
+      </div>
+    </div>
+
+    <div class="send-notification__actions">
+      <button type="submit" class="send-notification__btn send-notification__btn--primary" [disabled]="sending">
+        {{ sending ? 'Sending…' : 'Send notification' }}
+      </button>
+    </div>
+
+    <p class="send-notification__success" *ngIf="message">{{ message }}</p>
+    <p class="send-notification__error-msg" *ngIf="error">{{ error }}</p>
+  </form>
+</div>

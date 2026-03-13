@@ -1,0 +1,479 @@
+$course-color-surface: #ffffff;
+$course-color-surface-muted: rgba(248, 250, 252, 0.95);
+$course-color-overlay: rgba(15, 23, 42, 0.55);
+
+$course-color-text-primary: #0f172a;
+$course-color-text-secondary: #475569;
+$course-color-text-muted: #64748b;
+$course-color-heading: #2c3e50;
+$course-color-heading-accent: #1e3a8a;
+
+$course-color-accent-blue: #1d4ed8;
+$course-color-accent-blue-soft: rgba(59, 130, 246, 0.12);
+$course-color-accent-blue-border: rgba(59, 130, 246, 0.25);
+
+$course-color-accent-teal: #007f86;
+$course-color-accent-teal-hover: #00666b;
+$course-color-accent-teal-weak: rgba(0, 127, 134, 0.12);
+
+$course-color-accent-gold: #fbbc04;
+$course-color-accent-gold-text: #212121;
+
+$course-color-accent-red: #bd2300;
+$course-color-accent-red-border: #bd2300;
+$course-color-accent-orange: #f59e0b;
+$course-color-danger: #dc2626;
+
+$course-color-muted-border: rgba(226, 232, 240, 0.65);
+$course-color-card-border: rgba(15, 23, 42, 0.08);
+$course-color-pagination-border: rgba(15, 118, 128, 0.2);
+
+$course-color-price: #27ae60;
+
+$course-max-width: 1200px;
+
+$course-radius-sm: 12px;
+$course-radius-md: 18px;
+$course-radius-lg: clamp(22px, 4vw, 28px);
+$course-radius-pill: 999px;
+$course-radius-cta: 14px;
+
+$course-shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+$course-shadow-card: 0 12px 28px rgba(15, 23, 42, 0.08);
+$course-shadow-card-hover-blue: 0 20px 42px rgba(30, 64, 175, 0.22);
+$course-shadow-card-hover-teal: 0 20px 42px rgba(0, 127, 134, 0.22);
+$course-shadow-card-hover-teal-strong: 0 18px 36px rgba(0, 102, 107, 0.32);
+$course-shadow-card-hover-category: 0 22px 44px rgba(37, 99, 235, 0.2);
+$course-shadow-badge: 0 10px 20px rgba(251, 188, 4, 0.35);
+$course-shadow-pagination: 0 16px 30px rgba(15, 118, 128, 0.12);
+$course-shadow-pagination-btn: 0 12px 22px rgba(0, 127, 134, 0.25);
+
+$course-transition-fast: 150ms;
+$course-transition-medium: 200ms;
+$course-transition-slow: 300ms;
+
+@mixin course-card-shell(
+  $border-radius: $course-radius-md,
+  $border-color: $course-color-card-border,
+  $shadow: $course-shadow-card,
+  $hover-border-color: null,
+  $hover-shadow: null,
+  $hover-translate: -4px,
+  $height: null,
+  $min-height: null,
+  $width: null,
+  $transition: $course-transition-medium
+) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: $border-radius;
+  background: $course-color-surface;
+  border: 1px solid $border-color;
+  box-shadow: $shadow;
+  transition: transform $transition ease, box-shadow $transition ease, border-color $transition ease;
+  overflow: hidden;
+
+  @if $height != null {
+    height: $height;
+  }
+
+  @if $min-height != null {
+    min-height: $min-height;
+  }
+
+  @if $width != null {
+    width: $width;
+  }
+
+  &:hover {
+    @if $hover-translate != null {
+      transform: translateY($hover-translate);
+    }
+
+    @if $hover-border-color != null {
+      border-color: $hover-border-color;
+    }
+
+    @if $hover-shadow != null {
+      box-shadow: $hover-shadow;
+    }
+  }
+}
+
+@mixin course-card-media($hover-scale: 1.05) {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 220ms ease;
+  }
+
+  &:hover img {
+    transform: scale($hover-scale);
+  }
+}
+
+@mixin course-card-badge(
+  $background: $course-color-accent-gold,
+  $color: $course-color-accent-gold-text,
+  $shadow: $course-shadow-badge,
+  $font-size: 0.74rem,
+  $padding: 0.32rem 0.9rem,
+  $letter-spacing: 0.08em
+) {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  background: $background;
+  color: $color;
+  font-size: $font-size;
+  font-weight: 700;
+  padding: $padding;
+  border-radius: $course-radius-pill;
+  letter-spacing: $letter-spacing;
+  text-transform: uppercase;
+  box-shadow: $shadow;
+}
+
+@mixin course-card-body($padding: clamp(1.1rem, 3vw, 1.35rem), $gap: 0.75rem) {
+  flex: 1;
+  display: grid;
+  gap: $gap;
+  padding: $padding;
+}
+
+@mixin course-card-title(
+  $font-size: 1.15rem,
+  $color: $course-color-text-primary,
+  $hover-color: $course-color-accent-blue,
+  $line-clamp: 3
+) {
+  margin: 0;
+  font-size: $font-size;
+  color: $color;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: $line-clamp;
+  line-clamp: $line-clamp;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: $hover-color;
+    }
+  }
+}
+
+@mixin course-bullet-list(
+  $bullet-color: $course-color-accent-blue,
+  $gap: 0.4rem,
+  $font-size: 0.92rem,
+  $line-height: 1.5,
+  $min-height: null
+) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: $gap;
+  color: $course-color-text-secondary;
+  font-size: $font-size;
+
+  @if $min-height != null {
+    min-height: $min-height;
+  }
+
+  li {
+    display: inline-flex;
+    line-height: $line-height;
+  }
+
+  li::before {
+    content: '•';
+    color: $bullet-color;
+    font-weight: 700;
+    display: inline-block;
+    margin-right: 0.45rem;
+  }
+}
+
+@mixin course-stat-list(
+  $color: $course-color-text-secondary,
+  $icon-color: $course-color-accent-orange,
+  $gap: 0.9rem,
+  $font-size: 0.84rem
+) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap;
+  color: $color;
+  font-size: $font-size;
+  font-weight: 600;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  i {
+    color: $icon-color;
+  }
+}
+
+@mixin course-card-footer(
+  $padding: clamp(0.95rem, 2.5vw, 1.2rem),
+  $justify: space-between,
+  $align: center,
+  $gap: 1rem,
+  $background: $course-color-surface-muted,
+  $border-color: $course-color-muted-border
+) {
+  display: flex;
+  justify-content: $justify;
+  align-items: $align;
+  gap: $gap;
+  padding: $padding;
+  border-top: 1px solid $border-color;
+  background: $background;
+}
+
+@mixin course-cta-button(
+  $padding: 0.85rem 1.5rem,
+  $gap: 1.2rem,
+  $background: $course-color-accent-teal,
+  $hover-background: $course-color-accent-teal-hover,
+  $shadow: $course-shadow-card-hover-teal,
+  $hover-shadow: $course-shadow-card-hover-teal-strong,
+  $border-radius: $course-radius-cta,
+  $font-size: 0.95rem,
+  $font-weight: 700,
+  $color: $course-color-surface,
+  $width: 100%
+) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap;
+  width: $width;
+  border-radius: $border-radius;
+  padding: $padding;
+  background: $background;
+  color: $color;
+  font-weight: $font-weight;
+  text-decoration: none;
+  box-shadow: $shadow;
+  transition: background $course-transition-fast ease, box-shadow $course-transition-fast ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: $hover-background;
+    box-shadow: $hover-shadow;
+  }
+}
+
+@mixin course-label-pill(
+  $background: $course-color-accent-teal-weak,
+  $color: $course-color-accent-teal,
+  $font-size: 0.72rem,
+  $padding: 0.28rem 0.75rem,
+  $letter-spacing: 0.08em
+) {
+  background: $background;
+  color: $color;
+  font-size: $font-size;
+  font-weight: 700;
+  padding: $padding;
+  border-radius: $course-radius-pill;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing;
+}
+
+@mixin course-header-panel(
+  $gradient: linear-gradient(135deg, rgba(30, 64, 175, 0.12), rgba(219, 234, 254, 0.5)),
+  $border-color: $course-color-accent-blue-border
+) {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  padding: clamp(1.8rem, 4vw, 2.4rem);
+  border-radius: $course-radius-lg;
+  background: $gradient;
+  border: 1px solid $border-color;
+  align-items: center;
+}
+
+@mixin course-eyebrow(
+  $color: $course-color-accent-blue,
+  $letter-spacing: 0.28em,
+  $font-size: 0.85rem
+) {
+  margin: 0;
+  font-size: $font-size;
+  letter-spacing: $letter-spacing;
+  text-transform: uppercase;
+  color: $color;
+}
+
+@mixin course-title(
+  $font-size: clamp(1.8rem, 4vw, 2.6rem),
+  $color: $course-color-text-primary
+) {
+  margin: 0;
+  font-size: $font-size;
+  font-weight: 700;
+  color: $color;
+}
+
+@mixin course-subtitle(
+  $color: $course-color-text-secondary,
+  $line-height: 1.65
+) {
+  margin: 0;
+  max-width: 48ch;
+  color: $color;
+  line-height: $line-height;
+}
+
+@mixin course-metrics(
+  $accent-color: $course-color-accent-blue,
+  $label-selector: '.metric-label',
+  $value-selector: '.metric-value'
+) {
+  display: flex;
+  gap: clamp(1rem, 3vw, 1.8rem);
+
+  div {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 120px;
+    padding-inline: clamp(1rem, 3vw, 1.3rem);
+  }
+
+  #{$label-selector} {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $accent-color;
+  }
+
+  #{$value-selector} {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 700;
+    color: $course-color-text-primary;
+  }
+}
+
+@mixin course-pagination(
+  $gap: clamp(1.25rem, 3vw, 1.8rem),
+  $padding: clamp(0.85rem, 2.5vw, 1.2rem) clamp(1.6rem, 4vw, 2.4rem),
+  $background: linear-gradient(135deg, rgba(15, 118, 128, 0.08), rgba(59, 130, 246, 0.08)),
+  $border-color: $course-color-pagination-border,
+  $shadow: $course-shadow-pagination,
+  $border-radius: $course-radius-pill
+) {
+  margin: clamp(2.2rem, 5vw, 3.2rem) auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap;
+  padding: $padding;
+  border-radius: $border-radius;
+  background: $background;
+  border: 1px solid $border-color;
+  box-shadow: $shadow;
+  width: fit-content;
+}
+
+@mixin course-pagination-button(
+  $padding: 0.65rem 1.5rem,
+  $background: $course-color-accent-teal,
+  $hover-background: $course-color-accent-teal-hover,
+  $color: $course-color-surface,
+  $shadow: $course-shadow-pagination-btn,
+  $hover-shadow: 0 16px 28px rgba(0, 127, 134, 0.3)
+) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: none;
+  border-radius: $course-radius-pill;
+  padding: $padding;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: $background;
+  color: $color;
+  box-shadow: $shadow;
+  transition: transform $course-transition-fast ease, box-shadow $course-transition-fast ease, background $course-transition-fast ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: $hover-shadow;
+    background: $hover-background;
+  }
+
+  &:disabled {
+    background: rgba(0, 127, 134, 0.2);
+    color: rgba(15, 23, 42, 0.35);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+@mixin course-pagination-status(
+  $background: rgba(255, 255, 255, 0.75),
+  $color: $course-color-text-primary
+) {
+  padding: 0.45rem 1.2rem;
+  border-radius: $course-radius-pill;
+  background: $background;
+  color: $color;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+@mixin course-fixed-footer($height: 60px) {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: $height;
+  line-height: $height;
+  z-index: 1;
+}
+
+@mixin course-btn-base(
+  $font-size: 16px,
+  $font-weight: bold,
+  $radius: 6px,
+  $padding: 12px 0,
+  $border-width: 2px
+) {
+  display: inline-block;
+  font-weight: $font-weight;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: $border-width solid transparent;
+  padding: $padding;
+  font-size: $font-size;
+  line-height: 1.5;
+  border-radius: $radius;
+  transition: all $course-transition-slow ease;
+  text-decoration: none;
+}
+

@@ -1,0 +1,44 @@
+<!-- <nav class="navbar  navbar-dark bg-dark">
+  <button  type="button" class="navbar-toggler" (click)="sideNavService.toggleSideNav()">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item" ngbDropdown display="dynamic">
+      <a class="nav-link" tabindex="0" ngbDropdownToggle id="navbarDropdown1" role="button">
+        {{userName}}
+      </a>
+      <div ngbDropdownMenu aria-labelledby="navbarDropdown1" class="dropdown-menu">
+        <a ngbDropdownItem [routerLink]="['/app/profile']">Profile</a>
+        <a ngbDropdownItem href="javascript:void(0)"  (click)="logout()">Logout</a>
+      </div>
+    </li>
+  </ul>
+</nav> -->
+
+
+<nav class="navbar navbar-light bg-light">
+  <div class="navbar-content">
+    <button type="button" class="navbar-toggler" (click)="sideNavService.toggleSideNav()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item" ngbDropdown display="dynamic">
+        <a class="nav-link user-menu" tabindex="0" ngbDropdownToggle id="navbarDropdown1" role="button">
+          <span class="user-name">{{userName}}</span>
+          <i class="fas fa-chevron-down dropdown-arrow"></i>
+        </a>
+        <div ngbDropdownMenu aria-labelledby="navbarDropdown1" class="dropdown-menu shadow">
+          <a ngbDropdownItem [routerLink]="['/app/profile']" class="dropdown-item">
+            <i class="fas fa-user dropdown-icon"></i> Profile
+          </a>
+          <div class="dropdown-divider"></div>
+          <a ngbDropdownItem href="javascript:void(0)" (click)="logout()" class="dropdown-item">
+            <i class="fas fa-sign-out-alt dropdown-icon"></i> Logout
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>

@@ -1,0 +1,16 @@
+<!-- 
+<section class="h-100 bg-white">
+    <router-outlet></router-outlet>
+    <app-public-topbar></app-public-topbar>
+</section> -->
+<!-- <app-public-footer></app-public-footer> -->
+ 
+<section class="main-content" [class.no-topbar]="!showTopBar">
+    <!-- Topbar hidden on home page (no top bar needed) -->
+    <app-public-topbar class="top-bar" *ngIf="showTopBar"></app-public-topbar>
+    
+    <!-- Main content area (adjusts for topbar height when shown) -->
+    <div class="content-wrapper">
+        <router-outlet></router-outlet>
+    </div>
+</section>

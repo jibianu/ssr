@@ -1,0 +1,81 @@
+<div class="card">
+    <div class="card-body row">
+        <aside class="col-md-5 border-right">
+            <div class="bg-primary">
+                <div class="row justify-content-center">
+                    <div class="col-md-12">
+                        <div class="py-5 mb-5 mt-5 text-center">
+                            <!-- <h1 class="text-white display-4 font-weight-bold">{{}}
+                            </h1> -->
+                            <h3 class="title mb-3 text-white display-4 font-weight-bold">
+                                {{questionSetDetails?.title}}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- Side Navbar -->
+                        <ul class="nav nav-lb-tab mb-2" id="tab" role="tablist">
+                            <li class="nav-item ml-0" role="presentation">
+                                <a class="nav-link active" id="about-tab" data-toggle="pill" href="#about" role="tab"
+                                    aria-controls="about" aria-selected="true">About </a>
+                            </li>
+
+                            <li class="nav-item ml-0" role="presentation">
+                                <a class="nav-link" id="terms-tab" data-toggle="pill" href="#terms" role="tab"
+                                    aria-controls="terms" aria-selected="true">Terms & conditions </a>
+                            </li>
+                        </ul>
+                        <!-- Tab content -->
+                        <div class="tab-content" id="tabContent">
+                            <div class="tab-pane fade active show" id="about" role="tabpanel"
+                                aria-labelledby="about-tab">
+                                <p>{{questionSetDetails?.questionSetTestInformation?.about}}</p>
+                            </div>
+
+                            <div class="tab-pane fade active" id="terms" role="tabpanel" aria-labelledby="terms-tab">
+                                <p>{{questionSetDetails?.questionSetTestInformation?.termsAndConditions}}</p>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <aside class="col-md-7">
+            <article class="card-body p-5">
+                <!-- <h3 class="title mb-3">{{questionSetDetails?.title}}</h3> -->
+                <dl class="item-property">
+                    <dt>Description</dt>
+                    <dd>
+                        <p>{{questionSetDetails?.description}}</p>
+                    </dd>
+                </dl>
+                <dl class="param param-feature">
+                    <dt>Difficulty</dt>
+                    <dd>{{Difficulty[questionSetDetails?.difficultyLevelId]}}</dd>
+                </dl>
+                <dl class="param param-feature">
+                    <dt>Duration</dt>
+                    <dd>{{questionSetDetails?.questionSetTestInformation?.duration}}</dd>
+                </dl>
+                <dl class="param param-feature">
+                    <dt>Topics</dt>
+                    <dd>{{questionSetDetails?.questionSetTestInformation?.topics}}</dd>
+                </dl>
+                <dl class="param param-feature">
+                    <dt>Question Counts</dt>
+                    <dd>{{questionSetDetails?.questionSetTestInformation?.questionCount}}</dd>
+                </dl>
+                <hr>
+                <div class="row justify-content-center">
+                    <a class="btn btn-primary text-center text-uppercase" (click)="takeQuiz()">Take Quiz </a>
+                </div>
+            </article>
+        </aside>
+    </div>
+</div>

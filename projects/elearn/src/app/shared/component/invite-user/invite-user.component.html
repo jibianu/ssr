@@ -1,0 +1,28 @@
+<div class="modal-header">
+  <h4 class="modal-title">Invite User</h4>
+  <button type="button" class="close" aria-label="Close" (click)="closeModal('ok')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+    <div class="form-group">
+        <label for="exampleInputEmail1">Email address</label>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" [(ngModel)]="user" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-outline-primary btn-sm" (click)="addToList()" type="button">Add</button>
+            </div>
+          </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-sm-10">
+            <h4 *ngFor="let i of userList;let ix index"> <span class="badge badge-secondary">{{i}} <span (click)="removeUser(ix)"><i class="fa fa-times" aria-hidden="true"></i></span></span>             </h4>
+            <!-- <div style="padding: 5px 15px;" class="badge badge-primary">Primary</div> -->
+        </div>
+      </div>
+</div>
+<div class="modal-footer">
+  <!-- <button type="button" class="btn btn-outline-dark" >Close</button>-->
+  <button type="button" class="btn btn-danger" (click)="closeModal('ok')">Cancel</button>
+  <button type="button" class="btn btn-success" (click)="InviteUsers()">Invite Users</button> 
+</div>

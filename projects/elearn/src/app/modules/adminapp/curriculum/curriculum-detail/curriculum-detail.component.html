@@ -1,0 +1,49 @@
+
+<div class="card rounded-lg">
+  <!-- Card Header -->
+  <div class="card-header border-bottom-0 p-0 navBackground">
+    <ul class="nav nav-lb-tab" id="tab" role="tablist" style="justify-content: center;">
+      <!-- <li class="nav-item">
+        <a class="nav-link active" id="description-tab" data-toggle="pill" href="#description" role="tab"
+        aria-controls="Description" aria-selected="true">Description</a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link active" id="concepts-tab" data-toggle="pill" href="#concepts" role="tab" aria-controls="concepts"
+        aria-selected="false">Concepts</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="study-tab" data-toggle="pill" href="#study" role="tab" aria-controls="study"
+          aria-selected="false">Study Material</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="video-tab" data-toggle="pill" href="#video" role="tab" aria-controls="video"
+          aria-selected="false">Videos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="question-tab" data-toggle="pill" href="#questionset" role="tab" aria-controls="question"
+          aria-selected="false">Questions</a>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <div class="tab-content" id="tabContent">
+      <!-- Tab -->
+      <!-- <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+        <app-curriculum-description [curriculumId]="curriculumId"></app-curriculum-description>
+      </div> -->
+      <div class="tab-pane fade show active" id="concepts" role="tabpanel" aria-labelledby="concepts-tab">
+        <app-curriculum-concepts [curriculumId]="curriculumId"></app-curriculum-concepts>
+      </div>
+      <div class="tab-pane fade" id="study" role="tabpanel" aria-labelledby="study-tab">
+        <app-curriculum-study-material [curriculumId]="curriculumId"></app-curriculum-study-material>
+      </div>
+      <div class="tab-pane fade" id="video" role="tabpanel" aria-labelledby="video-tab">
+        <app-curriculum-video [curriculumId]="curriculumId"></app-curriculum-video>
+      </div>
+      <div class="tab-pane fade" id="questionset" role="tabpanel" aria-labelledby="question-tab">
+        <!-- <app-curriculum-questions-set [curriculumId]="curriculumId"></app-curriculum-questions-set> -->
+        <app-question-list [curriculumId]="curriculumId"></app-question-list>
+      </div>
+    </div>
+  </div>
+</div>

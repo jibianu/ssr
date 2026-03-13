@@ -1,0 +1,13 @@
+<div class="payment-success-page">
+  <div class="payment-success-card" *ngIf="verifying">
+    <p>Verifying your payment…</p>
+    <div class="spinner" aria-hidden="true"></div>
+  </div>
+  <div class="payment-success-card success" *ngIf="success && !verifying">
+    <p>Payment successful. Redirecting to your courses…</p>
+  </div>
+  <div class="payment-success-card error" *ngIf="error && !verifying">
+    <p class="error-message">{{ error }}</p>
+    <a routerLink="/courses" class="back-link">Back to courses</a>
+  </div>
+</div>

@@ -1,0 +1,263 @@
+/* Page card (header moved to topbar) */
+.event-list-page {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+.event-list__card-body {
+  padding: 1rem 1.25rem;
+  background: var(--app-primary-bg, rgba(245, 119, 34, 0.06));
+  min-height: 120px;
+}
+.event-list__search-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.event-list__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+.event-list__search-icon { color: #94a3b8; }
+.event-list__search-input { flex: 1; }
+.event-list__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+}
+.event-list__badge i { color: #6f42c1; }
+.event-list__search-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #6f42c1 100%);
+  border: none;
+  color: #fff;
+}
+.event-list__search-btn:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #5a32a3 100%);
+  color: #fff;
+}
+/* View registrations button: same design as student list, with text label */
+.event-list__btn-registrations {
+  width: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  min-width: 32px;
+}
+.event-list__btn-registrations-text {
+  margin-left: 0.35rem;
+  font-size: 0.8rem;
+}
+@media (max-width: 768px) {
+  .event-list__btn-registrations-text { display: none; }
+}
+
+/* Progress bar button: circular progress (orange ring, percentage in center) */
+.event-list__td--progress {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.event-list__progress-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+}
+.event-list__progress-btn:hover {
+  opacity: 0.9;
+}
+.event-list__progress-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    #f57722 0deg,
+    #f57722 calc(var(--progress, 0) * 3.6deg),
+    #e5e7eb calc(var(--progress, 0) * 3.6deg)
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+}
+.event-list__progress-value {
+  position: relative;
+  z-index: 1;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Published state: green button (admin only can publish/unpublish) */
+.event-list__btn-published.list-table-modern__btn--success {
+  background: #198754;
+  border-color: #198754;
+  color: #fff;
+}
+.event-list__btn-published.list-table-modern__btn--success:hover:not(:disabled) {
+  background: #157347;
+  border-color: #146c43;
+  color: #fff;
+}
+
+/* Action links as buttons (a.list-table-modern__btn) */
+.event-list-page .list-table-modern__btn[routerLink] {
+  text-decoration: none;
+  color: #fff;
+}
+.event-list__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 0.5rem;
+}
+.event-list__page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.event-list__page-size-label { margin: 0; font-size: 0.875rem; }
+.event-list__page-size-select { width: auto; min-width: 70px; }
+.event-list__loading, .event-list__error { margin: 1rem 0; }
+
+/* ===== Event registrations side drawer (admin only) ===== */
+.event-registrations-drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+  transition: opacity 0.2s ease;
+}
+.event-registrations-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  max-width: 720px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  &.event-registrations-drawer--open {
+    transform: translateX(0);
+  }
+}
+.event-registrations-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, var(--app-primary-light, #ff9d2a) 0%, var(--app-primary, #f57722) 100%);
+  color: #fff;
+  flex-shrink: 0;
+}
+.event-registrations-drawer__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.event-registrations-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.event-registrations-drawer__close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+.event-registrations-drawer__body {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+.event-registrations-drawer__count {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #374151;
+}
+.event-registrations-drawer__loading {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
+.event-registrations-drawer__table-wrap {
+  overflow-x: auto;
+  margin: 0 -0.5rem;
+}
+.event-registrations-drawer__table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.event-registrations-drawer__table thead {
+  background: #efe8f5;
+  border-bottom: 1px solid #e0d8eb;
+}
+.event-registrations-drawer__table th {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4a4458;
+  white-space: nowrap;
+}
+.event-registrations-drawer__table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #374151;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.event-registrations-drawer__table tbody tr:hover {
+  background: #fafbfc;
+}
+.event-registrations-drawer__empty {
+  padding: 1.5rem;
+  text-align: center;
+  margin: 0;
+}

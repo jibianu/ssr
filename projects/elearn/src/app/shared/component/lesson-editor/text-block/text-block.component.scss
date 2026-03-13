@@ -1,0 +1,128 @@
+.text-block {
+  margin: 0.5rem 0;
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+  }
+
+  &__toolbar-select {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    margin-right: 4px;
+  }
+
+  &__toolbar-btn {
+    padding: 4px 8px;
+    min-width: 32px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+
+    &:hover {
+      background: #e9ecef;
+    }
+  }
+
+  &__toolbar-sep {
+    width: 1px;
+    height: 20px;
+    background: #dee2e6;
+    margin: 0 4px;
+  }
+
+  &__content {
+    min-height: 0;
+    padding: 0.6rem 0.875rem;
+    border-radius: 0 0 6px 6px;
+    outline: none;
+    line-height: 1.6;
+
+    &--editable {
+      border: 1px solid #e2e8f0;
+      border-radius: 0 0 6px 6px;
+      background: #fff;
+      height: auto;
+      overflow: hidden;
+
+      &:focus {
+        border-color: #147fa0;
+        box-shadow: 0 0 0 0.2rem rgba(20, 127, 160, 0.15);
+      }
+
+      &:empty::before {
+        content: attr(data-placeholder);
+        color: #6c757d;
+      }
+    }
+
+    &--view {
+      border-radius: 4px;
+    }
+  }
+
+  &--author .text-block__content {
+    min-height: 0;
+  }
+
+  &__image-section {
+    margin-top: 0.75rem;
+  }
+  &__image-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+  &__image-actions {
+    margin-bottom: 0.5rem;
+  }
+  &__image-preview {
+    position: relative;
+    display: inline-block;
+    img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 4px;
+    }
+  }
+  &__image-delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(220, 53, 69, 0.9);
+    color: #fff;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    &:hover {
+      background: #dc3545;
+    }
+  }
+}
+
+:host ::ng-deep .text-block__content {
+  p { margin: 0.25em 0; }
+  ul, ol { margin: 0.5em 0; padding-left: 1.5em; }
+  h1, h2, h3 { margin: 0.5em 0; }
+  pre, code { background: #f4f4f4; padding: 0.25em 0.5em; border-radius: 4px; }
+  pre code { padding: 0; }
+  blockquote { border-left: 4px solid #dee2e6; padding-left: 1em; margin: 0.5em 0; color: #6c757d; }
+  table { border-collapse: collapse; width: 100%; }
+  table td, table th { border: 1px solid #dee2e6; padding: 0.5em; }
+}

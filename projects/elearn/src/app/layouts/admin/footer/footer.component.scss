@@ -1,0 +1,20 @@
+/* Minimal Fixed Footer – compact, fixed at bottom */
+.mini-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #1a3a5a;
+  color: #ffffff;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.footer-bottom p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
+}

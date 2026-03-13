@@ -1,0 +1,38 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Location List</h1>
+    <a class="d-none d-sm-inline-block btn btn-primary shadow-sm" [routerLink]="['/app/location/add']"><i class="fa fa-plus fa-sm text-white-50"></i> Add Location</a>
+</div>
+
+<div class="form-group pull-right">
+    <input type="text" class="search form-control" placeholder="Search" name="search" [(ngModel)]="term" >
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col" style="width:30%">Name</th>
+        <th scope="col" style="width:30%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of locations |filter:term | paginate: config">
+        <td>{{item.name}}</td>
+        <td>
+          <button type="button" class="btn btn-success" [routerLink]="['/app/location/edit',item.id]"><i
+              class="fa fa-edit"></i></button>
+          <button type="button" class="btn btn-danger ml-1" (click)="deleteLocation(item.id)"><i
+              class="fa fa-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div class="d-flex bd-highlight mb-3">
+    <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+    <div class="ml-auto p-2 bd-highlight">
+      <select (change)="onTableSizeChange($event)" class="custom-select">
+        <option *ngFor="let size of tableSizes" [ngValue]="size">
+          {{ size }}
+        </option>
+      </select>
+    </div>
+  </div>

@@ -1,0 +1,582 @@
+@use '../../../../shared/admin-common/admin-common.scss' as common;
+
+// Component-specific variables only
+$p: #6366f1;
+$ph: #4f46e5;
+$d: #ef4444;
+$tp: #1e293b;
+$ts: #64748b;
+$b: #e2e8f0;
+$bg: #f8fafc;
+$w: #fff;
+$md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+$lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+
+// Wrapper
+.add-course-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1rem;
+  padding-bottom: 120px; // Extra space for fixed footer
+  @media (min-width: 768px) { 
+    padding: 2rem;
+    padding-bottom: 140px; // Extra space for fixed footer on desktop
+  }
+}
+
+
+.course-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-bottom: 100px; // Space for sticky footer
+}
+
+// Form Section - Component specific
+.form-section {
+  background: $w;
+  border-radius: 16px;
+  box-shadow: $lg;
+  overflow: hidden;
+  transition: box-shadow .3s;
+  &:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04); }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1.5rem;
+    background: $p;
+    color: $w;
+    i { font-size: 1.25rem; }
+    h2 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -.025em; }
+  }
+  .section-content {
+    padding: 2rem;
+  }
+}
+
+// Use common form styles
+.form-grid {
+  @extend .admin-form-grid;
+}
+
+.form-group {
+  @extend .admin-form-group-enhanced;
+  &.icon-field-compact { 
+    max-width: 180px;
+    @media (max-width: 768px) { max-width: 100%; }
+  }
+}
+
+.form-label {
+  @extend .admin-form-label;
+  .required { color: $d; margin-left: .25rem; }
+}
+
+.form-input, select.form-input {
+  @extend .admin-input;
+  &.input-error {
+    border-color: $d !important;
+    border-width: 2px !important;
+    &:focus { 
+      border-color: $d !important;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.1) !important; 
+    }
+  }
+}
+
+textarea.form-input {
+  @extend .admin-textarea;
+}
+
+.input-with-icon {
+  @extend .admin-input-with-icon;
+  .input-icon {
+    @extend .admin-input-icon;
+  }
+}
+
+.error-message {
+  @extend .admin-error-message;
+}
+
+// Icon Select - Compact design
+.icon-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  .icon-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .icon-preview-inline {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg;
+    border: 1px solid $b;
+    border-radius: 4px;
+    padding: 2px;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+// Upload - Component specific
+.upload-container {
+  .upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .file-upload-area {
+    position: relative;
+    border: 2px dashed $b;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: $bg;
+    transition: all .3s;
+    cursor: pointer;
+    &:hover {
+      border-color: $p;
+      background: #eef2ff;
+    }
+    &.has-image {
+      border-color: #10b981;
+      background: rgba(16,185,129,.05);
+    }
+    .file-input {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      cursor: pointer;
+      i { font-size: 2rem; color: $p; margin-bottom: .5rem; }
+      span { font-weight: 600; color: $tp; font-size: 1rem; }
+      small { color: $ts; font-size: .8125rem; }
+    }
+  }
+  .upload-label-small {
+    @extend .admin-btn;
+    @extend .admin-btn-primary;
+    padding: .5rem 1rem;
+    font-size: .875rem;
+  }
+  .upload-progress {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: $bg;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, $p, #10b981);
+        width: 100%;
+        animation: prog 2s ease-in-out infinite;
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+      }
+    }
+    span {
+      font-size: .875rem;
+      color: $ts;
+      font-weight: 500;
+    }
+  }
+  .image-preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    .preview-image-wrapper {
+      position: relative;
+      display: inline-block;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: $md;
+      max-width: 300px;
+      &.small { max-width: 200px; }
+      .preview-image {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .remove-image-btn {
+        position: absolute;
+        top: .5rem;
+        right: .5rem;
+        width: 32px;
+        height: 32px;
+        background: rgba(239,68,68,.9);
+        color: $w;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .2s;
+        box-shadow: $md;
+        &:hover {
+          background: $d;
+          transform: scale(1.1);
+        }
+        i { font-size: .875rem; }
+      }
+    }
+    .image-url {
+      font-size: .75rem;
+      color: $ts;
+      word-break: break-all;
+      margin: 0;
+    }
+  }
+}
+
+.location-selector {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  .location-dropdown { flex: 1; }
+  .btn-metadata {
+    @extend .admin-btn;
+    background: #64748b;
+    color: $w;
+    white-space: nowrap;
+    &:hover:not(:disabled) {
+      background: #475569;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Use common accordion styles
+.modern-accordion {
+  @extend .admin-accordion;
+}
+
+.accordion-item {
+  @extend .admin-accordion-item;
+}
+
+.accordion-header {
+  @extend .admin-accordion-header;
+  .accordion-title {
+    @extend .admin-accordion-title;
+    position: relative;
+    .empty-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      margin-left: 0.75rem;
+      padding: 0.25rem 0.625rem;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      i {
+        font-size: 0.6875rem;
+      }
+    }
+  }
+  .accordion-icon {
+    @extend .admin-accordion-icon;
+  }
+}
+
+.accordion-content {
+  @extend .admin-accordion-content;
+}
+
+// Use common dynamic item styles
+.dynamic-item {
+  @extend .admin-dynamic-item;
+  .dynamic-item-header {
+    @extend .admin-dynamic-item-header;
+    .btn-remove {
+      @extend .admin-btn-remove;
+    }
+  }
+  .dynamic-item-content {
+    @extend .admin-dynamic-item-content;
+  }
+}
+
+// Curriculum specific overrides
+.curriculum-item {
+  .dynamic-item {
+    background: $w;
+    border: 2px solid #e0e7ff;
+    box-shadow: 0 4px 6px rgba(99,102,241,.08);
+  }
+  // Level 1: Contents Section - Light Blue/Indigo
+  .dynamic-item-header {
+    background: linear-gradient(135deg, rgba(99,102,241,.15) 0%, rgba(99,102,241,.08) 100%);
+    color: #4f46e5;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-bottom: none;
+    border-left: 4px solid rgba(99,102,241,.3);
+    h6 {
+      color: #4f46e5 !important;
+      font-size: 1.0625rem !important;
+      font-weight: 700 !important;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-remove {
+      background: rgba(99,102,241,.1) !important;
+      border: 1px solid rgba(99,102,241,.2) !important;
+      color: #4f46e5 !important;
+      &:hover {
+        background: rgba(99,102,241,.2) !important;
+        border-color: rgba(99,102,241,.3) !important;
+      }
+    }
+  }
+  .sub-content-wrapper, .child-content-wrapper {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid rgba(20,184,166,.2);
+    background: rgba(20,184,166,.03);
+    border-radius: 0 8px 8px 0;
+  }
+  .sub-content-item, .child-content-item {
+    background: $w;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,.04);
+    transition: all .2s;
+    &:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,.08);
+      transform: translateY(-1px);
+    }
+    // Level 2: Sub Contents - Light Teal/Cyan
+    .sub-content-header {
+      margin-bottom: 1rem;
+      padding: .75rem 1rem;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(20,184,166,.15) 0%, rgba(20,184,166,.08) 100%);
+      border-left: 4px solid rgba(20,184,166,.3);
+      h6 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0d9488;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+    }
+    // Level 3: Child Contents - Light Orange/Amber
+    .child-content-header {
+      margin-bottom: 1rem;
+      padding: .75rem 1rem;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(245,158,11,.15) 0%, rgba(245,158,11,.08) 100%);
+      border-left: 4px solid rgba(245,158,11,.3);
+      h6 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #d97706;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+    }
+  }
+}
+
+// Level 0: Course Curriculum - Light Purple/Indigo (accordion header)
+.curriculum-accordion {
+  .accordion-header {
+    background: linear-gradient(135deg, rgba(139,92,246,.12) 0%, rgba(139,92,246,.06) 100%);
+    border-left: 4px solid rgba(139,92,246,.25);
+    border-radius: 12px;
+    .accordion-title {
+      color: #7c3aed;
+      font-weight: 600;
+      i {
+        color: #8b5cf6;
+      }
+    }
+    .accordion-icon {
+      color: #8b5cf6;
+    }
+  }
+}
+
+// Use common form row
+.form-row {
+  @extend .admin-form-row;
+}
+
+.input-group-actions {
+  display: flex;
+  gap: .5rem;
+  align-items: stretch;
+  .form-input { flex: 1; }
+  .action-buttons {
+    display: flex;
+    gap: .25rem;
+  }
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid $b;
+    background: $w;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    color: $ts;
+    &:hover:not(:disabled) {
+      border-color: $p;
+      color: $p;
+      background: #eef2ff;
+    }
+    &:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    i { font-size: .875rem; }
+  }
+}
+
+.btn-add-item {
+  @extend .admin-btn;
+  background: #10b981;
+  color: $w;
+  margin-top: .5rem;
+  &:hover:not(:disabled) {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: $md;
+  }
+}
+
+// Use common checkbox
+.checkbox-group {
+  @extend .admin-checkbox-group;
+  .checkbox-label {
+    @extend .admin-checkbox-label;
+  }
+  .checkbox-input {
+    @extend .admin-checkbox-input;
+  }
+  .checkbox-custom {
+    @extend .admin-checkbox-custom;
+  }
+  .checkbox-text {
+    @extend .admin-checkbox-text;
+  }
+}
+
+// Sticky Footer Actions
+.form-actions-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255,255,255,.98);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 6px -1px rgba(0,0,0,.1), 0 -2px 4px -1px rgba(0,0,0,.06);
+  border-top: 1px solid rgba(0,0,0,.05);
+  padding: 1rem;
+  transition: box-shadow .3s;
+  @media (min-width: 768px) { 
+    padding: 1.25rem 2rem; 
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  max-width: 1400px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  .btn-primary {
+    @extend .admin-btn-primary;
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: $w;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+  }
+  .btn-secondary {
+    @extend .admin-btn-secondary;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes prog {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 0%; }
+  100% { background-position: 0% 0%; }
+}
+
+@media (max-width: 768px) {
+  .section-content { padding: 1.5rem; }
+  .form-actions-footer {
+    padding: 0.75rem 1rem;
+  }
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  .location-selector {
+    flex-direction: column;
+    .btn-metadata {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  .form-group.icon-field-compact { max-width: 100%; }
+  .course-form {
+    padding-bottom: 120px; // More space on mobile for taller footer
+  }
+}
+
+::ng-deep .ql-container { height: 500px !important; pointer-events: auto !important; }
+::ng-deep .ck-editor__editable { min-height: 200px !important; pointer-events: auto !important; }

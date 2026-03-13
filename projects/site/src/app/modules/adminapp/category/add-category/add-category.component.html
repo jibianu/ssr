@@ -1,0 +1,64 @@
+<div class="admin-page-wrapper">
+    <div class="admin-page-content">
+        <div class="admin-card admin-card-centered">
+            <div class="admin-card-header">
+                <div>
+                    <h1 class="admin-card-title">
+                        <i class="fas fa-folder"></i>
+                        {{pageTitle}}
+                    </h1>
+                </div>
+            </div>
+            
+            <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="admin-form admin-form-full-width">
+                <div class="admin-form-group">
+                    <label class="admin-form-label required">Name</label>
+                    <input type="text" formControlName="name" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.name.errors }" />
+                    <div *ngIf="submitted && f.name.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.name.errors.required">Name is required</div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label required">App Name</label>
+                    <input type="text" formControlName="appsName" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.appsName.errors }" />
+                    <div *ngIf="submitted && f.appsName.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.appsName.errors.required">App Name is required</div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label required">Sort Order</label>
+                    <input type="number" formControlName="sortOrder" class="admin-input"
+                        [ngClass]="{ 'ng-invalid ng-touched': submitted && f.sortOrder.errors }" />
+                    <div *ngIf="submitted && f.sortOrder.errors" class="invalid-feedback" style="color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;">
+                        <div *ngIf="f.sortOrder.errors.required">Sort Order is required</div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" formControlName="showOnDashboard" type="checkbox" value=""
+                            id="showOnDashboard">
+                        <label class="form-check-label" for="showOnDashboard" style="font-weight: 500; cursor: pointer;">
+                            Show On Dashboard?
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="admin-form-actions">
+                    <button class="admin-btn admin-btn-primary" type="submit">
+                        <i class="fas fa-save"></i>
+                        {{btntext}}
+                    </button>
+                    <button type="button" class="admin-btn admin-btn-secondary" (click)="goBack()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

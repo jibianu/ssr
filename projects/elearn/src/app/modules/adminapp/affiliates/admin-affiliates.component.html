@@ -1,0 +1,233 @@
+<div class="impact-admin-affiliates">
+  <header class="impact-admin__header">
+    <h1 class="impact-admin__title">Affiliates</h1>
+    <p class="impact-admin__subtitle">Review applications, approve affiliates, set per-course commission, and mark payouts.</p>
+  </header>
+
+  <!-- Summary cards (Impact-style) -->
+  <div class="impact-admin__summary">
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ list.length }}</span>
+        <span class="stat-label">Total affiliates</span>
+      </div>
+    </div>
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ pendingCount }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+    </div>
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ approvedCount }}</span>
+        <span class="stat-label">Approved</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="impact-admin__toolbar">
+    <div class="impact-admin__filters">
+      <label class="impact-label">Status</label>
+      <select class="impact-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
+        <option value="">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div>
+    <button type="button" class="impact-btn impact-btn--primary" (click)="load()" [disabled]="loading">
+      {{ loading ? 'Loading…' : 'Refresh' }}
+    </button>
+  </div>
+
+  <div class="impact-admin__error" *ngIf="error">{{ error }}</div>
+  <div class="impact-admin__loading" *ngIf="loading && list.length === 0">Loading affiliates…</div>
+
+  <div class="impact-card impact-card--table" *ngIf="!loading || list.length > 0">
+    <div class="impact-card__body">
+      <div class="table-wrap">
+        <table class="impact-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Code</th>
+              <th>Total</th>
+              <th>Pending</th>
+              <th>Paid</th>
+              <th>Applied</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of filteredList">
+              <td>{{ item.name || '—' }}</td>
+              <td>{{ item.email || '—' }}</td>
+              <td>{{ item.phone || '—' }}</td>
+              <td>
+                <span class="impact-badge" [ngClass]="{
+                  'impact-badge--warning': item.status === 'Pending',
+                  'impact-badge--success': item.status === 'Approved',
+                  'impact-badge--secondary': item.status === 'Rejected'
+                }">{{ item.status }}</span>
+              </td>
+              <td>{{ item.affiliateCode || '—' }}</td>
+              <td>{{ item.totalEarnings | number:'1.2-2' }}</td>
+              <td>{{ item.pendingEarnings | number:'1.2-2' }}</td>
+              <td>{{ item.paidEarnings | number:'1.2-2' }}</td>
+              <td>{{ item.createdAt | date:'short' }}</td>
+              <td class="actions-cell">
+                <button type="button" class="impact-btn impact-btn--sm impact-btn--outline" (click)="openDetails(item)">View</button>
+                <button *ngIf="item.status === 'Pending'" type="button" class="impact-btn impact-btn--sm impact-btn--success" (click)="approve(item)" [disabled]="actionId === item.id">
+                  {{ actionId === item.id ? '…' : 'Approve' }}
+                </button>
+                <button *ngIf="item.pendingEarnings > 0" type="button" class="impact-btn impact-btn--sm impact-btn--primary" (click)="markPaid(item)" [disabled]="actionId === item.id">
+                  {{ actionId === item.id ? '…' : 'Mark paid' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="impact-admin__empty" *ngIf="filteredList.length === 0 && !loading">No affiliates match the filter.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal: all affiliate details + editable commission -->
+<ng-template #detailTpl>
+  <div class="impact-modal">
+    <div class="impact-modal__header">
+      <h2 class="impact-modal__title">Affiliate details</h2>
+      <button type="button" class="impact-modal__close" aria-label="Close" (click)="closeDetail()">&times;</button>
+    </div>
+    <div class="impact-modal__body" *ngIf="detailLoading">Loading…</div>
+    <div class="impact-modal__body impact-modal__body--sections" *ngIf="detailModal && !detailLoading">
+      <!-- Application -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Application</h3>
+        <dl class="impact-detail-dl">
+          <dt>Name</dt><dd>{{ detailModal.name || '—' }}</dd>
+          <dt>Email</dt><dd>{{ detailModal.email || '—' }}</dd>
+          <dt>Phone</dt><dd>{{ detailModal.phone || '—' }}</dd>
+          <dt>LinkedIn</dt><dd>{{ detailModal.linkedInProfile || '—' }}</dd>
+          <dt>Reason</dt><dd>{{ detailModal.reason || '—' }}</dd>
+          <dt>Status</dt>
+          <dd>
+            <span class="impact-badge" [ngClass]="{
+              'impact-badge--warning': detailModal.status === 'Pending',
+              'impact-badge--success': detailModal.status === 'Approved',
+              'impact-badge--secondary': detailModal.status === 'Rejected'
+            }">{{ detailModal.status }}</span>
+          </dd>
+          <dt>Code</dt><dd>{{ detailModal.affiliateCode || '—' }}</dd>
+        </dl>
+      </section>
+
+      <!-- Earnings -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Earnings</h3>
+        <dl class="impact-detail-dl">
+          <dt>Total</dt><dd>{{ detailModal.totalEarnings | number:'1.2-2' }}</dd>
+          <dt>Pending</dt><dd>{{ detailModal.pendingEarnings | number:'1.2-2' }}</dd>
+          <dt>Paid</dt><dd>{{ detailModal.paidEarnings | number:'1.2-2' }}</dd>
+        </dl>
+      </section>
+
+      <!-- Commission: editable default + per-course -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Commission (editable)</h3>
+        <div class="commission-edit">
+          <div class="commission-edit__default">
+            <label class="impact-label">Default commission (%)</label>
+            <input type="number" min="0" max="100" step="0.5" [(ngModel)]="editCommissionRate" class="impact-input impact-input--sm" />
+            <button type="button" class="impact-btn impact-btn--primary impact-btn--sm" (click)="saveDefaultCommission()" [disabled]="commissionSaving">Save default</button>
+          </div>
+          <p class="impact-card__meta">Per-course overrides below. Leave blank or set to use default for that course.</p>
+          <div class="commission-edit__table">
+            <table class="impact-table impact-table--compact">
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Commission %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of editCourseCommissions; let i = index">
+                  <td>{{ row.courseTitle }}</td>
+                  <td>
+                    <input type="number" min="0" max="100" step="0.5" [(ngModel)]="row.commissionPercent" (ngModelChange)="markCourseCommissionDirty()" class="impact-input impact-input--sm" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="impact-btn impact-btn--primary" (click)="saveCourseCommissions()" [disabled]="commissionSaving || !courseCommissionsDirty">Save per-course commission</button>
+        </div>
+      </section>
+
+      <!-- Extended profile -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Extended profile</h3>
+        <dl class="impact-detail-dl">
+          <dt>Profile completed</dt><dd>{{ detailModal.profileCompleted ? 'Yes' : 'No' }}</dd>
+          <dt>Business category</dt><dd>{{ detailModal.businessCategory || '—' }}</dd>
+          <dt>Entity type</dt><dd>{{ detailModal.entityType || '—' }}</dd>
+          <dt>Display name</dt><dd>{{ detailModal.accountDisplayName || '—' }}</dd>
+          <dt>Country / region</dt><dd>{{ detailModal.countryRegion || '—' }}</dd>
+          <dt>Address</dt><dd>{{ detailAddress }}</dd>
+          <dt>Timezone</dt><dd>{{ detailModal.timezone || '—' }}</dd>
+          <dt>Currency</dt><dd>{{ detailModal.currency || '—' }}</dd>
+        </dl>
+      </section>
+
+      <!-- Promotion links -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Promotion links</h3>
+        <table class="impact-table impact-table--compact" *ngIf="detailModal.promotionLinks?.length">
+          <thead><tr><th>Channel</th><th>Platform</th><th>URL</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let pl of detailModal.promotionLinks">
+              <td>{{ pl.channelType || '—' }}</td>
+              <td>{{ pl.platform || '—' }}</td>
+              <td><a [href]="pl.url" target="_blank" rel="noopener">{{ pl.url || '—' }}</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="impact-card__meta" *ngIf="!detailModal.promotionLinks?.length">No promotion links.</p>
+      </section>
+
+      <!-- Referrals -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Referrals</h3>
+        <table class="impact-table impact-table--compact" *ngIf="detailModal.referrals?.length">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Signup</th>
+              <th>Purchase</th>
+              <th>Commission</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of detailModal.referrals">
+              <td>{{ r.referredEmail }}</td>
+              <td>{{ r.signupDate | date:'short' }}</td>
+              <td>{{ r.purchaseAmount != null ? (r.purchaseAmount | number:'1.2-2') : '—' }}</td>
+              <td>{{ r.commissionAmount != null ? (r.commissionAmount | number:'1.2-2') : '—' }}</td>
+              <td>{{ r.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="impact-card__meta" *ngIf="!detailModal.referrals?.length">No referrals.</p>
+      </section>
+    </div>
+    <div class="impact-modal__footer">
+      <button type="button" class="impact-btn impact-btn--outline" (click)="closeDetail()">Close</button>
+    </div>
+  </div>
+</ng-template>

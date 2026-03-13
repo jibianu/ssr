@@ -1,0 +1,31 @@
+<div class="d-flex align-items-end justify-content-between bg-white px-4 pt-4 pb-4 rounded-top rounded-bottom shadow-sm  mb-4">
+    <div class="d-flex align-items-center">
+        <div class="lh-1">
+            <h2 class="mb-0">
+                {{courseDetails?.title}}
+            </h2>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4" >
+               
+    <div class="card-header">
+        <h3 class="mb-0">Curriculum</h3>
+    </div>
+    
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            
+            <li class="list-group-item px-0 py-3" *ngFor="let item of curriculumList; index as i;">
+                <div class="d-flex">
+                    <div class="align-self-center mr-auto">
+                        <h5 class="mb-0 "><a (click)="goToCurriculumDetails(item)" [routerLink]="['/app/student/details/curriculum-details', item.id]" >{{item?.title}}</a></h5>
+                        <p class="mb-0 font-size-xs"></p>
+                    </div>
+                </div>
+            </li>
+            <hr>
+        </ul>
+    </div>
+</div>

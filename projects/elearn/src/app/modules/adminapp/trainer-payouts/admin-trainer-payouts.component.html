@@ -1,0 +1,217 @@
+<div class="admin-payouts">
+  <div class="admin-payouts__header">
+    <h1 class="admin-payouts__title">Trainer Payouts</h1>
+    <p class="admin-payouts__subtitle">Review and approve payout methods. Track payouts and generate reports.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="admin-payouts__stats" *ngIf="stats || loadingStats">
+    <div class="admin-payouts__loading" *ngIf="loadingStats">Loading stats…</div>
+    <div class="admin-payouts__stats-grid" *ngIf="stats && !loadingStats">
+      <div class="admin-payouts__stat-card">
+        <span class="admin-payouts__stat-value">{{ stats.totalConnected }}</span>
+        <span class="admin-payouts__stat-label">Total Connected</span>
+      </div>
+      <div class="admin-payouts__stat-card admin-payouts__stat-card--warning">
+        <span class="admin-payouts__stat-value">{{ stats.pendingApprovals }}</span>
+        <span class="admin-payouts__stat-label">Pending Approvals</span>
+      </div>
+      <div class="admin-payouts__stat-card admin-payouts__stat-card--success">
+        <span class="admin-payouts__stat-value">{{ stats.approved }}</span>
+        <span class="admin-payouts__stat-label">Approved</span>
+      </div>
+      <div class="admin-payouts__stat-card admin-payouts__stat-card--danger">
+        <span class="admin-payouts__stat-value">{{ stats.rejected }}</span>
+        <span class="admin-payouts__stat-label">Rejected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payout activity (tracking) -->
+  <section class="admin-payouts__section">
+    <h2 class="admin-payouts__section-title">Payout activity</h2>
+    <p class="admin-payouts__section-desc">Recent payouts recorded. Use this to track what has been paid out.</p>
+    <div class="admin-payouts__report-toolbar" style="margin-bottom: 0.5rem;">
+      <button type="button" class="admin-payouts__btn admin-payouts__btn--secondary" (click)="loadRecentPayouts()" [disabled]="recentLoading">
+        {{ recentLoading ? 'Loading…' : 'Refresh' }}
+      </button>
+    </div>
+    <div class="admin-payouts__loading" *ngIf="recentLoading">Loading…</div>
+    <div class="admin-payouts__table-wrap" *ngIf="!recentLoading && recentPayouts.length">
+      <table class="admin-payouts__table">
+        <thead>
+          <tr>
+            <th class="admin-payouts__th">Date</th>
+            <th class="admin-payouts__th">Trainer</th>
+            <th class="admin-payouts__th">Method</th>
+            <th class="admin-payouts__th">Gross</th>
+            <th class="admin-payouts__th">TDS</th>
+            <th class="admin-payouts__th">Net</th>
+            <th class="admin-payouts__th">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of recentPayouts; trackBy: trackByTransactionId">
+            <td class="admin-payouts__td">{{ row.processedAt | date:'short' }}</td>
+            <td class="admin-payouts__td">{{ row.trainerName || '—' }}</td>
+            <td class="admin-payouts__td">{{ row.methodTypeName }}</td>
+            <td class="admin-payouts__td">{{ row.grossAmount | number:'1.2-2' }} {{ row.currency }}</td>
+            <td class="admin-payouts__td">{{ row.tdsAmount != null ? (row.tdsAmount | number:'1.2-2') : '—' }}</td>
+            <td class="admin-payouts__td">{{ row.netAmount != null ? (row.netAmount | number:'1.2-2') : (row.grossAmount | number:'1.2-2') }}</td>
+            <td class="admin-payouts__td admin-payouts__td--notes">{{ row.notes || '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="admin-payouts__empty" *ngIf="!recentLoading && !recentPayouts.length">No payouts recorded yet. Approve a method and use Process Payout to record payments.</p>
+  </section>
+
+  <section class="admin-payouts__section">
+    <h2 class="admin-payouts__section-title">All trainer payout methods</h2>
+    <p class="admin-payouts__error" *ngIf="error">{{ error }}</p>
+    <div class="admin-payouts__loading" *ngIf="loading">Loading…</div>
+
+    <div class="admin-payouts__table-wrap" *ngIf="!loading && !error">
+      <table class="admin-payouts__table" *ngIf="list.length">
+        <thead>
+          <tr>
+            <th class="admin-payouts__th">Trainer Name</th>
+            <th class="admin-payouts__th">Trainer Email</th>
+            <th class="admin-payouts__th">Method Type</th>
+            <th class="admin-payouts__th">Bank / Account</th>
+            <th class="admin-payouts__th">PAN</th>
+            <th class="admin-payouts__th">Status</th>
+            <th class="admin-payouts__th">Created</th>
+            <th class="admin-payouts__th">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of list; trackBy: trackById">
+            <td class="admin-payouts__td">{{ item.trainerName || '—' }}</td>
+            <td class="admin-payouts__td">{{ item.trainerEmail || '—' }}</td>
+            <td class="admin-payouts__td">{{ item.methodTypeName }}</td>
+            <td class="admin-payouts__td">{{ item.bankName ? item.bankName + ' ' : '' }}{{ item.maskedAccountNumber || '—' }}</td>
+            <td class="admin-payouts__td">{{ item.maskedPAN || '—' }}</td>
+            <td class="admin-payouts__td">
+              <span class="admin-payouts__badge" [class.admin-payouts__badge--approved]="item.status === 1"
+                [class.admin-payouts__badge--pending]="item.status === 0"
+                [class.admin-payouts__badge--rejected]="item.status === 2">
+                {{ item.statusName }}
+              </span>
+            </td>
+            <td class="admin-payouts__td">{{ item.createdAt | date:'shortDate' }}</td>
+            <td class="admin-payouts__td">
+              <span *ngIf="isPending(item)" class="admin-payouts__actions">
+                <button type="button" class="admin-payouts__btn admin-payouts__btn--approve"
+                  (click)="approve(item.id)" [disabled]="actionId !== null">
+                  {{ actionId === item.id ? '…' : 'Approve' }}
+                </button>
+                <button type="button" class="admin-payouts__btn admin-payouts__btn--reject"
+                  (click)="reject(item.id)" [disabled]="actionId !== null">
+                  {{ actionId === item.id ? '…' : 'Reject' }}
+                </button>
+              </span>
+              <span *ngIf="isApproved(item)">
+                <button type="button" class="admin-payouts__btn admin-payouts__btn--process"
+                  (click)="openProcessModal(item)">
+                  Process Payout
+                </button>
+              </span>
+              <span *ngIf="!isPending(item) && !isApproved(item)" class="admin-payouts__muted">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="admin-payouts__empty-wrap" *ngIf="!list.length">
+      <p class="admin-payouts__empty">No payout methods yet.</p>
+      <p class="admin-payouts__empty-hint">Data will appear here when trainers connect a payout method from <strong>Payout &amp; Tax</strong> (sidebar) — Bank Transfer (NEFT/IMPS/RTGS), UPI, PayPal, or Payoneer. Ensure the <strong>TrainerPayoutMethods</strong> table exists (run the manual SQL if you skipped migrations).</p>
+    </div>
+    </div>
+  </section>
+
+  <!-- Payout Report (monthly) -->
+  <section class="admin-payouts__section">
+    <h2 class="admin-payouts__section-title">Payout Report</h2>
+    <p class="admin-payouts__section-desc">Generate monthly payout report with TDS. Select date range and load or export CSV.</p>
+    <div class="admin-payouts__report-toolbar">
+      <label class="admin-payouts__report-label">From</label>
+      <input type="date" class="admin-payouts__report-input" [(ngModel)]="reportFrom" />
+      <label class="admin-payouts__report-label">To</label>
+      <input type="date" class="admin-payouts__report-input" [(ngModel)]="reportTo" />
+      <button type="button" class="admin-payouts__btn admin-payouts__btn--primary" (click)="loadReport()" [disabled]="reportLoading">
+        {{ reportLoading ? 'Loading…' : 'Load Report' }}
+      </button>
+      <button type="button" class="admin-payouts__btn admin-payouts__btn--secondary" (click)="exportReportCsv()" [disabled]="reportLoading">
+        Export CSV
+      </button>
+    </div>
+    <p class="admin-payouts__error" *ngIf="reportError">{{ reportError }}</p>
+    <div class="admin-payouts__report-summary" *ngIf="reportList.length">
+      <span><strong>Total Gross:</strong> {{ reportSummary.totalGross | number:'1.2-2' }} INR</span>
+      <span><strong>Total TDS:</strong> {{ reportSummary.totalTds | number:'1.2-2' }} INR</span>
+      <span><strong>Total Net:</strong> {{ reportSummary.totalNet | number:'1.2-2' }} INR</span>
+    </div>
+    <div class="admin-payouts__table-wrap" *ngIf="reportList.length">
+      <table class="admin-payouts__table">
+        <thead>
+          <tr>
+            <th class="admin-payouts__th">Date</th>
+            <th class="admin-payouts__th">Trainer</th>
+            <th class="admin-payouts__th">Method</th>
+            <th class="admin-payouts__th">Gross (INR)</th>
+            <th class="admin-payouts__th">TDS %</th>
+            <th class="admin-payouts__th">TDS Amount</th>
+            <th class="admin-payouts__th">Net</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of reportList">
+            <td class="admin-payouts__td">{{ row.processedAt | date:'short' }}</td>
+            <td class="admin-payouts__td">{{ row.trainerName || '—' }}</td>
+            <td class="admin-payouts__td">{{ row.methodTypeName }}</td>
+            <td class="admin-payouts__td">{{ row.grossAmount | number:'1.2-2' }}</td>
+            <td class="admin-payouts__td">{{ row.tdsPercent != null ? (row.tdsPercent | number:'1.2-2') + '%' : '—' }}</td>
+            <td class="admin-payouts__td">{{ row.tdsAmount != null ? (row.tdsAmount | number:'1.2-2') : '—' }}</td>
+            <td class="admin-payouts__td">{{ row.netAmount != null ? (row.netAmount | number:'1.2-2') : (row.grossAmount | number:'1.2-2') }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="admin-payouts__empty" *ngIf="!reportLoading && !reportError && reportList.length === 0 && reportFrom && reportTo">No payouts in this period. Load report or export CSV for the selected range.</p>
+  </section>
+</div>
+
+<!-- Process Payout Modal -->
+<div class="admin-payouts-modal" *ngIf="showProcessModal && processItem" (keydown.escape)="closeProcessModal()">
+  <div class="admin-payouts-modal__backdrop" (click)="closeProcessModal()"></div>
+  <div class="admin-payouts-modal__box" role="dialog" aria-labelledby="process-payout-title">
+    <h3 id="process-payout-title" class="admin-payouts-modal__title">Process Payout</h3>
+    <p class="admin-payouts-modal__subtitle">Record a payment to <strong>{{ processItem.trainerName }}</strong> ({{ processItem.methodTypeName }}). You will still need to send the money via your bank or PayPal.</p>
+    <div class="admin-payouts-modal__form">
+      <div class="admin-payouts-modal__row">
+        <label class="admin-payouts-modal__label">Amount</label>
+        <input type="number" class="admin-payouts-modal__input" [(ngModel)]="processAmount" min="0.01" step="0.01" placeholder="0.00" />
+      </div>
+      <div class="admin-payouts-modal__row">
+        <label class="admin-payouts-modal__label">Currency</label>
+        <input type="text" class="admin-payouts-modal__input" [(ngModel)]="processCurrency" placeholder="INR" maxlength="10" />
+      </div>
+      <div class="admin-payouts-modal__row">
+        <label class="admin-payouts-modal__label">TDS % (optional)</label>
+        <input type="number" class="admin-payouts-modal__input" [(ngModel)]="processTdsPercent" min="0" max="100" step="0.01" placeholder="e.g. 10 for 10%" />
+        <span class="admin-payouts-modal__hint">Deduction will be calculated and net amount stored.</span>
+      </div>
+      <div class="admin-payouts-modal__row">
+        <label class="admin-payouts-modal__label">Notes (optional)</label>
+        <textarea class="admin-payouts-modal__input admin-payouts-modal__textarea" [(ngModel)]="processNotes" placeholder="e.g. February 2026 earnings" rows="2"></textarea>
+      </div>
+      <p class="admin-payouts-modal__error" *ngIf="processError">{{ processError }}</p>
+      <div class="admin-payouts-modal__actions">
+        <button type="button" class="admin-payouts-modal__btn admin-payouts-modal__btn--primary" (click)="submitProcess()" [disabled]="processing">
+          {{ processing ? 'Recording…' : 'Record Payout' }}
+        </button>
+        <button type="button" class="admin-payouts-modal__btn admin-payouts-modal__btn--secondary" (click)="closeProcessModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

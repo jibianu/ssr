@@ -1,0 +1,173 @@
+<div class="history-page">
+  <div class="history-page__toolbar">
+    <button type="button" class="history-page__menu-btn" (click)="openMenu()" aria-label="Open menu">
+      <i class="fa fa-bars"></i> Open menu
+    </button>
+    <button type="button" class="history-page__send-btn" (click)="openSendPanel()" aria-label="Send notification">
+      <i class="fa fa-paper-plane"></i> Send notification
+    </button>
+  </div>
+
+  <h1 class="history-page__title">Notification History</h1>
+  <p class="history-page__subtitle">All sent notifications. Use filters to search and view details.</p>
+
+  <div *ngIf="requiresMigration" class="history-page__migration-alert" role="alert">
+    <strong>Database setup required.</strong> Notifications are being sent, but history is not saved until the <code>NotificationHistory</code> table exists.
+    Run the script <code>Courses.Data/Migrations/Add_Notification_Tables.sql</code> on your database (in SQL Server Management Studio or your SQL client), then refresh this page.
+  </div>
+
+  <div class="history-page__filters">
+    <div class="history-page__filter-group">
+      <label for="filterTitle">Search by Title</label>
+      <input id="filterTitle" type="text" [(ngModel)]="filterTitle" (keyup.enter)="onFilter()" class="history-page__input" placeholder="Title..." />
+    </div>
+    <div class="history-page__filter-group">
+      <label for="filterType">Type</label>
+      <select id="filterType" [(ngModel)]="filterType" (change)="onFilter()" class="history-page__select">
+        <option value="">All</option>
+        <option value="offer">Offer</option>
+        <option value="event">Event</option>
+        <option value="system">System</option>
+      </select>
+    </div>
+    <div class="history-page__filter-group">
+      <label for="filterSendTo">Send To</label>
+      <select id="filterSendTo" [(ngModel)]="filterSendTo" (change)="onFilter()" class="history-page__select">
+        <option value="">All</option>
+        <option value="all_students">All Students</option>
+        <option value="by_category">By Category</option>
+      </select>
+    </div>
+    <div class="history-page__filter-group">
+      <label for="filterFromDate">From Date</label>
+      <input id="filterFromDate" type="date" [(ngModel)]="filterFromDate" (change)="onFilter()" class="history-page__input" />
+    </div>
+    <div class="history-page__filter-group">
+      <label for="filterToDate">To Date</label>
+      <input id="filterToDate" type="date" [(ngModel)]="filterToDate" (change)="onFilter()" class="history-page__input" />
+    </div>
+    <button type="button" class="history-page__filter-btn" (click)="onFilter()">Apply</button>
+  </div>
+
+  <div class="history-page__table-wrap" [class.history-page__table-wrap--loading]="loading">
+    <table class="history-page__table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Send To</th>
+          <th>Created Date</th>
+          <th>Link</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="7" class="history-page__loading">Loading…</td>
+        </tr>
+        <tr *ngIf="!loading && loadError">
+          <td colspan="7" class="history-page__error">
+            {{ loadError }}
+            <button type="button" class="history-page__retry" (click)="load()">Try again</button>
+          </td>
+        </tr>
+        <tr *ngIf="!loading && !loadError && items.length === 0 && !requiresMigration">
+          <td colspan="7" class="history-page__empty">No notification history yet. Send a notification to see it here.</td>
+        </tr>
+        <tr *ngIf="!loading && !loadError && items.length === 0 && requiresMigration">
+          <td colspan="7" class="history-page__empty">Run the database migration above to start recording and viewing sent notifications here.</td>
+        </tr>
+        <tr *ngFor="let item of items" class="history-page__row">
+          <td class="history-page__td history-page__td--title">{{ item.title || item.Title }}</td>
+          <td class="history-page__td">
+            <span class="history-page__badge" [class]="'history-page__badge--' + (item.type || item.Type || 'system')">{{ (item.type || item.Type || '—') | titlecase }}</span>
+          </td>
+          <td class="history-page__td">{{ getSendToDisplay(item) }}</td>
+          <td class="history-page__td history-page__td--date">{{ (item.createdAt || item.CreatedAt) | date:'medium' }}</td>
+          <td class="history-page__td">
+            <a *ngIf="item.linkUrl || item.LinkUrl" [href]="item.linkUrl || item.LinkUrl" target="_blank" rel="noopener" class="history-page__link-icon" [title]="item.linkUrl || item.LinkUrl" aria-label="Open link">
+              <i class="fa fa-external-link"></i>
+            </a>
+            <span *ngIf="!(item.linkUrl || item.LinkUrl)">—</span>
+          </td>
+          <td class="history-page__td"><span class="history-page__status">Sent</span></td>
+          <td class="history-page__td history-page__actions-cell">
+            <button type="button" class="history-page__action-btn" (click)="openViewPanel(item)" aria-label="View">View</button>
+            <button type="button" class="history-page__action-btn history-page__action-btn--danger" (click)="deleteFromTable(item)" aria-label="Delete">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && totalCount > 0" class="history-page__pagination">
+    <app-common-pagination
+      [pageNumber]="page"
+      [pageSize]="pageSize"
+      [totalCount]="totalCount"
+      [pageSizeOptions]="[10, 20, 50]"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-common-pagination>
+  </div>
+</div>
+
+<!-- Side panel (navbar) for View / Update / Delete -->
+<aside class="history-panel" [class.history-panel--open]="panelOpen" role="dialog" aria-label="Notification details">
+  <div class="history-panel__backdrop" (click)="closeViewPanel()"></div>
+  <div class="history-panel__drawer" *ngIf="viewDetail">
+    <div class="history-panel__header">
+      <h2 class="history-panel__title">Notification Details</h2>
+      <button type="button" class="history-panel__close" (click)="closeViewPanel()" aria-label="Close">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="history-panel__body">
+      <form [formGroup]="editForm" (ngSubmit)="onUpdate()">
+        <div class="history-panel__field">
+          <label for="panelTitle">Title *</label>
+          <input id="panelTitle" type="text" formControlName="title" class="history-panel__input" placeholder="Title" />
+        </div>
+        <div class="history-panel__field">
+          <label for="panelMessage">Message</label>
+          <textarea id="panelMessage" formControlName="message" class="history-panel__textarea" rows="4" placeholder="Message"></textarea>
+        </div>
+        <div class="history-panel__field">
+          <label for="panelType">Type</label>
+          <select id="panelType" formControlName="type" class="history-panel__select">
+            <option value="offer">Offer</option>
+            <option value="event">Event</option>
+            <option value="system">System</option>
+          </select>
+        </div>
+        <div class="history-panel__field">
+          <label for="panelLinkUrl">Link URL (optional)</label>
+          <input id="panelLinkUrl" type="text" formControlName="linkUrl" class="history-panel__input" placeholder="e.g. /app/student/categories" />
+        </div>
+        <div class="history-panel__field">
+          <label for="panelSendTo">Send To</label>
+          <select id="panelSendTo" formControlName="sendTo" class="history-panel__select">
+            <option value="all_students">All Students</option>
+            <option value="by_category">By Category</option>
+          </select>
+        </div>
+        <div class="history-panel__field">
+          <label for="panelCreatedAt">Created Date</label>
+          <input id="panelCreatedAt" type="datetime-local" formControlName="createdAt" class="history-panel__input" />
+        </div>
+        <div *ngIf="panelMessage" class="history-panel__msg history-panel__msg--success">{{ panelMessage }}</div>
+        <div *ngIf="panelError" class="history-panel__msg history-panel__msg--error">{{ panelError }}</div>
+        <div class="history-panel__actions">
+          <button type="submit" class="history-panel__btn history-panel__btn--primary" [disabled]="panelSaving || editForm.invalid">
+            {{ panelSaving ? 'Updating…' : 'Update' }}
+          </button>
+          <button type="button" class="history-panel__btn history-panel__btn--danger" (click)="onDelete()" [disabled]="panelDeleting">
+            {{ panelDeleting ? 'Deleting…' : 'Delete' }}
+          </button>
+          <button type="button" class="history-panel__btn history-panel__btn--secondary" (click)="closeViewPanel()">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</aside>

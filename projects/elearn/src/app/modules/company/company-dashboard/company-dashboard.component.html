@@ -1,0 +1,102 @@
+<div class="card rounded-lg">
+  <!-- Card Header -->
+  <div class="card-header border-bottom-0 p-0 navBackground">
+
+    <!-- Side Navbar -->
+    <ul class="nav nav-lb-tab" id="tab" role="tablist" style=" justify-content: center;">
+      <li class="nav-item ml-0" role="presentation">
+        <a class="nav-link active" id="course-tab" data-toggle="pill" href="#course" role="tab" aria-controls="course"
+          aria-selected="true" (click)="tab='c'">Licensed Courses </a>
+      </li>
+      <li class="nav-item ml-0" role="presentation">
+        <a class="nav-link " id="course-tab" data-toggle="pill" href="#students" role="tab" aria-controls="course"
+          aria-selected="true" (click)="tab='s'">Students List </a>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <!-- Tab content -->
+    <div class="tab-content" id="tabContent">
+      <div class="tab-pane fade active show" id="course" role="tabpanel" aria-labelledby="course-tab">
+
+        <div class="card-header bodyHeader" *ngIf="tab=='c'">
+          <div class="d-flex">
+            <h4 class="mb-0 pl-4">
+              Licensed Courses
+            </h4>
+          </div>
+        </div>
+
+        <div class="table-responsive border-0 customDesign">
+          <table class="table mb-0" style="width: 100%;">
+            <thead>
+              <tr>
+                <th style="width:75%">
+                  <a href="javascript:void(0)" (click)="sortByHeading('Title')">Title
+                    <span *ngIf="sortBy == 'Title'" class="fa"
+                      [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                  </a>
+                </th>
+                <th >
+                  <a href="javascript:void(0)" (click)="sortByHeading('Category')">Category
+                    <span *ngIf="sortBy == 'Category'" class="fa"
+                      [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
+                  </a>
+                </th>
+                <!-- <th scope="col" style="width:15%">
+										Author
+									  </th>
+									  <th scope="col" style="width:15%">
+										Created Date
+									  </th> -->
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let item of course | paginate : { itemsPerPage : tableSize,currentPage : page,totalItems : count };">
+                <td><a (click)="gotToCurriculumList(item)"
+                    [routerLink]="['/app/company/details/curriculum-list',item.id]">{{item.title}}</a></td>
+                <td>{{item?.category?.name}}</td>
+                <!-- <td>
+										  {{item?.createdByUser?.firstName }} {{item?.createdByUser?.lastName}}
+										</td>
+										<td>
+										  {{item?.createdOn | date: 'short'}}
+										</td> -->
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="d-flex bd-highlight mb-3">
+            <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+            <div class="ml-auto p-2 bd-highlight">
+              <select (change)="onTableSizeChange($event)" class="custom-select">
+                <option *ngFor="let size of tableSizes" [ngValue]="size">
+                  {{ size }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="tab-pane fade " id="students" role="tabpanel" aria-labelledby="course-tab">
+        <!-- <div class="text-right">
+          <button (click)="InviteUser()" class="btn btn-primary btn-sm mb-2"> Invite User</button></div>
+        <app-student-dashboard *ngIf="tab=='s'"></app-student-dashboard>
+      </div> -->
+	  <div class="card-header bodyHeader">
+		<div class="d-flex">
+		  <h4 class="mb-0 pl-4">
+			Students List
+		  </h4>		  
+		  <div class=" p-2 ml-auto">
+			<a class="p-2 btn btn-outline-custom"  (click)="InviteUser()">Invite User</a>
+		  </div>
+		</div>
+	  </div>
+	  <app-student-dashboard *ngIf="tab=='s'"></app-student-dashboard>
+    </div>
+  </div>
+
+</div>

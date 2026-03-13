@@ -1,0 +1,44 @@
+.card-header{
+    padding: 26px 0px;
+    // background-image: linear-gradient(to bottom right, #8080ff , #d580ff);
+    background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+    border:none;
+    box-shadow: 1px 1px 11px rgba(33,33,33,.2);  
+  }
+  .card-header h3{
+    font-size: 2.5rem !important;
+    color:white!important;
+    text-align: center;
+  }
+
+  .tctab{
+    overflow-y: scroll;
+    overflow-x: none;
+    height: 77vh;
+  }
+
+  .btntype a, button{
+    width: 130px!important;
+    cursor: pointer;
+  }
+  .btn{
+    background-color: #60bdeb;
+    color: white!important;
+    transition: box-shadow .3s;
+  }
+.btn:hover{
+box-shadow: 0 0 11px rgba(33,33,33,.2);   
+}
+
+
+.fullWidth{
+    height: calc(100vh - 20px);
+    border-collapse: collapse;
+  overflow-y: scroll;
+}
+// .card-body{
+//   padding: 0px!important;
+// }
+ul{
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+}

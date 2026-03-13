@@ -1,0 +1,86 @@
+<div class="player-video">
+  <div class="player-video__header">
+    <div class="player-video__title-row">
+      <h1 class="player-video__title">{{ lessonTitle || title || 'Loading...' }}</h1>
+      <p class="player-video__duration" *ngIf="durationMinutes != null">Duration: {{ durationMinutes }} min</p>
+    </div>
+    <div class="player-video__actions">
+      <button type="button" class="player-video__fullscreen" (click)="toggleFullPage()" title="Full page">
+        <i class="fa fa-expand"></i>
+      </button>
+      <button type="button" class="player-video__exit" (click)="exit()">EXIT</button>
+    </div>
+  </div>
+
+  <div
+    class="player-video__area"
+    *ngIf="!loading && !error"
+    (touchstart)="onSwipeStart($event)"
+    (touchend)="onSwipeEnd($event)">
+    <p class="player-video__swipe-hint" *ngIf="showSwipeHint" (click)="dismissSwipeHint()">
+      Swipe ← → for previous / next lesson
+    </p>
+    <video
+      #videoEl
+      *ngIf="videoProvider === 'local' && videoSrc"
+      class="player-video__element"
+      controls
+      controlsList="nodownload nofullscreen"
+      [src]="videoSrc"
+      autoplay
+      (loadedmetadata)="onVideoMetadata($event)"
+      (canplay)="onVideoCanPlay($event)"
+      (timeupdate)="onVideoTimeUpdate($event)"
+      (ended)="onVideoEnded($event)"
+      (error)="onVideoError()">
+      Your browser does not support the video tag.
+    </video>
+    <iframe
+      *ngIf="videoProvider === 'youtube' && videoSrc"
+      class="player-video__element player-video__iframe"
+      [src]="videoSrc | safeUrl"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <div class="player-video__loading" *ngIf="loading">
+    <p>Loading video...</p>
+  </div>
+  <div class="player-video__error" *ngIf="error && !loading">
+    <p>Unable to load video.</p>
+  </div>
+
+  <footer class="player-video__footer">
+    <button
+      type="button"
+      class="player-video__nav player-video__nav--prev"
+      [disabled]="!hasPrev"
+      (click)="goPrev()">
+      <span class="player-video__nav-icon">←</span>
+      <span class="player-video__nav-label">Previous</span>
+    </button>
+    <div class="player-video__footer-center" *ngIf="totalLessons > 0">
+      <div class="player-video__lesson-meta">
+        <span class="player-video__lesson-title">
+          {{ lessonTitle || title || 'Lesson' }}
+        </span>
+        <span class="player-video__lesson-count">
+          Lesson {{ currentLessonNumber }} of {{ totalLessons }} ({{ progressPercent }}%)
+        </span>
+      </div>
+      <div class="player-video__progress-bar">
+        <div class="player-video__progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="player-video__nav player-video__nav--next"
+      [disabled]="!hasNext"
+      (click)="goNext()">
+      <span class="player-video__nav-label">Next</span>
+      <span class="player-video__nav-icon">→</span>
+    </button>
+  </footer>
+</div>

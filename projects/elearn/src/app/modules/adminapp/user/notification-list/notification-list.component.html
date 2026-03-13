@@ -1,0 +1,173 @@
+<div class="notification-list-page">
+  <div class="notification-list-page__toolbar">
+    <button type="button" class="notification-list-page__menu-btn" (click)="openMenu()" aria-label="Open menu">
+      <i class="fa fa-bars"></i> Open menu
+    </button>
+    <button type="button" class="notification-list-page__send-btn" (click)="openSendPanel()" aria-label="Send notification">
+      <i class="fa fa-paper-plane"></i> Send notification
+    </button>
+  </div>
+
+  <h1 class="notification-list-page__title">Notifications</h1>
+  <p class="notification-list-page__subtitle">All sent notifications. Use filters to search and view details.</p>
+
+  <div *ngIf="requiresMigration" class="notification-list-page__migration-alert" role="alert">
+    <strong>Database setup required.</strong> Notifications are being sent, but history is not saved until the <code>NotificationHistory</code> table exists.
+    Run the script <code>Courses.Data/Migrations/Add_Notification_Tables.sql</code> on your database, then refresh this page.
+  </div>
+
+  <div class="notification-list-page__filters">
+    <div class="notification-list-page__filter-group">
+      <label for="filterTitle">Search by Title</label>
+      <input id="filterTitle" type="text" [(ngModel)]="filterTitle" (keyup.enter)="onFilter()" class="notification-list-page__input" placeholder="Title..." />
+    </div>
+    <div class="notification-list-page__filter-group">
+      <label for="filterType">Type</label>
+      <select id="filterType" [(ngModel)]="filterType" (change)="onFilter()" class="notification-list-page__select">
+        <option value="">All</option>
+        <option value="offer">Offer</option>
+        <option value="event">Event</option>
+        <option value="system">System</option>
+      </select>
+    </div>
+    <div class="notification-list-page__filter-group">
+      <label for="filterSendTo">Send To</label>
+      <select id="filterSendTo" [(ngModel)]="filterSendTo" (change)="onFilter()" class="notification-list-page__select">
+        <option value="">All</option>
+        <option value="all_students">All Students</option>
+        <option value="by_category">By Category</option>
+      </select>
+    </div>
+    <div class="notification-list-page__filter-group">
+      <label for="filterFromDate">From Date</label>
+      <input id="filterFromDate" type="date" [(ngModel)]="filterFromDate" (change)="onFilter()" class="notification-list-page__input" />
+    </div>
+    <div class="notification-list-page__filter-group">
+      <label for="filterToDate">To Date</label>
+      <input id="filterToDate" type="date" [(ngModel)]="filterToDate" (change)="onFilter()" class="notification-list-page__input" />
+    </div>
+    <button type="button" class="notification-list-page__filter-btn" (click)="onFilter()">Apply</button>
+  </div>
+
+  <div class="notification-list-page__table-wrap" [class.notification-list-page__table-wrap--loading]="loading">
+    <table class="notification-list-page__table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Send To</th>
+          <th>Created Date</th>
+          <th>Link</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="7" class="notification-list-page__loading">Loading…</td>
+        </tr>
+        <tr *ngIf="!loading && loadError">
+          <td colspan="7" class="notification-list-page__error">
+            {{ loadError }}
+            <button type="button" class="notification-list-page__retry" (click)="load()">Try again</button>
+          </td>
+        </tr>
+        <tr *ngIf="!loading && !loadError && items.length === 0 && !requiresMigration">
+          <td colspan="7" class="notification-list-page__empty">No notifications yet. Send a notification to see it here.</td>
+        </tr>
+        <tr *ngIf="!loading && !loadError && items.length === 0 && requiresMigration">
+          <td colspan="7" class="notification-list-page__empty">Run the database migration above to start recording and viewing sent notifications here.</td>
+        </tr>
+        <tr *ngFor="let item of items" class="notification-list-page__row">
+          <td class="notification-list-page__td notification-list-page__td--title">{{ item.title || item.Title }}</td>
+          <td class="notification-list-page__td">
+            <span class="notification-list-page__badge" [class]="'notification-list-page__badge--' + (item.type || item.Type || 'system')">{{ (item.type || item.Type || '—') | titlecase }}</span>
+          </td>
+          <td class="notification-list-page__td">{{ getSendToDisplay(item) }}</td>
+          <td class="notification-list-page__td notification-list-page__td--date">{{ (item.createdAt || item.CreatedAt) | date:'medium' }}</td>
+          <td class="notification-list-page__td">
+            <a *ngIf="item.linkUrl || item.LinkUrl" [href]="item.linkUrl || item.LinkUrl" target="_blank" rel="noopener" class="notification-list-page__link-icon" [title]="item.linkUrl || item.LinkUrl" aria-label="Open link">
+              <i class="fa fa-external-link"></i>
+            </a>
+            <span *ngIf="!(item.linkUrl || item.LinkUrl)">—</span>
+          </td>
+          <td class="notification-list-page__td"><span class="notification-list-page__status">Sent</span></td>
+          <td class="notification-list-page__td notification-list-page__actions-cell">
+            <button type="button" class="notification-list-page__action-btn" (click)="openViewPanel(item)" aria-label="View">View</button>
+            <button type="button" class="notification-list-page__action-btn notification-list-page__action-btn--danger" (click)="deleteFromTable(item)" aria-label="Delete">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && totalCount > 0" class="notification-list-page__pagination">
+    <app-common-pagination
+      [pageNumber]="page"
+      [pageSize]="pageSize"
+      [totalCount]="totalCount"
+      [pageSizeOptions]="[10, 20, 50]"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-common-pagination>
+  </div>
+</div>
+
+<!-- Side panel (navbar) for View / Update / Delete - same design as Notification History -->
+<aside class="notification-list-panel" [class.notification-list-panel--open]="panelOpen" role="dialog" aria-label="Notification details">
+  <div class="notification-list-panel__backdrop" (click)="closeViewPanel()"></div>
+  <div class="notification-list-panel__drawer" *ngIf="viewDetail">
+    <div class="notification-list-panel__header">
+      <h2 class="notification-list-panel__title">Notification Details</h2>
+      <button type="button" class="notification-list-panel__close" (click)="closeViewPanel()" aria-label="Close">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="notification-list-panel__body">
+      <form [formGroup]="editForm" (ngSubmit)="onUpdate()">
+        <div class="notification-list-panel__field">
+          <label for="panelTitle">Title *</label>
+          <input id="panelTitle" type="text" formControlName="title" class="notification-list-panel__input" placeholder="Title" />
+        </div>
+        <div class="notification-list-panel__field">
+          <label for="panelMessage">Message</label>
+          <textarea id="panelMessage" formControlName="message" class="notification-list-panel__textarea" rows="4" placeholder="Message"></textarea>
+        </div>
+        <div class="notification-list-panel__field">
+          <label for="panelType">Type</label>
+          <select id="panelType" formControlName="type" class="notification-list-panel__select">
+            <option value="offer">Offer</option>
+            <option value="event">Event</option>
+            <option value="system">System</option>
+          </select>
+        </div>
+        <div class="notification-list-panel__field">
+          <label for="panelLinkUrl">Link URL (optional)</label>
+          <input id="panelLinkUrl" type="text" formControlName="linkUrl" class="notification-list-panel__input" placeholder="e.g. /app/student/categories" />
+        </div>
+        <div class="notification-list-panel__field">
+          <label for="panelSendTo">Send To</label>
+          <select id="panelSendTo" formControlName="sendTo" class="notification-list-panel__select">
+            <option value="all_students">All Students</option>
+            <option value="by_category">By Category</option>
+          </select>
+        </div>
+        <div class="notification-list-panel__field">
+          <label for="panelCreatedAt">Created Date</label>
+          <input id="panelCreatedAt" type="datetime-local" formControlName="createdAt" class="notification-list-panel__input" />
+        </div>
+        <div *ngIf="panelMessage" class="notification-list-panel__msg notification-list-panel__msg--success">{{ panelMessage }}</div>
+        <div *ngIf="panelError" class="notification-list-panel__msg notification-list-panel__msg--error">{{ panelError }}</div>
+        <div class="notification-list-panel__actions">
+          <button type="submit" class="notification-list-panel__btn notification-list-panel__btn--primary" [disabled]="panelSaving || editForm.invalid">
+            {{ panelSaving ? 'Updating…' : 'Update' }}
+          </button>
+          <button type="button" class="notification-list-panel__btn notification-list-panel__btn--danger" (click)="onDelete()" [disabled]="panelDeleting">
+            {{ panelDeleting ? 'Deleting…' : 'Delete' }}
+          </button>
+          <button type="button" class="notification-list-panel__btn notification-list-panel__btn--secondary" (click)="closeViewPanel()">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</aside>

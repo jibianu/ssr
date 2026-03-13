@@ -1,0 +1,128 @@
+/* Topbar: breadcrumb left/center, actions right (no logo) */
+.elearn-topbar {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 24px;
+}
+
+.elearn-topbar__spacer {
+  flex: 1;
+  min-width: 16px;
+}
+
+/* Breadcrumb: Explore amber, Category/rest dark; separators grey */
+.elearn-topbar__breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.elearn-topbar__breadcrumb-link {
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.elearn-topbar__breadcrumb-link--explore {
+  color: #ea580c;
+}
+
+.elearn-topbar__breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.elearn-topbar__breadcrumb-link--explore:hover {
+  color: #c2410c;
+}
+
+.elearn-topbar__breadcrumb-text {
+  color: #374151;
+  font-weight: 500;
+}
+
+.elearn-topbar__breadcrumb-sep {
+  color: #9ca3af;
+  margin: 0 8px;
+  user-select: none;
+  font-weight: 400;
+}
+
+.elearn-topbar__breadcrumb-title {
+  color: #111827;
+  font-weight: 500;
+}
+
+/* Actions: notification bell + profile avatar (match learning platform topbar) */
+.elearn-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* Notification: 40px trigger, bell icon, orange badge at top-right */
+.elearn-topbar__notifications {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+  text-decoration: none;
+  font-size: 1.25rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.elearn-topbar__notifications:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.elearn-topbar__notifications-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ea580c;
+}
+
+/* Profile: circular avatar (40px), same as learning platform */
+.elearn-topbar__profile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.elearn-topbar__profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 1rem;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, color 0.2s;
+}
+
+.elearn-topbar__profile:hover .elearn-topbar__profile-avatar {
+  background: #d1d5db;
+  color: #111827;
+}

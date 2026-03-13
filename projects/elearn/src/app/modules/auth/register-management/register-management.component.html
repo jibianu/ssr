@@ -1,0 +1,66 @@
+<div class="login-page">
+  <!-- Popup: user already exists -->
+  <div class="login-alert-overlay" *ngIf="showAlert" role="alertdialog" aria-modal="true" aria-labelledby="user-exists-title" aria-describedby="user-exists-message">
+    <div class="login-alert-backdrop" (click)="closeAlert()"></div>
+    <div class="login-alert-card">
+      <div class="login-alert-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h2 id="user-exists-title" class="login-alert-title">User already exists</h2>
+      <p id="user-exists-message" class="login-alert-message">{{ alertMessage }}</p>
+      <div class="login-alert-actions">
+        <a routerLink="/auth/login" class="login-alert-link" (click)="closeAlert()">Log in</a>
+        <span class="login-alert-sep">·</span>
+        <a routerLink="/auth/forget-password" class="login-alert-link" (click)="closeAlert()">Forgot password</a>
+      </div>
+      <button type="button" class="login-alert-btn" (click)="closeAlert()">OK</button>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <header class="login-header">
+      <div class="login-header__brand-row">
+        <a routerLink="/" class="login-brand" aria-label="oilandgasclub home">
+          <img [src]="logoUrl" alt="oilandgasclub" class="login-brand__logo" width="130" height="42" fetchpriority="high">
+        </a>
+        <span class="login-header__separator" aria-hidden="true">|</span>
+        <span class="login-header__subtitle">Management</span>
+      </div>
+      <p class="login-header__prompt">
+        Already have an account? <a routerLink="/auth/login" class="login-header__link">Log in</a>
+      </p>
+    </header>
+
+    <div class="login-info-box">
+      <h1 class="login-info-box__title">Enter your work email address.</h1>
+      <p class="login-info-box__text">Register to manage oilandgasclub internal work operations.</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="register()" aria-label="Management sign up">
+      <div class="login-form__field">
+        <label class="login-form__label" for="management-email">Email address</label>
+        <input id="management-email" type="email" name="email" [(ngModel)]="email" required
+          placeholder="you@company.com" class="login-form__input" autocomplete="email" inputmode="email">
+      </div>
+      <div class="login-form__field">
+        <label class="login-form__label" for="management-password">Password</label>
+        <input id="management-password" type="password" name="password" [(ngModel)]="password" required
+          placeholder="Create a password" class="login-form__input" autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="login-form__submit">Register</button>
+    </form>
+
+    <p class="login-signup">
+      Already a member? <a routerLink="/auth/login" class="login-signup__link">Log in</a>
+    </p>
+  </div>
+
+  <footer class="login-footer">
+    <p class="login-footer__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
+    <div class="login-footer__links">
+      <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="login-footer__link">Privacy Policy</a>
+      <a href="https://www.oilandgasclub.com/cookies/" target="_blank" rel="noopener" class="login-footer__link">Manage Cookies</a>
+    </div>
+  </footer>
+</div>

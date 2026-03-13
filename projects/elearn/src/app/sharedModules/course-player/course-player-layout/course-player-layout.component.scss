@@ -1,0 +1,118 @@
+.course-player {
+  /* Fill viewport so video footer (Prev / Next) sits at bottom of page */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #111;
+}
+
+.course-player--fullpage {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Desktop: Course Structure (lessons) on LEFT, video on RIGHT (main area) */
+.course-player__grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.course-player__sidebar {
+  order: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.course-player__video {
+  order: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Mobile: video on top (full width), lesson list collapsible below with clear toggle */
+@media (max-width: 767px) {
+  .course-player__grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'video'
+      'sidebar';
+  }
+
+  .course-player__video {
+    grid-area: video;
+    order: 1;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    flex: 0 0 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .course-player__sidebar {
+    grid-area: sidebar;
+    order: 2;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #fff;
+  }
+
+  .course-player--lessons-open .course-player__sidebar {
+    max-height: 65vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .course-player__lessons-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 48px;
+  }
+
+  .course-player__lessons-toggle:active {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .course-player__lessons-toggle i {
+    font-size: 0.85rem;
+  }
+}
+
+/* Desktop: hide the mobile-only lessons toggle */
+.course-player__lessons-toggle {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .course-player__lessons-toggle {
+    display: flex;
+  }
+}

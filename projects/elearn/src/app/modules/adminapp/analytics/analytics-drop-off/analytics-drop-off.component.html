@@ -1,0 +1,68 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__title">Drop-off report by course</h1>
+    <p class="dashboard__subtitle">Where students stop (last lesson or video) within the selected date range.</p>
+    <div class="dashboard__filter">
+      <a routerLink="/app/admin/analytics/courses" class="dashboard__preset">Course Analytics</a>
+      <div class="dashboard__presets">
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'today'" (click)="onPresetChange('today')">Today</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last7'" (click)="onPresetChange('last7')">Last 7 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'last30'" (click)="onPresetChange('last30')">Last 30 Days</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'thisMonth'" (click)="onPresetChange('thisMonth')">This Month</button>
+        <button type="button" class="dashboard__preset" [class.dashboard__preset--active]="dateRangePreset === 'custom'" (click)="setDateRangeFromPreset('custom')">Custom Range</button>
+      </div>
+      <div class="dashboard__custom" *ngIf="dateRangePreset === 'custom'">
+        <input type="date" class="dashboard__date" [(ngModel)]="customFrom" />
+        <span class="dashboard__date-sep">–</span>
+        <input type="date" class="dashboard__date" [(ngModel)]="customTo" />
+        <button type="button" class="dashboard__apply" (click)="applyCustomRange()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="drop-off__picker">
+    <label>Course</label>
+    <select [(ngModel)]="selectedCourseId" (ngModelChange)="onCourseChange()" [disabled]="loadingCourses">
+      <option value="">Select a course</option>
+      <option *ngFor="let c of courses" [value]="c.courseId">{{ c.courseName }} ({{ c.enrollmentCount }} enrolled)</option>
+    </select>
+    <button type="button" class="dashboard__apply" (click)="loadReport()" [disabled]="!selectedCourseId || loading">Load report</button>
+  </div>
+
+  <div class="dashboard__table-section" *ngIf="report">
+    <h2 class="drop-off__course-name">{{ report.courseName }}</h2>
+    <p class="drop-off__summary">
+      Total enrolled: <strong>{{ report.totalEnrolled }}</strong>.
+      Never started in range: <strong>{{ report.neverStartedCount }}</strong>.
+    </p>
+    <div class="dashboard__table-wrap" [class.dashboard__table-wrap--loading]="loading">
+      <table class="dashboard__table">
+        <thead>
+          <tr>
+            <th class="dashboard__th">#</th>
+            <th class="dashboard__th">Lesson / Video</th>
+            <th class="dashboard__th">Stopped here</th>
+            <th class="dashboard__th">% of enrolled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="4" class="dashboard__empty-cell">Loading…</td>
+          </tr>
+          <tr *ngIf="!loading && !report?.items?.length">
+            <td colspan="4" class="dashboard__empty-cell">No curriculum items or no event data in range.</td>
+          </tr>
+          <tr *ngFor="let row of report?.items; let i = index">
+            <td class="dashboard__td">{{ row.sortOrder }}</td>
+            <td class="dashboard__td">{{ row.curriculumTitle }}</td>
+            <td class="dashboard__td">{{ row.dropOffCount }}</td>
+            <td class="dashboard__td">{{ row.dropOffPercent | number:'1.1-1' }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p *ngIf="error" class="drop-off__error">{{ error }}</p>
+  <p *ngIf="selectedCourseId && !report && !loading && !error" class="drop-off__hint">Click Load report to see where students stopped.</p>
+</div>

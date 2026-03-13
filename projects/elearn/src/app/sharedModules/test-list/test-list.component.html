@@ -1,0 +1,32 @@
+<div class="card mb-4" style="height: 100vh;">
+
+  <div class="card-header">
+    <h5>{{courseName}}
+      <h3 class="mb-mt-0">Self Assesment Tests</h3>
+    </h5>
+  </div>
+
+  <div class="card-body">
+    <ul class="list-group list-group-flush">
+
+      <li class="list-group-item px-0 py-3" *ngFor="let item of questionsSetList; index as i;">
+        <div class="d-flex" [class.disabledTest]="item.isCompleted ? true : null">
+          <div class="btntype">
+            <a class="btn" routerLink="/app/{{redirectTo}}/details/exam-result/{{item.id}}"
+              routerLinkActive="router-link-active">Test Result</a>
+          </div>
+          <div class="align-self-center ml-4 customTestLink">
+            <h5 class="mb-0"><a routerLink="/app/{{redirectTo}}/details/test-details/{{item.id}}"
+                (click)="setCourseProgressDetails(item)"
+                [class.disabled]="item.isCompleted ? true : null">{{item?.title}}</a></h5>
+            <p class="mb-0 font-size-xs">{{Difficulty[item?.difficultyLevelId]}}
+              {{item?.questionSetTestInformation?.questionCount}} Qestions
+              <span *ngIf="item.isCompleted">Completed</span>
+            </p>
+          </div>
+        </div>
+      </li>
+      <hr>
+    </ul>
+  </div>
+</div>

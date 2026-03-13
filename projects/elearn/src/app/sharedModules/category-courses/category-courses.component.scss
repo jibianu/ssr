@@ -1,0 +1,423 @@
+/* Category courses – same layout as Explore: outer scroll wrapper + inner content (gradient, cards) */
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Scroll wrapper – same as explore-page-scroll: scrollbar on the right */
+.category-courses-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #e2e8f0;
+}
+
+.category-courses-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.category-courses-scroll::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 5px;
+}
+
+.category-courses-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 5px;
+}
+
+.category-courses-scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Inner content – same as learning-categories: gradient, max-width, border-radius */
+.category-courses-page {
+  padding: 32px 24px 48px;
+  max-width: 1300px;
+  margin: 0 auto;
+  background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 50%, #eef2ff 100%);
+  min-height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  border-radius: 20px;
+}
+
+/* Page header – same as explore category row header */
+.category-page-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.category-page-title {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.category-page-subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* Grid – 4 / 2 / 1 like explore */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 2rem;
+}
+
+/* Orange tokens (match explore) */
+$app-orange: #f97316;
+$app-orange-light: #ffedd5;
+$app-orange-border: #fdba74;
+$app-success: #10b981;
+$app-success-dark: #059669;
+
+/* Card – same as explore: white, orange border, hover lift */
+.category-course-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid $app-orange-border;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(249, 115, 22, 0.2);
+    border-color: $app-orange;
+  }
+}
+
+/* Card header – light grey, category tag + badges (same as explore) */
+.card-header {
+  height: 60px;
+  min-height: 60px;
+  background: #e9edf5;
+  border: 1px solid #add8e6;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 14px;
+  position: relative;
+}
+
+.card-header .course-category-tag {
+  font-size: 0.7rem;
+  color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(173, 216, 230, 0.5);
+}
+
+.card-badge {
+  position: absolute;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+
+  &--complete {
+    top: 8px;
+    right: 10px;
+    background: #1e293b;
+    color: #fff;
+  }
+
+  &--progress {
+    top: 8px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  &--seller {
+    top: 8px;
+    left: 10px;
+    background: #f59e0b;
+    color: #fff;
+  }
+}
+
+/* Card content */
+.card-content {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-title {
+  margin: 0 0 10px 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.card-price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 8px 0;
+}
+
+.price-actual {
+  font-size: 0.8125rem;
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.price-offer {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.btn-buy {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid $app-orange-border;
+  border-radius: 12px;
+  background: $app-orange-light;
+  color: #c2410c;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(249, 115, 22, 0.12);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: #fed7aa;
+    border-color: $app-orange;
+    color: #9a3412;
+    transform: translateY(-1px);
+  }
+
+  i {
+    font-size: 0.875rem;
+    color: #c2410c;
+  }
+}
+
+.wishlist-badge {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &.add:hover {
+    background: #ffedd5;
+    border-color: $app-orange-border;
+    color: #c2410c;
+  }
+
+  &:not(.add) {
+    background: #ffedd5;
+    border-color: $app-orange-border;
+    color: #c2410c;
+  }
+}
+
+.card-cta {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #1e293b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  margin-top: 0;
+
+  &:hover {
+    background: #fff7ed;
+    border-color: $app-orange-border;
+    color: #ea580c;
+  }
+
+  &--secondary {
+    margin-top: 0;
+  }
+}
+
+/* Progress – green bar and buttons (match My Courses) */
+.course-progress {
+  margin: 10px 0 12px 0;
+
+  .progress-container {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    margin-bottom: 8px;
+    overflow: hidden;
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #34d399 0%, $app-success 100%);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+  }
+
+  .progress-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: #64748b;
+  }
+
+  .btn-resume {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid $app-orange-border;
+    background: $app-orange-light;
+    color: #c2410c;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      background: #fed7aa;
+      transform: translateY(-1px);
+    }
+  }
+
+  .btn-completed {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: default;
+    border: none;
+    background: $app-success;
+    color: #fff;
+  }
+}
+
+/* Pagination – subtle, match explore feel */
+.pagination-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+::ng-deep .ngx-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+
+  li {
+    list-style: none;
+
+    a {
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #475569;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.875rem;
+
+      &:hover {
+        background: $app-orange-light;
+        border-color: $app-orange-border;
+        color: #c2410c;
+      }
+    }
+
+    &.current a {
+      background: $app-orange;
+      border-color: $app-orange;
+      color: #fff;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .course-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .category-courses-page {
+    padding: 20px 16px 32px;
+  }
+
+  .course-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .progress-status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,157 @@
+<header id="theme-header" class="theme-header inner-header course-page-header">
+  <div class="public-container">
+    <!-- Desktop Header -->
+    <div class="topbar-inner">
+      <div class="logo" routerLink="/">
+        <span>
+          <img src="assets/s3/oilandgas_club.svg" width="120" height="54" alt="Oilandgasclub logo">
+        </span>
+      </div>
+
+      <div class="topbar-search" #searchContainer>
+        <span class="topbar-search__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </span>
+        <input
+          type="text"
+          class="topbar-search__input"
+          [value]="searchText"
+          (input)="onSearchInput($event)"
+          (focus)="onSearchFocus()"
+          placeholder="Search courses"
+          aria-label="Search courses"
+          autocomplete="off"
+        />
+        <div
+          class="topbar-search__dropdown"
+          *ngIf="showDropdown && (searchResults.length > 0 || searchLoading)"
+          role="listbox"
+        >
+          <div *ngIf="searchLoading" class="topbar-search__loading">Searching...</div>
+          <button
+            *ngFor="let course of searchResults"
+            type="button"
+            class="topbar-search__item"
+            (click)="onSelectCourse(course)"
+            role="option"
+          >
+            {{ course.title }}
+          </button>
+        </div>
+      </div>
+
+      <nav class="topbar-nav topbar-nav--desktop">
+        <ul class="nav-menu">
+          <li class="menu-item">
+            <a routerLink="/courses">Courses</a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="'/events'">Events</a>
+          </li>
+          <li class="menu-item">
+            <a href="https://blog.oilandgasclub.com/" target="_blank">Blog</a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="'/become-our-trainer'">Become an Instructor</a>
+          </li>
+          <li class="menu-actions">
+            <a [href]="loginUrl" class="btn-login">Log in</a>
+            <a [href]="registerUrl" class="btn-signup">Sign up</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Mobile Top Bar -->
+      <div class="mobile-topbar">
+        <button class="mobile-nav" 
+                [class.active]="isVisible"
+                (click)="toggleVisibility()" 
+                type="button" 
+                aria-label="Open navigation menu"
+                [attr.aria-expanded]="isVisible">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+        
+        <div class="mobile-logo" routerLink="/">
+          <img src="assets/s3/oilandgas_club.svg" alt="Oilandgasclub logo">
+        </div>
+
+        <div class="mobile-actions">
+          <a [href]="loginUrl" 
+             class="btn-login-mobile-top">
+            Log in
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Off-Canvas Left Menu Overlay -->
+    <div class="mobile-menu-overlay" 
+         [class.active]="isVisible"
+         (click)="toggleinVisibility($event)"
+         [attr.aria-hidden]="!isVisible">
+    </div>
+
+    <!-- Off-Canvas Left Navigation Menu -->
+    <nav class="topbar-nav topbar-nav--mobile" 
+         [class.active]="isVisible"
+         role="navigation"
+         aria-label="Mobile navigation"
+         [attr.aria-hidden]="!isVisible">
+      <div class="mobile-menu-header">
+        <button type="button" 
+                class="mobile-menu-close" 
+                (click)="toggleinVisibility($event)" 
+                aria-label="Close navigation menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <ul class="nav-menu nav-menu--mobile">
+        <li class="menu-item menu-item--mobile">
+          <a [routerLink]="'/courses'" (click)="toggleinVisibility()">
+            <span class="menu-item-icon">📚</span>
+            <span class="menu-item-text">Courses</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item--mobile">
+          <a [routerLink]="'/events'" (click)="toggleinVisibility()">
+            <span class="menu-item-icon">📅</span>
+            <span class="menu-item-text">Events</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item--mobile">
+          <a href="https://blog.oilandgasclub.com/" target="_blank" (click)="toggleinVisibility()">
+            <span class="menu-item-icon">📝</span>
+            <span class="menu-item-text">Blog</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item--mobile">
+          <a [routerLink]="'/become-our-trainer'" (click)="toggleinVisibility()">
+            <span class="menu-item-icon">👨‍🏫</span>
+            <span class="menu-item-text">Become an Instructor</span>
+          </a>
+        </li>
+      </ul>
+      
+      <div class="mobile-menu-actions">
+        <a [href]="loginUrl" 
+           class="btn-login-mobile-menu" 
+           (click)="toggleinVisibility()">
+          Log in
+        </a>
+        <a [href]="registerUrl" 
+           class="btn-signup-mobile-menu" 
+           (click)="toggleinVisibility()">
+          Sign up
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+

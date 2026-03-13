@@ -1,0 +1,336 @@
+$accent: #7c3aed;
+$accent-border: rgba(124, 58, 237, 0.5);
+$price-green: #059669;
+$text-muted: #6b7280;
+
+.purchase-history {
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 60vh;
+  background: #fff;
+}
+
+.purchase-history__header {
+  margin-bottom: 1rem;
+}
+
+.purchase-history__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--app-dark, #1f2937);
+  margin: 0;
+}
+
+.purchase-history__tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--app-gray, #e5e7eb);
+}
+
+.purchase-history__tab {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: $text-muted;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: var(--app-dark, #1f2937);
+  }
+
+  &--active {
+    color: var(--app-dark, #1f2937);
+    border-bottom-color: $accent;
+  }
+}
+
+.purchase-history__table-wrap {
+  background: #fff;
+  overflow: auto;
+
+  &--loading {
+    min-height: 200px;
+  }
+}
+
+.purchase-history__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.purchase-history__th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $text-muted;
+  background: #fff;
+  border-bottom: 1px solid var(--app-gray, #e5e7eb);
+
+  &--icon {
+    width: 2.5rem;
+    padding-left: 1rem;
+  }
+
+  &--actions {
+    text-align: right;
+    padding-right: 1rem;
+  }
+}
+
+.purchase-history__td {
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  color: var(--app-dark, #1f2937);
+  border-bottom: 1px solid var(--app-gray, #e5e7eb);
+  vertical-align: middle;
+
+  &--icon {
+    width: 2.5rem;
+    padding-left: 1rem;
+  }
+
+  &--item {
+    max-width: 280px;
+  }
+
+  &--price {
+    font-weight: 500;
+  }
+
+  &--actions {
+    text-align: right;
+    white-space: nowrap;
+    padding-right: 1rem;
+  }
+}
+
+.purchase-history__cart-icon {
+  color: $text-muted;
+  font-size: 1.125rem;
+}
+
+.purchase-history__item-link {
+  color: $accent;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.purchase-history__price--free,
+.purchase-history__td--price span {
+  color: $price-green;
+}
+
+.purchase-history__btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $accent;
+  background: #fff;
+  border: 1px solid $accent-border;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: background 0.2s, color 0.2s;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(124, 58, 237, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--outline {
+    border-color: $accent-border;
+  }
+}
+
+.purchase-history__unavailable {
+  font-size: 0.8125rem;
+  color: $text-muted;
+  margin-left: 0.5rem;
+}
+
+.purchase-history__empty {
+  padding: 2rem 1rem !important;
+  text-align: center;
+  color: $text-muted;
+  font-size: 0.9375rem;
+}
+
+.purchase-history__skeleton-row td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.purchase-history__skeleton--cell {
+  height: 1.25rem;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: purchase-history-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes purchase-history-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.purchase-history__pagination {
+  margin-top: 1rem;
+}
+
+// Receipt & Invoice modals
+.purchase-history__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.purchase-history__modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem 1rem;
+  overflow-y: auto;
+  pointer-events: none;
+
+  & > .purchase-history__modal-inner {
+    pointer-events: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 720px;
+    width: 100%;
+    padding: 1.5rem 2rem 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.purchase-history__modal-header {
+  position: relative;
+  margin-bottom: 1.25rem;
+  padding-right: 2rem;
+}
+
+.purchase-history__modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: var(--app-dark, #1f2937);
+}
+
+.purchase-history__modal-date,
+.purchase-history__modal-meta {
+  font-size: 0.875rem;
+  color: $text-muted;
+  margin: 0 0 0.25rem;
+}
+
+.purchase-history__invoice-original {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $text-muted;
+  margin: 0 0 0.25rem;
+}
+
+.purchase-history__modal-close {
+  position: absolute;
+  top: -0.25rem;
+  right: 0;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $text-muted;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: var(--app-dark, #1f2937);
+  }
+}
+
+.purchase-history__receipt-grid,
+.purchase-history__invoice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.purchase-history__receipt-address {
+  color: $text-muted;
+}
+
+.purchase-history__receipt-meta {
+  text-align: right;
+}
+
+.purchase-history__receipt-soldto {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+}
+
+.purchase-history__receipt-table,
+.purchase-history__invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  margin-bottom: 1rem;
+
+  th, td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border: 1px solid var(--app-gray, #e5e7eb);
+  }
+
+  th {
+    font-weight: 600;
+    background: #f9fafb;
+  }
+}
+
+.purchase-history__invoice-table .purchase-history__invoice-total td {
+  font-weight: 500;
+  background: #f9fafb;
+}
+
+.purchase-history__receipt-summary {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+
+  p { margin: 0.25rem 0; }
+}
+
+.purchase-history__receipt-disclaimer {
+  font-size: 0.75rem;
+  color: $text-muted;
+  margin: 0;
+}

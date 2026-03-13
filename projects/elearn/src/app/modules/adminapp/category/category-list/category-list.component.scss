@@ -1,0 +1,86 @@
+::ng-deep .modal-right .modal-dialog {
+    position: fixed !important;
+    margin: auto;
+    width: 500px;
+    height: 100%;
+    -webkit-transform: translate3d(0%, 0, 0);
+        -ms-transform: translate3d(0%, 0, 0);
+         -o-transform: translate3d(0%, 0, 0);
+            transform: translate3d(0%, 0, 0);
+}
+
+::ng-deep .modal-right .modal-body {
+		padding: 15px 15px 80px;
+        min-height: 500px;
+        overflow-y: scroll;
+	}
+
+    ::ng-deep .modal-right .modal-content {
+		height: 100%;
+		overflow-y: auto;
+	}
+
+    ::ng-deep .modal-right.fade .modal-dialog {
+    right: 0;
+    -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+       -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+         -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+            transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+::ng-deep .modal-right.fade.in .modal-dialog {
+    right: 0 !important;
+}
+
+
+table{
+    border: 1px solid #ddd8d8;
+    table-layout: fixed;
+    white-space: nowrap;
+    overflow-y: scroll;
+    width: 100%;
+}
+
+// .customDesign{
+//     height: 50vh;
+// }
+
+.customBtn{
+    padding: 3px 5px!important;
+    width: 28px;
+}
+
+
+.studentHeading{
+    background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+    // text-align: center;
+}
+
+.studentHeading h1{
+    color:white;
+    padding: 43px 0px;
+    font-size: 56px;
+    margin-left: 20vw;
+}
+
+.studentHeading a{
+    transition: box-shadow 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    padding: 5px 10px;
+    width: 100%;
+    transition: all ease 0.2s;
+    background-color: transparent;
+    color: white !important;
+    border: 1px solid white;
+}
+
+.studentHeading a:hover{
+    transform: translateY(-2px);
+    box-shadow: 0px 10px 20px 2px rgba(0, 0, 0, 0.25);
+}
+.mainClass{
+    height: 83vh;
+    overflow: auto;
+}

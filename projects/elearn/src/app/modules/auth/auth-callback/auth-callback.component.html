@@ -1,0 +1,10 @@
+<div class="auth-callback">
+  <div class="auth-callback__card" *ngIf="loading">
+    <p class="auth-callback__text">Signing you in…</p>
+    <div class="auth-callback__spinner"></div>
+  </div>
+  <div class="auth-callback__card auth-callback__card--error" *ngIf="error && !loading">
+    <p class="auth-callback__error">{{ error }}</p>
+    <a routerLink="/auth/login" class="auth-callback__link">Back to sign in</a>
+  </div>
+</div>

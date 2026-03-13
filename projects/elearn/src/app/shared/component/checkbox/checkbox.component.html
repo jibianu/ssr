@@ -1,0 +1,15 @@
+<!-- <div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Dropdown button
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a class="dropdown-item" href="#" *ngFor="let item of permissionResponse">{{item.name}}</a>
+    </div>
+  </div> -->
+<p>checkbox works!</p>
+<div class="form-check" *ngFor="let item of permissionResponse">
+  <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" [checked]="item.isActive">
+  <label class="form-check-label" for="flexCheckDefault">
+    {{item.name}}
+  </label>
+</div>

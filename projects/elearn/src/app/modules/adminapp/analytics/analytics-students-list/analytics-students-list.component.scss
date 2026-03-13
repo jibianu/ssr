@@ -1,0 +1,115 @@
+@use '../../../../shared/component/dashboard/dashboard-shared.scss';
+
+.dashboard__row-click {
+  cursor: pointer;
+}
+.dashboard__link {
+  color: var(--app-primary, #f57722);
+  text-decoration: none;
+  font-weight: 500;
+  &:hover { text-decoration: underline; }
+}
+
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  .filters-bar__search {
+    min-width: 200px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .filters-bar__sort,
+  .filters-bar__toggle {
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+  .filters-bar__desc {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+  .filters-bar__clear {
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #999;
+    background: #f5f5f5;
+    cursor: pointer;
+  }
+}
+
+.advanced-filters {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fafafa;
+  .advanced-filters__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .advanced-filters__group {
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    select,
+    input {
+      width: 100%;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .advanced-filters__range {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      input { flex: 1; min-width: 0; }
+    }
+  }
+  .advanced-filters__actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+  .pagination__info { font-size: 0.9rem; color: #666; }
+  .pagination__size {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    select { padding: 0.35rem 0.5rem; border-radius: 4px; border: 1px solid #ccc; }
+  }
+  .pagination__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    button {
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+  }
+  .pagination__page { font-size: 0.9rem; }
+}

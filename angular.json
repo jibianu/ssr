@@ -1,0 +1,163 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "site": {
+      "projectType": "application",
+      "schematics": { "@schematics/angular:component": { "style": "scss" } },
+      "root": "projects/site",
+      "sourceRoot": "projects/site/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/site",
+            "index": "projects/site/src/index.html",
+            "browser": "projects/site/src/main.ts",
+            "polyfills": ["@angular/localize/init", "projects/site/src/polyfills.ts"],
+            "tsConfig": "projects/site/tsconfig.app.json",
+            "assets": ["projects/site/src/favicon.ico", "projects/site/src/assets", { "glob": "**/*", "input": "projects/site/public", "output": "/" }],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.css",
+              "projects/site/src/styles.scss",
+              "node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.min.css",
+              "node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.theme.default.min.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [{ "replace": "projects/site/src/environments/environment.ts", "with": "projects/site/src/environments/environment.prod.ts" }],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "site:build",
+            "port": 4200
+          },
+          "configurations": {
+            "production": { "buildTarget": "site:build:production" },
+            "development": { "buildTarget": "site:build:development" }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": { "builder": "@angular-devkit/build-angular:extract-i18n", "options": { "buildTarget": "site:build" } },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "projects/site/tsconfig.spec.json",
+            "karmaConfig": "projects/site/karma.conf.js",
+            "assets": ["projects/site/src/favicon.ico", "projects/site/src/assets"],
+            "styles": ["projects/site/src/styles.scss"]
+          }
+        }
+      }
+    },
+    "elearn": {
+      "projectType": "application",
+      "schematics": { "@schematics/angular:component": { "style": "scss" } },
+      "root": "projects/elearn",
+      "sourceRoot": "projects/elearn/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/elearn",
+            "index": "projects/elearn/src/index.html",
+            "main": "projects/elearn/src/main.ts",
+            "polyfills": ["@angular/localize/init", "zone.js"],
+            "tsConfig": "projects/elearn/tsconfig.app.json",
+            "assets": ["projects/elearn/src/favicon.ico", "projects/elearn/src/assets"],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.css",
+              "projects/elearn/src/styles.scss",
+              "node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.min.css",
+              "node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.theme.default.min.css"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": ["projects/elearn/src/app"]
+            },
+            "scripts": ["node_modules/jquery/dist/jquery.min.js", "node_modules/popper.js/dist/umd/popper.min.js", "node_modules/bootstrap/dist/js/bootstrap.js"]
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [{ "replace": "projects/elearn/src/environments/environment.ts", "with": "projects/elearn/src/environments/environment.prod.ts" }],
+              "baseHref": "/Elearn/",
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false
+            },
+            "development": { "optimization": false, "sourceMap": true }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "elearn:build",
+            "port": 4201
+          },
+          "configurations": {
+            "production": { "buildTarget": "elearn:build:production" },
+            "development": { "buildTarget": "elearn:build:development" }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": { "builder": "@angular-devkit/build-angular:extract-i18n", "options": { "buildTarget": "elearn:build" } },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/elearn/src/test.ts",
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "projects/elearn/tsconfig.spec.json",
+            "karmaConfig": "projects/elearn/karma.conf.js",
+            "assets": ["projects/elearn/src/favicon.ico", "projects/elearn/src/assets"],
+            "styles": ["projects/elearn/src/styles.scss"]
+          }
+        }
+      }
+    },
+    "shared": {
+      "projectType": "library",
+      "root": "projects/shared",
+      "sourceRoot": "projects/shared/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/shared/ng-package.json"
+          },
+          "configurations": {
+            "production": { "tsConfig": "projects/shared/tsconfig.lib.prod.json" },
+            "development": { "tsConfig": "projects/shared/tsconfig.lib.json" }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/shared/tsconfig.spec.json",
+            "karmaConfig": "projects/shared/karma.conf.js"
+          }
+        }
+      }
+    }
+  },
+  "cli": { "analytics": false },
+  "schematics": { "@schematics/angular:component": { "style": "scss" } }
+}

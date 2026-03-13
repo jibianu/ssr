@@ -1,0 +1,25 @@
+<div class="text-block" [class.text-block--author]="isEditable">
+  <!-- Formatting toolbar moved to lesson-editor navbar; shows when this block is focused -->
+  <!-- View mode: safe innerHTML, no contenteditable -->
+  <div
+    *ngIf="!isEditable"
+    class="text-block__content text-block__content--view"
+    [innerHTML]="block.content"
+  ></div>
+  <!-- Author mode: contenteditable -->
+  <div
+    *ngIf="isEditable"
+    #editableEl
+    class="text-block__content text-block__content--editable"
+    data-placeholder="Type your text here..."
+    appAutoGrow
+  ></div>
+  <input
+    *ngIf="isEditable"
+    type="file"
+    #imageInput
+    accept="image/*"
+    class="d-none"
+    (change)="onImageFileSelect($event)"
+  />
+</div>

@@ -1,0 +1,109 @@
+<div class="quiz-page">
+  <!-- Loading state: show whenever not yet loaded so we never show a blank page -->
+  <div class="quiz-state quiz-state--loading" *ngIf="!questionsLoaded">
+    <p class="quiz-state__text">Loading questions…</p>
+  </div>
+  <!-- Error state -->
+  <div class="quiz-state quiz-state--error" *ngIf="questionsLoaded && questionsError">
+    <p class="quiz-state__text">{{ questionsError }}</p>
+    <button type="button" class="quiz-state__btn" (click)="cancelTest()">Go back</button>
+  </div>
+  <!-- Empty state -->
+  <div class="quiz-state quiz-state--empty" *ngIf="questionsLoaded && !questionsError && (!questions || questions.length === 0)">
+    <p class="quiz-state__text">No questions available for this topic.</p>
+    <button type="button" class="quiz-state__btn" (click)="cancelTest()">Go back</button>
+  </div>
+  <!-- Quiz content (retake test / curriculum questions) -->
+  <div class="quiz-layout" *ngIf="questionsLoaded && !questionsError && questions && questions.length > 0">
+    <!-- Mobile: right-side drawer (question list) opened from topbar icon -->
+    <div class="quiz-right-drawer-backdrop" *ngIf="practiceQuestionsDrawer.open$ | async" (click)="practiceQuestionsDrawer.close()" role="button" tabindex="0" aria-label="Close question list"></div>
+    <aside class="quiz-right-drawer" [class.quiz-right-drawer--open]="practiceQuestionsDrawer.open$ | async" aria-label="Question list">
+      <div class="quiz-right-drawer__header">
+        <span class="quiz-right-drawer__title">Questions</span>
+        <button type="button" class="quiz-right-drawer__close" (click)="practiceQuestionsDrawer.close()" aria-label="Close">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <ul class="quiz-right-drawer__list">
+        <li class="quiz-right-drawer__item" *ngFor="let item of questions; index as i" [class.quiz-right-drawer__item--active]="i === HighlightRow">
+          <a class="quiz-right-drawer__link" href="javascript:void(0)" (click)="selectQuestionAndCloseDrawer(i); $event.preventDefault(); $event.stopPropagation()">
+            <span class="quiz-right-drawer__num">{{ i + 1 }})</span>
+            <span class="quiz-right-drawer__title-text">{{ item?.title || item?.Title || item?.questionTitle || item?.questionText || 'Question' }}</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    <!-- Left: question list (shown for both practice and exam) -->
+    <aside class="quiz-sidebar">
+      <button class="quiz-sidebar__toggle" (click)="toggleClass()" [ngClass]="{'active-class': isActive}"
+        aria-label="Toggle question list">
+        <span class="line-list oneline"></span>
+        <span class="line-list twoline"></span>
+        <span class="line-list threeline"></span>
+      </button>
+      <ul class="quiz-list" *ngIf="questions" [ngClass]="{'active-class': isActive}">
+        <li class="quiz-list__item" *ngFor="let item of questions; index as i"
+          [class.quiz-list__item--active]="i === HighlightRow">
+          <a class="quiz-list__link" (click)="ClickedRow(i); $event.preventDefault()" href="javascript:void(0)">
+            <span class="quiz-list__num">{{ i + 1 }})</span>
+            <span class="quiz-list__title">{{ item?.title || item?.Title }}</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    <!-- Right: question content -->
+    <main class="quiz-main">
+      <!-- Top bar: back + title (left side) -->
+      <header class="quiz-topbar">
+        <button type="button" class="quiz-topbar__back" (click)="cancelTest()" aria-label="Go back">
+          <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="quiz-topbar__title">{{ pageTitle || 'Questions' }}</h1>
+        <button type="button" class="quiz-topbar__exit" (click)="cancelTest()" title="Exit / Cancel" aria-label="Exit">
+          <img src="./assets/img/stop-img.svg" alt="" />
+        </button>
+      </header>
+      <div class="quiz-content">
+        <div class="quiz-header">
+          <div class="quiz-header__meta" *ngIf="remaningTime()">
+            <span class="quiz-header__time">Time Left: {{ remaningTime() }}</span>
+            <span class="quiz-header__attempts">Attempt {{ totalAttemptCount }}/{{ maxAttemptsAllowed }}</span>
+          </div>
+          <div class="quiz-header__question">
+            <h2 class="quiz-header__title">{{ HighlightRow + 1 }}) {{ selectedQuestion?.title || (questions?.[HighlightRow]?.title || questions?.[HighlightRow]?.Title || questions?.[HighlightRow]?.questionTitle || questions?.[HighlightRow]?.questionText) || 'Question' }}</h2>
+          </div>
+        </div>
+        <div class="quiz-body">
+          <div class="quiz-options" *ngIf="selectedQuestion && selectedQuestion?.options && selectedQuestion?.options?.length > 1">
+            <button type="button" *ngFor="let item of arr; let j = index" class="quiz-option"
+              (click)="selectOption(j)" [class.quiz-option--selected]="j === selectedAnswer"
+              [class.quiz-option--disabled]="isSubmit"
+              [class.quiz-option--correct]="isSubmit && selectedQuestion.options[j].isCorrect === true && !examTest"
+              [class.quiz-option--wrong]="isSubmit && selectedQuestion.options[j].isCorrect === false && j === selectedAnswer && !examTest">
+              <img *ngIf="selectedQuestion.options[j]?.extraInformation" [src]="selectedQuestion.options[j].extraInformation" alt="" class="quiz-option__img" />
+              <span class="quiz-option__text">{{ item }}</span>
+            </button>
+          </div>
+          <div class="quiz-solution" *ngIf="(isSubmit || (selectedQuestion && selectedQuestion.options && selectedQuestion.options.length) === 1) && selectedQuestion?.description && questionType !== '1'">
+            <strong class="quiz-solution__label">Solution</strong>
+            <div class="quiz-solution__body ck-content post-body" [innerHTML]="selectedQuestion?.description"></div>
+          </div>
+        </div>
+        <div class="quiz-actions">
+          <button type="button" class="quiz-btn quiz-btn--prev" (click)="previous(HighlightRow)">
+            <img src="./assets/img/left-arrow.png" alt="" /> Previous
+          </button>
+          <button type="button" class="quiz-btn quiz-btn--skip" (click)="skip(HighlightRow)" [style.width]="bwidth"
+            *ngIf="selectedAnswer == null && (selectedQuestion && selectedQuestion.options && selectedQuestion.options.length) > 1">
+            Skip <img src="./assets/img/right-arrow.png" alt="" class="quiz-btn__arrow" />
+          </button>
+          <button type="button" class="quiz-btn quiz-btn--primary" (click)="submit(selectedQuestion)"
+            *ngIf="selectedAnswer != null && !isSubmit" [style.width]="bwidth">Submit</button>
+          <button type="button" class="quiz-btn quiz-btn--primary" (click)="submitQuestion(HighlightRow)"
+            *ngIf="isSubmit || (selectedQuestion && selectedQuestion.options && selectedQuestion.options.length) === 1">Next</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <!-- end quiz-layout -->
+</div>

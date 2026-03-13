@@ -1,0 +1,47 @@
+<div class="explore-page-scroll">
+<div class="learning-categories">
+  <!-- Hero: Edutec Explore -->
+  <section class="explore-hero">
+    <span class="explore-hero__badge">Explore</span>
+    <h1 class="explore-hero__title">
+      Start Learning Faster – Tap on a <span class="title-underline title-underline--blue">Category</span> to View All <span class="title-underline title-underline--purple">Courses</span>
+    </h1>
+    <p class="explore-hero__subtitle">Discover industry-recognized programs and advance your career with expert-led courses.</p>
+  </section>
+
+  <!-- One row = one category; courses in 4-per-row grid -->
+  <div class="category-row" *ngFor="let block of categoriesWithCourses">
+    <div class="category-row__header">
+      <div class="category-row__titles">
+        <h3 class="category-row__name">{{ block.category.name }}</h3>
+        <p class="category-row__subtitle">Explore expert-led programs curated for this category.</p>
+      </div>
+      <a class="category-row__see-all" href="javascript:void(0)" (click)="goToCategoryCourses(block.category)">
+        See all <i class="fa fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </div>
+    <div class="category-row__courses">
+      <div class="category-course-card" *ngFor="let item of block.courses" (click)="goToCourse(item)">
+        <div class="card-header">
+          <span class="course-category-tag">{{ item?.category?.name }}</span>
+        </div>
+        <div class="card-content">
+          <h4 class="course-title">{{ item.title | slice:0:50 }}{{ item.title?.length > 50 ? '...' : '' }}</h4>
+          <div class="card-price-block">
+            <span class="price-actual" *ngIf="getDisplayOriginalPrice(item) as orig">{{ orig | currency:currencyCode:'symbol':'1.2-2' }}</span>
+            <span class="price-offer">{{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="card-actions">
+            <button type="button" class="btn-buy" (click)="goToCheckout(item); $event.stopPropagation()">
+              <i class="fa fa-shopping-cart"></i> Buy {{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}
+            </button>
+          </div>
+          <button type="button" class="card-cta card-cta--secondary" (click)="goToCourse(item); $event.stopPropagation()">
+            View course
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

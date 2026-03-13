@@ -1,0 +1,6 @@
+<app-student-desktop-layout *ngIf="!(device.isMobile$ | async)">
+  <router-outlet></router-outlet>
+</app-student-desktop-layout>
+<app-student-mobile-layout *ngIf="device.isMobile$ | async">
+  <router-outlet></router-outlet>
+</app-student-mobile-layout>

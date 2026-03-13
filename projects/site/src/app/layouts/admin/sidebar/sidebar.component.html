@@ -1,0 +1,34 @@
+<!-- ✅ BEAUTIFUL DESIGN: Modern Fixed Sidebar - Always Visible -->
+<aside id="sidebar" class="admin-sidebar">
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <i class="fas fa-graduation-cap"></i>
+      <span class="logo-text">Admin Panel</span>
+    </div>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="sidebar-nav">
+    <ul class="nav-menu">
+      <li class="nav-item" *ngFor="let item of menuItem; trackBy: trackByMenuItemLink">
+        <a 
+          class="nav-link" 
+          [routerLink]="item.link" 
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{exact: false}">
+          <i [class]="getMenuItemIcon(item.label)"></i>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer (Optional) -->
+  <div class="sidebar-footer">
+    <div class="sidebar-version">
+      <i class="fas fa-info-circle"></i>
+      <span>v2.0</span>
+    </div>
+  </div>
+</aside>

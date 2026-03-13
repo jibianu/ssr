@@ -1,0 +1,26 @@
+
+/*.modal {
+  z-index: 0 !important;
+}*/
+
+.notestext {
+    margin-top: 5px;
+    padding-right: 25px;
+  }
+  
+  .show {
+    display: block;
+  }
+  
+  .sidescroll {
+    max-height: calc(100vh - 89px);
+    overflow: auto;
+  }
+  .modal-header {
+    padding: 0px !important;
+  }
+  
+  .btn-sm {
+    padding: 5px !important;
+  }
+  

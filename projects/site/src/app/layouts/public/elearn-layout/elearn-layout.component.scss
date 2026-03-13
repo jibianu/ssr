@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.layout-container.elearn-layout-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.elearn-layout__main {
+  margin-left: 72px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.elearn-layout__header {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.elearn-layout__content {
+  flex: 1;
+  position: relative;
+}
+
+.elearn-layout__footer {
+  flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+  .elearn-layout__main {
+    margin-left: 0;
+  }
+}

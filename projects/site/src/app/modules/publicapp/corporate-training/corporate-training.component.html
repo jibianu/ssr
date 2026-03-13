@@ -1,0 +1,305 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
+<div class="corp-page" ngSkipHydration>
+  <section class="corp-hero">
+    <div class="corp-hero__copy">
+      <p class="corp-eyebrow">Enterprise upskilling · Hybrid delivery · API/ASNT/CSWIP experts</p>
+      <h1>Build high-performing oil &amp; gas teams with <span>custom corporate academies</span></h1>
+      <p>
+        Tailored programs for process, mechanical, inspection, and digital teams with live labs, project simulations,
+        and global instructor networks.
+      </p>
+      <div class="corp-stats">
+        @for (stat of heroStats; track stat.label) {
+          <div class="corp-stat">
+            <span class="corp-stat__value">{{ stat.value }}</span>
+            <span class="corp-stat__label">{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="corp-hero__actions">
+        <a class="btn-primary" href="#" (click)="openModal($event)">Request a custom program</a>
+        <a class="btn-link" href="https://www.oilandgasclub.com/courses">Download full catalog →</a>
+      </div>
+    </div>
+    <div class="corp-hero__card">
+      <h3>Design a learning sprint</h3>
+      <ol>
+        <li>Pick target roles (process, mechanical, inspection, digital)</li>
+        <li>Choose format: cohort, hybrid, or on-site</li>
+        <li>Align on KPIs, labs, and certification goals</li>
+      </ol>
+      <p class="corp-note">Most customers launch their first cohort in 3–4 weeks.</p>
+    </div>
+  </section>
+
+  <section class="corp-section">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Solutions</p>
+      <h2>What we deliver</h2>
+    </header>
+    <div class="corp-grid">
+      @for (solution of solutions; track solution.title) {
+        <article class="corp-card">
+          <h3>{{ solution.title }}</h3>
+          <p>{{ solution.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="corp-section">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Delivery modes</p>
+      <h2>We adapt to your rhythm</h2>
+    </header>
+    <div class="corp-grid corp-grid--modes">
+      @for (mode of deliveryModes; track mode.mode) {
+        <article class="corp-mode">
+          <h3>{{ mode.mode }}</h3>
+          <p>{{ mode.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="corp-section">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">How it works</p>
+      <h2>Partnering with us</h2>
+    </header>
+    <div class="corp-steps">
+      @for (step of trainingSteps; track step.step) {
+        <article class="corp-step">
+          <span class="corp-step__index">{{ step.step }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.detail }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="corp-section corp-section--highlight">
+    <div class="corp-highlight">
+      <div>
+        <p class="corp-eyebrow">Insight</p>
+        <h2>Upskilling that sticks</h2>
+        <p>Live labs, cohort communities, and project reviews keep engineers accountable. We embed your assets,
+          vendors, and compliance frameworks for seamless adoption.</p>
+      </div>
+      <a class="btn-primary" href="#" (click)="openModal($event)">Book a discovery call</a>
+    </div>
+  </section>
+
+  <section class="corp-section corp-section--testimonials">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Customer stories</p>
+      <h2>Leaders trust Oilandgasclub</h2>
+    </header>
+    <div class="corp-testimonials">
+      @for (story of testimonials; track story.author) {
+        <article class="corp-testimonial">
+          <p class="corp-testimonial__quote">{{ story.quote }}</p>
+          <p class="corp-testimonial__author">{{ story.author }}</p>
+        </article>
+      }
+    </div>
+    <div class="corp-logos">
+      @for (logo of logos; track logo.label) {
+        <div class="corp-logo-icon" [ngSwitch]="logo.icon" [attr.aria-label]="logo.label">
+          <svg *ngSwitchCase="'orbit'" viewBox="0 0 48 48" fill="none" role="img">
+            <defs>
+              <linearGradient id="corpOrbit" x1="10" y1="10" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#3B82F6" stop-opacity="0.18" />
+                <stop offset="1" stop-color="#6366F1" stop-opacity="0.10" />
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpOrbit)" />
+            <circle cx="24" cy="24" r="8" stroke="#1E3A8A" stroke-width="2" />
+            <path d="M12 20c2-3 7-6 12-6s10 3 12 6m-24 8c2 3 7 6 12 6s10-3 12-6" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <svg *ngSwitchCase="'shield'" viewBox="0 0 48 48" fill="none" role="img">
+            <defs>
+              <linearGradient id="corpShield" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#10B981" stop-opacity="0.18" />
+                <stop offset="1" stop-color="#3B82F6" stop-opacity="0.12" />
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpShield)" />
+            <path d="M24 10l12 4v10c0 7.2-5 13.7-12 15-7-1.3-12-7.8-12-15V14l12-4z" stroke="#065F46" stroke-width="2" stroke-linejoin="round" />
+            <path d="M24 18v12" stroke="#065F46" stroke-width="2" stroke-linecap="round" />
+            <path d="M18 24h12" stroke="#065F46" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <svg *ngSwitchCase="'pulse'" viewBox="0 0 48 48" fill="none" role="img">
+            <defs>
+              <linearGradient id="corpPulse" x1="10" y1="10" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#F59E0B" stop-opacity="0.18" />
+                <stop offset="1" stop-color="#EC4899" stop-opacity="0.10" />
+              </linearGradient>
+            </defs>
+          <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpPulse)" />
+          <path d="M12 26h6l3-8 6 16 3-8h6" stroke="#7C2D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <svg *ngSwitchCase="'circuit'" viewBox="0 0 48 48" fill="none" role="img">
+            <defs>
+              <linearGradient id="corpCircuit" x1="12" y1="12" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366F1" stop-opacity="0.16" />
+                <stop offset="1" stop-color="#10B981" stop-opacity="0.12" />
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpCircuit)" />
+            <path d="M16 16h16v16H16z" stroke="#312E81" stroke-width="2" />
+            <path d="M16 24h-4v8h8v-4" stroke="#312E81" stroke-width="2" stroke-linecap="round" />
+            <path d="M32 24h4v-8h-8v4" stroke="#312E81" stroke-width="2" stroke-linecap="round" />
+            <circle cx="12" cy="32" r="2" fill="#312E81" />
+            <circle cx="36" cy="16" r="2" fill="#312E81" />
+          </svg>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="corp-section corp-section--cta">
+    <div class="corp-cta">
+      <div>
+        <p class="corp-eyebrow">Ready to get started?</p>
+        <h2>Co-create a learning roadmap</h2>
+        <p>Send us your skill matrix, competency goals, or certification requirements. Our team will respond within 48 hours with a proposal.</p>
+      </div>
+      <a class="btn-primary" href="#" (click)="openModal($event)">Request proposal</a>
+    </div>
+  </section>
+</div>
+
+  <!-- Corporate Training Enquiry Modal -->
+  @if (showModal) {
+    <div class="modal-overlay show" (click)="closeModal()" [attr.aria-hidden]="!showModal" aria-modal="true" role="dialog">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-header-content">
+          <h2>Request Corporate Training</h2>
+            <p>Submit your details below. Our team will respond within 48 hours with a proposal.</p>
+          </div>
+          <button class="modal-close" (click)="closeModal()" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <form
+          class="corporate-form"
+          (ngSubmit)="onFormSubmit(corporateForm)"
+          #corporateForm="ngForm"
+        >
+          @if (showThankYouInModal) {
+            <div class="submit-message success corporate-thankyou">
+              {{ thankYouMessage }}
+            </div>
+          } @else {
+            <div class="form-row">
+              <div class="form-column">
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="firstName"
+                    name="firstName"
+                    [(ngModel)]="formData.firstName"
+                  placeholder="First Name"
+                    required
+                    #firstNameInput="ngModel"
+                    [class.error]="firstNameInput.invalid && firstNameInput.touched"
+                  />
+                  @if (firstNameInput.invalid && firstNameInput.touched) {
+                  <span class="error-message">First name is required</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="lastName"
+                    name="lastName"
+                    [(ngModel)]="formData.lastName"
+                    placeholder="Last Name"
+                  required
+                  #lastNameInput="ngModel"
+                  [class.error]="lastNameInput.invalid && lastNameInput.touched"
+                  />
+                @if (lastNameInput.invalid && lastNameInput.touched) {
+                  <span class="error-message">Last name is required</span>
+                }
+                </div>
+
+                <div class="form-group">
+                  <input
+                    type="email"
+                  id="workEmail"
+                    name="workEmail"
+                    [(ngModel)]="formData.workEmail"
+                  placeholder="Work Email"
+                    required
+                    email
+                  #emailInput="ngModel"
+                  [class.error]="emailInput.invalid && emailInput.touched"
+                  />
+                @if (emailInput.invalid && emailInput.touched) {
+                  <span class="error-message">Valid email is required</span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-column">
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="whatsappNumber"
+                    name="whatsappNumber"
+                    [(ngModel)]="formData.whatsappNumber"
+                  placeholder="WhatsApp Number"
+                    required
+                    #whatsappInput="ngModel"
+                    [class.error]="whatsappInput.invalid && whatsappInput.touched"
+                  />
+                  @if (whatsappInput.invalid && whatsappInput.touched) {
+                  <span class="error-message">WhatsApp number is required</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <input
+                    type="text"
+                  id="company"
+                    name="company"
+                    [(ngModel)]="formData.company"
+                  placeholder="Company"
+                  required
+                  #companyInput="ngModel"
+                  [class.error]="companyInput.invalid && companyInput.touched"
+                  />
+                @if (companyInput.invalid && companyInput.touched) {
+                  <span class="error-message">Company is required</span>
+                }
+                </div>
+              </div>
+            </div>
+
+          @if (submitMessage && !submitSuccess) {
+            <div class="submit-message error">
+                {{ submitMessage }}
+              </div>
+            }
+
+            <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+                @if (isSubmitting) {
+                  Submitting...
+                } @else {
+                Submit Request
+                }
+              </button>
+            </div>
+          }
+        </form>
+      </div>
+    </div>
+  }

@@ -1,0 +1,103 @@
+<div class="course-home" style="min-height: 90vh;">
+  <ng-container *ngIf="items$ | async as items; else loadingTemplate">
+    <div *ngIf="error" class="course-home__alert">
+      <h5>
+        <i class="fa fa-exclamation-triangle"></i>
+        {{ !backendAvailable ? 'Backend API Unavailable' : 'Unable to Load Categories' }}
+      </h5>
+      <p>{{ error }}</p>
+      <div class="course-home__alert-details" *ngIf="!backendAvailable">
+        <strong>Troubleshooting:</strong>
+        <ul>
+          <li>Is the backend server running?</li>
+          <li>Check if backend is accessible at: <code>{{ apiUrl }}</code></li>
+          <li>Verify CORS is configured correctly</li>
+          <li>Check browser console for detailed error messages</li>
+        </ul>
+      </div>
+      <button class="course-home__alert-btn" (click)="reload()">
+        <i class="fa fa-refresh"></i> Retry Connection
+      </button>
+    </div>
+
+    <div *ngIf="items.length === 0 && !error" class="course-home__empty">
+      <p>No categories available at the moment.</p>
+    </div>
+
+    <section class="course-section public-container" *ngFor="let item of items; trackBy: trackByItemIndex">
+      <header class="course-section__header">
+        <div>
+          <h2 class="course-section__title">{{ item.categoryName }}</h2>
+          <p class="course-section__subtitle">
+            Explore expert-led programs curated for this category.
+          </p>
+        </div>
+        <a class="course-section__link" [routerLink]="['/category', item.categorySlug || item.categoryName]">
+          See all
+          <i class="fa fa-chevron-right" aria-hidden="true"></i>
+        </a>
+      </header>
+
+      <div class="course-section__grid">
+        <article class="course-card" *ngFor="let course of item.courses; trackBy: trackByCourseId">
+          <a *ngIf="course?.canonicalUrl" class="course-card__media" [routerLink]="course.canonicalUrl">
+            <img
+              [src]="course?.titleImageUrl"
+              (error)="onImgError($event)"
+              alt="{{ course?.title }}"
+              loading="lazy"
+            />
+            <span class="course-card__badge" *ngIf="course?.badge">{{ course.badge }}</span>
+          </a>
+          <div *ngIf="!course?.canonicalUrl" class="course-card__media">
+            <img
+              [src]="course?.titleImageUrl"
+              (error)="onImgError($event)"
+              alt="{{ course?.title }}"
+              loading="lazy"
+            />
+            <span class="course-card__badge" *ngIf="course?.badge">{{ course.badge }}</span>
+          </div>
+
+          <div class="course-card__body">
+            <h3 class="course-card__title">
+              <a *ngIf="course?.canonicalUrl" [routerLink]="course.canonicalUrl">{{ course?.title }}</a>
+              <span *ngIf="!course?.canonicalUrl">{{ course?.title }}</span>
+            </h3>
+
+            <ul class="course-card__highlights">
+              <li *ngFor="let feature of (course.courseFeatures | slice:0:3); trackBy: trackByFeatureId">
+                {{ feature?.description }}
+              </li>
+              <li *ngIf="!course?.courseFeatures?.length">
+                Learn industry-ready skills with expert mentors and real-world projects.
+              </li>
+            </ul>
+          </div>
+
+          <footer class="course-card__footer">
+            <a class="course-card__cta" 
+               [href]="getBuyButtonUrl(course)"
+               [attr.aria-label]="'Buy ' + (course?.title || 'course')"
+               (click)="handleBuyClick($event, course)"
+               target="_self">
+              <span class="course-card__cta-text">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                Buy
+              </span>
+              <span class="course-card__cta-price">
+                {{ (course.amount ?? 0) === 0 ? 'Free' : (course.amount | currency:'INR':'symbol') }}
+              </span>
+            </a>
+          </footer>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="course-home__loading public-container">
+      <p class="text-center">Loading categories...</p>
+    </div>
+  </ng-template>
+</div>

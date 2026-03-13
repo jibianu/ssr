@@ -1,0 +1,18 @@
+<ng-container *ngIf="course; else notFound">
+  <!-- /:courseId → existing Elearn layout (Elearn header, Elearn sidebar, course content); public header/footer hidden by PublicLayout. Skip when ?embed=1 (iframe inside 4201). -->
+  <ng-container *ngIf="useElearnLayout">
+    <app-elearn-layout>
+      <app-public-course-details
+        [resolvedCourse]="course"
+        [courseSlug]="canonicalSlug"
+      ></app-public-course-details>
+    </app-elearn-layout>
+  </ng-container>
+  <!-- Canonical slug or embed mode: content only (no Elearn layout, no public header/footer in embed). -->
+  <app-public-course-details
+    *ngIf="!useElearnLayout"
+    [resolvedCourse]="course"
+    [courseSlug]="canonicalSlug || courseSlug"
+  ></app-public-course-details>
+</ng-container>
+<ng-template #notFound></ng-template>

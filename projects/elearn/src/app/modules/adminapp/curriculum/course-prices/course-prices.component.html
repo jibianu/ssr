@@ -1,0 +1,123 @@
+<div class="card-header">
+    <div class="d-flex bodyHeader">
+      <h4 class="mb-0 pl-4"><div class="back-button d-inline-block" (click)="goBack()"><i class="fa fa-arrow-left" aria-hidden="true"
+        id="backarrow"></i></div>
+        Prices
+      </h4>
+      <div class="ml-auto p-2">
+        <a class="p-2 btn btn-outline-custom" *ngIf="!prices.length" (click)="addPrice(content)">Add Price</a>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="table-responsive border-0 customDesign">
+    <table class="table mb-0" style="width: 100%;">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 12%;">Course Type</th>
+          <th scope="col" style="width: 18%;">Original Price</th>
+          <th scope="col" style="width: 18%;">Discounted Price</th>
+          <th scope="col" style="width: 18%;">Discount Start Date</th>
+          <th scope="col" style="width: 18%;">Discount End Date</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of prices; index as i;">
+          <td style="text-align: center;">
+            <span [class.text-success]="item?.coursePriceType === 'free'">{{ (item?.coursePriceType === 'free') ? 'Free' : 'Paid' }}</span>
+          </td>
+          <td style="text-align: center;">
+            {{item?.originalPrice | number:'1.2-2'}}
+          </td>
+          <td style="text-align: center;">
+            {{item?.discountedPrice | number:'1.2-2'}}
+          </td>
+          <td>
+            {{item?.startDate | date:'dd-MMM-yyyy'}}
+          </td>
+          <td>
+            {{item?.endDate | date:'dd-MMM-yyyy'}}
+          </td>
+          <td>
+              <button  type="button" class="btn btn-success customBtn"
+                (click)="updatePrice(content,item)"><i class="fa fa-edit"></i></button>
+              <!-- <button  type="button" class="btn btn-danger customBtn ml-1"
+                (click)="deletePrice(item.id)"><i class="fa fa-trash"></i></button> -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #content let-modal>
+    <div class="modal-header price-modal-header curriculum-navbar-header">
+      <h4 class="modal-title">{{pageTitle}}</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="priceForm">
+        <!-- STEP 1 — Course Pricing Type -->
+        <div class="form-group">
+          <label class="d-block">Course Pricing</label>
+          <div class="d-flex flex-wrap gap-3">
+            <label class="mb-0 d-flex align-items-center">
+              <input type="radio" formControlName="coursePriceType" value="free" class="mr-2">
+              Free Course
+            </label>
+            <label class="mb-0 d-flex align-items-center">
+              <input type="radio" formControlName="coursePriceType" value="paid" class="mr-2">
+              Paid Course
+            </label>
+          </div>
+        </div>
+
+        <!-- STEP 2 — Free Course message (when Free selected) -->
+        <div class="alert alert-success" *ngIf="priceForm.get('coursePriceType')?.value === 'free'" role="status">
+          This course will be available for free. Students can enroll without payment.
+        </div>
+
+        <!-- STEP 3 — Paid course fields (hidden when Free) -->
+        <ng-container *ngIf="priceForm.get('coursePriceType')?.value === 'paid'">
+          <div class="form-group">
+            <label>Original Price <span class="text-danger">*</span></label>
+            <input type="number" formControlName="originalPrice" class="form-control" min="0" step="0.01"
+              [ngClass]="{ 'is-invalid': submitted && f.originalPrice.errors }" />
+            <div *ngIf="submitted && f.originalPrice.errors" class="invalid-feedback">
+              <div *ngIf="f.originalPrice.errors.required">Original Price is required</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Discounted Price <span class="text-muted">(optional)</span></label>
+            <input type="number" formControlName="discountedPrice" class="form-control" min="0" step="0.01"
+              [ngClass]="{ 'is-invalid': submitted && (f.discountedPrice.errors || discountPriceError) }" />
+            <div *ngIf="submitted && discountPriceError" class="invalid-feedback d-block">
+              Discounted Price must be lower than Original Price
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Discount Start Date <span class="text-muted">(optional, for limited-time offer)</span></label>
+            <input type="date" formControlName="startDate" class="form-control"
+              [ngClass]="{ 'is-invalid': submitted && f.startDate.errors }" />
+          </div>
+          <div class="form-group">
+            <label>Discount End Date <span class="text-muted">(optional)</span></label>
+            <input type="date" formControlName="endDate" class="form-control"
+              [ngClass]="{ 'is-invalid': submitted && f.endDate.errors }" />
+            <div *ngIf="submitted && dateRangeError" class="invalid-feedback d-block">
+              End date must be after Start date
+            </div>
+          </div>
+        </ng-container>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <div class="form-group">
+        <button class="btn btn-primary" type="button" (click)="onSubmit()">{{btntext}}</button>
+        <button type="button" class="btn btn-danger ml-1" (click)="modal.close('Close click')">Cancel</button>
+      </div>
+    </div>
+  </ng-template>

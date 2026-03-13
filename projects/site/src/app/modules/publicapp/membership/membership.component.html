@@ -1,0 +1,119 @@
+<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
+<div class="membership-page" ngSkipHydration>
+  <section class="membership-hero">
+    <div class="membership-hero__copy">
+      <p class="membership-eyebrow">🏅 Membership</p>
+      <h1>Unlock a <span>global energy network</span> built for designers, operators, and leaders</h1>
+      <p class="membership-hero__lead">
+        Tap premium learning tracks, curated experts, and priority invites that accelerate your career momentum.
+      </p>
+      <div class="membership-hero__stats">
+        @for (stat of heroStats; track stat.label) {
+          <article class="membership-stat">
+            <span class="membership-stat__value">{{ stat.value }}</span>
+            <span class="membership-stat__label">{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+      <div class="membership-hero__cta">
+        <a class="btn-primary" href="/contact-us">Join now</a>
+        <a class="btn-secondary" href="/partner-us">Partner with us</a>
+      </div>
+    </div>
+    <figure class="membership-hero__visual" aria-hidden="true">
+      <svg class="membership-svg membership-svg--hero" viewBox="0 0 360 300" role="presentation">
+        <defs>
+          <linearGradient id="membershipHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#dbeafe" />
+            <stop offset="100%" stop-color="#f5d0fe" />
+          </linearGradient>
+        </defs>
+        <rect x="32" y="32" width="296" height="220" rx="32" fill="url(#membershipHeroBg)" />
+        <rect x="70" y="70" width="220" height="64" rx="18" fill="#fff" opacity="0.95" />
+        <rect x="70" y="150" width="220" height="74" rx="22" fill="#0f172a" opacity="0.9" />
+        <circle cx="118" cy="102" r="18" fill="#6366f1" opacity="0.9" />
+        <rect x="148" y="90" width="64" height="12" rx="6" fill="#dbe3ff" />
+        <rect x="148" y="112" width="90" height="10" rx="5" fill="#eef2ff" />
+        <rect x="90" y="170" width="48" height="26" rx="10" fill="#3b82f6" />
+        <rect x="150" y="170" width="48" height="26" rx="10" fill="#10b981" />
+        <rect x="210" y="170" width="48" height="26" rx="10" fill="#fbbf24" />
+        <path d="M82 240c32-48 172-48 204 0" fill="none" stroke="#f472b6" stroke-width="16" stroke-linecap="round" />
+      </svg>
+    </figure>
+  </section>
+
+  <section class="membership-section">
+    <header class="membership-section__header">
+      <p class="membership-eyebrow">✨ Reasons to join</p>
+      <h2>Membership unlocks more possibilities</h2>
+    </header>
+    <div class="membership-grid">
+      @for (reason of reasonsToJoin; track reason.title) {
+        <article class="membership-card">
+          <div class="membership-card__icon">
+            <svg viewBox="0 0 60 60" role="presentation">
+              <defs>
+                <linearGradient id="membershipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#c7d2fe" />
+                  <stop offset="100%" stop-color="#bae6fd" />
+                </linearGradient>
+              </defs>
+              <rect x="8" y="12" width="44" height="36" rx="14" fill="url(#membershipGradient)" opacity="0.6" />
+              <path d="M20 30h20" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+              <path d="M24 40h12" stroke="#10b981" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+            </svg>
+          </div>
+          <h3>{{ reason.title }}</h3>
+          <p>{{ reason.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="membership-section membership-section--tiers">
+    <header class="membership-section__header">
+      <p class="membership-eyebrow">👤 Membership tiers</p>
+      <h2>Choose the plan that matches your ambition</h2>
+    </header>
+    <div class="membership-tiers">
+      @for (tier of membershipTiers; track tier.name) {
+        <article class="membership-tier">
+          <div class="membership-tier__badge">{{ tier.name }}</div>
+          <h3>{{ tier.tagline }}</h3>
+          <ul>
+            @for (benefit of tier.benefits; track benefit) {
+              <li>{{ benefit }}</li>
+            }
+          </ul>
+          <div class="membership-tier__cta">
+            <a class="btn-primary" [href]="tier.ctaUrl">Get access</a>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="membership-section membership-section--perks">
+    <header class="membership-section__header">
+      <p class="membership-eyebrow">📌 Signature perks</p>
+      <h2>Members stay ahead</h2>
+    </header>
+    <div class="membership-perks">
+      @for (perk of perks; track perk) {
+        <article>{{ perk }}</article>
+      }
+    </div>
+  </section>
+
+  <section class="membership-section membership-section--cta">
+    <div class="membership-cta">
+      <div>
+        <p class="membership-eyebrow">🤝 We’re here for you</p>
+        <h2>Need a custom membership bundle?</h2>
+        <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> or call +91-70101-82555.</p>
+      </div>
+      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Talk to us</a>
+    </div>
+  </section>
+</div>
+
