@@ -1,7 +1,7 @@
 <div class="events-page">
   <ng-container *ngIf="events$ | async as heroEventsList">
+    <!-- Page hero: no event image here so uploaded images appear only on each event's card and event detail header -->
     <section class="events-hero" 
-      [style.background-image]="heroEventsList[0] && getEventImage(heroEventsList[0]) ? 'url(' + getEventImage(heroEventsList[0]) + ')' : ''"
       role="banner" 
       aria-label="Upcoming Oilandgasclub events">
       <div class="events-hero__background">

@@ -1430,8 +1430,22 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    // Fallback to direct properties only - no static URL fallback
-    return eventToCheck.bannerImage || eventToCheck.imageUrl || eventToCheck.image || '';
+    const fromEventInfo = this.getTitleImageFromEventInfo(eventToCheck?.eventInfo ?? eventToCheck?.EventInfo);
+    if (fromEventInfo) return fromEventInfo;
+    return eventToCheck.bannerImage || eventToCheck.imageUrl || eventToCheck.image || eventToCheck.titleImageUrl || eventToCheck.titleImage || '';
+  }
+
+  private getTitleImageFromEventInfo(eventInfo: string | undefined): string {
+    if (!eventInfo || typeof eventInfo !== 'string') return '';
+    const m = eventInfo.match(/\[TitleImage:(.+?)\]/);
+    return m ? m[1].trim() : '';
+  }
+
+  getVideoUrl(): string {
+    const raw = this.event?.eventInfo ?? this.event?.EventInfo ?? '';
+    if (!raw || typeof raw !== 'string') return '';
+    const m = raw.match(/\[VideoUrl:(.+?)\]/);
+    return m ? m[1].trim() : '';
   }
 
 

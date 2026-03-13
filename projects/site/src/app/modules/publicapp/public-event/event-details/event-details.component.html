@@ -1,5 +1,7 @@
 <div class="event-details" *ngIf="event">
-  <section class="event-hero" role="banner" aria-label="Event header">
+  <section class="event-hero" role="banner" aria-label="Event header" [class.event-hero--has-image]="getEventImage()">
+    <div class="event-hero__bg" *ngIf="getEventImage()" [style.background-image]="'url(' + getEventImage() + ')'"></div>
+    <div class="event-hero__overlay" *ngIf="getEventImage()"></div>
     <div class="hero-container">
       <div class="hero-content">
         <div class="hero-header">
@@ -141,6 +143,21 @@
 
   <div class="event-body">
     <main class="event-main">
+      <section class="event-card event-card--video" id="event-video" *ngIf="getVideoUrl()">
+        <header>
+          <h2>Watch</h2>
+        </header>
+        <div class="event-video-wrap">
+          <iframe
+            *ngIf="getVideoUrl()"
+            [src]="getVideoUrl() | safeUrl"
+            class="event-video-iframe"
+            title="Event video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </section>
       <section class="event-card" id="about">
         <header>
           <h2>About this event</h2>

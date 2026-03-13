@@ -63,18 +63,39 @@
 
 .event-hero {
   position: relative;
-  background-color: #e9ecef; // ✅ User specified color
-  border-radius: 0.3rem; // ✅ User specified border radius
-  margin-bottom: 2rem; // ✅ User specified margin
+  background-color: #e9ecef;
+  border-radius: 0.3rem;
+  margin-bottom: 2rem;
   isolation: isolate;
-  color: #333; // ✅ Dark text to match course page
-  
-  // ✅ Remove overflow and decorative gradients - match course page clean style
+  color: #333;
+  overflow: hidden;
+
+  &.event-hero--has-image {
+    color: #fff;
+    .hero-badge { color: #fff; background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); i { color: #fff; } }
+  }
+}
+
+.event-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.event-hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.65) 50%, rgba(30, 41, 59, 0.4) 100%);
+  pointer-events: none;
 }
 
 .hero-container {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 1140px;
   margin: 0 auto;
@@ -795,7 +816,6 @@
   border: 1px solid rgba(226, 232, 240, 0.6);
   display: grid;
   gap: 1.25rem;
-  // ✅ First event-card is "About this event" - sticky aside aligns with this
 
   header {
     display: flex;
@@ -815,6 +835,23 @@
       max-width: 360px;
     }
   }
+}
+
+.event-card--video .event-video-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f172a;
+}
+.event-video-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 .event-text {

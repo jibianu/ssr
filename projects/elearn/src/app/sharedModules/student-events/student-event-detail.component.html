@@ -2,7 +2,9 @@
 <div *ngIf="error" class="student-event-detail__error alert alert-warning">{{ error }}</div>
 <div class="event-details student-event-detail" *ngIf="!loading && !error && event">
   <a routerLink="/app/student/events" class="student-event-detail__back"><i class="fa fa-arrow-left"></i> Back to Events</a>
-  <section class="event-hero" role="banner" aria-label="Event header">
+  <section class="event-hero" role="banner" aria-label="Event header" [class.event-hero--has-image]="getEventImage()">
+    <div class="event-hero__bg" *ngIf="getEventImage()" [style.background-image]="'url(' + getEventImage() + ')'"></div>
+    <div class="event-hero__overlay" *ngIf="getEventImage()"></div>
     <div class="hero-container">
       <div class="hero-content">
         <div class="hero-header">
@@ -144,6 +146,23 @@
 
   <div class="event-body">
     <main class="event-main">
+      <!-- Video: show before About this event when available -->
+      <section class="event-card event-card--video" id="event-video" *ngIf="getVideoUrl()">
+        <header>
+          <h2>Watch</h2>
+        </header>
+        <div class="event-video-wrap">
+          <iframe
+            *ngIf="getVideoUrl()"
+            [src]="getVideoUrl() | safeUrl"
+            class="event-video-iframe"
+            title="Event video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </section>
+
       <section class="event-card" id="about">
         <header>
           <h2>About this event</h2>

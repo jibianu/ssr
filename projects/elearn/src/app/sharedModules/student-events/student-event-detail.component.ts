@@ -487,7 +487,22 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       const imageDetail = e.eventDetails.find((d: EventDetail) => d.section === 'image');
       if (imageDetail?.imageUrl) return imageDetail.imageUrl;
     }
-    return e.bannerImage || e.imageUrl || e.image || '';
+    const fromEventInfo = this.getTitleImageFromEventInfo(e?.eventInfo ?? e?.EventInfo);
+    if (fromEventInfo) return fromEventInfo;
+    return e.bannerImage || e.imageUrl || e.image || e.titleImageUrl || e.titleImage || '';
+  }
+
+  private getTitleImageFromEventInfo(eventInfo: string | undefined): string {
+    if (!eventInfo || typeof eventInfo !== 'string') return '';
+    const m = eventInfo.match(/\[TitleImage:(.+?)\]/);
+    return m ? m[1].trim() : '';
+  }
+
+  getVideoUrl(): string {
+    const raw = this.event?.eventInfo ?? this.event?.EventInfo ?? '';
+    if (!raw || typeof raw !== 'string') return '';
+    const m = raw.match(/\[VideoUrl:(.+?)\]/);
+    return m ? m[1].trim() : '';
   }
 
   getLogoUrl(): string {
