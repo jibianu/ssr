@@ -98,7 +98,6 @@ body.student-layout-active {
 /* Blog 
 ---------------------*/
 .blog-grid {
-  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125);
   border-radius: 15px;
   overflow: hidden;
   background: #ffffff;
@@ -165,7 +164,6 @@ body.student-layout-active {
 /* Blog Sidebar
 -------------------*/
 .blog-aside .widget {
-  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125);
   border-radius: 5px;
   overflow: hidden;
   background: #ffffff;
@@ -295,7 +293,6 @@ body.student-layout-active {
 }
 
 .article {
-  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125);
   border-radius: 5px;
   overflow: hidden;
   background: #ffffff;
@@ -383,7 +380,6 @@ body.student-layout-active {
 }
 
 .article-comment {
-  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125);
   border-radius: 5px;
   overflow: hidden;
   background: #ffffff;
@@ -2566,7 +2562,6 @@ body{
 .confirmation-modal-window .modal-content {
   border: none;
   border-radius: 15px;
-  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125);
   overflow: hidden;
   padding: 0;
   background: transparent;
@@ -4226,8 +4221,7 @@ select.add-course__select:not(.add-course__select--placeholder) {
   max-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 0 24px 16px;
-  padding-top: calc(56px + 0.5rem); /* 56px topbar + small gap same as admin list pages */
+  padding-top: calc(156px + 0.5rem);
   background: #f1f5f9;
   box-sizing: border-box;
   overflow: hidden;
@@ -4251,17 +4245,9 @@ select.add-course__select:not(.add-course__select--placeholder) {
   }
 }
 
-@media (min-width: 768px) {
-  .app-single-layout {
-    padding: 0.5rem 0 28px 28px;
-    padding-top: calc(56px + 0.5rem);
-  }
-}
-
 @media (min-width: 992px) {
   .app-single-layout {
-    padding: 0.5rem 0 36px 36px;
-    padding-top: calc(56px + 0.5rem);
+    padding-top: calc(156px + 0.5rem);
   }
 }
 

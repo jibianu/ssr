@@ -1,0 +1,16 @@
+<nav class="blog-section-tabs" aria-label="Blog section navigation">
+  <ul class="blog-section-tabs__list">
+    @for (item of tabItems; track item.link) {
+      <li class="blog-section-tabs__item">
+        <a
+          [routerLink]="item.link"
+          routerLinkActive="blog-section-tabs__link--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="blog-section-tabs__link">
+          <i class="blog-section-tabs__icon" [ngClass]="item.icon" aria-hidden="true"></i>
+          <span class="blog-section-tabs__label">{{ item.label }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

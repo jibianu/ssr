@@ -1,0 +1,48 @@
+<div class="modal-header search-filter-sidebar__header">
+  <h4 class="modal-title">Filters</h4>
+  <button type="button" class="search-filter-sidebar__close" aria-label="Close" (click)="cancel()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body search-filter-sidebar__body">
+  <div class="search-filter-sidebar__form-wrap">
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Created on</label>
+      <div class="trainer-list-filter__date-row">
+        <input type="date" class="form-control trainer-list-filter__date" [(ngModel)]="createdOnFrom" />
+        <span class="trainer-list-filter__sep">–</span>
+        <input type="date" class="form-control trainer-list-filter__date" [(ngModel)]="createdOnTo" />
+      </div>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Last login</label>
+      <div class="trainer-list-filter__date-row">
+        <input type="date" class="form-control trainer-list-filter__date" [(ngModel)]="lastLoginFrom" />
+        <span class="trainer-list-filter__sep">–</span>
+        <input type="date" class="form-control trainer-list-filter__date" [(ngModel)]="lastLoginTo" />
+      </div>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Trainer can create</label>
+      <select class="form-control trainer-list-filter__select" [(ngModel)]="contentFilter" [attr.aria-label]="contentFilterPlaceholder">
+        <option *ngFor="let opt of contentFilterOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+      <p class="trainer-list-filter__hint">Show only trainers who have permission to create the selected content (Course, Blog, or Event).</p>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Permission request</label>
+      <select class="form-control trainer-list-filter__select" [(ngModel)]="permissionRequestFilter" aria-label="Permission request filter">
+        <option *ngFor="let opt of permissionRequestFilterOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+      <select class="form-control trainer-list-filter__select trainer-list-filter__select--mt" *ngIf="permissionRequestFilter === 'pending'" [(ngModel)]="pendingPermissionContentType" aria-label="Content type for pending request">
+        <option *ngFor="let opt of permissionRequestContentOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+      <p class="trainer-list-filter__hint">Show trainers who have a pending permission request (or no pending request). When "Has pending request" is selected, you can filter by content type (Course, Blog, or Event).</p>
+    </div>
+  </div>
+</div>
+<div class="modal-footer search-filter-sidebar__footer">
+  <button type="button" class="btn btn-secondary" (click)="clear()">Clear</button>
+  <button type="button" class="btn btn-danger" (click)="cancel()">Cancel</button>
+  <button type="button" class="btn btn-success" (click)="apply()">Apply</button>
+</div>

@@ -1,3 +1,121 @@
+/* Filter bar (same pattern as student list) */
+.trainer-list__filter {
+  margin-bottom: 1.25rem;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+.trainer-list__filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+.trainer-list__filter-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.trainer-list__filter-title i {
+  color: #147fa0;
+  font-size: 0.875rem;
+}
+.trainer-list__filter-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem 1.5rem;
+  padding: 1.25rem;
+}
+.trainer-list__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.trainer-list__filter-group--search {
+  flex: 1;
+  min-width: 220px;
+  max-width: 340px;
+}
+.trainer-list__filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+.trainer-list__search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.trainer-list__search-icon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+.trainer-list__search {
+  width: 100%;
+  padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+.trainer-list__date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.trainer-list__date {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+.trainer-list__date-sep {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+.trainer-list__filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.trainer-list__btn {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.trainer-list__btn--primary {
+  background: linear-gradient(90deg, #153e7c 0%, #147fa0);
+  color: #fff;
+}
+.trainer-list__btn--secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+.trainer-list__btn--secondary:hover {
+  background: #e2e8f0;
+}
+
 .list-page-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -71,4 +189,78 @@ table{
 
 .studentHeading a:hover{
     transform: translateY(-2px);
+}
+
+/* Single-page: permission request column and request cell */
+.trainer-list__single-page-desc {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
+.list-table-modern__th--permission,
+.list-table-modern__td--permission {
+  min-width: 200px;
+  vertical-align: middle;
+}
+.list-table-modern__td--muted {
+  color: #9ca3af;
+}
+.trainer-list__request-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  &:last-child { margin-bottom: 0; }
+}
+.trainer-list__request-type {
+  font-weight: 600;
+  color: #374151;
+}
+.trainer-list__request-date {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+.trainer-list__request-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.trainer-list__gear-only {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #6366f1;
+  color: #fff;
+  &:hover { background: #4f46e5; }
+}
+.trainer-list__btn-permissions,
+.trainer-list__btn-approve,
+.trainer-list__btn-reject {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+.trainer-list__btn-permissions {
+  background: #6366f1;
+  color: #fff;
+  &:hover { background: #4f46e5; }
+}
+.trainer-list__btn-approve {
+  background: #059669;
+  color: #fff;
+  &:hover:not(:disabled) { background: #047857; }
+}
+.trainer-list__btn-reject {
+  background: #f3f4f6;
+  color: #374151;
+  &:hover:not(:disabled) { background: #e5e7eb; }
 }

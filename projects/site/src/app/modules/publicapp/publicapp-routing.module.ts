@@ -25,7 +25,6 @@ import { TermsAndConditionComponent } from './terms-and-condition/terms-and-cond
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { RouteSeoData } from '../../shared/interfaces/route-seo.interface';
-import { CourseBySlugOrIdResolver } from './public-course/course-by-slug-or-id.resolver';
 import { CheckoutGuard } from '../../core/guards/checkout.guard';
 import { RedirectCoursesToSlugComponent } from './public-course/redirect-courses-to-slug/redirect-courses-to-slug.component';
 import { CheckoutComponent } from './checkout/checkout.component';
@@ -314,6 +313,11 @@ const routes: Routes = [
       }
     } as RouteSeoData
   },
+  // ✅ Blog list only; detail is via universal :slug (domain/{slug})
+  {
+    path: 'blog',
+    loadChildren: () => import('./blog/blog.module').then(m => m.BlogModule)
+  },
   // ✅ Category route - direct component (not lazy-loaded, simpler)
   {
     path: 'category/:name',
@@ -330,12 +334,10 @@ const routes: Routes = [
     path: 'payment/success',
     component: PaymentSuccessComponent
   },
-  // ✅ /:courseSlug (slug or courseId GUID). Public access so Buy Now can redirect to checkout; no auth required to view.
-  //    /:courseId (GUID) → Elearn layout; /:slug → public layout. CourseShellComponent chooses layout from param.
+  // ✅ Universal slug: domain/{slug} → course | blog | event (resolved by GET /api/slug-resolver/{slug})
   {
-    path: ':courseSlug',
-    resolve: { course: CourseBySlugOrIdResolver },
-    loadChildren: () => import('./public-course/public-course.module').then(m => m.PublicCourseModule),
+    path: ':slug',
+    loadChildren: () => import('./slug-resolver/slug-resolver.module').then(m => m.SlugResolverModule),
     data: { skipRouteLocalization: true }
   },
   // ✅ Wildcard - MUST be last

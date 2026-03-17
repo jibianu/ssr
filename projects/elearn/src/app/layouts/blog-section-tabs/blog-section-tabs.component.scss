@@ -1,0 +1,59 @@
+/* Horizontal tab bar: teal active, grey inactive (match reference design) */
+.blog-section-tabs {
+  background: #f8f9fa;
+  border-top: 3px solid #f0ad4e;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0 0 0 0.5rem;
+  margin: 0 0 1rem 0;
+}
+
+.blog-section-tabs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-section-tabs__item {
+  margin: 0;
+}
+
+.blog-section-tabs__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  color: #6c757d;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  .blog-section-tabs__icon {
+    color: inherit;
+    font-size: 0.9rem;
+  }
+
+  &:hover {
+    background: #e9ecef;
+    color: #495057;
+  }
+
+  &--active {
+    background: #20b2aa;
+    color: #fff;
+
+    .blog-section-tabs__icon {
+      color: #fff;
+    }
+
+    &:hover {
+      background: #1a9c95;
+      color: #fff;
+    }
+  }
+}

@@ -1,0 +1,1038 @@
+/* Ensure component host doesn't create a containing block that breaks sticky */
+:host {
+  display: block;
+  overflow: visible;
+}
+
+/* Blog detail page wrapper - no overflow so sticky works (SSR-safe) */
+.blog-detail-page {
+  min-height: 60vh;
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 25%);
+  overflow: visible;
+}
+
+.blog-detail-page .container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 4vw, 1.5rem);
+  padding-right: clamp(1rem, 4vw, 1.5rem);
+  overflow: visible;
+}
+
+/* Layout: grid 2fr 1fr - mirrors original blog, supports sticky */
+.blog-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+  align-items: start;
+  margin-top: 1.5rem;
+  overflow: visible;
+}
+
+.blog-main {
+  min-width: 0;
+  overflow: visible;
+}
+
+/* Same as original blog: main column vertical margin */
+.m-15px-tb {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* Sticky sidebar - same as original blog (sticky-top + top offset) */
+.blog-sidebar {
+  position: sticky;
+  top: 120px;
+  height: fit-content;
+  overflow: visible;
+  padding: 0;
+  z-index: 10;
+}
+
+/* Same as original blog: inner sidebar wrapper */
+.blog-aside {
+  padding: 0;
+}
+
+/* Disable sticky on mobile - sidebar flows normally */
+@media (max-width: 768px) {
+  .blog-sidebar {
+    position: static;
+  }
+
+  .blog-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.article {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+/* Article tables – mirror reference: green header, white text, white body, light grey borders */
+:host ::ng-deep .article table,
+:host ::ng-deep .article-content table,
+:host ::ng-deep .ck-content table,
+:host ::ng-deep .post-body table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 1.5rem 0 !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #fff !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+  line-height: inherit !important;
+  display: table !important;
+
+  thead {
+    display: table-header-group !important;
+
+    th {
+      padding: 12px 15px !important;
+      text-align: left !important;
+      font-weight: 700 !important;
+      color: #fff !important;
+      background-color: #28a745 !important; /* Green header – reference design */
+      border: 1px solid #1e7e34 !important;
+      border-bottom: 2px solid #1e7e34 !important;
+      font-size: inherit !important;
+      display: table-cell !important;
+      vertical-align: middle !important;
+    }
+  }
+
+  tbody {
+    display: table-row-group !important;
+
+    tr {
+      border-bottom: 1px solid #dee2e6 !important;
+      display: table-row !important;
+
+      &:hover {
+        background-color: #f8f9fa !important;
+      }
+    }
+
+    td {
+      padding: 12px 15px !important;
+      color: #555 !important;
+      border: 1px solid #dee2e6 !important;
+      background-color: #fff !important;
+      font-size: inherit !important;
+      display: table-cell !important;
+      vertical-align: middle !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    display: block !important;
+    overflow-x: auto !important;
+  }
+}
+
+.article-img {
+  width: 100%;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+.article-title {
+  margin-bottom: 2rem;
+}
+
+.post-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.d-sm-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.post-tags {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #0e2f2f;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.post-tags-link {
+  text-decoration: none;
+  color: #fff;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    opacity: 0.9;
+  }
+}
+
+/* Old blog: author + date in meta row */
+.media {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 1.25rem;
+    color: #6c757d;
+  }
+}
+
+.media-body {
+  label {
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    display: block;
+    font-size: 0.95rem;
+  }
+
+  .last-updated-date {
+    margin-top: 0.25rem;
+
+    small {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.875rem;
+      color: #6c757d;
+
+      i {
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+
+.media-author-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover .author-name-link {
+    color: #c43d46;
+  }
+}
+
+.author-name-link {
+  font-weight: 500;
+  color: #E94C56;
+  font-size: 0.95rem;
+  display: block;
+  margin: 0;
+  transition: color 0.2s ease;
+}
+
+.btn-bar {
+  cursor: pointer;
+}
+
+.post-body {
+  color: #555;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+
+  :deep(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+}
+
+.article-content.sections {
+  margin-top: 2rem;
+
+  .post-sub-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #333;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #0e2f2f;
+    line-height: 1.3;
+  }
+
+  .post-body {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.widget {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.widget-body {
+  padding-top: 0;
+}
+
+/* Same as original blog: TOC heading sticks when list scrolls */
+.blog-table-heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #000;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: none;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+
+  span {
+    display: block;
+  }
+}
+
+.blog-toc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: 0;
+  }
+
+  a {
+    color: #999;
+    text-decoration: none;
+    display: block;
+    padding: 0.4rem 0;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #666;
+    }
+
+    &.active {
+      color: #000;
+      font-weight: 500;
+    }
+  }
+}
+
+/* Same as original blog: scrollable TOC list with thin scrollbar */
+.blog-toc__list--scroll {
+  max-height: 15rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 1px;
+
+    &:hover {
+      background: #999;
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.toc-item {
+  margin-bottom: 0;
+}
+
+.toc-link {
+  color: #999;
+  text-decoration: none;
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  padding: 0.4rem 0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #666;
+  }
+
+  &.active {
+    color: #000;
+    font-weight: 500;
+  }
+}
+
+.social-sharing-section {
+  padding: 0;
+  margin-top: 0.5rem;
+}
+
+.social-icons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: transparent;
+  color: #999;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    color: #666;
+  }
+
+  &.facebook:hover {
+    color: #1877f2;
+  }
+
+  &.twitter:hover {
+    color: #000;
+  }
+
+  &.linkedin:hover {
+    color: #0077b5;
+  }
+}
+
+.newsletter-signup-card {
+  background: linear-gradient(180deg, #20B2AA 0%, #008B8B 100%);
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.newsletter-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lightning-icon {
+  flex-shrink: 0;
+}
+
+.newsletter-description {
+  font-size: 0.95rem;
+  color: #fff;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+  opacity: 0.95;
+}
+
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.newsletter-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1rem;
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.newsletter-subscribe-btn {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  color: #008B8B;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:hover:not(:disabled):not(.subscribed) {
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.subscribed {
+    background: #32CD32;
+    color: #fff;
+    cursor: default;
+  }
+}
+
+.newsletter-message {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+
+  &.success {
+    background: rgba(50, 205, 50, 0.2);
+    color: #fff;
+  }
+
+  &.error {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+
+/* Loop Marketing card (same design as old blog) */
+.loop-marketing-card {
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.loop-card-inner {
+  display: flex;
+  align-items: stretch;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.loop-card-brand {
+  flex-shrink: 0;
+  width: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.loop-brand-top {
+  background: #4C198A; /* Dark purple – before merge */
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.loop-brand-bottom {
+  background: #FF7F3A; /* Bright orange – before merge */
+  color: #fff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.loop-infinity {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.loop-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.loop-card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.25;
+}
+
+.loop-card-desc {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.loop-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.loop-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.loop-check-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FF7F3A;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    display: block;
+  }
+}
+
+.loop-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-loop-download {
+  background: #FF7F3A;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(255, 127, 58, 0.35);
+}
+
+.btn-loop-download:hover {
+  background: #e86f2e;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255, 127, 58, 0.45);
+}
+
+.loop-learn-more {
+  color: #2563eb;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.loop-learn-more:hover {
+  color: #1d4ed8;
+}
+
+.loop-learn-more .arrow {
+  margin-left: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .loop-card-inner {
+    flex-direction: column;
+  }
+
+  .loop-card-brand {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+
+  .loop-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Loop Marketing – same as before blog merge: cream background, white card, purple header, orange */
+.loop-marketing-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #F5F5DC; /* Light cream/beige – before merge */
+  border-radius: 8px;
+  border: 1px solid #E8E8D3;
+}
+
+/* White card with rounded corners (before merge design) */
+.loop-marketing-content {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.loop-marketing-graphic {
+  flex-shrink: 0;
+  width: 200px;
+  height: 200px;
+  position: relative;
+}
+
+/* Left block: purple top, orange bottom – rounded where it meets the card */
+.loop-graphic-container {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  border-radius: 12px 0 0 12px; /* Rounded left edge of card */
+  overflow: hidden;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.loop-graphic-top {
+  flex: 0 0 35%;
+  min-height: 70px;
+  background: #4C198A; /* Dark purple header – before merge */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.loop-marketing-section .loop-brand {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.loop-graphic-bottom {
+  flex: 0 0 65%;
+  min-height: 130px;
+  background: #FF7F3A; /* Bright orange – before merge */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+}
+
+.loop-infinity-symbol {
+  font-size: 3.5rem;
+  color: #fff;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.loop-graphic-text {
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Right side: white content area (before merge) */
+.loop-marketing-text {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  padding: 1.5rem 2rem;
+}
+
+.loop-marketing-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.2;
+}
+
+.loop-marketing-description {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.loop-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.loop-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.loop-marketing-section .loop-checkmark-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FF7F3A; /* Orange – before merge */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.loop-checkmark-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.loop-cta-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.loop-download-btn {
+  background: #FF7F3A; /* Bright orange – before merge */
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(255, 127, 58, 0.35);
+
+  &:hover {
+    background: #e86f2e;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(255, 127, 58, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus {
+    outline: 2px solid #FF7F3A;
+    outline-offset: 2px;
+  }
+}
+
+.loop-learn-more-link {
+  color: #333;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #FF7F3A;
+  }
+
+  &:focus {
+    outline: 2px solid #FF7F3A;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+.loop-external-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 991px) {
+  .loop-marketing-section {
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+  }
+
+  .loop-marketing-content {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .loop-marketing-graphic {
+    width: 100%;
+    height: 180px;
+    margin: 0;
+  }
+
+  .loop-graphic-container {
+    border-radius: 12px 12px 0 0; /* Rounded top when stacked */
+    min-height: 180px;
+  }
+
+  .loop-marketing-text {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .loop-infinity-symbol {
+    font-size: 3rem;
+  }
+
+  .loop-graphic-text {
+    font-size: 0.7rem;
+  }
+
+  .loop-marketing-title {
+    font-size: 1.25rem;
+  }
+
+  .loop-marketing-description {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .loop-marketing-section {
+    padding: 1rem;
+    margin: 1.25rem 0;
+  }
+
+  .loop-marketing-graphic {
+    width: 100%;
+    height: 160px;
+  }
+
+  .loop-graphic-container {
+    min-height: 160px;
+  }
+
+  .loop-marketing-text {
+    padding: 1rem 1.25rem;
+  }
+
+  .loop-infinity-symbol {
+    font-size: 2.5rem;
+  }
+
+  .loop-marketing-title {
+    font-size: 1.125rem;
+  }
+
+  .loop-marketing-description {
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .loop-features-list {
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .loop-feature-item {
+    font-size: 0.85rem;
+  }
+
+  .loop-cta-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .loop-download-btn {
+    width: 100%;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .loop-learn-more-link {
+    text-align: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+}

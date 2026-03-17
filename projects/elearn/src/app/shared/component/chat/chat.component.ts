@@ -12,7 +12,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ChatComponent implements OnInit {
 
-  userId: string;
+  userId = '';
   subscription: Subscription = new Subscription();
   constructor(
     private cookieService: CookieService,
@@ -20,8 +20,15 @@ export class ChatComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const user = JSON.parse(this.cookieService.getCookie('currentUser'));
-    this.userId = user.id;
+    const raw = this.cookieService.getCookie('currentUser');
+    if (!raw) return;
+    let user: { id?: string } | null = null;
+    try {
+      user = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    this.userId = user?.id ?? '';
     if (this.userId) {
       this.getChatByUserId(this.userId);
       this.getUnreadCount(this.userId);

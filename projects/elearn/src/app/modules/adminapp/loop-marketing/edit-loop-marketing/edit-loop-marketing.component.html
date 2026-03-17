@@ -1,0 +1,161 @@
+<div class="loop-marketing-edit">
+  <div class="loop-marketing-edit__card">
+    <div class="loop-marketing-edit__header">
+      <div class="loop-marketing-edit__header-inner">
+        <div>
+          <h4 class="loop-marketing-edit__title">Edit Loop Marketing Content</h4>
+          <p class="loop-marketing-edit__subtitle">Manage the Loop Marketing Prompt library section content that appears in blog posts.</p>
+        </div>
+        <div class="loop-marketing-edit__category">
+          <label for="categorySelect" class="loop-marketing-edit__label">Select Category:</label>
+          <select
+            id="categorySelect"
+            class="form-select form-select-sm"
+            [value]="selectedCategoryId() || ''"
+            (change)="onCategoryChange($any($event.target).value || null)"
+            [disabled]="isLoadingCategories()">
+            <option value="">Default (All Categories)</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+          @if (selectedCategoryId()) {
+            <small class="loop-marketing-edit__category-hint">Editing content for: <strong>{{ selectedCategoryName() }}</strong></small>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="loop-marketing-edit__body">
+      @if (isLoading()) {
+        <div class="loop-marketing-edit__loading">Loading...</div>
+      }
+      @if (loadError()) {
+        <div class="loop-marketing-edit__error">
+          <strong>{{ loadError() }}</strong>
+          <p class="mb-0 mt-2 small">If you just added the feature, run the script <code>AddLoopMarketingTable_Oilandgasclub_MainDB.sql</code> on your database, then retry.</p>
+          <button type="button" class="btn btn-outline-primary btn-sm mt-2" (click)="loadContent()">Retry</button>
+        </div>
+      }
+      @if (!isLoading() && !loadError()) {
+        <form [formGroup]="loopMarketingForm" (ngSubmit)="onSubmit()">
+          @if (!currentContentId()) {
+            <p class="loop-marketing-edit__hint text-muted small">No content for this category yet. Fill the form below and click Save &amp; Publish.</p>
+          }
+          <div class="loop-marketing-edit__section">
+            <h5 class="loop-marketing-edit__section-title">Main Content</h5>
+            <div class="mb-3">
+              <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="title" formControlName="title" [class.is-invalid]="isFieldInvalid('title')" placeholder="Enter the main title">
+              @if (isFieldInvalid('title')) {
+                <div class="invalid-feedback">{{ getFieldError('title') }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="description" formControlName="description" [class.is-invalid]="isFieldInvalid('description')" rows="4" placeholder="Enter the description text"></textarea>
+              @if (isFieldInvalid('description')) {
+                <div class="invalid-feedback">{{ getFieldError('description') }}</div>
+              }
+            </div>
+          </div>
+
+          <div class="loop-marketing-edit__section">
+            <h5 class="loop-marketing-edit__section-title">Graphic Content</h5>
+            <div class="mb-3">
+              <label for="brand" class="form-label">Brand Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="brand" formControlName="brand" [class.is-invalid]="isFieldInvalid('brand')" placeholder="e.g. Oil and Gas Club">
+              @if (isFieldInvalid('brand')) {
+                <div class="invalid-feedback">{{ getFieldError('brand') }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label for="graphicText" class="form-label">Graphic Text <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="graphicText" formControlName="graphicText" [class.is-invalid]="isFieldInvalid('graphicText')" placeholder="e.g. Loop Marketing Prompt Library">
+              @if (isFieldInvalid('graphicText')) {
+                <div class="invalid-feedback">{{ getFieldError('graphicText') }}</div>
+              }
+            </div>
+          </div>
+
+          <div class="loop-marketing-edit__section">
+            <h5 class="loop-marketing-edit__section-title">Features</h5>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="express" class="form-label">Express <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="express" formControlName="express" [class.is-invalid]="isFieldInvalid('express')">
+                @if (isFieldInvalid('express')) {
+                  <div class="invalid-feedback">{{ getFieldError('express') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="tailor" class="form-label">Tailor <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="tailor" formControlName="tailor" [class.is-invalid]="isFieldInvalid('tailor')">
+                @if (isFieldInvalid('tailor')) {
+                  <div class="invalid-feedback">{{ getFieldError('tailor') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="amplify" class="form-label">Amplify <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="amplify" formControlName="amplify" [class.is-invalid]="isFieldInvalid('amplify')">
+                @if (isFieldInvalid('amplify')) {
+                  <div class="invalid-feedback">{{ getFieldError('amplify') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="evolve" class="form-label">Evolve <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="evolve" formControlName="evolve" [class.is-invalid]="isFieldInvalid('evolve')">
+                @if (isFieldInvalid('evolve')) {
+                  <div class="invalid-feedback">{{ getFieldError('evolve') }}</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="loop-marketing-edit__section">
+            <h5 class="loop-marketing-edit__section-title">Call to Action</h5>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="downloadButtonText" class="form-label">Download Button Text <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="downloadButtonText" formControlName="downloadButtonText" [class.is-invalid]="isFieldInvalid('downloadButtonText')">
+                @if (isFieldInvalid('downloadButtonText')) {
+                  <div class="invalid-feedback">{{ getFieldError('downloadButtonText') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="downloadUrl" class="form-label">Download URL <span class="text-danger">*</span></label>
+                <input type="url" class="form-control" id="downloadUrl" formControlName="downloadUrl" [class.is-invalid]="isFieldInvalid('downloadUrl')" placeholder="https://...">
+                @if (isFieldInvalid('downloadUrl')) {
+                  <div class="invalid-feedback">{{ getFieldError('downloadUrl') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="learnMoreText" class="form-label">Learn More Link Text <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="learnMoreText" formControlName="learnMoreText" [class.is-invalid]="isFieldInvalid('learnMoreText')">
+                @if (isFieldInvalid('learnMoreText')) {
+                  <div class="invalid-feedback">{{ getFieldError('learnMoreText') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="learnMoreUrl" class="form-label">Learn More URL <span class="text-danger">*</span></label>
+                <input type="url" class="form-control" id="learnMoreUrl" formControlName="learnMoreUrl" [class.is-invalid]="isFieldInvalid('learnMoreUrl')" placeholder="https://...">
+                @if (isFieldInvalid('learnMoreUrl')) {
+                  <div class="invalid-feedback">{{ getFieldError('learnMoreUrl') }}</div>
+                }
+              </div>
+            </div>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+
+  <div class="loop-marketing-edit__actions">
+    <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving() || loopMarketingForm?.invalid">
+      @if (isSaving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>Saving...
+      } @else {
+        Save &amp; Publish
+      }
+    </button>
+  </div>
+</div>

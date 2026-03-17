@@ -1,0 +1,190 @@
+<div class="custom-editor-wrapper" [class.disabled]="disabled" [class.readonly]="readonly" [class.focused]="_isFocused">
+  <!-- Toolbar (same as old blog editor) -->
+  <div class="editor-toolbar" #toolbar [class.hidden]="readonly">
+    <div class="toolbar-group">
+      <button type="button" class="toolbar-btn" [class.active]="isBold" (click)="toggleBold()" [disabled]="disabled || readonly" title="Bold (Ctrl+B)">
+        <i class="fa fa-bold"></i>
+      </button>
+      <button type="button" class="toolbar-btn" [class.active]="isItalic" (click)="toggleItalic()" [disabled]="disabled || readonly" title="Italic (Ctrl+I)">
+        <i class="fa fa-italic"></i>
+      </button>
+      <button type="button" class="toolbar-btn" [class.active]="isUnderline" (click)="toggleUnderline()" [disabled]="disabled || readonly" title="Underline">
+        <i class="fa fa-underline"></i>
+      </button>
+      <button type="button" class="toolbar-btn" [class.active]="isStrikethrough" (click)="toggleStrikethrough()" [disabled]="disabled || readonly" title="Strikethrough">
+        <i class="fa fa-strikethrough"></i>
+      </button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <div class="toolbar-group">
+      <select class="toolbar-select" [disabled]="disabled || readonly" [value]="currentHeading" (change)="applyHeading($event)" title="Heading">
+        <option value="">Normal</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+        <option value="h4">Heading 4</option>
+        <option value="h5">Heading 5</option>
+        <option value="h6">Heading 6</option>
+      </select>
+    </div>
+    <div class="toolbar-separator"></div>
+    <div class="toolbar-group">
+      <button type="button" class="toolbar-btn" [class.active]="isBulletList" (click)="toggleBulletList()" [disabled]="disabled || readonly" title="Bullet List">
+        <i class="fa fa-list-ul"></i>
+      </button>
+      <button type="button" class="toolbar-btn" [class.active]="isOrderedList" (click)="toggleOrderedList()" [disabled]="disabled || readonly" title="Numbered List">
+        <i class="fa fa-list-ol"></i>
+      </button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <div class="toolbar-group">
+      <button type="button" class="toolbar-btn" (click)="insertBlockquote()" [disabled]="disabled || readonly" title="Blockquote">
+        <i class="fa fa-quote-left"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="insertCode()" [disabled]="disabled || readonly" title="Inline Code">
+        <i class="fa fa-code"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="insertCodeBlock()" [disabled]="disabled || readonly" title="Code Block">
+        <i class="fa fa-file-code-o"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="insertHorizontalRule()" [disabled]="disabled || readonly" title="Horizontal Rule">
+        <i class="fa fa-minus"></i>
+      </button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <div class="toolbar-group">
+      <button type="button" class="toolbar-btn" [class.active]="hasLink" (click)="insertLink()" [disabled]="disabled || readonly" title="Insert Link">
+        <i class="fa fa-link"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="insertImage()" [disabled]="disabled || readonly" title="Insert Image">
+        <i class="fa fa-image"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="clearFormatting()" [disabled]="disabled || readonly" title="Clear Formatting">
+        <i class="fa fa-eraser"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="undo()" [disabled]="disabled || readonly || !canUndo" title="Undo">
+        <i class="fa fa-undo"></i>
+      </button>
+      <button type="button" class="toolbar-btn" (click)="redo()" [disabled]="disabled || readonly || !canRedo" title="Redo">
+        <i class="fa fa-repeat"></i>
+      </button>
+    </div>
+    <input type="file" #imageInput accept="image/*" style="display: none" (change)="onImageFileSelected($event)" />
+  </div>
+
+  <!-- Link Builder Popup (same as pre-merge blog) -->
+  <div
+    class="link-builder-popup"
+    *ngIf="showLinkPopup"
+    [style.top.px]="linkPopupPosition.top"
+    [style.left.px]="linkPopupPosition.left"
+    (click)="$event.stopPropagation()">
+    <div class="link-popup-header">
+      <h4><i class="fa fa-link"></i> Link Builder</h4>
+      <button type="button" class="close-btn" (click)="cancelLink()" title="Close"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="link-popup-body">
+      <div class="suggested-links-section">
+        <div class="suggestions-group" *ngIf="linkType === 'internal' && (blogSuggestions.length > 0 || isSearchingBlogs)">
+          <div class="suggestions-group-header"><i class="fa fa-link"></i> Suggested Internal Links</div>
+          <div class="blog-suggestions compact">
+            <div class="suggestion-loading" *ngIf="isSearchingBlogs"><i class="fa fa-spinner fa-spin"></i> Searching...</div>
+            <div class="suggestion-item" *ngFor="let blog of blogSuggestions" (click)="selectBlog(blog)">
+              <i class="fa fa-file-text-o suggestion-icon"></i>
+              <div class="suggestion-content">
+                <div class="suggestion-title">{{ blog.title }}</div>
+                <div class="suggestion-url">{{ blog.url || blog.canonicalUrl }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="suggestion-empty" *ngIf="linkType === 'internal' && !isSearchingBlogs && blogSuggestions.length === 0 && blogSearchQuery.length >= 2">
+          <i class="fa fa-info-circle"></i> No internal blog suggestions. Search below or enter URL manually.
+        </div>
+      </div>
+      <div class="link-type-selector">
+        <button type="button" class="link-type-btn" [class.active]="linkType === 'internal'" (click)="onLinkTypeChange('internal')">Internal Link</button>
+        <button type="button" class="link-type-btn" [class.active]="linkType === 'external'" (click)="onLinkTypeChange('external')">External Link</button>
+      </div>
+      <div class="form-group">
+        <label>Anchor Text</label>
+        <input type="text" class="form-control" [(ngModel)]="linkAnchorText" placeholder="Link text" />
+      </div>
+      <div class="form-group" *ngIf="linkType === 'internal'">
+        <label>Blog URL or Search</label>
+        <input
+          type="text"
+          class="form-control"
+          [class.is-invalid]="internalUrlValidation.error"
+          [class.is-valid]="internalUrlValidation.valid && linkUrl"
+          [(ngModel)]="linkUrl"
+          (ngModelChange)="onManualUrlInput($event)"
+          placeholder="e.g. /blog/my-post or my-post" />
+        <div class="url-validation-feedback" *ngIf="linkUrl">
+          <div class="validation-message valid" *ngIf="internalUrlValidation.valid"><i class="fa fa-check-circle"></i> Valid internal URL – {{ internalUrlValidation.preview }}</div>
+          <div class="validation-message error" *ngIf="internalUrlValidation.error"><i class="fa fa-exclamation-circle"></i> {{ internalUrlValidation.error }}</div>
+        </div>
+        <div class="search-section">
+          <label class="search-label">Search Blogs</label>
+          <input type="text" class="form-control" [(ngModel)]="blogSearchQuery" (ngModelChange)="onBlogSearchInput($event)" placeholder="Search blog posts..." />
+        </div>
+      </div>
+      <div class="form-group" *ngIf="linkType === 'external'">
+        <label>External URL</label>
+        <input
+          type="text"
+          class="form-control"
+          [class.is-invalid]="externalUrlValidation.error"
+          [class.is-valid]="externalUrlValidation.valid && linkUrl"
+          [(ngModel)]="linkUrl"
+          (ngModelChange)="onExternalUrlInput($event)"
+          placeholder="https://example.com" />
+        <div class="url-validation-feedback" *ngIf="linkUrl">
+          <div class="validation-message valid" *ngIf="externalUrlValidation.valid"><i class="fa fa-check-circle"></i> Valid URL</div>
+          <div class="validation-message error" *ngIf="externalUrlValidation.error"><i class="fa fa-exclamation-circle"></i> {{ externalUrlValidation.error }}</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>SEO Attributes</label>
+        <div class="seo-options">
+          <label class="checkbox-label"><input type="checkbox" [checked]="linkRelAttributes.includes('nofollow')" (change)="toggleRelAttribute('nofollow')" /><span>nofollow</span></label>
+          <label class="checkbox-label"><input type="checkbox" [checked]="linkRelAttributes.includes('sponsored')" (change)="toggleRelAttribute('sponsored')" /><span>sponsored</span></label>
+          <label class="checkbox-label"><input type="checkbox" [checked]="linkRelAttributes.includes('ugc')" (change)="toggleRelAttribute('ugc')" /><span>ugc</span></label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="linkOpenInNewTab" />
+          <span>Open in new tab</span>
+        </label>
+      </div>
+    </div>
+    <div class="link-popup-footer">
+      <button type="button" class="btn-cancel" (click)="cancelLink()">Cancel</button>
+      <button type="button" class="btn-remove" *ngIf="editingLinkElement" (click)="removeLink()" title="Remove link"><i class="fa fa-unlink"></i> Remove Link</button>
+      <button type="button" class="btn-apply" (click)="applyLink()" [disabled]="!linkUrl || !linkAnchorText">
+        <i class="fa" [ngClass]="editingLinkElement ? 'fa-save' : 'fa-link'"></i>
+        {{ editingLinkElement ? 'Update Link' : 'Apply Link' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="editor-footer" *ngIf="showWordCount">
+    <span class="word-count">Words: {{ getWordCount() }}</span>
+    <span class="char-count">Characters: {{ getCharCount() }}</span>
+  </div>
+
+  <div
+    #editorContent
+    class="editor-content"
+    [contentEditable]="!disabled && !readonly"
+    [attr.data-placeholder]="placeholder"
+    (input)="onContentInput()"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (keyup)="onKeyUp()"
+    (mouseup)="onMouseUp()"
+    [class.focused]="_isFocused"
+    [class.empty]="getPlainText().trim().length === 0">
+  </div>
+</div>

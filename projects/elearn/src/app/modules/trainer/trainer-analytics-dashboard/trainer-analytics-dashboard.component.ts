@@ -18,6 +18,8 @@ import {
   TrainerDashboardActivityRow,
 } from '../trainer-dashboard-api.service';
 import { PayoutApiService } from '../../../services/payout-api.service';
+import { AdminAppService } from '../../adminapp/adminapp.service';
+import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -64,6 +66,11 @@ export class TrainerAnalyticsDashboardComponent implements OnInit, OnDestroy, Af
   payoutPendingCount = 0;
   payoutLoading = false;
 
+  /** Content permissions (Course, Event, Blog) for "Request content access" section. */
+  contentPermissions: string[] = [];
+  contentPermissionsLoading = false;
+  requestLoading: Record<string, boolean> = {};
+
   private sub = new Subscription();
   private purchasesChart: Chart | null = null;
   private activityChart: Chart | null = null;
@@ -83,7 +90,9 @@ export class TrainerAnalyticsDashboardComponent implements OnInit, OnDestroy, Af
     private sharedService: SharedService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private payoutApi: PayoutApiService
+    private payoutApi: PayoutApiService,
+    private appService: AdminAppService,
+    private toaster: ToasterService
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +101,48 @@ export class TrainerAnalyticsDashboardComponent implements OnInit, OnDestroy, Af
     this.setDateRangeFromPreset('last7');
     this.loadAll();
     this.loadPayoutStatus();
+    this.loadContentPermissions();
+  }
+
+  loadContentPermissions(): void {
+    this.contentPermissionsLoading = true;
+    this.sub.add(
+      this.appService.getMyContentPermissions().subscribe({
+        next: (list) => {
+          this.contentPermissions = (list || []).map((s) => s.trim().toLowerCase());
+          this.contentPermissionsLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.contentPermissionsLoading = false;
+          this.cdr.detectChanges();
+        },
+      })
+    );
+  }
+
+  hasContentPermission(type: string): boolean {
+    return this.contentPermissions.includes(type.toLowerCase());
+  }
+
+  requestContentAccess(type: string): void {
+    if (this.requestLoading[type]) return;
+    this.requestLoading = { ...this.requestLoading, [type]: true };
+    this.cdr.detectChanges();
+    this.appService.requestContentPermission(type).subscribe({
+      next: (res) => {
+        this.requestLoading = { ...this.requestLoading, [type]: false };
+        this.toaster.showSuccess(res?.message || 'Request submitted.');
+        this.loadContentPermissions();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.requestLoading = { ...this.requestLoading, [type]: false };
+        const msg = err?.error?.message ?? err?.message ?? 'Request failed.';
+        this.toaster.showError(msg);
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   loadPayoutStatus(): void {

@@ -1,4 +1,5 @@
 <div class="mainClass list-page-with-pagination list-table-modern">
+  <p *ngIf="!isManagementContext" class="trainer-list__single-page-desc">Trainers and their pending permission requests (Course, Event, Blog). Use "Edit permissions" to open the permissions page and "Approve" or "Reject" for each request.</p>
   <div class="list-page__table-wrap list-table-modern__wrap">
     <div class="list-table-modern__table-responsive">
       <table class="list-table-modern__table">
@@ -28,12 +29,13 @@
                 <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
               </a>
             </th>
+            <th *ngIf="!isManagementContext" class="list-table-modern__th list-table-modern__th--permission">Permission request</th>
             <th class="list-table-modern__th list-table-modern__th--action">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="!users?.length && !count" class="list-table-modern__row">
-            <td colspan="6" class="list-table-modern__empty">{{ isManagementContext ? 'No trainers assigned yet' : 'No trainers found' }}</td>
+            <td [attr.colspan]="isManagementContext ? 5 : 6" class="list-table-modern__empty">{{ isManagementContext ? 'No trainers assigned yet' : 'No trainers found' }}</td>
           </tr>
           <tr *ngFor="let item of users" class="list-table-modern__row">
             <td class="list-table-modern__td list-table-modern__td--ellipsis">
@@ -42,13 +44,16 @@
             <td class="list-table-modern__td list-table-modern__td--ellipsis" [title]="item?.userName">{{ item?.userName }}</td>
             <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn ? (item.createdOn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
             <td class="list-table-modern__td list-table-modern__td--date">{{ item?.lastLoggedIn ? (item.lastLoggedIn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td *ngIf="!isManagementContext" class="list-table-modern__td list-table-modern__td--permission">
+              <div *ngIf="getPendingRequestsForTrainer(item.id).length === 0" class="list-table-modern__td--muted">—</div>
+              <button *ngIf="getPendingRequestsForTrainer(item.id).length > 0" type="button" class="trainer-list__gear-only" (click)="openPermissionsPageWithRequests(item)" title="Open permissions page">
+                <i class="fa fa-cog"></i>
+              </button>
+            </td>
             <td class="list-table-modern__td list-table-modern__td--action">
               <div class="list-table-modern__actions">
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteUser(item.id)" title="Delete"><i class="fa fa-trash"></i></button>
                 <button *ngIf="managerListEnbale && !isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--warning" title="Remove from Management" (click)="openRemoveFromManagement(item)"><i class="fa fa-user-times"></i></button>
-                <button type="button" class="list-table-modern__btn list-table-modern__btn--primary" (click)="openPermisionModal(item)" title="Lock / Unlock"><i class="fa fa-unlock"></i></button>
-                <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="openCourseModal(item)" title="Assign / View Courses"><i class="fa fa-book"></i></button>
-                <button type="button" class="list-table-modern__btn list-table-modern__btn--view" (click)="openStudentInfo(item)" title="View Profile"><i class="fa fa-eye"></i></button>
               </div>
             </td>
           </tr>

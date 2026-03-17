@@ -20,6 +20,7 @@ const routes: Routes = [
   { path: 'profile', component: TrainerProfileComponent },
   { path: 'course-details/:courseId', component: TrainerCourseDetailsComponent },
   { path: 'events', loadChildren: () => import('../adminapp/event/event.module').then(m => m.EventModule) },
+  { path: 'blog', loadChildren: () => import('../adminapp/blog/blog.module').then(m => m.BlogModule) },
   {
     path: '',
     loadChildren: () => import('./../../sharedModules/shared-modules.module').then(m => m.SharedModulesModule),

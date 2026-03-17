@@ -33,6 +33,14 @@ export class SharedService {
   showTrainerDashboardToolbar = new BehaviorSubject<boolean>(false);
   /** Emit when Add Course button in top-bar is clicked on Instructor Dashboard (opens create course modal). */
   trainerAddCourseClick$ = new Subject<void>();
+  /** Show Trainer List toolbar (search + Filter) in top-bar (set true by Trainer List when !isManagementContext). */
+  showTrainerListToolbar = new BehaviorSubject<boolean>(false);
+  /** Search term for trainer list (sync between topbar input and trainer list). */
+  trainerListSearchTerm$ = new BehaviorSubject<string>('');
+  /** Emit when Search is triggered in top-bar (Trainer List runs search/fetch). */
+  trainerListSearchTrigger$ = new Subject<void>();
+  /** Emit when Filter button in top-bar is clicked (Trainer List opens filter modal). */
+  trainerListFilterClick$ = new Subject<void>();
   /** Show Curriculum toolbar (search + Check Course UI + Add Curriculum) in top-bar (set by Curriculum List page). */
   showCurriculumToolbar = new BehaviorSubject<boolean>(false);
   /** Show curriculum edit actions (Edit course, Edit price, Add Curriculum) in top-bar; set false by Trainer Course Details when user has view-only. */
@@ -51,8 +59,8 @@ export class SharedService {
   curriculumActiveTab$ = new BehaviorSubject<string>('concepts');
   /** Show student course search in topbar (set true by Student layout). */
   showStudentCourseSearch = new BehaviorSubject<boolean>(false);
-  /** Optional primary action in topbar (e.g. Event List sets { routerLink, label, icon } for "Add Event"). Set null when leaving the page. */
-  topbarPrimaryAction = new BehaviorSubject<{ routerLink: string; label: string; icon?: string } | null>(null);
+  /** Optional primary action in topbar (e.g. Event List sets { routerLink, label, icon } for "Add Event"). contentType used by trainer to show Add vs Request Permission. */
+  topbarPrimaryAction = new BehaviorSubject<{ routerLink: string; label: string; icon?: string; contentType?: 'Course' | 'Blog' | 'Event' } | null>(null);
   /** Emit when profile image changes so sidebar/topbar can update. */
   profileImageUrl$ = new Subject<string | null>();
 

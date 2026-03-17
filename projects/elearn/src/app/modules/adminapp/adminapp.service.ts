@@ -128,6 +128,76 @@ export class AdminAppService {
         return this.http.get<any>(this.apiUrl + `api/events`);
     }
 
+    /** Get published blogs (paginated). API: GET /api/blog */
+    getBlogs(pageNumber: number = 1, pageSize: number = 100): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
+        return this.http.get<any>(this.apiUrl + `api/blog`, {
+            params: { pageNumber: String(pageNumber), pageSize: String(pageSize) }
+        });
+    }
+
+    /** Admin: get all blogs (with author, word count). GET /api/admin/blog. Optional search for link builder. */
+    getAdminBlogs(pageNumber: number = 1, pageSize: number = 500, search?: string): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
+        const params: Record<string, string> = { pageNumber: String(pageNumber), pageSize: String(pageSize) };
+        if (search != null && search.trim() !== '') params['search'] = search.trim();
+        return this.http.get<any>(this.apiUrl + `api/admin/blog`, { params });
+    }
+    /** Admin: get blog categories for dropdown. GET /api/admin/blog/categories */
+    getAdminBlogCategories(): Observable<any[]> {
+        return this.http.get<any[]>(this.apiUrl + `api/admin/blog/categories`);
+    }
+    /** Admin: users who have created at least one blog (for User tab). GET /api/admin/blog/authors */
+    getBlogAuthors(): Observable<{ id: string; name: string; profilePictureUrl?: string; email?: string; blogCount: number }[]> {
+        return this.http.get<any[]>(this.apiUrl + `api/admin/blog/authors`);
+    }
+    /** Admin: get blog by id for edit. GET /api/admin/blog/{id} */
+    getAdminBlogById(id: string): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/admin/blog/` + id);
+    }
+    /** Admin: create blog. POST /api/admin/blog */
+    createBlog(body: any): Observable<any> {
+        return this.http.post<any>(this.apiUrl + `api/admin/blog`, body);
+    }
+    /** Admin: update blog. PUT /api/admin/blog/{id} */
+    updateBlog(id: string, body: any): Observable<any> {
+        return this.http.put<any>(this.apiUrl + `api/admin/blog/` + id, body);
+    }
+    /** Admin: soft delete blog. DELETE /api/admin/blog/{id} */
+    deleteBlog(id: string): Observable<void> {
+        return this.http.delete<void>(this.apiUrl + `api/admin/blog/` + id);
+    }
+    /** Trainer: submit blog for admin review. POST /api/admin/blog/{id}/submit-for-review */
+    submitBlogForReview(id: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/blog/` + id + `/submit-for-review`, {});
+    }
+    /** Admin: get blogs pending review. GET /api/admin/blog/review */
+    getPendingReviewBlogs(pageNumber: number = 1, pageSize: number = 100): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
+        return this.http.get<any>(this.apiUrl + `api/admin/blog/review`, {
+            params: { pageNumber: String(pageNumber), pageSize: String(pageSize) }
+        });
+    }
+    /** Admin: approve blog. POST /api/admin/blog/review/{id}/approve */
+    approveBlog(id: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/approve`, {});
+    }
+    /** Admin: reject blog with reason. POST /api/admin/blog/review/{id}/reject */
+    rejectBlog(id: string, rejectionReason: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/reject`, { rejectionReason: rejectionReason || '' });
+    }
+
+    /** Loop Marketing: get content by category (null = default). GET /api/admin/loop-marketing/category */
+    getLoopMarketingContent(categoryId?: string | null): Observable<any> {
+        const params = categoryId ? { categoryId } : {};
+        return this.http.get<any>(this.apiUrl + `api/admin/loop-marketing/category`, { params });
+    }
+    /** Loop Marketing: create. POST /api/admin/loop-marketing */
+    createLoopMarketingContent(body: any): Observable<any> {
+        return this.http.post<any>(this.apiUrl + `api/admin/loop-marketing`, body);
+    }
+    /** Loop Marketing: update. PUT /api/admin/loop-marketing/{id} */
+    updateLoopMarketingContent(id: string, body: any): Observable<any> {
+        return this.http.put<any>(this.apiUrl + `api/admin/loop-marketing/` + id, body);
+    }
+
     getEventById(eventId: string): Observable<any> {
         return this.http.get<any>(this.apiUrl + `api/events/` + eventId);
     }
@@ -242,6 +312,41 @@ export class AdminAppService {
 
     getUserInfo() {
         return this.http.get<any>(this.apiUrl + `api/account/getinfo/`);
+    }
+
+    /** Get current user's content permissions (Blog, Course, Event) for trainer sidebar. */
+    getMyContentPermissions(): Observable<string[]> {
+        return this.http.get<string[]>(this.apiUrl + `api/account/my-content-permissions`);
+    }
+
+    /** Trainer: request permission to create content (Course, Event, Blog). */
+    requestContentPermission(contentType: string): Observable<{ id?: string; message?: string }> {
+        return this.http.post<{ id?: string; message?: string }>(
+            this.apiUrl + `api/trainer/dashboard/content-permission-request`,
+            { contentType }
+        );
+    }
+
+    /** Trainer: get my pending content permission requests (to show "Permission requested" in topbar). */
+    getMyPendingPermissionRequests(): Observable<{ contentType?: string }[]> {
+        return this.http.get<{ contentType?: string }[]>(this.apiUrl + `api/trainer/dashboard/my-pending-permission-requests`);
+    }
+
+    /** Admin: list content permission requests (status: 0 Pending, 1 Approved, 2 Rejected). */
+    getContentPermissionRequests(status = 0): Observable<any[]> {
+        return this.http.get<any[]>(this.apiUrl + `api/admin/content-permission-requests`, {
+            params: { status: String(status) }
+        });
+    }
+
+    /** Admin: approve a content permission request. */
+    approveContentPermissionRequest(id: string): Observable<any> {
+        return this.http.post<any>(this.apiUrl + `api/admin/content-permission-requests/${id}/approve`, {});
+    }
+
+    /** Admin: reject a content permission request. */
+    rejectContentPermissionRequest(id: string): Observable<any> {
+        return this.http.post<any>(this.apiUrl + `api/admin/content-permission-requests/${id}/reject`, {});
     }
 
     profileUpdate(obj) {

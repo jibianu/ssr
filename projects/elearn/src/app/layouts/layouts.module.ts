@@ -24,9 +24,11 @@ import { StudentMobileLayoutComponent } from './student/student-mobile-layout/st
 import { StudentBreadcrumbComponent } from './student/student-breadcrumb/student-breadcrumb.component';
 import { SharedModule } from '../shared/shared.module';
 import { ElearnLayoutWrapperComponent } from '../modules/publicapp/course-layout-switcher/elearn-layout-wrapper/elearn-layout-wrapper.component';
+import { BlogSectionTabsComponent } from './blog-section-tabs/blog-section-tabs.component';
 
 @NgModule({
   declarations: [
+    BlogSectionTabsComponent,
     AdminLayoutComponent,
     SidebarComponent,
     TopbarComponent,

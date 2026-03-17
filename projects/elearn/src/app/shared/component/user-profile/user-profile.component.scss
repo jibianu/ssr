@@ -505,6 +505,37 @@ $bg-avatar-panel-end: #ffefe8;
   gap: 6px;
 }
 
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-links__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.social-links__platform {
+  min-width: 120px;
+  flex: 0 0 auto;
+}
+
+.social-links__url {
+  flex: 1;
+  min-width: 180px;
+}
+
+.social-links__remove {
+  flex: 0 0 auto;
+  min-width: 36px;
+  padding: 8px 12px;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
 .form-label {
   font-size: 0.8125rem;
   font-weight: 600;

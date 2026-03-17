@@ -36,13 +36,14 @@ app-public-footer {
   z-index: auto !important;
 }
 
+/* overflow-x: clip so position:sticky works on blog sidebar (hidden would break it) */
 .public-main-wrapper {
   display: block;
   width: 100%;
   padding-inline: 0;
   box-sizing: border-box;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), #ffffff 55%);
-  overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
 }
 

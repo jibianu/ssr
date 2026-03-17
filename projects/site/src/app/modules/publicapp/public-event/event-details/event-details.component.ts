@@ -6,6 +6,7 @@ import {
   ElementRef,
   HostListener,
   Inject,
+  Input,
   OnDestroy,
   OnInit,
   PLATFORM_ID,
@@ -58,6 +59,11 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('testimonialSlider', { static: false }) testimonialSlider?: ElementRef<HTMLDivElement>;
   @ViewChild('salarySlider', { static: false }) salarySlider?: ElementRef<HTMLDivElement>;
   @ViewChild('hostSlider', { static: false }) hostSlider?: ElementRef<HTMLDivElement>;
+
+  /** When set (e.g. from slug-resolver), use this instead of route resolver data. */
+  @Input() set resolvedEventInput(value: any) {
+    if (value != null) this.applyResolvedEvent(value);
+  }
 
   event: any = null;
   events: any[] = [];
@@ -151,13 +157,17 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
 
-    // ✅ Subscribe to route data (from resolver)
+    // ✅ Subscribe to route data (from resolver); skip when resolvedEventInput was set (slug-resolver)
     this.subscription.add(
       this.route.data.subscribe((data) => {
         const resolvedEvent = data?.['event'] ?? null;
-        
+        if (resolvedEvent) this.applyResolvedEvent(resolvedEvent);
+      })
+    );
+  }
+
+  private applyResolvedEvent(resolvedEvent: any): void {
         // ✅ FIX: Create new object reference to trigger change detection
-        // This ensures OnPush change detection detects the update
         this.event = resolvedEvent ? { ...resolvedEvent } : null;
         this.events = resolvedEvent?.upcomingEvents ? [...(resolvedEvent.upcomingEvents)] : [];
         this.eventId = resolvedEvent?.id ?? '';
@@ -222,8 +232,6 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         } else {
           this.cdr.markForCheck();
         }
-      })
-    );
   }
 
   ngOnInit(): void {

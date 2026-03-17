@@ -59,12 +59,41 @@
         </button>
       </div>
     </div>
-    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerDashboardToolbar || topbarPrimaryAction">
-      <a *ngIf="topbarPrimaryAction" [routerLink]="topbarPrimaryAction.routerLink" class="common-topbar__action-btn common-topbar__action-btn--primary">
-        <i class="fa" [ngClass]="topbarPrimaryAction.icon || 'fa-plus'" aria-hidden="true"></i> {{ topbarPrimaryAction.label }}
-      </a>
+    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerListToolbar || showTrainerDashboardToolbar || topbarPrimaryAction">
+      <ng-container *ngIf="topbarPrimaryAction && !(topbarPrimaryAction.contentType && isTrainer && isTrainerContext)">
+        <a [routerLink]="topbarPrimaryAction.routerLink" class="common-topbar__action-btn common-topbar__action-btn--primary">
+          <i class="fa" [ngClass]="topbarPrimaryAction.icon || 'fa-plus'" aria-hidden="true"></i> {{ topbarPrimaryAction.label }}
+        </a>
+      </ng-container>
+      <!-- Trainer Course/Blog/Event: Add button if has permission; Requested badge + message if pending; Request Permission if no request -->
+      <ng-container *ngIf="topbarPrimaryAction?.contentType && isTrainer && isTrainerContext">
+        <a *ngIf="hasTrainerContentPermission(topbarPrimaryAction.contentType)" [routerLink]="topbarPrimaryAction.routerLink" class="common-topbar__action-btn common-topbar__action-btn--primary">
+          <i class="fa" [ngClass]="topbarPrimaryAction.icon || 'fa-plus'" aria-hidden="true"></i> {{ topbarPrimaryAction.label }}
+        </a>
+        <span *ngIf="!hasTrainerContentPermission(topbarPrimaryAction.contentType) && hasPendingPermissionRequest(topbarPrimaryAction.contentType)" class="common-topbar__permission-pending">
+          <span class="common-topbar__permission-badge">Requested</span>
+          <span class="common-topbar__permission-message">Permission Requested. Waiting for admin approval.</span>
+        </span>
+        <button *ngIf="!hasTrainerContentPermission(topbarPrimaryAction.contentType) && !hasPendingPermissionRequest(topbarPrimaryAction.contentType)" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" [disabled]="trainerRequestingPermission" (click)="onTrainerRequestPermission(topbarPrimaryAction.contentType)">
+          {{ trainerRequestingPermission ? 'Sending…' : 'Request Permission' }}
+        </button>
+      </ng-container>
       <ng-container *ngIf="showTrainerDashboardToolbar">
-        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--primary" (click)="onTrainerAddCourseClick()"><i class="fa fa-plus"></i> Add Course</button>
+        <button *ngIf="hasTrainerContentPermission('Course')" type="button" class="common-topbar__action-btn common-topbar__action-btn--primary" (click)="onTrainerAddCourseClick()"><i class="fa fa-plus"></i> Add Course</button>
+        <span *ngIf="!hasTrainerContentPermission('Course') && hasPendingPermissionRequest('Course')" class="common-topbar__permission-pending">
+          <span class="common-topbar__permission-badge">Requested</span>
+          <span class="common-topbar__permission-message">Permission Requested. Waiting for admin approval.</span>
+        </span>
+        <button *ngIf="!hasTrainerContentPermission('Course') && !hasPendingPermissionRequest('Course')" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" [disabled]="trainerRequestingPermission" (click)="onTrainerRequestPermission('Course')">
+          {{ trainerRequestingPermission ? 'Sending…' : 'Request Permission' }}
+        </button>
+      </ng-container>
+      <ng-container *ngIf="showTrainerListToolbar">
+        <div class="common-topbar__course-list-search">
+          <input type="text" class="common-topbar__search" placeholder="Search trainers..." [ngModel]="trainerListSearchTerm" (ngModelChange)="onTrainerListSearchChange($event)" (keyup.enter)="onTrainerListSearchTrigger()" />
+          <button type="button" class="common-topbar__search-btn" (click)="onTrainerListSearchTrigger()" title="Search"><i class="fa fa-search"></i></button>
+        </div>
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onTrainerListFilterClick()"><i class="fa fa-chevron-down"></i> Filters</button>
       </ng-container>
       <ng-container *ngIf="showCourseListToolbar">
         <div class="common-topbar__course-list-search">

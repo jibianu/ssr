@@ -14,10 +14,11 @@ import { ManagementListComponent } from './management-list/management-list.compo
 import { SendNotificationComponent } from './send-notification/send-notification.component';
 import { NotificationListComponent } from './notification-list/notification-list.component';
 import { NotificationHistoryComponent } from './notification-history/notification-history.component';
+import { ContentPermissionRequestsComponent } from './content-permission-requests/content-permission-requests.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
 
 @NgModule({
-  declarations: [UserListComponent, AddUserComponent, StudentListComponent, TrainerListComponent, CompanyListComponent, ManagementListComponent, SendNotificationComponent, NotificationListComponent, NotificationHistoryComponent, UserProfileComponent],
+  declarations: [UserListComponent, AddUserComponent, StudentListComponent, TrainerListComponent, CompanyListComponent, ManagementListComponent, SendNotificationComponent, NotificationListComponent, NotificationHistoryComponent, ContentPermissionRequestsComponent, UserProfileComponent],
   imports: [
     CommonModule,
     UserRoutingModule,

@@ -1,0 +1,11 @@
+.mainClass {
+  min-height: 0;
+  overflow: auto;
+  padding: 0;
+}
+
+.list-table-modern__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}

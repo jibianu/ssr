@@ -123,6 +123,35 @@
                       <div *ngIf="f.userName.errors.required">Username is required</div>
                     </div>
                   </div>
+                  <div class="form-group">
+                    <label class="form-label">About you</label>
+                    <textarea formControlName="bio" class="form-control" placeholder="Tell others about yourself" rows="3"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Social links</label>
+                    <div class="social-links" formArrayName="socialLinks">
+                      <div *ngFor="let link of socialLinksArray.controls; let i = index" [formGroupName]="i" class="social-links__row">
+                        <select formControlName="platform" class="form-control social-links__platform">
+                          <option value="">Select platform</option>
+                          <option value="Facebook">Facebook</option>
+                          <option value="LinkedIn">LinkedIn</option>
+                          <option value="YouTube">YouTube</option>
+                          <option value="X">X</option>
+                          <option value="Website">Website</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <input type="url" formControlName="url" class="form-control social-links__url" placeholder="https://..." />
+                        <button *ngIf="socialLinksArray.length > 1" type="button" class="btn btn--secondary social-links__remove" (click)="removeSocialLink(i)" aria-label="Remove link">×</button>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn--secondary btn-sm mt-1" (click)="addSocialLink()">
+                      <i class="fa fa-plus"></i> Add another link
+                    </button>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Contact number</label>
+                    <input type="tel" formControlName="phone" class="form-control" placeholder="Your phone number" />
+                  </div>
                   <div class="profile-form__actions">
                     <button type="submit" class="btn btn--primary">
                       <i class="fa fa-check"></i> Update
@@ -262,6 +291,35 @@
                   <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
                     <div *ngIf="f.userName.errors.required">Username is required</div>
                   </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">About you</label>
+                  <textarea formControlName="bio" class="form-control" placeholder="Tell others about yourself" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Social links</label>
+                  <div class="social-links" formArrayName="socialLinks">
+                    <div *ngFor="let link of socialLinksArray.controls; let i = index" [formGroupName]="i" class="social-links__row">
+                      <select formControlName="platform" class="form-control social-links__platform">
+                        <option value="">Select platform</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="LinkedIn">LinkedIn</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="X">X</option>
+                        <option value="Website">Website</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <input type="url" formControlName="url" class="form-control social-links__url" placeholder="https://..." />
+                      <button *ngIf="socialLinksArray.length > 1" type="button" class="btn btn--secondary social-links__remove" (click)="removeSocialLink(i)" aria-label="Remove link">×</button>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn--secondary btn-sm mt-1" (click)="addSocialLink()">
+                    <i class="fa fa-plus"></i> Add another link
+                  </button>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Contact number</label>
+                  <input type="tel" formControlName="phone" class="form-control" placeholder="Your phone number" />
                 </div>
                 <div class="profile-form__actions">
                   <button type="submit" class="btn btn--primary">

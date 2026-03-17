@@ -85,13 +85,37 @@ export class EventListComponent implements OnInit, OnDestroy {
     return (this.router?.url ?? '').includes('/trainer/events');
   }
 
+  /** Trainer's content permissions (Event, Course, Blog); set when isTrainerPage. Used for empty-state message. */
+  hasEventPermission = false;
+  /** Trainer: has pending Event permission request (show waiting for approval in empty state). */
+  hasPendingEventRequest = false;
+
   ngOnInit(): void {
     this.sharedService.certificateName.next('Event List');
     this.sharedService.topbarPrimaryAction.next({
       routerLink: this.eventsBasePath + '/add',
       label: 'Add Event',
-      icon: 'fa-plus'
+      icon: 'fa-plus',
+      ...(this.isTrainerPage ? { contentType: 'Event' as const } : {})
     });
+    if (this.isTrainerPage) {
+      this.appService.getMyContentPermissions().subscribe({
+        next: (list) => {
+          const perms = Array.isArray(list) ? list : [];
+          this.hasEventPermission = perms.some((p: string) => (p || '').toLowerCase() === 'event');
+          this.cdr.markForCheck();
+        },
+        error: () => { this.hasEventPermission = false; this.cdr.markForCheck(); }
+      });
+      this.appService.getMyPendingPermissionRequests().subscribe({
+        next: (list) => {
+          const arr = Array.isArray(list) ? list : [];
+          this.hasPendingEventRequest = arr.some((r: { contentType?: string }) => (r?.contentType || '').toLowerCase() === 'event');
+          this.cdr.markForCheck();
+        },
+        error: () => { this.hasPendingEventRequest = false; this.cdr.markForCheck(); }
+      });
+    }
     this.loadEvents();
   }
 
@@ -108,7 +132,7 @@ export class EventListComponent implements OnInit, OnDestroy {
         const raw = toEventsArray(data);
         this.events = (raw || []).map(norm).filter((e) => e.id !== '');
         this.applyFilter();
-        this.loadRegistrationCounts();
+        if (!this.isTrainerPage) this.loadRegistrationCounts();
         this.loading = false;
       },
       error: (err) => {

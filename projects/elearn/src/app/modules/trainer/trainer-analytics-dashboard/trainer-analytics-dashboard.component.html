@@ -40,6 +40,21 @@
     </div>
   </div>
 
+  <div class="trainer-analytics__content-request" *ngIf="!contentPermissionsLoading">
+    <span class="trainer-analytics__content-request-title">Content creation access</span>
+    <p class="trainer-analytics__content-request-desc">Request permission to create Course, Event, or Blog. After admin approval, the corresponding menu will be enabled.</p>
+    <div class="trainer-analytics__content-request-list">
+      <div class="trainer-analytics__content-request-item" *ngFor="let type of ['Course', 'Event', 'Blog']">
+        <span class="trainer-analytics__content-request-label">{{ type }}</span>
+        <span class="trainer-analytics__content-request-status" *ngIf="hasContentPermission(type)">You can create</span>
+        <button type="button" class="trainer-analytics__content-request-btn" *ngIf="!hasContentPermission(type)"
+          [disabled]="requestLoading[type]" (click)="requestContentAccess(type)">
+          {{ requestLoading[type] ? 'Sending…' : 'Request access' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="trainer-analytics__cards trainer-analytics__cards--primary">
     <div class="trainer-analytics__card">
       <div class="trainer-analytics__card-inner" *ngIf="loadingSummary">

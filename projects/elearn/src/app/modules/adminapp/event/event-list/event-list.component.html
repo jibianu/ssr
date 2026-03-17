@@ -1,133 +1,187 @@
-<div class="mainClass event-list-page list-page-with-pagination list-table-modern mb-2">
+<div class="mainClass event-list-page list-table-modern mb-2" [class.list-page-with-pagination]="!(isTrainerPage && filteredEvents.length === 0)" [class.event-list-page--empty]="isTrainerPage && filteredEvents.length === 0">
   <div class="event-list__card-body">
   <div *ngIf="loading" class="event-list__loading">Loading events…</div>
   <div *ngIf="error" class="event-list__error alert alert-danger">{{ error }}</div>
 
   <ng-container *ngIf="!loading && !error">
-    <div class="event-list__search-row" *ngIf="!isTrainerPage">
-      <div class="event-list__search-wrap">
-        <i class="fas fa-search event-list__search-icon"></i>
-        <input
-          type="text"
-          class="event-list__search-input form-control"
-          placeholder="Search events..."
-          [(ngModel)]="term"
-          (ngModelChange)="onSearchChange()"
-        />
-        <button type="button" class="btn btn-primary event-list__search-btn" (click)="onSearchChange()" title="Search">
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-      <div class="event-list__badge" *ngIf="filteredEvents.length > 0">
-        <i class="fas fa-chart-line"></i>
-        <span>{{ filteredEvents.length }} {{ filteredEvents.length === 1 ? 'Event' : 'Events' }}</span>
-      </div>
-    </div>
-
-    <div class="list-page__table-wrap list-table-modern__wrap">
-      <div class="list-table-modern__table-responsive">
-        <table class="list-table-modern__table">
-          <thead>
-            <tr>
-              <th class="list-table-modern__th">
-                <a href="javascript:void(0)" class="list-table-modern__sort" (click)="onSortClick()">
-                  Title
-                  <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
-                </a>
-              </th>
-              <th class="list-table-modern__th">
-                Event Date
-                <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
-              </th>
-              <th class="list-table-modern__th">Location</th>
-              <th class="list-table-modern__th">Progress</th>
-              <th class="list-table-modern__th list-table-modern__th--action">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of filteredEvents | paginate: config; trackBy: trackByEventId" class="list-table-modern__row">
-              <td class="list-table-modern__td list-table-modern__td--ellipsis">
-                <a [routerLink]="[eventsBasePath + '/edit', item.id]" class="list-table-modern__link">{{ item.title }}</a>
-              </td>
-              <td class="list-table-modern__td list-table-modern__td--date">{{ item.startDate | date:'dd-MM-yy' }} - {{ item.endDate | date:'dd-MM-yy' }}</td>
-              <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.location || '—' }}</td>
-              <td class="list-table-modern__td list-table-modern__td--progress">
-                <button
-                  type="button"
-                  class="event-list__progress-btn"
-                  (click)="openProgressModal(item); $event.stopPropagation()"
-                  [title]="'Event page completion: ' + getProgressPercent(item) + '%. Click to change.'"
-                  [attr.aria-label]="'Progress: ' + getProgressPercent(item) + '%. Click to change completion.'"
-                >
-                  <span class="event-list__progress-ring" [style.--progress]="getProgressPercent(item)"></span>
-                  <span class="event-list__progress-value">{{ getProgressPercent(item) }}%</span>
-                </button>
-              </td>
-              <td class="list-table-modern__td list-table-modern__td--action">
-                <div class="list-table-modern__actions">
-                  <ng-container *ngIf="!isTrainerPage">
-                    <button
-                      *ngIf="!item.isPublished"
-                      type="button"
-                      class="list-table-modern__btn list-table-modern__btn--success"
-                      (click)="setPublishStatus(item, true); $event.stopPropagation()"
-                      [disabled]="isPublishing(item.id)"
-                      [title]="isPublishing(item.id) ? 'Updating...' : 'Publish (show on site and elearn)'"
-                    >
-                      <i class="fa" [ngClass]="isPublishing(item.id) ? 'fa-spinner fa-spin' : 'fa-globe'"></i>
-                      <span class="event-list__btn-publish-text">Publish</span>
-                    </button>
-                    <button
-                      *ngIf="item.isPublished"
-                      type="button"
-                      class="list-table-modern__btn list-table-modern__btn--success event-list__btn-published"
-                      (click)="setPublishStatus(item, false); $event.stopPropagation()"
-                      [disabled]="isPublishing(item.id)"
-                      [title]="isPublishing(item.id) ? 'Updating...' : 'Published. Click to unpublish (hide from site and elearn).'"
-                    >
-                      <i class="fa" [ngClass]="isPublishing(item.id) ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
-                      <span class="event-list__btn-unpublish-text">Unpublish</span>
-                    </button>
-                  </ng-container>
-                  <button
-                    type="button"
-                    class="list-table-modern__btn list-table-modern__btn--danger"
-                    (click)="deleteEvent(item.id); $event.stopPropagation()"
-                    [disabled]="isDeleting(item.id)"
-                    [title]="isDeleting(item.id) ? 'Deleting...' : 'Delete Event'"
-                  >
-                    <i class="fa" [ngClass]="isDeleting(item.id) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="list-table-modern__btn list-table-modern__btn--primary event-list__btn-registrations"
-                    (click)="openRegistrationsModal(item); $event.stopPropagation()"
-                    title="View registrations"
-                  >
-                    <i class="fa fa-user-friends"></i>
-                    <span class="event-list__btn-registrations-text">View registrations</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="filteredEvents.length === 0">
-              <td colspan="5" class="list-table-modern__empty text-center py-4">
-                No events found. Use <strong>Add Event</strong> in the top bar to create one, or if you had events in another database before the merge, run <code>Oilandgasclub_Migrate_Events_Data.sql</code> (see backend <code>DATABASE_MERGE_README.md</code>).
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="event-list__footer">
-        <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
-        <div class="event-list__page-size">
-          <label class="event-list__page-size-label">Items per page:</label>
-          <select class="form-select event-list__page-size-select" (change)="onTableSizeChange($event)">
-            <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [value]="size">{{ size }}</option>
-          </select>
+    <!-- Trainer empty state: reference design (badge, headline, message, button, stats, visual) -->
+    <div *ngIf="isTrainerPage && filteredEvents.length === 0" class="event-list__empty-state">
+      <div class="event-list__empty-state__wrap">
+        <div class="event-list__empty-state__content">
+          <span class="event-list__empty-state__badge" *ngIf="hasEventPermission">GET STARTED</span>
+          <span class="event-list__empty-state__requested-badge" *ngIf="!hasEventPermission && hasPendingEventRequest">Requested</span>
+          <h1 class="event-list__empty-state__headline">No Events Yet</h1>
+          <p class="event-list__empty-state__message" *ngIf="hasEventPermission">
+            Start organizing your first training event for students and professionals.
+          </p>
+          <p class="event-list__empty-state__message" *ngIf="!hasEventPermission && hasPendingEventRequest">
+            Waiting for permission approval.
+          </p>
+          <p class="event-list__empty-state__message" *ngIf="!hasEventPermission && !hasPendingEventRequest">
+            You don't have permission to create events yet. Use <strong>Request Permission</strong> in the top bar.
+          </p>
+          <a
+            *ngIf="hasEventPermission"
+            [routerLink]="[eventsBasePath, 'create']"
+            class="event-list__empty-state__btn"
+          >
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            Add New Event
+          </a>
+          <div class="event-list__empty-state__stats" *ngIf="hasEventPermission">
+            <div class="event-list__empty-state__stat">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <span><strong>Create</strong> training events</span>
+            </div>
+            <div class="event-list__empty-state__stat">
+              <i class="fa fa-users" aria-hidden="true"></i>
+              <span><strong>Manage</strong> registrations</span>
+            </div>
+            <div class="event-list__empty-state__stat">
+              <i class="fa fa-bar-chart" aria-hidden="true"></i>
+              <span><strong>Track</strong> attendance</span>
+            </div>
+          </div>
+        </div>
+        <div class="event-list__empty-state__visual">
+          <div class="event-list__empty-state__blob" aria-hidden="true"></div>
+          <div class="event-list__empty-state__frame">
+            <div class="event-list__empty-state__placeholder" aria-hidden="true">
+              <i class="fa fa-calendar-alt" aria-hidden="true"></i>
+              <i class="fa fa-users" aria-hidden="true"></i>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Table view: admin always; trainer when events exist -->
+    <ng-container *ngIf="!isTrainerPage || filteredEvents.length > 0">
+      <div class="event-list__search-row" *ngIf="!isTrainerPage">
+        <div class="event-list__search-wrap">
+          <i class="fas fa-search event-list__search-icon"></i>
+          <input
+            type="text"
+            class="event-list__search-input form-control"
+            placeholder="Search events..."
+            [(ngModel)]="term"
+            (ngModelChange)="onSearchChange()"
+          />
+          <button type="button" class="btn btn-primary event-list__search-btn" (click)="onSearchChange()" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        <div class="event-list__badge" *ngIf="filteredEvents.length > 0">
+          <i class="fas fa-chart-line"></i>
+          <span>{{ filteredEvents.length }} {{ filteredEvents.length === 1 ? 'Event' : 'Events' }}</span>
+        </div>
+      </div>
+
+      <div class="list-page__table-wrap list-table-modern__wrap">
+        <div class="list-table-modern__table-responsive">
+          <table class="list-table-modern__table">
+            <thead>
+              <tr>
+                <th class="list-table-modern__th">
+                  <a href="javascript:void(0)" class="list-table-modern__sort" (click)="onSortClick()">
+                    Title
+                    <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+                  </a>
+                </th>
+                <th class="list-table-modern__th">
+                  Event Date
+                  <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+                </th>
+                <th class="list-table-modern__th">Location</th>
+                <th class="list-table-modern__th">Progress</th>
+                <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of filteredEvents | paginate: config; trackBy: trackByEventId" class="list-table-modern__row">
+                <td class="list-table-modern__td list-table-modern__td--ellipsis">
+                  <a [routerLink]="[eventsBasePath + '/edit', item.id]" class="list-table-modern__link">{{ item.title }}</a>
+                </td>
+                <td class="list-table-modern__td list-table-modern__td--date">{{ item.startDate | date:'dd-MM-yy' }} - {{ item.endDate | date:'dd-MM-yy' }}</td>
+                <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.location || '—' }}</td>
+                <td class="list-table-modern__td list-table-modern__td--progress">
+                  <button
+                    type="button"
+                    class="event-list__progress-btn"
+                    (click)="openProgressModal(item); $event.stopPropagation()"
+                    [title]="'Event page completion: ' + getProgressPercent(item) + '%. Click to change.'"
+                    [attr.aria-label]="'Progress: ' + getProgressPercent(item) + '%. Click to change completion.'"
+                  >
+                    <span class="event-list__progress-ring" [style.--progress]="getProgressPercent(item)"></span>
+                    <span class="event-list__progress-value">{{ getProgressPercent(item) }}%</span>
+                  </button>
+                </td>
+                <td class="list-table-modern__td list-table-modern__td--action">
+                  <div class="list-table-modern__actions">
+                    <ng-container *ngIf="!isTrainerPage">
+                      <button
+                        *ngIf="!item.isPublished"
+                        type="button"
+                        class="list-table-modern__btn list-table-modern__btn--success"
+                        (click)="setPublishStatus(item, true); $event.stopPropagation()"
+                        [disabled]="isPublishing(item.id)"
+                        [title]="isPublishing(item.id) ? 'Updating...' : 'Publish (show on site and elearn)'"
+                      >
+                        <i class="fa" [ngClass]="isPublishing(item.id) ? 'fa-spinner fa-spin' : 'fa-globe'"></i>
+                        <span class="event-list__btn-publish-text">Publish</span>
+                      </button>
+                      <button
+                        *ngIf="item.isPublished"
+                        type="button"
+                        class="list-table-modern__btn list-table-modern__btn--success event-list__btn-published"
+                        (click)="setPublishStatus(item, false); $event.stopPropagation()"
+                        [disabled]="isPublishing(item.id)"
+                        [title]="isPublishing(item.id) ? 'Updating...' : 'Published. Click to unpublish (hide from site and elearn).'"
+                      >
+                        <i class="fa" [ngClass]="isPublishing(item.id) ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+                        <span class="event-list__btn-unpublish-text">Unpublish</span>
+                      </button>
+                    </ng-container>
+                    <button
+                      type="button"
+                      class="list-table-modern__btn list-table-modern__btn--danger"
+                      (click)="deleteEvent(item.id); $event.stopPropagation()"
+                      [disabled]="isDeleting(item.id)"
+                      [title]="isDeleting(item.id) ? 'Deleting...' : 'Delete Event'"
+                    >
+                      <i class="fa" [ngClass]="isDeleting(item.id) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="list-table-modern__btn list-table-modern__btn--primary event-list__btn-registrations"
+                      (click)="openRegistrationsModal(item); $event.stopPropagation()"
+                      title="View registrations"
+                    >
+                      <i class="fa fa-user-friends"></i>
+                      <span class="event-list__btn-registrations-text">View registrations</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredEvents.length === 0 && !isTrainerPage">
+                <td colspan="5" class="list-table-modern__empty text-center py-4">
+                  No events found. Use <strong>Add Event</strong> in the top bar to create one, or if you had events in another database before the merge, run <code>Oilandgasclub_Migrate_Events_Data.sql</code> (see backend <code>DATABASE_MERGE_README.md</code>).
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="event-list__footer">
+          <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
+          <div class="event-list__page-size">
+            <label class="event-list__page-size-label">Items per page:</label>
+            <select class="form-select event-list__page-size-select" (change)="onTableSizeChange($event)">
+              <option *ngFor="let size of tableSizes; trackBy: trackByTableSize" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </ng-container>
   </ng-container>
   </div>
 </div>

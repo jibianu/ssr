@@ -995,6 +995,27 @@ export class PublicAppService {
         this.eventsCache$ = null;
         console.log('[PublicAppService] Events cache invalidated');
     }
+
+    /**
+     * Subscribe to newsletter (same as old blog – Google Apps Script).
+     * Used by blog subscribe popup.
+     */
+    subscribeNewsletter(email: string, country?: string): Observable<{ success: boolean; message?: string; error?: string }> {
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwIMriXH94Qz2APCyxFzpgzZyU9bu4gEuOEY_9kJDDU377ehpve6kD3nwMIwk4cSgbbbg/exec';
+        return new Observable(observer => {
+            let url = `${scriptUrl}?email=${encodeURIComponent(email)}`;
+            if (country) url += `&country=${encodeURIComponent(country)}`;
+            const img = document.createElement('img');
+            img.style.display = 'none';
+            document.body.appendChild(img);
+            img.src = url;
+            setTimeout(() => {
+                if (img.parentNode) document.body.removeChild(img);
+                observer.next({ success: true, message: 'Subscribed successfully' });
+                observer.complete();
+            }, 1500);
+        });
+    }
 }
 
 

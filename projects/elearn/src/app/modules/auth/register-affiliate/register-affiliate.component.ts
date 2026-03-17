@@ -25,6 +25,12 @@ export class RegisterAffiliateComponent {
     private toaster: ToasterService
   ) {}
 
+  private usernameFromEmail(email: string): string {
+    if (!email || typeof email !== 'string') return email || '';
+    const at = email.indexOf('@');
+    return at > 0 ? email.slice(0, at).trim() : email.trim();
+  }
+
   register(): void {
     this.errorMessage = '';
     if (!this.email?.trim() || !this.password) {
@@ -32,10 +38,11 @@ export class RegisterAffiliateComponent {
       return;
     }
     this.submitting = true;
+    const defaultUserName = this.usernameFromEmail(this.email) || this.email;
     const request = {
       FirstName: this.email,
       LastName: this.email,
-      UserName: this.email,
+      UserName: defaultUserName,
       Email: this.email,
       Password: this.password
     };

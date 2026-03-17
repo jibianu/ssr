@@ -1,46 +1,64 @@
-<div class="parent">
-  <div class="child">
-    <img ngSrc="assets/img/ogclubsvg.svg" alt="Logo" width="180" height="60" priority class="image">
-    <div class="content">
-      <h2>Check your email for a code</h2>
-      <p>
-        we've send a 6-character code to <b>{{email}}</b>. The code will expire shortly. <br> So please enter it soon.
+<div class="verification-page">
+  <div class="verification-card">
+    <header class="verification-header">
+      <a routerLink="/" class="verification-brand" aria-label="oilandgasclub home">
+        <img [src]="logoUrl" alt="oilandgasclub" class="verification-brand__logo" width="130" height="42" fetchpriority="high">
+      </a>
+      <p class="verification-header__prompt">
+        Don't have an account? <a routerLink="/auth/register" class="verification-header__link">Get started free</a>
       </p>
+    </header>
+
+    <div class="verification-content">
+      <div class="verification-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <h1 class="verification-title">Check your email for a code</h1>
+      <p class="verification-instruction">
+        We've sent a 6-character code to <strong class="verification-email">{{ email }}</strong>. The code will expire shortly.<br>
+        So please enter it soon.
+      </p>
+
+      <form class="verification-form" (ngSubmit)="verifyAccount()" aria-label="Enter verification code">
+        <div class="verification-form__field">
+          <label class="verification-form__label" for="verification-code">Verification code</label>
+          <input
+            id="verification-code"
+            type="text"
+            name="code"
+            [(ngModel)]="code"
+            required
+            maxlength="6"
+            placeholder="Enter your verification code"
+            class="verification-form__input"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            pattern="[0-9]*"
+          >
+        </div>
+        <button type="submit" class="verification-form__submit" [disabled]="!code?.trim() || verifying">
+          {{ verifying ? 'Verifying…' : 'Verify' }}
+        </button>
+        <div class="verification-form__actions">
+          <button type="button" class="verification-form__resend" (click)="resend()">
+            Resend
+          </button>
+        </div>
+        <p class="verification-form__hint">
+          Can't find your code? Check your spam folder!
+        </p>
+      </form>
     </div>
-    <form>
-      <div>
-        <!-- <label for="email">Email address</label>
-        <input type="email" name="email" [(ngModel)]="email" required placeholder="Enter your email"> -->
-        <!-- <button class="btn btn-sm btn-primary" (click)="verifyAc()">Verify</button> -->
-        <!-- <p>
-            we've send a 6-character code to {{email}}. The code will expire shortly. Please enter it soon.
-        </p> -->
-      </div>
-      <br>
-      <div class="content">
-        <!-- <label for="email">Verification Code</label> -->
-        <input type="text" name="code" [(ngModel)]="code" required placeholder="Enter your verification code">
-        <!-- <div class="userInput">
-          <input type="text" id='ist' maxlength="1" onkeyup="clickEvent(this,'sec')">
-          <input type="text" id="sec" maxlength="1" onkeyup="clickEvent(this,'third')">
-          <input type="text" id="third" maxlength="1" onkeyup="clickEvent(this,'fourth')">
-          <input type="text" id="fourth" maxlength="1" onkeyup="clickEvent(this,'fifth')">
-          <input type="text" id="fifth" maxlength="1" onkeyup="clickEvent(this,'sixth')">
-          <input type="text" id="sixth" maxlength="1">
-        </div> -->
-      </div>
-      <div class="content mt-4">
-        <button (click)="verifyAccount()" class="btn customBtn" type="button"> Verify </button>
-
-      </div>
-      <div class="d-flex mt-2" style="padding-right:80px">
-        <div class="ml-auto">
-          <a class="mt-2" (click)="resend()">Resend</a></div>
-      </div>
-      <div class="content mt-2">
-        <p>Can't find your code? Check your span folder!</p>
-      </div>
-    </form>
-
   </div>
+
+  <footer class="verification-footer">
+    <p class="verification-footer__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
+    <div class="verification-footer__links">
+      <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="verification-footer__link">Privacy Policy</a>
+      <a href="https://www.oilandgasclub.com/cookies/" target="_blank" rel="noopener" class="verification-footer__link">Manage Cookies</a>
+    </div>
+  </footer>
 </div>

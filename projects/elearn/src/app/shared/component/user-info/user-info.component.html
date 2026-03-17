@@ -161,6 +161,20 @@
     <!-- Content Permissions: hidden when opened from Student List (showFullDrawer) -->
     <div class="form-row" *ngIf="!showFullDrawer">
       <div class="col-12">
+        <!-- Pending permission requests (from trainer list gear): show inside page with Approve/Reject -->
+        <div class="permissions-container pending-requests-section" *ngIf="pendingRequests?.length">
+          <h5 class="permissions-main-title">Pending permission requests</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let r of pendingRequests">
+              <span>{{ r.contentType || r?.ContentType }} <small class="text-muted">({{ (r.requestedAt || r?.RequestedAt) | date:'short' }})</small></span>
+              <span>
+                <button type="button" class="btn btn-sm btn-success me-1" [disabled]="pendingRequestLoading[r?.id ?? r?.Id]" (click)="approvePendingRequest(r)">{{ pendingRequestLoading[r?.id ?? r?.Id] ? '…' : 'Approve' }}</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="pendingRequestLoading[r?.id ?? r?.Id]" (click)="rejectPendingRequest(r)">Reject</button>
+              </span>
+            </li>
+          </ul>
+        </div>
+
         <div class="permissions-container">
           <h5 class="permissions-main-title">Permissions</h5>
           
@@ -179,6 +193,13 @@
                   [(ngModel)]="grmCourse" name="permCourse">
                 <label class="form-check-label" for="perm-course">
                   Course
+                </label>
+              </div>
+              <div class="form-check permission-item content-permission">
+                <input class="form-check-input" type="checkbox" id="perm-event" 
+                  [(ngModel)]="grmEvent" name="permEvent">
+                <label class="form-check-label" for="perm-event">
+                  Event
                 </label>
               </div>
             </div>
@@ -231,14 +252,14 @@
         </div>
       </div>
     </div>
-    <div class="form-row">
+    <div class="form-row" *ngIf="data">
         <div class="form-group col-md-6">
           <label >User Name</label>
-          <input type="text" class="form-control" disabled value="{{data.userName}}">
+          <input type="text" class="form-control" disabled value="{{data?.userName}}">
         </div>
         <div class="form-group col-md-6">
           <label >Email</label>
-          <input type="text" class="form-control" disabled value="{{data.email}}">
+          <input type="text" class="form-control" disabled value="{{data?.email}}">
         </div>
       </div>
 <div class="row">

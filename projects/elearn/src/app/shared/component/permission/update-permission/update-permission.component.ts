@@ -29,6 +29,9 @@ export class UpdatePermissionomponent implements OnInit {
         this.fetchPermission();
     }
 
+    /** Permission name prefixes/categories that trainers are allowed to have (content creation: Course, Event, Blog). */
+    private static readonly TRAINER_PERMISSION_PREFIXES = ['course.', 'event.', 'blog.'];
+
     fetchPermission() {
         this.appService.Get('api/User/permissions/byuser/' + this.userId)
             .then(response => {
@@ -37,8 +40,18 @@ export class UpdatePermissionomponent implements OnInit {
                 this.userRoleId = response.roleId;
                 this.userExistingPermissions = response.userPermissions;
                 this.rolePermission = response.rolePermission;
-                if (this.role != Role.Admin) {
+                if (this.role !== Role.Admin) {
                     this.permissionList = this.permissionList.filter(x => this.rolePermission.includes(x.id));
+                }
+                // For trainers, show only Course / Event / Blog related permissions (trainer-required content permissions).
+                if (this.role === Role.Trainer && this.permissionList?.length) {
+                    this.permissionList = this.permissionList.filter(p => {
+                        const name = (p.name || '').trim().toLowerCase();
+                        if (!name) return false;
+                        return UpdatePermissionomponent.TRAINER_PERMISSION_PREFIXES.some(
+                            prefix => name === prefix.replace('.', '') || name.startsWith(prefix)
+                        );
+                    });
                 }
                 this.selectedRole = this.rolesList?.find(x => x.id == this.userRoleId)?.name;
                 this.permissionList.forEach(element => {

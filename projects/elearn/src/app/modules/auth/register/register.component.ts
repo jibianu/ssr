@@ -85,6 +85,13 @@ export class RegisterComponent implements OnInit {
     }
   }
 
+  /** Username default: part before @ (e.g. anush@gmail.com → anush). Backend may use this; user can change later in profile. */
+  private usernameFromEmail(email: string): string {
+    if (!email || typeof email !== 'string') return email || '';
+    const at = email.indexOf('@');
+    return at > 0 ? email.slice(0, at).trim() : email.trim();
+  }
+
   registerLocal(): void {
     try {
       let affiliateCode: string | undefined;
@@ -102,10 +109,11 @@ export class RegisterComponent implements OnInit {
           affiliateCourseId = localStorage.getItem(RegisterComponent.AFFILIATE_REF_COURSE_KEY) ?? undefined;
         }
       } catch (_) {}
+      const defaultUserName = this.usernameFromEmail(this.email) || this.email;
       const request: Record<string, string> = {
         LastName: this.email,
         FirstName: this.email,
-        UserName: this.email,
+        UserName: defaultUserName,
         Email: this.email,
         Password: this.password,
         CompanyUserName: this.cid

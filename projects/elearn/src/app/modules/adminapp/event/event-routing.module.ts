@@ -8,6 +8,7 @@ import { EventUserListComponent } from './event-user-list/event-user-list.compon
 const routes: Routes = [
   { path: '', pathMatch: 'full', component: EventListComponent },
   { path: 'add', component: EventAddComponent },
+  { path: 'create', redirectTo: 'add', pathMatch: 'full' },
   { path: 'edit/:id', component: EventEditComponent },
   { path: 'users', pathMatch: 'full', redirectTo: '' },
   { path: 'users/:id', component: EventUserListComponent }

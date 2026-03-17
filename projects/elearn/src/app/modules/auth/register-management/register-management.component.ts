@@ -38,12 +38,19 @@ export class RegisterManagementComponent implements OnInit {
     }
   }
 
+  private usernameFromEmail(email: string): string {
+    if (!email || typeof email !== 'string') return email || '';
+    const at = email.indexOf('@');
+    return at > 0 ? email.slice(0, at).trim() : email.trim();
+  }
+
   registerManagement(): void {
     try {
+      const defaultUserName = this.usernameFromEmail(this.email) || this.email;
       const request = {
         LastName: this.email,
         FirstName: this.email,
-        UserName: this.email,
+        UserName: defaultUserName,
         Email: this.email,
         Password: this.password
       };

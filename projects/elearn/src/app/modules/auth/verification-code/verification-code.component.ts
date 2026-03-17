@@ -1,5 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { AuthenticationService } from '../auth.service';
 
 @Component({
@@ -9,49 +10,47 @@ import { AuthenticationService } from '../auth.service';
     standalone: false
 })
 export class VerificationCodeComponent implements OnInit {
+  code = '';
+  email = '';
+  user: any;
+  data: any;
+  verifying = false;
+  /** Logo URL from environment; otherwise local asset (match login page). */
+  logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
 
-  constructor(private authenticationService: AuthenticationService,
+  constructor(
+    private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
     private router: Router
   ) {
     this.route.queryParams.subscribe(res => {
-      console.log(res)
-      if (res.code) {
-        this.email = atob(res.code)
+      if (res['code']) {
+        try {
+          this.email = atob(res['code']);
+        } catch (_) {
+          this.email = '';
+        }
       }
-      // btoa()
-    })
+    });
   }
-  code: string = ''
-  email: string = ''
-  user: any;
-  data: any;
-  ngOnInit(): void {
 
-  }
+  ngOnInit(): void {}
+
   verifyAccount() {
-    var obj = {
-      email: this.email,
-      ConfirmationCode: this.code
-    }
-    this.user = this.authenticationService.confirmation(obj)
-      .subscribe(res => {
-        this.router.navigate(['auth', 'login'])
-      })
+    if (!this.code?.trim() || !this.email) return;
+    this.verifying = true;
+    const obj = { email: this.email, ConfirmationCode: this.code.trim() };
+    this.authenticationService.confirmation(obj).subscribe({
+      next: () => this.router.navigate(['auth', 'login']),
+      error: () => { this.verifying = false; }
+    });
   }
+
   resend() {
-    var obj = {
-      email: this.email
-    }
-    this.authenticationService.ResendConformationCode(obj)
-      .subscribe(res => {
-
-      })
-  }
-
-  clickEvent(first, last) {
-    if (first.value.length) {
-      document.getElementById(last).focus();
-    }
+    if (!this.email) return;
+    this.authenticationService.ResendConformationCode({ email: this.email }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
   }
 }

@@ -52,6 +52,12 @@ export class SharedNavbarComponent implements OnInit, OnDestroy {
       });
     }
 
+    if (roleId === Role.Trainer) {
+      // Show all trainer menu items (Dashboard, My Courses, Assigned course, Event, Blog, etc.)
+      // so trainers can always open those pages; Add vs Request Permission is handled on each page.
+      this.menuItems = getNavbarMenuForRole(Role.Trainer);
+    }
+
     this.sub.add(
       this.sidebarToggle.onOpenRequest.subscribe(() => {
         this.hideSideNav = false;

@@ -49,7 +49,7 @@
             <a [routerLink]="'/events'">Events</a>
           </li>
           <li class="menu-item">
-            <a href="https://blog.oilandgasclub.com/" target="_blank">Blog</a>
+            <a [routerLink]="'/blog'">Blog</a>
           </li>
           <li class="menu-item">
             <a [routerLink]="'/become-our-trainer'">Become an Instructor</a>
@@ -126,7 +126,7 @@
           </a>
         </li>
         <li class="menu-item menu-item--mobile">
-          <a href="https://blog.oilandgasclub.com/" target="_blank" (click)="toggleinVisibility()">
+          <a [routerLink]="'/blog'" (click)="toggleinVisibility()">
             <span class="menu-item-icon">📝</span>
             <span class="menu-item-text">Blog</span>
           </a>

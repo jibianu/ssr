@@ -1,0 +1,165 @@
+<section class="blog-page">
+  <div class="container">
+    <!-- Search and Filter (old blog layout) -->
+    <div class="search-filter-section">
+    <div class="row align-items-end">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <label for="searchInput" class="search-label">Search</label>
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search by title..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchChangeValue($event)" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label for="categoryFilter" class="filter-label">Filter by Category</label>
+        <div class="filter-dropdown-wrapper">
+          <select
+            id="categoryFilter"
+            class="filter-dropdown"
+            [ngModel]="selectedCategory()"
+            (ngModelChange)="onCategoryFilterChange($event)">
+            <option value="">Filter by Category</option>
+            @for (cat of categoryNames(); track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+          <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="row d-flex justify-content-center align-items-center">
+    <div class="col-md-12">
+      @if (loading()) {
+        <div class="loading-container text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3">Loading blogs...</p>
+        </div>
+      } @else if (error()) {
+        <div class="alert alert-danger mx-auto" style="max-width: 600px;">
+          <i class="fa fa-exclamation-triangle"></i>
+          <strong>Error loading blogs:</strong> {{ error() }}
+          <button class="btn btn-primary btn-sm mt-2" (click)="retryLoad()">Retry</button>
+        </div>
+      } @else if (hasBlogs()) {
+        @if (selectedAuthorId()) {
+          <div class="trainer-header">
+            <div class="trainer-header__inner">
+              <div class="trainer-header__photo-wrap">
+                @if (authorProfile()?.profilePictureUrl) {
+                  <img [src]="authorProfile()!.profilePictureUrl" [alt]="authorFilterName()" class="trainer-header__photo" loading="lazy" (error)="onImgError($event)" />
+                } @else {
+                  <div class="trainer-header__photo-placeholder"><span class="trainer-header__initial">{{ (authorFilterName() || 'A').charAt(0) }}</span></div>
+                }
+              </div>
+              <div class="trainer-header__content">
+                <h1 class="trainer-header__name">{{ authorFilterName() || 'Author' }}</h1>
+                @if (hasAuthorSocialLinks()) {
+                  <div class="trainer-header__links">
+                    @if (authorEmail()) {
+                      <a [href]="'mailto:' + authorEmail()" class="trainer-header__icon-link" aria-label="Email"><i class="fa fa-envelope"></i></a>
+                    }
+                    @for (link of getAuthorSocialLinks(); track link.url + link.platform) {
+                      <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="trainer-header__icon-link" [attr.aria-label]="link.platform || 'Link'">
+                        <i [class]="getSocialIconClass(link.platform, link.url)"></i>
+                      </a>
+                    }
+                    @if (authorWebsite() && !hasSocialLinkWithUrl(authorWebsite()!)) {
+                      <a [href]="authorWebsite()" target="_blank" rel="noopener noreferrer" class="trainer-header__website trainer-header__website--inline">{{ authorWebsite() }}</a>
+                    }
+                  </div>
+                }
+                @if (authorProfile()?.bio) {
+                  <div class="trainer-header__bio" [innerHTML]="authorProfile()!.bio"></div>
+                }
+                <a routerLink="/blog" class="trainer-header__view-all">View all posts</a>
+              </div>
+            </div>
+          </div>
+        }
+        <div class="row">
+          @for (blog of filteredBlogs(); track trackByBlogId($index, blog)) {
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="blog-card">
+                <div class="blog-card-image">
+                  <a [routerLink]="getBlogRoute(blog.canonicalUrl)" [attr.aria-label]="blog.title">
+                    <img
+                      [src]="blog.titleImgUrl || placeholderImg"
+                      [alt]="blog.title"
+                      loading="lazy"
+                      (error)="onImgError($event)" />
+                  </a>
+                </div>
+                <div class="blog-card-content">
+                  <h3 class="blog-card-title">
+                    <a [routerLink]="getBlogRoute(blog.canonicalUrl)">{{ blog.title }}</a>
+                  </h3>
+                  <div class="blog-card-meta">
+                    @if (blog.authorId) {
+                      <a [routerLink]="['/blog']" [queryParams]="{ author: blog.authorId }" class="blog-card-author-wrapper blog-card-author-link" aria-label="View all posts by {{ getAuthorDisplayName(blog.authorName) || 'Author' }}">
+                        @if (blog.authorProfilePictureUrl) {
+                          <img [src]="blog.authorProfilePictureUrl" [alt]="getAuthorDisplayName(blog.authorName) || 'Author'" class="blog-card-author-avatar" loading="lazy" (error)="onImgError($event)" />
+                        } @else {
+                          <div class="blog-card-author-avatar-placeholder">
+                            <i class="fa fa-user"></i>
+                          </div>
+                        }
+                        <span class="blog-card-author">{{ getAuthorDisplayName(blog.authorName) || 'Author' }}</span>
+                      </a>
+                    } @else if (blog.authorName) {
+                      <div class="blog-card-author-wrapper">
+                        @if (blog.authorProfilePictureUrl) {
+                          <img [src]="blog.authorProfilePictureUrl" [alt]="getAuthorDisplayName(blog.authorName)" class="blog-card-author-avatar" loading="lazy" (error)="onImgError($event)" />
+                        } @else {
+                          <div class="blog-card-author-avatar-placeholder">
+                            <i class="fa fa-user"></i>
+                          </div>
+                        }
+                        <span class="blog-card-author">{{ getAuthorDisplayName(blog.authorName) }}</span>
+                      </div>
+                    }
+                    @if (blog.createdOn) {
+                      <span class="blog-card-date">{{ formatDate(blog.createdOn) }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <nav class="pagination-wrapper">
+          <ul class="pagination justify-content-center mt-5 mb-4">
+            <li class="page-item" [class.disabled]="pageNumber() <= 1">
+              <a href="javascript:void(0)" (click)="pageNumber() > 1 && pageChange(pageNumber() - 1); $event.preventDefault()" class="page-link">&larr; Older</a>
+            </li>
+            <li class="page-item" [class.disabled]="pageNumber() >= totalPages()">
+              <a href="javascript:void(0)" (click)="pageNumber() < totalPages() && pageChange(pageNumber() + 1); $event.preventDefault()" class="page-link">Newer &rarr;</a>
+            </li>
+          </ul>
+        </nav>
+      } @else {
+        <div class="empty-state text-center py-5">
+          <i class="fa fa-file-text-o fa-3x text-muted mb-3"></i>
+          <h5>No blogs found</h5>
+          <p class="text-muted">Try adjusting your filters or check back later.</p>
+        </div>
+      }
+    </div>
+    </div>
+  </div>
+</section>

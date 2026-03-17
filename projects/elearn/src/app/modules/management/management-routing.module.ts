@@ -22,6 +22,21 @@ const routes: Routes = [
     canActivate: [ManagementPermissionGuard]
   },
   {
+    path: 'blog',
+    loadChildren: () => import('../adminapp/blog/blog.module').then(m => m.BlogModule),
+    canActivate: [ManagementPermissionGuard]
+  },
+  {
+    path: 'blog-users',
+    loadChildren: () => import('../adminapp/blog-users/blog-users.module').then(m => m.BlogUsersModule),
+    canActivate: [ManagementPermissionGuard]
+  },
+  {
+    path: 'loop-marketing',
+    loadChildren: () => import('../adminapp/loop-marketing/loop-marketing.module').then(m => m.LoopMarketingModule),
+    canActivate: [ManagementPermissionGuard]
+  },
+  {
     path: 'trainer-payouts',
     loadChildren: () => import('../adminapp/trainer-payouts/admin-trainer-payouts.module').then(m => m.AdminTrainerPayoutsModule)
   },

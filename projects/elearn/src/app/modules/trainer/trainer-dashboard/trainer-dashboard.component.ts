@@ -40,6 +40,11 @@ export class TrainerDashboardComponent implements OnInit, OnDestroy {
   /** True when on Assigned course page (course/list) – show enrolled courses and read-only UI. */
   isAssignedView = false;
 
+  /** Trainer: has Course content permission (show Add New Course in empty state). */
+  hasCoursePermission = false;
+  /** Trainer: has pending Course permission request (show waiting for approval in empty state). */
+  hasPendingCourseRequest = false;
+
   /** Total pages for simple pagination (same design as My Courses). */
   get totalPageCount(): number {
     if (this.count == null || this.tableSize <= 0) return 0;
@@ -88,6 +93,20 @@ export class TrainerDashboardComponent implements OnInit, OnDestroy {
       })
     );
     this.fetchCourses();
+    this.appService.getMyContentPermissions().subscribe({
+      next: (list) => {
+        const perms = Array.isArray(list) ? list : [];
+        this.hasCoursePermission = perms.some((p: string) => (p || '').toLowerCase() === 'course');
+      },
+      error: () => { this.hasCoursePermission = false; }
+    });
+    this.appService.getMyPendingPermissionRequests().subscribe({
+      next: (list) => {
+        const arr = Array.isArray(list) ? list : [];
+        this.hasPendingCourseRequest = arr.some((r: { contentType?: string }) => (r?.contentType || '').toLowerCase() === 'course');
+      },
+      error: () => { this.hasPendingCourseRequest = false; }
+    });
   }
 
   private updateAssignedViewFromUrl(): void {

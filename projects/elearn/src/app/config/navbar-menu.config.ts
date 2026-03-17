@@ -8,6 +8,8 @@ export interface NavbarMenuItem {
   fragment?: string;
   /** Permission key for Management (filtered by getMyManagementPermissions); null = always show. Admin/Trainer/Company use full menu for their role. */
   permission?: string | null;
+  /** Content permission for Trainer (Blog, Course, Event). Item shown only if user has this permission. Omit = always show for trainer. */
+  contentPermission?: 'Blog' | 'Course' | 'Event' | null;
 }
 
 const APP = '/app';
@@ -18,6 +20,8 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
     { link: `${APP}/admin/revenue`, label: 'Revenue share', icon: 'fa fa-chart-pie' },
     { link: `${APP}/admin/analytics/dashboard`, label: 'Analytics Dashboard', icon: 'fa fa-chart-line' },
     { link: `${APP}/admin/analytics`, label: 'Student Analytics', icon: 'fa fa-users' },
+    { link: `${APP}/admin/blog`, label: 'Blog', icon: 'fa fa-blog' },
+    { link: `${APP}/admin/blog/review`, label: 'Blog Review', icon: 'fa fa-clipboard-check' },
     { link: `${APP}/admin/students`, label: 'Student List', icon: 'fa fa-users' },
     { link: `${APP}/admin/trainers`, label: 'Trainer List', icon: 'fa fa-graduation-cap' },
     { link: `${APP}/admin/companies`, label: 'Company List', icon: 'fa fa-building' },
@@ -41,6 +45,7 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
     { link: `${APP}/management/management`, label: 'Management List', icon: 'fa fa-list', permission: 'ManagementList' },
     { link: `${APP}/management/category`, label: 'Category List', icon: 'fa fa-folder', permission: 'CategoryList' },
     { link: `${APP}/management/course`, label: 'Course List', icon: 'fa fa-book', permission: 'CourseList' },
+    { link: `${APP}/management/blog`, label: 'Blog', icon: 'fa fa-blog', permission: null },
     { link: `${APP}/management/notification-list`, label: 'Notifications', icon: 'fa fa-bell', permission: null },
     { link: `${APP}/management/notification-history`, label: 'Notification History', icon: 'fa fa-history', permission: null },
     { link: `${APP}/management/trainer-payouts`, label: 'Trainer Payouts', icon: 'fa fa-money-check-alt', permission: null },
@@ -49,11 +54,12 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
   ],
   [Role.Trainer]: [
     { link: `${APP}/trainer/dashboard`, label: 'Dashboard', icon: 'fa fa-tachometer' },
-    { link: `${APP}/trainer/courses`, label: 'My Courses', icon: 'fa fa-th-list' },
-    { link: `${APP}/trainer/course/list`, label: 'Assigned course', icon: 'fa fa-book' },
+    { link: `${APP}/trainer/courses`, label: 'My Courses', icon: 'fa fa-th-list', contentPermission: 'Course' },
+    { link: `${APP}/trainer/course/list`, label: 'Assigned course', icon: 'fa fa-book', contentPermission: 'Course' },
     { link: `${APP}/trainer/earnings`, label: 'Earnings', icon: 'fa fa-money' },
     { link: `${APP}/trainer/payout`, label: 'Payout & Tax', icon: 'fa fa-credit-card' },
-    { link: `${APP}/trainer/events`, label: 'Event', icon: 'fa fa-calendar-alt' },
+    { link: `${APP}/trainer/events`, label: 'Event', icon: 'fa fa-calendar-alt', contentPermission: 'Event' },
+    { link: `${APP}/trainer/blog`, label: 'Blog', icon: 'fa fa-blog', contentPermission: 'Blog' },
     { link: `${APP}/trainer/profile`, label: 'Profile', icon: 'fa fa-user-circle' },
   ],
   [Role.Company]: [

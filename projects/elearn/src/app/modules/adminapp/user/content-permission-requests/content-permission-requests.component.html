@@ -1,0 +1,54 @@
+<div class="content-requests">
+  <h1 class="content-requests__title">Trainer Permission Requests</h1>
+  <p class="content-requests__desc">Trainers request permission to create Course, Event, or Blog. Approve to update TrainerPermissions and grant access.</p>
+  <p class="content-requests__hint">If a trainer just submitted a request, click <strong>Refresh</strong> to load it.</p>
+
+  <div class="content-requests__toolbar">
+    <button type="button" class="content-requests__btn content-requests__btn--refresh" [disabled]="loading" (click)="load()">
+      <i class="fa fa-sync-alt"></i> Refresh
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="content-requests__loading">Loading…</div>
+  <div *ngIf="loadError" class="content-requests__error">{{ loadError }}</div>
+
+  <div *ngIf="!loading && !loadError && requests.length === 0" class="content-requests__empty">
+    No pending requests.
+  </div>
+
+  <div *ngIf="!loading && !loadError && requests.length > 0" class="content-requests__table-wrap">
+    <table class="content-requests__table">
+      <thead>
+        <tr>
+          <th>Trainer</th>
+          <th>Email</th>
+          <th>Content type</th>
+          <th>Requested</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of requests; trackBy: trackById">
+          <td>{{ r.userName || '—' }}</td>
+          <td>{{ r.userEmail || '—' }}</td>
+          <td>{{ r.contentType }}</td>
+          <td>{{ r.requestedAt | date:'short' }}</td>
+          <td>
+            <button type="button" class="content-requests__btn content-requests__btn--permissions"
+              (click)="openPermissionsPage(r)" title="Open trainer permissions (Blog, Course, Event)">
+              <i class="fa fa-cog"></i> Edit permissions
+            </button>
+            <button type="button" class="content-requests__btn content-requests__btn--approve"
+              [disabled]="actionLoading[r.id]" (click)="approve(r.id)">
+              {{ actionLoading[r.id] ? '…' : 'Approve' }}
+            </button>
+            <button type="button" class="content-requests__btn content-requests__btn--reject"
+              [disabled]="actionLoading[r.id]" (click)="reject(r.id)">
+              Reject
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

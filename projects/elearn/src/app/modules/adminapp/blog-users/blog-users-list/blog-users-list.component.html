@@ -1,0 +1,57 @@
+<div class="blog-users-list">
+  <div class="blog-users-list__header">
+    <h4 class="blog-users-list__title">Blog authors</h4>
+    <p class="blog-users-list__subtitle">Users who have created at least one blog post. Click a row to view their posts.</p>
+  </div>
+
+  @if (loading) {
+    <div class="blog-users-list__loading">Loading...</div>
+  }
+  @if (loadError) {
+    <div class="blog-users-list__error">
+      {{ loadError }}
+      <button type="button" class="btn btn-sm btn-outline-primary ms-2" (click)="fetchAuthors()">Retry</button>
+    </div>
+  }
+  @if (!loading && !loadError && authors.length === 0) {
+    <div class="blog-users-list__empty">No blog authors yet. Blog posts are created from the Blog tab.</div>
+  }
+  @if (!loading && !loadError && authors.length > 0) {
+    <div class="blog-users-list__table-wrap">
+      <table class="blog-users-list__table">
+        <thead>
+          <tr>
+            <th class="blog-users-list__th">Author</th>
+            <th class="blog-users-list__th">Email</th>
+            <th class="blog-users-list__th">Posts</th>
+            <th class="blog-users-list__th blog-users-list__th--action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of authors; track a.id) {
+            <tr class="blog-users-list__row">
+              <td class="blog-users-list__td">
+                <div class="blog-users-list__author">
+                  @if (a.profilePictureUrl) {
+                    <img [src]="a.profilePictureUrl" [alt]="a.name" class="blog-users-list__avatar" (error)="onImgError($event)">
+                  }
+                  @if (!a.profilePictureUrl) {
+                    <span class="blog-users-list__avatar-placeholder">{{ (a.name || '?').charAt(0).toUpperCase() }}</span>
+                  }
+                  <span class="blog-users-list__name">{{ a.name || 'Unknown' }}</span>
+                </div>
+              </td>
+              <td class="blog-users-list__td blog-users-list__email">{{ a.email || '—' }}</td>
+              <td class="blog-users-list__td blog-users-list__count">{{ a.blogCount }}</td>
+              <td class="blog-users-list__td blog-users-list__td--action">
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="goToAuthorBlogs(a.id)">
+                  View posts
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

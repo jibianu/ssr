@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
@@ -154,6 +154,16 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     return full || userName || 'User';
   }
 
+  /** Default username from email: part before @ (e.g. anush@gmail.com → anush). User can still modify. */
+  private usernameFromEmail(emailOrUsername: string): string {
+    if (!emailOrUsername || typeof emailOrUsername !== 'string') return '';
+    const at = emailOrUsername.indexOf('@');
+    return at > 0 ? emailOrUsername.slice(0, at).trim() : emailOrUsername.trim();
+  }
+
+  /** Predefined social platform options (and "Add another" uses these). */
+  readonly socialPlatforms = ['Facebook', 'LinkedIn', 'YouTube', 'X', 'Website', 'Other'];
+
   formInit() {
     this.userForm = this.formBuilder.group({
       firstName: ['', Validators.required],
@@ -161,7 +171,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
       userName: ['', Validators.required],
       profilePictureUrl: [''],
+      bio: [''],
+      socialLinks: this.formBuilder.array([]),
+      phone: [''],
     });
+    this.addSocialLink('', '');
     this.PasswordChangeForm = this.formBuilder.group({
       originalPassword: ['', Validators.required],
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
@@ -169,6 +183,18 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     }, {
       validator: MustMatch('newPassword', 'confirmPassword')
     });
+  }
+
+  get socialLinksArray(): UntypedFormArray {
+    return this.userForm.get('socialLinks') as UntypedFormArray;
+  }
+
+  addSocialLink(platform: string = 'Website', url: string = ''): void {
+    this.socialLinksArray.push(this.formBuilder.group({ platform: [platform], url: [url] }));
+  }
+
+  removeSocialLink(index: number): void {
+    if (this.socialLinksArray.length > 1) this.socialLinksArray.removeAt(index);
   }
 
   get f() { return this.userForm.controls; }
@@ -187,13 +213,33 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         const profilePic = res.profilePictureUrl ?? res.ProfilePictureUrl ?? res.profilePicture ?? res.ProfilePicture ?? res.imageUrl ?? res.avatarUrl ?? '';
         this.userEmail = res.email || this.userEmail;
         this.userDisplayName = this.buildDisplayName(res.firstName, res.lastName, res.userName);
+        const email = res.email || '';
+        const currentUserName = res.userName || '';
+        const userName =
+          currentUserName && !currentUserName.includes('@')
+            ? currentUserName
+            : this.usernameFromEmail(email || currentUserName);
         this.userForm.patchValue({
           firstName: res.firstName ? res.firstName : '',
           lastName: res.lastName ? res.lastName : '',
           email: res.email ? res.email : '',
-          userName: res.userName ? res.userName : '',
+          userName,
           profilePictureUrl: profilePic,
+          bio: res.bio ?? res.Bio ?? '',
+          phone: res.phone ?? res.Phone ?? '',
         });
+        const links = res.socialLinks ?? res.SocialLinks;
+        if (Array.isArray(links) && links.length) {
+          while (this.socialLinksArray.length) this.socialLinksArray.removeAt(0);
+          links.forEach((link: any) =>
+            this.addSocialLink(link.platform ?? link.Platform ?? '', link.url ?? link.Url ?? ''));
+        } else if (res.website || res.Website) {
+          while (this.socialLinksArray.length) this.socialLinksArray.removeAt(0);
+          this.addSocialLink('Website', res.website ?? res.Website ?? '');
+        }
+        if (this.socialLinksArray.length === 0) {
+          this.addSocialLink('', '');
+        }
         this.uploadedFilePath = (profilePic && String(profilePic).trim()) ? String(profilePic).trim() : '';
       } else if (!this.uploadedFilePath) {
         this.uploadedFilePath = '';
@@ -225,11 +271,13 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     this.submitted = true;
-    // stop here if form is invalid
-    if (this.userForm.invalid) {
-      return;
-    }
-    this.subscription.add(this.appService.profileUpdate(this.userForm.getRawValue()).subscribe((res: any) => {
+    if (this.userForm.invalid) return;
+    const raw = this.userForm.getRawValue();
+    const socialLinks = (raw.socialLinks || [])
+      .filter((l: any) => l && (l.url || '').trim())
+      .map((l: any) => ({ platform: (l.platform || '').trim() || 'Other', url: (l.url || '').trim() }));
+    const payload = { ...raw, socialLinks };
+    this.subscription.add(this.appService.profileUpdate(payload).subscribe((res: any) => {
       this.toasterService.showSuccess('Profile updated successfully');
       if (res && (res.firstName != null || res.lastName != null || res.userName != null)) {
         this.userDisplayName = this.buildDisplayName(res.firstName, res.lastName, res.userName);

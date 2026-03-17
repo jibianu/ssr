@@ -32,6 +32,7 @@ import { StudentDetailsComponent } from '../app/modal/student-details/student-de
 import { CheckboxComponent } from './component/checkbox/checkbox.component';
 import { StudentCourseListComponent } from './component/course-list/student-course-list/student-course-list.component';
 import { SearchCoursesComponent } from './modals/search-courses/search-courses.component';
+import { TrainerListFilterComponent } from './modals/trainer-list-filter/trainer-list-filter.component';
 import { SkipQuestionComponent } from './modals/skip-question/skip-question.component';
 import { RetakeQuestionComponent } from './modals/retake-question/retake-question.component';
 import { RouterModule } from '@angular/router';
@@ -48,7 +49,7 @@ import { CommonSidebarComponent } from './component/common-sidebar/common-sideba
 import { CommonPaginationComponent } from './component/common-pagination/common-pagination.component';
 
 @NgModule({
-    declarations: [ToasterComponent, ConfirmationModalComponent, ReadMoreComponent, UserProfileComponent, CommonPageTopbarComponent, CommonSidebarComponent, ChatComponent, DropListComponent, StudentDetailsComponent, CheckboxComponent, UpdatePermissionomponent, UpdateCourseListComponent, StudentCourseListComponent, SearchCoursesComponent, SkipQuestionComponent, RetakeQuestionComponent,
+    declarations: [ToasterComponent, ConfirmationModalComponent, ReadMoreComponent, UserProfileComponent, CommonPageTopbarComponent, CommonSidebarComponent, ChatComponent, DropListComponent, StudentDetailsComponent, CheckboxComponent, UpdatePermissionomponent, UpdateCourseListComponent, StudentCourseListComponent, SearchCoursesComponent, TrainerListFilterComponent, SkipQuestionComponent, RetakeQuestionComponent,
         UnauthorizedComponent,
         SafeUrlPipe,
         FilterByPipe,

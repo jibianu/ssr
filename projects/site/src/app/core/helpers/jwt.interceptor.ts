@@ -139,9 +139,17 @@ export class JwtInterceptor implements HttpInterceptor {
             return request;
         }
 
-        // ✅ Skip token for public endpoints first (avoids expiry logs and 401 for course detail page and events)
-        const publicEndpoints = ['/account/login', '/account/register', '/assets/', '/api/public', '/api/courses/', '/page/category', '/page/course', '/api/events/dashboard', '/api/events/event/'];
-        const isPublicEndpoint = publicEndpoints.some(endpoint => request.url.toLowerCase().includes(endpoint.toLowerCase()));
+        // ✅ Skip token for public endpoints first (avoids expiry logs and 401 for anonymous browsing)
+        const publicEndpoints = [
+          '/account/login', '/account/register', '/assets/', '/api/public', '/api/courses/',
+          '/page/category', '/page/course', '/api/events/dashboard', '/api/events/event/',
+          '/api/slug-resolver/', '/api/blog'  // public blog (list, detail, author profile) – match with or without trailing path
+        ];
+        const urlLower = request.url.toLowerCase();
+        const isPublicEndpoint = publicEndpoints.some(ep => {
+          if (ep === '/api/blog') return urlLower.includes('/api/blog'); // so /api/blog and /api/blog/author/xxx match
+          return urlLower.includes(ep.toLowerCase());
+        });
         const isCourseBySlug = request.url.toLowerCase().includes('/page/course/course/');
         if (isPublicEndpoint || isCourseBySlug) {
             if (typeof ngDevMode === 'undefined' || ngDevMode) {

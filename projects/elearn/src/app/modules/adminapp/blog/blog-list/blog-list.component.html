@@ -1,0 +1,140 @@
+<div class="mainClass list-page-with-pagination list-table-modern" [class.blog-list-page--empty]="txtRoute === 'trainer' && !loading && !loadError && !blogs?.length">
+  <!-- Trainer empty state: same design as Event/Course list (card, GET STARTED/Requested badge, headline, message, visual) -->
+  <div *ngIf="txtRoute === 'trainer' && !loading && !loadError && !blogs?.length" class="blog-list-page__body">
+  <div *ngIf="txtRoute === 'trainer' && !loading && !loadError && !blogs?.length" class="blog-list-empty-state">
+    <div class="blog-list-empty-state__wrap">
+      <div class="blog-list-empty-state__content">
+        <span class="blog-list-empty-state__badge" *ngIf="hasBlogPermission">GET STARTED</span>
+        <span class="blog-list-empty-state__requested-badge" *ngIf="!hasBlogPermission && hasPendingBlogRequest">Requested</span>
+        <h1 class="blog-list-empty-state__headline">No Blogs Yet</h1>
+        <p class="blog-list-empty-state__message" *ngIf="hasBlogPermission">
+          Share your expertise with your first blog post for students and professionals.
+        </p>
+        <p class="blog-list-empty-state__message" *ngIf="!hasBlogPermission && hasPendingBlogRequest">
+          Waiting for permission approval.
+        </p>
+        <p class="blog-list-empty-state__message" *ngIf="!hasBlogPermission && !hasPendingBlogRequest">
+          You don't have permission to create blogs yet. Use <strong>Request Permission</strong> in the top bar.
+        </p>
+        <a *ngIf="hasBlogPermission" [routerLink]="['/app/trainer/blog/add']" class="blog-list-empty-state__btn">
+          <i class="fa fa-plus" aria-hidden="true"></i>
+          Add New Blog
+        </a>
+        <div class="blog-list-empty-state__stats" *ngIf="hasBlogPermission">
+          <div class="blog-list-empty-state__stat">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            <span><strong>Write</strong> articles</span>
+          </div>
+          <div class="blog-list-empty-state__stat">
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+            <span><strong>Organize</strong> by category</span>
+          </div>
+          <div class="blog-list-empty-state__stat">
+            <i class="fa fa-users" aria-hidden="true"></i>
+            <span><strong>Reach</strong> your audience</span>
+          </div>
+        </div>
+      </div>
+      <div class="blog-list-empty-state__visual">
+        <div class="blog-list-empty-state__blob" aria-hidden="true"></div>
+        <div class="blog-list-empty-state__frame">
+          <div class="blog-list-empty-state__placeholder" aria-hidden="true">
+            <i class="fa fa-file-text" aria-hidden="true"></i>
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <ng-container *ngIf="txtRoute !== 'trainer' || loading || loadError || (blogs?.length > 0)">
+    <div class="blog-filters mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small mb-0">Search</label>
+          <input type="text" class="form-control form-control-sm" placeholder="Search blogs by title..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Category</label>
+          <select class="form-select form-select-sm" [(ngModel)]="filterCategoryId" (ngModelChange)="applyFilters()">
+            <option value="">All Categories</option>
+            <option *ngFor="let c of categories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Author</label>
+          <select class="form-select form-select-sm" [(ngModel)]="filterAuthor" (ngModelChange)="applyFilters()">
+            <option value="">All Authors</option>
+            <option *ngFor="let a of uniqueAuthors" [value]="a">{{ a }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Date From</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDateFrom" (ngModelChange)="applyFilters()">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Date To</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDateTo" (ngModelChange)="applyFilters()">
+        </div>
+      </div>
+    </div>
+    <div class="list-page__table-wrap list-table-modern__wrap">
+      <p class="blog-list-hint">Click a row to open the blog edit page.</p>
+      <div class="list-table-modern__table-responsive">
+        <table class="list-table-modern__table">
+          <thead>
+            <tr>
+              <th class="list-table-modern__th">Title</th>
+              <th class="list-table-modern__th">Category</th>
+              <th class="list-table-modern__th">URL</th>
+              <th class="list-table-modern__th">Words</th>
+              <th class="list-table-modern__th">Author</th>
+              <th class="list-table-modern__th">Created Date</th>
+              <th class="list-table-modern__th">Status</th>
+              <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="loading" class="list-table-modern__row">
+              <td colspan="8" class="list-table-modern__empty">Loading...</td>
+            </tr>
+            <tr *ngIf="!loading && loadError" class="list-table-modern__row">
+              <td colspan="8" class="list-table-modern__empty text-warning">
+                {{ loadError }}
+                <button type="button" class="btn btn-sm btn-outline-primary ms-2" (click)="fetchBlogs()">Retry</button>
+              </td>
+            </tr>
+            <tr *ngIf="!loading && !loadError && !blogs?.length" class="list-table-modern__row">
+              <td colspan="8" class="list-table-modern__empty">No blogs found</td>
+            </tr>
+            <tr *ngFor="let item of blogs" class="list-table-modern__row list-table-modern__row--clickable" [class.text-muted]="item.isDeleted" (click)="editBlog(item.id)">
+            <td class="list-table-modern__td list-table-modern__td--ellipsis blog-list__title-cell">
+              <span>{{ item.title }}</span>
+              <div *ngIf="item.status === 3 && item.rejectionReason" class="small text-danger mt-1">Rejected. Reason: {{ item.rejectionReason }}</div>
+            </td>
+            <td class="list-table-modern__td">{{ item.categoryName }}</td>
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.canonicalUrl }}</td>
+            <td class="list-table-modern__td"><span class="badge bg-primary rounded-pill">{{ item.wordCount }}</span></td>
+            <td class="list-table-modern__td">{{ item.authorName }}</td>
+            <td class="list-table-modern__td">{{ item.createdOn | date:'MMM d, y' }}</td>
+            <td class="list-table-modern__td">
+              <span class="badge rounded-pill" [ngClass]="{
+                'bg-secondary': item.status === 0,
+                'bg-warning text-dark': item.status === 1,
+                'bg-success': item.status === 2,
+                'bg-danger': item.status === 3
+              }">{{ statusLabel(item) }}</span>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--action" (click)="$event.stopPropagation()">
+              <div class="list-table-modern__actions">
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteBlog(item)" title="Delete" [disabled]="item.isDeleted"><i class="fa fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </ng-container>
+</div>

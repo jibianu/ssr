@@ -5,6 +5,7 @@ import { StudentListComponent } from './student-list/student-list.component';
 import { SendNotificationComponent } from './send-notification/send-notification.component';
 import { NotificationListComponent } from './notification-list/notification-list.component';
 import { NotificationHistoryComponent } from './notification-history/notification-history.component';
+import { ContentPermissionRequestsComponent } from './content-permission-requests/content-permission-requests.component';
 import { InternalAuthGuard } from './../../../core/guards/internal-auth.guard';
 import { AddUserComponent } from './add-user/add-user.component';
 import { UserListComponent } from './user-list/user-list.component';
@@ -49,6 +50,10 @@ const routes: Routes = [
   {
     path: 'notification-history',
     component: NotificationHistoryComponent,
+  },
+  {
+    path: 'content-permission-requests',
+    component: ContentPermissionRequestsComponent,
   },
   // {
   //   path: 'edit/:id',

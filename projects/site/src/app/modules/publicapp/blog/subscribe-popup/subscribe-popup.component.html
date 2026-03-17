@@ -1,0 +1,71 @@
+<div class="subscribe-popup-overlay" (click)="closePopup()">
+  <div class="subscribe-popup-container" (click)="$event.stopPropagation()">
+    <div class="popup-header">
+      <h3 class="popup-title">Join 7,500+ Professionals in the Oil &amp; Gas Community</h3>
+      <button type="button" class="popup-close-btn" (click)="closePopup()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="popup-body">
+      <p class="popup-description">
+        Get expert industry knowledge straight to your inbox and advance your oil &amp; gas career. Subscribe to the Oilandgasclub Blog below.
+      </p>
+
+      <form [formGroup]="subscribeForm" (ngSubmit)="onSubmit()" class="popup-form">
+        <div class="form-group">
+          <label for="popupEmail" class="form-label">Email address*</label>
+          <div class="input-group">
+            <input
+              type="email"
+              id="popupEmail"
+              class="form-control"
+              formControlName="email"
+              placeholder="Enter your email"
+              [class.is-invalid]="isFieldInvalid('email')"
+              autocomplete="email" />
+            <button
+              type="submit"
+              class="btn-subscribe"
+              [disabled]="isSubscribing() || subscribeForm.invalid">
+              @if (isSubscribing()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                Subscribing...
+              } @else {
+                Subscribe
+              }
+            </button>
+          </div>
+          @if (isFieldInvalid('email')) {
+            <div class="invalid-feedback">{{ getFieldError('email') }}</div>
+          }
+        </div>
+
+        @if (showMessage()) {
+          <div class="popup-message" [class.success]="isSuccess()" [class.error]="!isSuccess()">
+            {{ messageText() }}
+          </div>
+        }
+      </form>
+
+      <p class="popup-privacy">
+        We respect your privacy. Oil &amp; Gas Club uses the information you provide to share relevant blog content, industry insights, training updates, and services. You can unsubscribe at any time. For more details, please review our
+        <a href="https://www.oilandgasclub.com/privacy-policy" target="_blank" rel="noopener" class="privacy-link">Privacy Policy</a>.
+      </p>
+
+      <div class="popup-promotion">
+        <svg class="promotion-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#FF6B35"/>
+          <path d="M2 17L12 22L22 17" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="promotion-text">
+          Not using Oil &amp; Gas Club yet?
+          <a href="/courses" class="promotion-link">Learn more</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

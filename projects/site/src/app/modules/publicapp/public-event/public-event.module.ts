@@ -46,6 +46,7 @@ const routes : Routes=[
     ReactiveFormsModule,
     NgMultiSelectDropDownModule.forRoot(),
     SharedModule
-  ]
+  ],
+  exports: [EventDetailsComponent]
 })
 export class PublicEventModule { }

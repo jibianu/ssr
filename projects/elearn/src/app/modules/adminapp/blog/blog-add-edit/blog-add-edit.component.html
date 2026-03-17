@@ -1,0 +1,206 @@
+<div class="blog-add-edit mainClass">
+  <div *ngIf="loading" class="text-muted py-4">Loading...</div>
+  <!-- Trainer: show admin rejection feedback so they can edit and resubmit -->
+  <div *ngIf="!loading && txtRoute === 'trainer' && blogStatus === 3 && rejectionReason" class="alert alert-warning mb-3" role="alert">
+    <strong>Rejected.</strong> Reason: {{ rejectionReason }}
+    <span class="d-block small mt-1">Edit your blog and click "Submit for Review" to resubmit.</span>
+  </div>
+  <form *ngIf="!loading" (ngSubmit)="save()" class="blog-form-wrapper">
+    <!-- Basic Information Card -->
+    <div class="form-card">
+      <div class="card-header">
+        <div class="card-header-content">
+          <div>
+            <h2 class="card-title"><i class="fa fa-info-circle"></i> Basic Information</h2>
+            <p class="card-subtitle">Fill in the essential details for your blog post</p>
+          </div>
+          <div class="header-badges">
+            <div class="word-count-badge">
+              <i class="fa fa-file-word-o"></i>
+              <span class="word-count-number">{{ totalWordCount }}</span>
+              <span class="word-count-label">words</span>
+            </div>
+            <div class="google-position-badge not-ranked" *ngIf="id" title="Keyword ranking">
+              <i class="fa fa-google"></i>
+              <span class="position-text">G Not ranked</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Content Originality & AI Detection Summary -->
+        <div class="content-originality-summary">
+          <div class="summary-header">
+            <h3 class="summary-title">
+              <i class="fa fa-shield-alt"></i>
+              Content Originality &amp; AI Detection Summary
+            </h3>
+            <div class="color-legend">
+              <div class="legend-item">
+                <span class="legend-dot original"></span>
+                <span class="legend-text">Original Content</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot ai-generated"></span>
+                <span class="legend-text">AI-Generated Content</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot duplicate"></span>
+                <span class="legend-text">Duplicate Content</span>
+              </div>
+            </div>
+          </div>
+          <div class="summary-stats">
+            <div class="stat-card original">
+              <div class="stat-icon">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ originalContentCount }}</div>
+                <div class="stat-label">Original Instances</div>
+                <div class="stat-percentage">{{ getOriginalPercentage() }}%</div>
+              </div>
+            </div>
+            <div class="stat-card ai-generated">
+              <div class="stat-icon">
+                <i class="fa fa-magic"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ aiGeneratedCount }}</div>
+                <div class="stat-label">AI-Generated Instances</div>
+                <div class="stat-percentage">{{ getAIGeneratedPercentage() }}%</div>
+              </div>
+            </div>
+            <div class="stat-card duplicate">
+              <div class="stat-icon">
+                <i class="fa fa-exclamation-triangle"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ duplicateContentCount }}</div>
+                <div class="stat-label">Duplicate Instances</div>
+                <div class="stat-percentage">{{ getDuplicatePercentage() }}%</div>
+              </div>
+            </div>
+            <div class="stat-card total">
+              <div class="stat-icon">
+                <i class="fa fa-list"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalContentInstances }}</div>
+                <div class="stat-label">Total Instances</div>
+                <div class="stat-percentage">100%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><i class="fa fa-heading"></i> Blog Title <span class="required">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="title" name="title" required maxlength="255" placeholder="Enter a compelling blog title...">
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fa fa-link"></i> Canonical URL <span class="required">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="canonicalUrl" name="canonicalUrl" required maxlength="100" placeholder="blog-post-url-slug">
+          <small class="form-text">Used for SEO-friendly URLs</small>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fa fa-folder"></i> Category <span class="required">*</span></label>
+          <select class="form-select" [(ngModel)]="categoryId" name="categoryId" required>
+            <option value="">Select a category</option>
+            <option *ngFor="let c of categories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fa fa-image"></i> Blog Featured Image URL <span class="required">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="titleImgUrl" name="titleImgUrl" placeholder="https://... or leave blank to add later">
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fa fa-align-left"></i> Meta Description</label>
+          <textarea class="form-control" [(ngModel)]="metaDescription" name="metaDescription" rows="3" placeholder="Write a brief description for search engines..."></textarea>
+          <small class="form-text">Recommended: 150-160 characters for optimal SEO</small>
+        </div>
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" [(ngModel)]="showOnDashboard" name="showOnDashboard">
+          <label class="form-check-label">Show on dashboard</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog Content Card -->
+    <div class="form-card content-card">
+      <div class="card-header">
+        <h2 class="card-title"><i class="fa fa-file-text"></i> Blog Content <span class="required">*</span></h2>
+        <p class="card-subtitle">Write your main blog content (rich editor – same as old blog)</p>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label"><i class="fa fa-align-left"></i> Content</label>
+          <app-custom-editor
+            [(ngModel)]="content"
+            name="content"
+            [uploadImageFn]="uploadImageFn"
+            [blogSearchFn]="searchBlogsForLink"
+            [showWordCount]="true"
+            (ngModelChange)="onContentChange()"
+            placeholder="Blog content...">
+          </app-custom-editor>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog Sections Card -->
+    <div class="form-card sections-card">
+      <div class="card-header d-flex justify-content-between align-items-start">
+        <div>
+          <h2 class="card-title"><i class="fa fa-list"></i> Blog Sections</h2>
+          <p class="card-subtitle">Add additional sections to organize your content</p>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="addSection()"><i class="fa fa-plus"></i> Add Section</button>
+      </div>
+      <div class="card-body">
+        <div class="sections-list">
+          <ng-container *ngIf="blogSections.length === 0">
+            <div class="empty-sections text-muted text-center py-4">
+              <i class="fa fa-inbox fa-2x mb-2"></i>
+              <p class="mb-0">No sections yet. Click "Add Section" to create your first blog section.</p>
+            </div>
+          </ng-container>
+          <div *ngFor="let section of blogSections; let i = index" class="section-item border rounded mb-3 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted small">Section {{ i + 1 }}</span>
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeSection(i)"><i class="fa fa-trash"></i> Remove</button>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Section Title <span class="required">*</span></label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="section.title" [name]="'sectionTitle' + i" placeholder="Enter section title...">
+            </div>
+            <div>
+              <label class="form-label small">Section Content</label>
+              <app-custom-editor
+                [(ngModel)]="section.content"
+                [name]="'sectionContent' + i"
+                [uploadImageFn]="uploadImageFn"
+                [blogSearchFn]="searchBlogsForLink"
+                (ngModelChange)="onSectionContentChange()"
+                placeholder="Section content...">
+              </app-custom-editor>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()"><i class="fa fa-times"></i> Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <i class="fa" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+        {{ saving ? (id ? 'Saving...' : 'Saving...') : (txtRoute === 'trainer' ? (id ? 'Save Draft' : 'Save Draft') : (id ? 'Update' : 'Publish')) }}
+      </button>
+      <button *ngIf="canSubmitForReview" type="button" class="btn btn-success" [disabled]="submittingForReview" (click)="submitForReview()">
+        <i class="fa" [ngClass]="submittingForReview ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+        {{ submittingForReview ? 'Submitting...' : 'Submit for Review' }}
+      </button>
+    </div>
+  </form>
+</div>

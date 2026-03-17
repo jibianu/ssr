@@ -2,6 +2,9 @@
 <div class="wrapper">
   <div class="main-content">
     <div class="container-fluid">
+      @if (showBlogSectionTabs) {
+        <app-blog-section-tabs basePath="/app/admin"></app-blog-section-tabs>
+      }
       <router-outlet></router-outlet>
     </div>
   </div>

@@ -253,6 +253,46 @@ $bg-card: #ffffff;
   color: #fff;
 }
 
+.common-topbar__action-btn--pending {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  cursor: default;
+}
+
+.common-topbar__action-btn--pending:hover {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+/* Trainer: pending permission – badge "Requested" + message (no Request button) */
+.common-topbar__permission-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.common-topbar__permission-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(245, 119, 34, 0.15);
+  color: var(--app-primary, #f57722);
+  border: 1px solid rgba(245, 119, 34, 0.3);
+  border-radius: 999px;
+}
+
+.common-topbar__permission-message {
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
 .common-topbar__action-btn--icon {
   padding: 8px 12px;
   background: transparent;

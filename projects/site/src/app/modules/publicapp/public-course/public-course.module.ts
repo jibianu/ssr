@@ -37,6 +37,7 @@ import { NgxPaginationModule } from "ngx-pagination";
   exports: [
     PublicCategoryComponent,
     PublicCourseListComponent,
+    PublicCourseDetailsComponent,
     ElearnCourseWrapperComponent
   ]
 })

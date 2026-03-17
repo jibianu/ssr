@@ -10,6 +10,7 @@ import { StudentCourseListComponent } from 'src/app/shared/component/course-list
 import { UpdatePermissionomponent } from 'src/app/shared/component/permission/update-permission/update-permission.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { UserInfoComponent } from 'src/app/shared/component/user-info/user-info.component';
+import { TrainerListFilterComponent } from 'src/app/shared/modals/trainer-list-filter/trainer-list-filter.component';
 import { Role } from 'src/app/shared/models/role';
 import { AdminAppService } from '../../adminapp.service';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
@@ -27,6 +28,16 @@ export class TrainerListComponent implements OnInit, OnDestroy {
   count: number;
   tableSize = 20;
   searchTitle = '';
+  filterCreatedFrom = '';
+  filterCreatedTo = '';
+  filterLastLoginFrom = '';
+  filterLastLoginTo = '';
+  filterHasCoursePermission = false;
+  filterHasEventPermission = false;
+  filterHasBlogPermission = false;
+  /** true = has pending request, false = no pending request, null = any */
+  filterHasPendingPermissionRequest: boolean | null = null;
+  filterPendingPermissionContentType = '';
   tableSizes = [5, 10, 20, 25, 50];
   subscription: Subscription = new Subscription();
   sortBy = 'FirstName';
@@ -34,6 +45,12 @@ export class TrainerListComponent implements OnInit, OnDestroy {
   role:Role;
   checkedAll=false;
   managerListEnbale=false;
+  /** Pending permission requests (shown on Trainer List when admin context). */
+  permissionRequests: any[] = [];
+  permissionRequestsLoading = false;
+  permissionRequestsError = '';
+  permissionRequestActionLoading: Record<string, boolean> = {};
+
   constructor(
     private appService: AdminAppService,
     private modalService: NgbModal,
@@ -50,9 +67,26 @@ export class TrainerListComponent implements OnInit, OnDestroy {
         var d=res.roles[0]
         this.role=d;
       }
-    })
+    });
+
+    if (!this.isManagementContext) {
+      this.sharedService.showTrainerListToolbar.next(true);
+      this.sharedService.trainerListSearchTerm$.next(this.searchTitle);
+      this.subscription.add(
+        this.sharedService.trainerListSearchTerm$.subscribe((value) => {
+          this.searchTitle = value ?? '';
+        })
+      );
+      this.subscription.add(
+        this.sharedService.trainerListSearchTrigger$.subscribe(() => this.applyFilters())
+      );
+      this.subscription.add(
+        this.sharedService.trainerListFilterClick$.subscribe(() => this.openFilterModal())
+      );
+    }
 
     this.fetchTrainers();
+    if (!this.isManagementContext) this.loadPermissionRequests();
     this.subscription.add(
       this.appService.GetPermissionByAction('Users.GetManagement')
       .subscribe(res=>{
@@ -62,6 +96,50 @@ export class TrainerListComponent implements OnInit, OnDestroy {
     );
     this.subscription.add(
       this.sharedService.userMappingClick$.subscribe(() => this.addToUserMagt())
+    );
+  }
+
+  openFilterModal(): void {
+    const modalRef = this.modalService.open(TrainerListFilterComponent, {
+      windowClass: 'modal-right search-filter-sidebar',
+      scrollable: true,
+      backdrop: true,
+      keyboard: true,
+    });
+    modalRef.componentInstance.initialCreatedOnFrom = this.filterCreatedFrom;
+    modalRef.componentInstance.initialCreatedOnTo = this.filterCreatedTo;
+    modalRef.componentInstance.initialLastLoginFrom = this.filterLastLoginFrom;
+    modalRef.componentInstance.initialLastLoginTo = this.filterLastLoginTo;
+    modalRef.componentInstance.initialHasCoursePermission = this.filterHasCoursePermission;
+    modalRef.componentInstance.initialHasEventPermission = this.filterHasEventPermission;
+    modalRef.componentInstance.initialHasBlogPermission = this.filterHasBlogPermission;
+    modalRef.componentInstance.initialHasPendingPermissionRequest = this.filterHasPendingPermissionRequest;
+    modalRef.componentInstance.initialPendingPermissionContentType = this.filterPendingPermissionContentType;
+    modalRef.result.then(
+      (result: {
+        createdOnFrom: string;
+        createdOnTo: string;
+        lastLoginFrom: string;
+        lastLoginTo: string;
+        hasCoursePermission?: boolean;
+        hasEventPermission?: boolean;
+        hasBlogPermission?: boolean;
+        hasPendingPermissionRequest?: boolean | null;
+        pendingPermissionContentType?: string;
+      }) => {
+        this.filterCreatedFrom = result?.createdOnFrom ?? '';
+        this.filterCreatedTo = result?.createdOnTo ?? '';
+        this.filterLastLoginFrom = result?.lastLoginFrom ?? '';
+        this.filterLastLoginTo = result?.lastLoginTo ?? '';
+        this.filterHasCoursePermission = result?.hasCoursePermission ?? false;
+        this.filterHasEventPermission = result?.hasEventPermission ?? false;
+        this.filterHasBlogPermission = result?.hasBlogPermission ?? false;
+        this.filterHasPendingPermissionRequest = result?.hasPendingPermissionRequest ?? null;
+        this.filterPendingPermissionContentType = result?.pendingPermissionContentType ?? '';
+        this.page = 1;
+        this.fetchTrainers();
+      },
+      () => {}
     );
   }
 
@@ -76,13 +154,26 @@ export class TrainerListComponent implements OnInit, OnDestroy {
   }
 
   fetchTrainers(): void {
-    const obj = {
-      'Filters.FirstName': this.searchTitle,
+    const obj: any = {
       'Sort.PropertyName': this.sortBy,
       'Sort.IsAscending': this.isAsc,
       pageSize: this.tableSize,
       pageNumber: this.page,
     };
+    if (this.searchTitle?.trim()) obj['Filter.Search'] = this.searchTitle.trim();
+    if (this.filterCreatedFrom) obj['Filter.CreatedOnFrom'] = this.filterCreatedFrom;
+    if (this.filterCreatedTo) obj['Filter.CreatedOnTo'] = this.filterCreatedTo;
+    if (this.filterLastLoginFrom) obj['Filter.LastLoggedInFrom'] = this.filterLastLoginFrom;
+    if (this.filterLastLoginTo) obj['Filter.LastLoggedInTo'] = this.filterLastLoginTo;
+    if (this.filterHasCoursePermission) obj['Filter.HasCoursePermission'] = 'true';
+    if (this.filterHasEventPermission) obj['Filter.HasEventPermission'] = 'true';
+    if (this.filterHasBlogPermission) obj['Filter.HasBlogPermission'] = 'true';
+    if (this.filterHasPendingPermissionRequest !== null && this.filterHasPendingPermissionRequest !== undefined) {
+      obj['Filter.HasPendingPermissionRequest'] = this.filterHasPendingPermissionRequest ? 'true' : 'false';
+      if (this.filterHasPendingPermissionRequest && this.filterPendingPermissionContentType?.trim()) {
+        obj['Filter.PendingPermissionContentType'] = this.filterPendingPermissionContentType.trim();
+      }
+    }
     const apiCall = this.isManagementContext
       ? this.appService.getAssignedTrainersForManagement(obj)
       : this.appService.GetPermissionByAction('Users.GetTrainers').pipe(
@@ -141,10 +232,19 @@ export class TrainerListComponent implements OnInit, OnDestroy {
     });
   }
 
-  dataChanged(word: string): void {
-    if (word == '') {
-      this.fetchTrainers()
-    }
+  applyFilters(): void {
+    this.page = 1;
+    this.fetchTrainers();
+  }
+
+  clearFilters(): void {
+    this.searchTitle = '';
+    this.filterCreatedFrom = '';
+    this.filterCreatedTo = '';
+    this.filterLastLoginFrom = '';
+    this.filterLastLoginTo = '';
+    this.page = 1;
+    this.fetchTrainers();
   }
 
   sortByHeading(value: string) {
@@ -173,9 +273,108 @@ export class TrainerListComponent implements OnInit, OnDestroy {
   }
 
   openStudentInfo(item) {
-    const modalRef = this.modalService.open(UserInfoComponent, { windowClass: 'modal-right' });
+    const modalRef = this.modalService.open(UserInfoComponent, { windowClass: 'modal-right', size: 'lg' });
     modalRef.componentInstance.userID = item.id;
-    modalRef.componentInstance.email = item.email;
+    modalRef.componentInstance.name = item?.userName ?? '';
+    modalRef.componentInstance.email = item?.email ?? '';
+    const pending = this.getPendingRequestsForTrainer(item?.id);
+    modalRef.componentInstance.pendingRequests = pending?.length ? [...pending] : [];
+    modalRef.result.then(() => this.loadPermissionRequests()).catch(() => {});
+  }
+
+  loadPermissionRequests(): void {
+    if (this.isManagementContext) return;
+    this.permissionRequestsLoading = true;
+    this.permissionRequestsError = '';
+    this.appService.getContentPermissionRequests(0).subscribe({
+      next: (res) => {
+        this.permissionRequests = this.normalizeListResponse(res);
+        this.permissionRequestsLoading = false;
+      },
+      error: (err) => {
+        this.permissionRequestsError = err?.error?.message ?? err?.message ?? '';
+        this.permissionRequests = [];
+        this.permissionRequestsLoading = false;
+      },
+    });
+  }
+
+  private normalizeListResponse(res: any): any[] {
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.data)) return res.data;
+    if (res && Array.isArray(res.results)) return res.results;
+    return [];
+  }
+
+  approvePermissionRequest(id: string): void {
+    if (this.permissionRequestActionLoading[id]) return;
+    this.permissionRequestActionLoading = { ...this.permissionRequestActionLoading, [id]: true };
+    this.appService.approveContentPermissionRequest(id).subscribe({
+      next: (res) => {
+        this.permissionRequestActionLoading = { ...this.permissionRequestActionLoading, [id]: false };
+        this.toasterService.showSuccess(res?.message ?? 'Approved.');
+        this.loadPermissionRequests();
+      },
+      error: (err) => {
+        this.permissionRequestActionLoading = { ...this.permissionRequestActionLoading, [id]: false };
+        this.toasterService.showError(err?.error?.message ?? err?.message ?? 'Approve failed.');
+      },
+    });
+  }
+
+  rejectPermissionRequest(id: string): void {
+    if (this.permissionRequestActionLoading[id]) return;
+    this.permissionRequestActionLoading = { ...this.permissionRequestActionLoading, [id]: true };
+    this.appService.rejectContentPermissionRequest(id).subscribe({
+      next: (res) => {
+        this.permissionRequestActionLoading = { ...this.permissionRequestActionLoading, [id]: false };
+        this.toasterService.showSuccess(res?.message ?? 'Rejected.');
+        this.loadPermissionRequests();
+      },
+      error: (err) => {
+        this.permissionRequestActionLoading = { ...this.permissionRequestActionLoading, [id]: false };
+        this.toasterService.showError(err?.error?.message ?? err?.message ?? 'Reject failed.');
+      },
+    });
+  }
+
+  openPermissionsPageForRequest(r: any): void {
+    const userId = r?.userId ?? r?.UserId;
+    if (!userId) return;
+    const modalRef = this.modalService.open(UserInfoComponent, { windowClass: 'modal-right', size: 'lg' });
+    modalRef.componentInstance.userID = userId;
+    modalRef.componentInstance.name = r?.userName ?? r?.UserName ?? '';
+    modalRef.componentInstance.email = r?.userEmail ?? r?.UserEmail ?? '';
+    modalRef.result.then(() => this.loadPermissionRequests()).catch(() => {});
+  }
+
+  /** Open permissions page (gear only on list): pass pending requests so they show inside the modal with Approve/Reject. */
+  openPermissionsPageWithRequests(item: any): void {
+    const pending = this.getPendingRequestsForTrainer(item?.id);
+    const modalRef = this.modalService.open(UserInfoComponent, { windowClass: 'modal-right', size: 'lg' });
+    modalRef.componentInstance.userID = item?.id;
+    modalRef.componentInstance.name = item?.userName ?? '';
+    modalRef.componentInstance.email = item?.email ?? '';
+    modalRef.componentInstance.pendingRequests = pending.length ? [...pending] : [];
+    modalRef.result.then(() => this.loadPermissionRequests()).catch(() => {});
+  }
+
+  trackByRequestId(_index: number, item: any): string {
+    return item?.id ?? '';
+  }
+
+  /** Normalize id for comparison (GUIDs may come with/without dashes, different case). */
+  private normalizeId(value: any): string {
+    const s = (value ?? '').toString().trim().toLowerCase().replace(/-/g, '');
+    return s;
+  }
+
+  /** Pending permission requests for a trainer (by userId). */
+  getPendingRequestsForTrainer(trainerId: string): any[] {
+    if (!trainerId || !this.permissionRequests?.length) return [];
+    const id = this.normalizeId(trainerId);
+    if (!id) return [];
+    return this.permissionRequests.filter((r: any) => this.normalizeId(r?.userId ?? r?.UserId) === id);
   }
 
   openRemoveFromManagement(item) {
@@ -188,6 +387,8 @@ export class TrainerListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sharedService.certificateName.next('');
     this.sharedService.showUserMappingButton.next(false);
+    this.sharedService.showTrainerListToolbar.next(false);
+    this.sharedService.trainerListSearchTerm$.next('');
     if (this.subscription) {
       this.subscription.unsubscribe();
     }

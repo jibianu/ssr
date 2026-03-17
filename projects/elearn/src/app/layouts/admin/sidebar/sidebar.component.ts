@@ -14,6 +14,7 @@ const MANAGEMENT_MENU = [
   { link: '/app/management/management', label: 'Management List', permission: 'ManagementList', icon: 'fa fa-list' },
   { link: '/app/management/category', label: 'Category List', permission: 'CategoryList', icon: 'fa fa-folder' },
   { link: '/app/management/course', label: 'Course List', permission: 'CourseList', icon: 'fa fa-book' },
+  { link: '/app/management/blog', label: 'Blog', permission: null, icon: 'fa fa-blog' },
   { link: '/app/management/notifications', label: 'Push notifications', permission: null, icon: 'fa fa-bell' },
   { link: '/app/management/affiliates', label: 'Affiliates', permission: null, icon: 'fa fa-hand-holding-usd' },
   { link: '/app/management/profile', label: 'Profile', permission: null, icon: 'fa fa-user-circle' }
@@ -51,6 +52,7 @@ export class SidebarComponent implements OnInit {
       { link: '/app/admin/management', label: 'Management List', icon: 'fa fa-list' },
       { link: '/app/admin/category', label: 'Category List', icon: 'fa fa-folder' },
       { link: '/app/admin/course', label: 'Course List', icon: 'fa fa-book' },
+      { link: '/app/admin/blog', label: 'Blog', icon: 'fa fa-blog' },
       { link: '/app/admin/events', label: 'Events', icon: 'fa fa-calendar-alt' },
       { link: '/app/admin/chat', label: 'Chat', icon: 'fa fa-comment' },
       { link: '/app/admin/notifications', label: 'Push notifications', icon: 'fa fa-bell' },

@@ -1,0 +1,227 @@
+<section class="blog-page blog-detail-page">
+  <div class="container py-4">
+    @if (loading()) {
+    <p class="text-muted">Loading...</p>
+  } @else if (notFound()) {
+    <p class="text-muted">Blog post not found.</p>
+    <a routerLink="/blog" class="btn btn-primary">Back to Blog</a>
+  } @else if (blog(); as b) {
+    <div class="blog-container">
+      <div class="blog-main m-15px-tb">
+        <article class="article">
+          <div class="article-img">
+            <img
+              [src]="b.titleImgUrl || placeholderImg"
+              [alt]="b.title"
+              class="img-fluid"
+              (error)="onImgError($event)" />
+          </div>
+          <div class="article-title">
+            <h1 class="post-title">{{ b.title }}</h1>
+            <div class="d-sm-flex align-items-center justify-content-between">
+              @if (b.authorName) {
+                @if (b.authorId) {
+                  <a [routerLink]="['/blog']" [queryParams]="{ author: b.authorId }" class="media media-author-link">
+                    <div class="avatar">
+                      @if (b.authorProfilePictureUrl) {
+                        <img [src]="b.authorProfilePictureUrl" [alt]="getAuthorDisplayName(b.authorName)" loading="lazy" (error)="onImgError($event)" />
+                      } @else {
+                        <div class="avatar-placeholder"><i class="fa fa-user"></i></div>
+                      }
+                    </div>
+                    <div class="media-body">
+                      <span class="author-name-link">{{ getAuthorDisplayName(b.authorName) }}</span>
+                      @if (b.createdOn) {
+                        <div class="last-updated-date">
+                          <small class="text-muted">
+                            <i class="fa fa-calendar"></i>
+                            Published: {{ formatDate(b.createdOn) }}
+                          </small>
+                        </div>
+                      }
+                    </div>
+                  </a>
+                } @else {
+                  <div class="media">
+                    <div class="avatar">
+                      @if (b.authorProfilePictureUrl) {
+                        <img [src]="b.authorProfilePictureUrl" [alt]="getAuthorDisplayName(b.authorName)" loading="lazy" (error)="onImgError($event)" />
+                      } @else {
+                        <div class="avatar-placeholder"><i class="fa fa-user"></i></div>
+                      }
+                    </div>
+                    <div class="media-body">
+                      <label>{{ getAuthorDisplayName(b.authorName) }}</label>
+                      @if (b.createdOn) {
+                        <div class="last-updated-date">
+                          <small class="text-muted">
+                            <i class="fa fa-calendar"></i>
+                            Published: {{ formatDate(b.createdOn) }}
+                          </small>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              } @else if (b.createdOn) {
+                <div class="meta-date">
+                  <small class="text-muted">
+                    <i class="fa fa-calendar"></i>
+                    {{ formatDate(b.createdOn) }}
+                  </small>
+                </div>
+              }
+              @if (b.category) {
+                <div class="btn-bar">
+                  <a [routerLink]="['/blog']" [queryParams]="{ category: b.category.name }" class="post-tags post-tags-link">{{ b.category.name }}</a>
+                </div>
+              }
+            </div>
+            <div class="post-body" [innerHTML]="sanitizedContent()"></div>
+          </div>
+          <div class="article-content sections">
+            @for (section of sanitizedSections(); track section.id; let i = $index) {
+              <div [attr.id]="sectionId(section.title)">
+                <h4 class="post-sub-title">{{ section.title }}</h4>
+                <div class="ck-content post-body" [innerHTML]="section.sanitizedContent"></div>
+              </div>
+              @if ((i + 1) % 3 === 0 && i < sanitizedSections().length - 1) {
+                <!-- Loop Marketing Prompt Library Section (reference: original blog) -->
+                <div class="loop-marketing-section">
+                  <div class="loop-marketing-content">
+                    @if (loopMarketingContent(); as content) {
+                      <!-- Left Side: Graphic -->
+                      <div class="loop-marketing-graphic">
+                        <div class="loop-graphic-container">
+                          <div class="loop-graphic-top">
+                            <span class="loop-brand">{{ content.brand }}</span>
+                          </div>
+                          <div class="loop-graphic-bottom">
+                            <div class="loop-infinity-symbol">∞</div>
+                            <span class="loop-graphic-text">{{ content.graphicText }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Right Side: Text Content -->
+                      <div class="loop-marketing-text">
+                        <h2 class="loop-marketing-title">{{ content.title }}</h2>
+                        <p class="loop-marketing-description">{{ content.description }}</p>
+                        <ul class="loop-features-list">
+                          <li class="loop-feature-item">
+                            <div class="loop-checkmark-circle">
+                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <span>{{ content.expressFeature }}</span>
+                          </li>
+                          <li class="loop-feature-item">
+                            <div class="loop-checkmark-circle">
+                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <span>{{ content.amplifyFeature }}</span>
+                          </li>
+                          <li class="loop-feature-item">
+                            <div class="loop-checkmark-circle">
+                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <span>{{ content.tailorFeature }}</span>
+                          </li>
+                          <li class="loop-feature-item">
+                            <div class="loop-checkmark-circle">
+                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <span>{{ content.evolveFeature }}</span>
+                          </li>
+                        </ul>
+                        <div class="loop-cta-container">
+                          <button type="button" class="loop-download-btn" (click)="downloadPromptLibrary()">{{ content.downloadButtonText }}</button>
+                          <a [href]="content.learnMoreUrl || '#'" target="_blank" rel="noopener noreferrer" class="loop-learn-more-link">
+                            {{ content.learnMoreText }}
+                            <svg class="loop-external-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 3H9M11 3V5M11 3L3 11M5 11H3M3 11V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </a>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </article>
+      </div>
+      <aside class="blog-sidebar">
+        <div class="blog-aside">
+          @if (sanitizedSections().length > 0) {
+            <div class="widget widget-post">
+              <div class="blog-table-heading mt-3">
+                <span>Table of Contents</span>
+              </div>
+              <div class="widget-body pt-0">
+                <ul class="blog-toc__list blog-toc__list--scroll">
+                  @for (section of sanitizedSections(); track section.id) {
+                    <li class="toc-item">
+                      <a
+                        [routerLink]="[]"
+                        [fragment]="sectionId(section.title)"
+                        class="toc-link">{{ section.title }}</a>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+
+          <div class="widget widget-post mt-2">
+            <div class="widget-body">
+              <div class="social-sharing-section">
+                <div class="social-icons">
+                  <a [href]="getFacebookShareUrl()" target="_blank" rel="noopener noreferrer" class="social-icon facebook" aria-label="Share on Facebook">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  </a>
+                  <a [href]="getTwitterShareUrl()" target="_blank" rel="noopener noreferrer" class="social-icon twitter" aria-label="Share on Twitter">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  </a>
+                  <a [href]="getLinkedInShareUrl()" target="_blank" rel="noopener noreferrer" class="social-icon linkedin" aria-label="Share on LinkedIn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  </a>
+                  <button type="button" (click)="shareUrl()" class="social-icon share" aria-label="Copy link">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="widget widget-post mt-2">
+            <div class="widget-body">
+              <div class="newsletter-signup-card">
+                <h3 class="newsletter-title">
+                  Get Dialed In!
+                  <svg class="lightning-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8.5 1L3.5 9H8L7.5 15L12.5 7H8L8.5 1Z" fill="#FFD700" stroke="#FFD700" stroke-width="0.5"/></svg>
+                </h3>
+                <p class="newsletter-description">
+                  The weekly newsletter packed with industry insights and course updates for professionals who want to grow their expertise, not just complete a course.
+                </p>
+                <form class="newsletter-form" (ngSubmit)="subscribeNewsletterSidebar()" #newsletterForm="ngForm">
+                  <input type="email" class="newsletter-input" placeholder="Enter your email" [(ngModel)]="newsletterEmail" name="sidebarEmail" required email />
+                  <button type="submit" class="newsletter-subscribe-btn" [class.subscribed]="isSubscribedSidebar" [disabled]="!newsletterForm.valid || isSubscribingSidebar || isSubscribedSidebar">
+                    @if (isSubscribedSidebar) { Thanks for subscribing! }
+                    @else if (isSubscribingSidebar) { Subscribing... }
+                    @else { Subscribe }
+                  </button>
+                </form>
+                @if (newsletterMessage) {
+                  <div class="newsletter-message" [class.success]="isSubscribedSidebar" [class.error]="!isSubscribedSidebar">{{ newsletterMessage }}</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        </aside>
+    </div>
+  }
+  </div>
+</section>
+
+@if (showSubscribePopup()) {
+  <app-subscribe-popup></app-subscribe-popup>
+}

@@ -19,7 +19,10 @@ export class UserInfoComponent implements OnInit {
   @Input() showPermissionsPanel: boolean = false;
   /** Target user's RoleId. Permissions apply only when RoleId === 5 (Management). */
   @Input() targetUserRoleId: number;
+  /** Pending content permission requests for this user (from trainer list gear). Shown inside page with Approve/Reject. */
+  @Input() pendingRequests: any[] = [];
   data: any;
+  pendingRequestLoading: Record<string, boolean> = {};
 
   /** Full drawer data (Admin student view). */
   drawerData: any = null;
@@ -48,6 +51,7 @@ export class UserInfoComponent implements OnInit {
   // Content Permissions (existing)
   group: boolean = false;
   grmCourse: boolean = false;
+  grmEvent: boolean = false;
   
   // Management & List Permissions (new)
   canViewStudents: boolean = false;
@@ -138,9 +142,10 @@ export class UserInfoComponent implements OnInit {
       next: (res) => {
         const groups: string[] = Array.isArray(res) ? res : (res ? [res] : []);
         const lowerGroups = groups.map(g => (g || '').toLowerCase());
-        // Content Permissions (Blog, Course) - case-insensitive (Cognito may return Blog/blog)
+        // Content Permissions (Blog, Course, Event) - case-insensitive (Cognito may return Blog/blog)
         this.group = lowerGroups.includes('blog');
         this.grmCourse = lowerGroups.includes('course');
+        this.grmEvent = lowerGroups.includes('event');
       
       // Management & List Permissions
         this.canViewStudents = groups.includes('StudentList');
@@ -159,6 +164,7 @@ export class UserInfoComponent implements OnInit {
     this.initialState = {
       group: this.group,
       grmCourse: this.grmCourse,
+      grmEvent: this.grmEvent,
       canViewStudents: this.canViewStudents,
       canViewTrainers: this.canViewTrainers,
       canViewCompanies: this.canViewCompanies,
@@ -171,6 +177,7 @@ export class UserInfoComponent implements OnInit {
   hasChanges(): boolean {
     return this.group !== this.initialState.group ||
            this.grmCourse !== this.initialState.grmCourse ||
+           this.grmEvent !== this.initialState.grmEvent ||
            this.canViewStudents !== this.initialState.canViewStudents ||
            this.canViewTrainers !== this.initialState.canViewTrainers ||
            this.canViewCompanies !== this.initialState.canViewCompanies ||
@@ -190,6 +197,47 @@ export class UserInfoComponent implements OnInit {
       })
   }
   
+  approvePendingRequest(r: any): void {
+    const id = r?.id ?? r?.Id;
+    if (!id || this.pendingRequestLoading[id]) return;
+    const contentType = (r?.contentType ?? r?.ContentType ?? '').toString().trim();
+    this.pendingRequestLoading = { ...this.pendingRequestLoading, [id]: true };
+    this.appService.approveContentPermissionRequest(id).subscribe({
+      next: (res) => {
+        this.pendingRequestLoading = { ...this.pendingRequestLoading, [id]: false };
+        this.toasterService.showSuccess(res?.message ?? 'Approved.');
+        this.pendingRequests = (this.pendingRequests || []).filter((x: any) => (x?.id ?? x?.Id) !== id);
+        // Automatically enable the checkbox for the approved content type
+        if (contentType.toLowerCase() === 'blog') this.group = true;
+        else if (contentType.toLowerCase() === 'course') this.grmCourse = true;
+        else if (contentType.toLowerCase() === 'event') this.grmEvent = true;
+        // Reload groups from server so checkboxes stay in sync
+        this.loadGroup();
+      },
+      error: (err) => {
+        this.pendingRequestLoading = { ...this.pendingRequestLoading, [id]: false };
+        this.toasterService.showError(err?.error?.message ?? err?.message ?? 'Approve failed.');
+      },
+    });
+  }
+
+  rejectPendingRequest(r: any): void {
+    const id = r?.id ?? r?.Id;
+    if (!id || this.pendingRequestLoading[id]) return;
+    this.pendingRequestLoading = { ...this.pendingRequestLoading, [id]: true };
+    this.appService.rejectContentPermissionRequest(id).subscribe({
+      next: (res) => {
+        this.pendingRequestLoading = { ...this.pendingRequestLoading, [id]: false };
+        this.toasterService.showSuccess(res?.message ?? 'Rejected.');
+        this.pendingRequests = (this.pendingRequests || []).filter((x: any) => (x?.id ?? x?.Id) !== id);
+      },
+      error: (err) => {
+        this.pendingRequestLoading = { ...this.pendingRequestLoading, [id]: false };
+        this.toasterService.showError(err?.error?.message ?? err?.message ?? 'Reject failed.');
+      },
+    });
+  }
+
   UpdateGrp() {
       var obj = {
         userId: this.userID,
@@ -202,6 +250,10 @@ export class UserInfoComponent implements OnInit {
           {
             name: "Course",
             selected: this.grmCourse
+          },
+          {
+            name: "Event",
+            selected: this.grmEvent
           },
           // Management & List Permissions
           {

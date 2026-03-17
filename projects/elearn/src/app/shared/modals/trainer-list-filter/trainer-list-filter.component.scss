@@ -1,0 +1,32 @@
+.trainer-list-filter__date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.trainer-list-filter__date {
+  flex: 1;
+  min-width: 0;
+}
+.trainer-list-filter__sep {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+.trainer-list-filter__select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #334155;
+}
+.trainer-list-filter__select option[value=""] {
+  color: #94a3b8;
+}
+.trainer-list-filter__select--mt {
+  margin-top: 0.5rem;
+}
+.trainer-list-filter__hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0.5rem 0 0 0;
+}

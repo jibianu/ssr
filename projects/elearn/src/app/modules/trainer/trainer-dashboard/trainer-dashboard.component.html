@@ -1,4 +1,4 @@
-<div class="course-page-scroll">
+<div class="course-page-scroll" [class.trainer-course-page--empty]="!loading && (!course || course.length === 0) && !isAssignedView">
   <div class="course-container manage-courses">
     <div class="list-page__loading" *ngIf="loading">
       <div class="list-page__loading-spinner"></div>
@@ -6,8 +6,62 @@
     </div>
 
     <div *ngIf="!loading">
-      <!-- Course Grid – same card design as My Courses -->
-      <div class="course-grid">
+      <!-- Trainer empty state: same page design as Event/Blog (page card + body + empty state) -->
+      <div *ngIf="(!course || course.length === 0) && !isAssignedView" class="trainer-course-page">
+        <div class="trainer-course-page__body">
+      <div *ngIf="(!course || course.length === 0) && !isAssignedView" class="trainer-course-empty-state">
+        <div class="trainer-course-empty-state__wrap">
+          <div class="trainer-course-empty-state__content">
+            <span class="trainer-course-empty-state__badge" *ngIf="hasCoursePermission">GET STARTED</span>
+            <span class="trainer-course-empty-state__requested-badge" *ngIf="!hasCoursePermission && hasPendingCourseRequest">Requested</span>
+            <h1 class="trainer-course-empty-state__headline">No Courses Yet</h1>
+            <p class="trainer-course-empty-state__message" *ngIf="hasCoursePermission">
+              Create your first course to share knowledge with students and professionals.
+            </p>
+            <p class="trainer-course-empty-state__message" *ngIf="!hasCoursePermission && hasPendingCourseRequest">
+              Waiting for permission approval.
+            </p>
+            <p class="trainer-course-empty-state__message" *ngIf="!hasCoursePermission && !hasPendingCourseRequest">
+              You don't have permission to create courses yet. Use <strong>Request Permission</strong> in the top bar.
+            </p>
+            <button type="button" *ngIf="hasCoursePermission" (click)="addCourse(cContentRef)" class="trainer-course-empty-state__btn">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+              Add New Course
+            </button>
+            <div class="trainer-course-empty-state__stats" *ngIf="hasCoursePermission">
+              <div class="trainer-course-empty-state__stat">
+                <i class="fa fa-book" aria-hidden="true"></i>
+                <span><strong>Create</strong> courses</span>
+              </div>
+              <div class="trainer-course-empty-state__stat">
+                <i class="fa fa-list-alt" aria-hidden="true"></i>
+                <span><strong>Add</strong> curriculum</span>
+              </div>
+              <div class="trainer-course-empty-state__stat">
+                <i class="fa fa-certificate" aria-hidden="true"></i>
+                <span><strong>Certificates</strong> on completion</span>
+              </div>
+            </div>
+          </div>
+          <div class="trainer-course-empty-state__visual">
+            <div class="trainer-course-empty-state__blob" aria-hidden="true"></div>
+            <div class="trainer-course-empty-state__frame">
+              <div class="trainer-course-empty-state__placeholder" aria-hidden="true">
+                <i class="fa fa-book" aria-hidden="true"></i>
+                <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <!-- Assigned view empty: simple message -->
+      <p class="course-empty-msg" *ngIf="(!course || course.length === 0) && isAssignedView">No assigned courses.</p>
+
+      <!-- Course Grid – same card design as My Courses (when has courses) -->
+      <div class="course-grid" *ngIf="course?.length > 0">
         <div class="course-card lms-card" *ngFor="let item of course; trackBy: trackByCourseId">
           <div class="lms-card__banner" [class.lms-card__banner--api]="isApiCategory(item)" [class.lms-card__banner--ndt]="!isApiCategory(item)">
             <span class="lms-card__badge">{{ item?.category?.name || 'Course' }}</span>
@@ -35,9 +89,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Empty state -->
-      <p class="course-empty-msg" *ngIf="!loading && (!course || course.length === 0)">{{ isAssignedView ? 'No assigned courses.' : 'No courses yet. Create one to get started.' }}</p>
 
       <!-- Pagination – same as My Courses -->
       <div class="pagination-container" *ngIf="totalPageCount > 0">

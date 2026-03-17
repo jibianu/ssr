@@ -66,14 +66,26 @@ export class AddUserComponent implements OnInit, OnDestroy {
 
   get f() { return this.userForm.controls; }
 
+  private usernameFromEmail(emailOrUsername: string): string {
+    if (!emailOrUsername || typeof emailOrUsername !== 'string') return '';
+    const at = emailOrUsername.indexOf('@');
+    return at > 0 ? emailOrUsername.slice(0, at).trim() : emailOrUsername.trim();
+  }
+
   getUserById(id) {
     this.subscription.add(this.appService.getUserById(id).subscribe((res: any) => {
       if (res) {
+        const email = res.email || '';
+        const currentUserName = res.userName || '';
+        const userName =
+          currentUserName && !currentUserName.includes('@')
+            ? currentUserName
+            : this.usernameFromEmail(email || currentUserName);
         this.userForm.patchValue({
           firstName: res.firstName ? res.firstName : '',
           lastName: res.lastName ? res.lastName : '',
           email: res.email ? res.email : '',
-          userName: res.userName ? res.userName : '',
+          userName: userName || currentUserName,
           profilePictureUrl: res.profilePictureUrl ? res.profilePictureUrl : '',
           isActive: res.isActive ? res.isActive : false,
           isAdmin: res.isAdmin ? res.isAdmin : false,

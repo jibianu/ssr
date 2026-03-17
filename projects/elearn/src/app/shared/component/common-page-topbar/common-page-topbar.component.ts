@@ -7,7 +7,10 @@ import { debounceTime, switchMap } from 'rxjs/operators';
 import { AuthenticationService, ROLE_LANDING_ROUTES } from 'src/app/modules/auth/auth.service';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { SharedService } from '../../service/shared-service.service';
+import { ToasterService } from '../toaster/toaster.service';
 import { environment } from 'src/environments/environment';
+
+const ROLE_TRAINER = 3;
 
 /** Common topbar for Admin, Trainer, Company, Management: logo (left), back, title (center), user dropdown (right). */
 @Component({
@@ -28,19 +31,27 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   showUserMappingButton = false;
   showAddCategoryButton = false;
   showCourseListToolbar = false;
+  showTrainerListToolbar = false;
   showTrainerDashboardToolbar = false;
   courseListSearchTerm = '';
+  trainerListSearchTerm = '';
   showCurriculumToolbar = false;
   showCurriculumEditActions = true;
   curriculumSearchTerm = '';
   curriculumActiveTab = 'concepts';
   /** Set by Event List (and similar pages); shows e.g. "Add Event" button in topbar. */
-  topbarPrimaryAction: { routerLink: string; label: string; icon?: string } | null = null;
+  topbarPrimaryAction: { routerLink: string; label: string; icon?: string; contentType?: 'Course' | 'Blog' | 'Event' } | null = null;
   logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
   homeRoute = '/app/student/courses';
   userEmail = '';
   userDisplayName = '';
   dropdownOpen = false;
+  /** Trainer content permissions (Course, Blog, Event) from API; used to show Add vs Request Permission. */
+  contentPermissions: string[] = [];
+  /** Content types for which trainer has a pending permission request (show "Permission requested"). */
+  pendingPermissionTypes: string[] = [];
+  trainerRequestingPermission = false;
+  isTrainer = false;
 
   /** Student topbar course search (same behavior as site). */
   @ViewChild('studentSearchContainer') studentSearchContainerRef: ElementRef<HTMLElement> | null = null;
@@ -60,6 +71,7 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     private cookieService: CookieService,
     private sharedService: SharedService,
     private adminAppService: AdminAppService,
+    private toasterService: ToasterService,
     private elementRef: ElementRef,
     private cdr: ChangeDetectorRef
   ) {}
@@ -86,6 +98,7 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.userEmail = user?.email || '';
     this.userDisplayName = this.buildDisplayName(user?.firstName, user?.lastName, user?.userName);
     const roleId = user?.roleId != null ? user.roleId : this.authService.currentUser()?.roleId;
+    this.isTrainer = roleId === ROLE_TRAINER;
     if (roleId != null && ROLE_LANDING_ROUTES[roleId]) {
       this.homeRoute = ROLE_LANDING_ROUTES[roleId];
     }
@@ -123,8 +136,23 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.sub.add(
       this.sharedService.showTrainerDashboardToolbar.subscribe((show) => {
         this.showTrainerDashboardToolbar = show;
+        if (show && this.isTrainer && this.router.url.includes('/trainer/')) {
+          this.loadTrainerContentPermissions();
+          this.loadMyPendingPermissionRequests();
+        }
         this.displayTitle = show ? 'Trainer Dashboard' : (this.displayTitle === 'Trainer Dashboard' ? '' : this.displayTitle);
         this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.showTrainerListToolbar.subscribe((show) => {
+        this.showTrainerListToolbar = show;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.trainerListSearchTerm$.subscribe((term) => {
+        this.trainerListSearchTerm = term;
       })
     );
     this.sub.add(
@@ -168,6 +196,10 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.sub.add(
       this.sharedService.topbarPrimaryAction.subscribe((action) => {
         this.topbarPrimaryAction = action;
+        if (action?.contentType && this.isTrainer && this.router.url.includes('/trainer/')) {
+          this.loadTrainerContentPermissions();
+          this.loadMyPendingPermissionRequests();
+        }
         this.cdr.markForCheck();
       })
     );
@@ -228,12 +260,80 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.sharedService.courseListFilterClick$.next();
   }
 
+  onTrainerListSearchChange(value: string): void {
+    this.sharedService.trainerListSearchTerm$.next(value);
+  }
+
+  onTrainerListSearchTrigger(): void {
+    this.sharedService.trainerListSearchTrigger$.next();
+  }
+
+  onTrainerListFilterClick(): void {
+    this.sharedService.trainerListFilterClick$.next();
+  }
+
   onCourseListAddCourseClick(): void {
     this.sharedService.courseListAddCourseClick$.next();
   }
 
   onTrainerAddCourseClick(): void {
     this.sharedService.trainerAddCourseClick$.next();
+  }
+
+  get isTrainerContext(): boolean {
+    return (this.router?.url ?? '').includes('/trainer/');
+  }
+
+  /** True when trainer has permission to create this content type (from TrainerPermissions / my-content-permissions). */
+  hasTrainerContentPermission(type: string): boolean {
+    return this.contentPermissions.some(p => (p || '').toLowerCase() === (type || '').toLowerCase());
+  }
+
+  /** True when trainer has a pending permission request for this content type. */
+  hasPendingPermissionRequest(type: string): boolean {
+    return this.pendingPermissionTypes.some(p => (p || '').toLowerCase() === (type || '').toLowerCase());
+  }
+
+  private loadTrainerContentPermissions(): void {
+    this.adminAppService.getMyContentPermissions().subscribe({
+      next: (list) => {
+        this.contentPermissions = Array.isArray(list) ? list : [];
+        this.cdr.markForCheck();
+      },
+      error: () => { this.contentPermissions = []; this.cdr.markForCheck(); }
+    });
+  }
+
+  private loadMyPendingPermissionRequests(): void {
+    this.adminAppService.getMyPendingPermissionRequests().subscribe({
+      next: (list) => {
+        this.pendingPermissionTypes = (Array.isArray(list) ? list : [])
+          .map((r: { contentType?: string }) => (r?.contentType || '').trim())
+          .filter(Boolean);
+        this.cdr.markForCheck();
+      },
+      error: () => { this.pendingPermissionTypes = []; this.cdr.markForCheck(); }
+    });
+  }
+
+  /** Trainer: request permission to create content (Course, Blog, or Event). */
+  onTrainerRequestPermission(contentType: 'Course' | 'Blog' | 'Event'): void {
+    if (this.trainerRequestingPermission) return;
+    this.trainerRequestingPermission = true;
+    this.adminAppService.requestContentPermission(contentType).subscribe({
+      next: () => {
+        this.trainerRequestingPermission = false;
+        this.toasterService.showSuccess('Request sent. You will be notified when an admin approves.');
+        this.loadTrainerContentPermissions();
+        this.loadMyPendingPermissionRequests();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.trainerRequestingPermission = false;
+        this.toasterService.showError(err?.error?.message || 'Failed to send request');
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnDestroy(): void {
