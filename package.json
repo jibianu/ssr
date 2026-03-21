@@ -14,6 +14,7 @@
     "build:elearn:prod": "ng build elearn --configuration production",
     "build:shared": "ng build shared",
     "build:all": "ng build shared && ng build site --configuration production && ng build elearn --configuration production",
+    "build:docker": "ng build shared --configuration production && ng build site --configuration unified && ng build elearn --configuration unified",
     "test": "ng test",
     "test:site": "ng test site",
     "test:elearn": "ng test elearn",

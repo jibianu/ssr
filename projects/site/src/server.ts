@@ -28,10 +28,10 @@ function main(): void {
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
-/** Elearn SPA (no SSR): production build uses baseHref /Elearn/ — set ELEARN_BROWSER_DIST to override. */
+/** Elearn SPA (no SSR): `ng build elearn` outputs to dist/elearn/ (index.html). Override with ELEARN_BROWSER_DIST if needed. */
 const elearnBrowserFolder = process.env['ELEARN_BROWSER_DIST']
   ? resolve(process.env['ELEARN_BROWSER_DIST'])
-  : resolve(serverDistFolder, '../../elearn/browser');
+  : resolve(serverDistFolder, '../../elearn');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
@@ -164,27 +164,31 @@ app.use(
 );
 
 // 1b️⃣ Elearn (student dashboard / course player): SPA only — must run BEFORE SSR catch-all.
-// Production build: baseHref /Elearn/ — assets load from /Elearn/*.js
+// Production: baseHref /Elearn/ or /course/ (Docker unified domain) — assets under that prefix
 // Optional: build elearn with baseHref /app/ if you only mount /app (see docs/NGINX_SSR.md).
 function mountElearnSpaIfPresent(): void {
   const indexFile = join(elearnBrowserFolder, 'index.html');
   if (!existsSync(indexFile)) {
     console.log(
-      `[SSR] Elearn browser not found at ${elearnBrowserFolder} — skip /Elearn & /app SPA mounts. ` +
-        `Build: ng build elearn --configuration production`
+      `[SSR] Elearn browser not found at ${elearnBrowserFolder} — skip Elearn SPA mounts. ` +
+        `Build: ng build elearn --configuration production (or unified for /course)`
     );
     return;
   }
   const staticOpts = { maxAge: '1y' as const, index: false, etag: true, lastModified: true };
-  console.log(`[SSR] Elearn SPA: ${elearnBrowserFolder} → /Elearn/*, /app/*`);
-  app.use('/Elearn', express.static(elearnBrowserFolder, staticOpts));
-  app.get(/^\/Elearn(\/.*)?$/, (req, res) => {
-    res.sendFile(indexFile);
-  });
-  app.use('/app', express.static(elearnBrowserFolder, staticOpts));
-  app.get(/^\/app(\/.*)?$/, (req, res) => {
-    res.sendFile(indexFile);
-  });
+  const mountSpa = (mountPath: string) => {
+    app.use(mountPath, express.static(elearnBrowserFolder, staticOpts));
+    const escaped = mountPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    app.get(new RegExp(`^${escaped}(\\/.*)?$`), (_req, res) => {
+      res.sendFile(indexFile);
+    });
+  };
+  console.log(
+    `[SSR] Elearn SPA: ${elearnBrowserFolder} → /course/* (unified domain), /Elearn/*, /app/*`
+  );
+  mountSpa('/course');
+  mountSpa('/Elearn');
+  mountSpa('/app');
 }
 mountElearnSpaIfPresent();
 
@@ -467,7 +471,8 @@ app.use('/{*splat}', (req, res) => {
 
 // ✅ CACHING: Cache warming function (call after server starts)
 async function warmCache(): Promise<void> {
-  const popularRoutes = ['/', '/course', '/about-us', '/contact-us'];
+  // Note: /course is the Elearn SPA (not SSR) — do not warm it here
+  const popularRoutes = ['/', '/about-us', '/contact-us'];
   
   console.log(`🔥 Warming ${cacheConfig.type} cache for popular routes...`);
   

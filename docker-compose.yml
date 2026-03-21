@@ -1,0 +1,19 @@
+# Unified frontend — one domain in prod:
+#   https://oilandgasclub.com/          → public site (dev equivalent :4200)
+#   https://oilandgasclub.com/course/   → Elearn (dev equivalent :4201)
+#
+# Local: HOST_PORT defaults to 4000 (replaces legacy course-angular-ui on :4000)
+name: oilandgasclub-frontend
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: oilandgasclub-frontend:latest
+    container_name: oilandgasclub_frontend
+    environment:
+      - PORT=4000
+    ports:
+      - "${HOST_PORT:-4000}:4000"
+    restart: unless-stopped

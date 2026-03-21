@@ -41,6 +41,17 @@
             "development": {
               "optimization": false,
               "sourceMap": true
+            },
+            "unified": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/site/src/environments/environment.ts",
+                  "with": "projects/site/src/environments/environment.unified.site.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false
             }
           },
           "defaultConfiguration": "production"
@@ -105,7 +116,19 @@
               "outputHashing": "all",
               "sourceMap": false
             },
-            "development": { "optimization": false, "sourceMap": true }
+            "development": { "optimization": false, "sourceMap": true },
+            "unified": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/elearn/src/environments/environment.ts",
+                  "with": "projects/elearn/src/environments/environment.unified.prod.ts"
+                }
+              ],
+              "baseHref": "/course/",
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false
+            }
           },
           "defaultConfiguration": "production"
         },
