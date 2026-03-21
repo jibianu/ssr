@@ -5,8 +5,15 @@
 export const environment = {
   production: false,
   apiUrl: 'https://localhost:52287/',
-  /** Base URL of the site app (public course landing). When set, "Public landing page" opens this origin + course slug. e.g. http://localhost:4200 when site runs on 4200 and elearn on 4201. */
+  /** Base URL of the site app (public course landing). When localhost, Elearn uses native course page (no iframe). */
   publicCourseSiteUrl: 'http://localhost:4200',
+  /** Dev only: if true, embed public site (4200) inside Elearn; uses course slug in URL (needs `npm run start:site`). */
+  forcePublicCourseIframe: true,
+  /**
+   * If true, Explore “View course” / Enroll opens the marketing app in this tab (URL = /{slug} on publicCourseSiteUrl).
+   * If false (default), stay on Elearn and embed or native page; slug still comes from API for correct course.
+   */
+  exploreOpenMarketingSiteInSameTab: false,
   oauthKey: '9001690783-2at0k49u0nkoe8qb3ucn8d76qv9ls073.apps.googleusercontent.com',
   seoUrl: 'https://elearn.oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300',

@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationModalComponent } from '../../../../shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from '../../../../shared/component/toaster/toaster.service';
+import { SearchBlogComponent } from '../../../../shared/modals/search-blog/search-blog.component';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 
@@ -33,6 +34,9 @@ export class BlogListComponent implements OnInit, OnDestroy {
   filterAuthorId = '';
   filterDateFrom = '';
   filterDateTo = '';
+  /** Blog status filter: null = all, 1 = Pending Review (trainer requested review). */
+  statusFilter: number | null = null;
+  searchTags: { value: string; searchBy: string }[] = [];
   private sub = new Subscription();
   /** Trainer: has Blog content permission (show Add New Blog in empty state). */
   hasBlogPermission = false;
@@ -53,6 +57,11 @@ export class BlogListComponent implements OnInit, OnDestroy {
     this.sharedService.certificateName.next('Blog List');
     const href = this.document.location.href;
     this.txtRoute = href.includes('/trainer/') ? 'trainer' : href.includes('management') ? 'management' : 'admin';
+    /** Show Filter button in topbar only for admin/management, not for trainer. */
+    this.sharedService.showBlogListToolbar.next(this.txtRoute !== 'trainer');
+    this.sub.add(
+      this.sharedService.blogListFilterClick$.subscribe(() => this.openFilterModal())
+    );
     this.sharedService.topbarPrimaryAction.next({
       routerLink: `/app/${this.txtRoute}/blog/add`,
       label: 'Add Blog',
@@ -81,8 +90,74 @@ export class BlogListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.sharedService.showBlogListToolbar.next(false);
     this.sharedService.topbarPrimaryAction.next(null);
     this.sub.unsubscribe();
+  }
+
+  openFilterModal(): void {
+    const modalRef = this.modalService.open(SearchBlogComponent, {
+      windowClass: 'modal-right search-filter-sidebar',
+      scrollable: true,
+      backdrop: true,
+      keyboard: true
+    });
+    modalRef.componentInstance.categories = this.categories || [];
+    modalRef.componentInstance.authorList = this.uniqueAuthors || [];
+    modalRef.componentInstance.setInitialStatusFilter(this.statusFilter);
+    modalRef.componentInstance.initialCategoryId = this.filterCategoryId || null;
+    modalRef.componentInstance.initialCategoryName = this.categories?.find(
+      (c: any) => String(c.id || c.Id) === String(this.filterCategoryId)
+    )?.name ?? this.filterCategoryId ?? null;
+    modalRef.componentInstance.initialAuthorName = this.filterAuthor || null;
+    modalRef.componentInstance.initialDateFrom = this.filterDateFrom || null;
+    modalRef.componentInstance.initialDateTo = this.filterDateTo || null;
+    modalRef.componentInstance.setInitialFilters();
+    modalRef.result.then(
+      (result: { statusFilter?: number | null; statusLabel?: string | null; categoryId?: string | null; categoryName?: string | null; authorName?: string | null; dateFrom?: string | null; dateTo?: string | null }) => {
+        this.statusFilter = result.statusFilter ?? null;
+        this.filterCategoryId = result.categoryId ?? '';
+        this.filterAuthor = result.authorName ?? '';
+        this.filterAuthorId = '';
+        this.filterDateFrom = result.dateFrom ?? '';
+        this.filterDateTo = result.dateTo ?? '';
+        this.searchTags = [];
+        if (result.statusLabel) {
+          this.searchTags.push({ value: result.statusLabel, searchBy: 'status' });
+        }
+        if (result.categoryName) {
+          this.searchTags.push({ value: result.categoryName, searchBy: 'categoryName' });
+        }
+        if (result.authorName) {
+          this.searchTags.push({ value: result.authorName, searchBy: 'authorName' });
+        }
+        if (result.dateFrom) {
+          this.searchTags.push({ value: result.dateFrom, searchBy: 'dateFrom' });
+        }
+        if (result.dateTo) {
+          this.searchTags.push({ value: result.dateTo, searchBy: 'dateTo' });
+        }
+        this.applyFilters();
+      },
+      () => {}
+    );
+  }
+
+  onFilterTagRemoved(tag: { searchBy: string }): void {
+    if (tag.searchBy === 'status') {
+      this.statusFilter = null;
+    } else if (tag.searchBy === 'categoryName') {
+      this.filterCategoryId = '';
+    } else if (tag.searchBy === 'authorName') {
+      this.filterAuthor = '';
+      this.filterAuthorId = '';
+    } else if (tag.searchBy === 'dateFrom') {
+      this.filterDateFrom = '';
+    } else if (tag.searchBy === 'dateTo') {
+      this.filterDateTo = '';
+    }
+    this.searchTags = this.searchTags.filter((t) => t.searchBy !== tag.searchBy);
+    this.applyFilters();
   }
 
   fetchCategories(): void {
@@ -151,6 +226,9 @@ export class BlogListComponent implements OnInit, OnDestroy {
     const term = (this.searchTerm || '').toLowerCase().trim();
     if (term) {
       list = list.filter(b => (b.title || '').toLowerCase().includes(term));
+    }
+    if (this.statusFilter != null && this.statusFilter !== undefined) {
+      list = list.filter(b => (b.status ?? 0) === this.statusFilter);
     }
     if (this.filterCategoryId) {
       list = list.filter(b => String(b.categoryId) === String(this.filterCategoryId));

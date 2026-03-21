@@ -12,12 +12,12 @@
           <div class="article-img">
             <img
               [src]="b.titleImgUrl || placeholderImg"
-              [alt]="b.title"
+              [alt]="displayTitle()"
               class="img-fluid"
               (error)="onImgError($event)" />
           </div>
           <div class="article-title">
-            <h1 class="post-title">{{ b.title }}</h1>
+            <h1 class="post-title">{{ displayTitle() }}</h1>
             <div class="d-sm-flex align-items-center justify-content-between">
               @if (b.authorName) {
                 @if (b.authorId) {
@@ -85,62 +85,60 @@
                 <h4 class="post-sub-title">{{ section.title }}</h4>
                 <div class="ck-content post-body" [innerHTML]="section.sanitizedContent"></div>
               </div>
-              @if ((i + 1) % 3 === 0 && i < sanitizedSections().length - 1) {
-                <!-- Loop Marketing Prompt Library Section (reference: original blog) -->
+              <!-- After every 3rd TOC section: loop marketing (original layout: graphic left, text right) -->
+              @if ((i + 1) % 3 === 0 && loopMarketingContent(); as content) {
                 <div class="loop-marketing-section">
                   <div class="loop-marketing-content">
-                    @if (loopMarketingContent(); as content) {
-                      <!-- Left Side: Graphic -->
-                      <div class="loop-marketing-graphic">
-                        <div class="loop-graphic-container">
-                          <div class="loop-graphic-top">
-                            <span class="loop-brand">{{ content.brand }}</span>
-                          </div>
-                          <div class="loop-graphic-bottom">
-                            <div class="loop-infinity-symbol">∞</div>
-                            <span class="loop-graphic-text">{{ content.graphicText }}</span>
-                          </div>
+                    <!-- Left: Graphic (purple header + orange with infinity) -->
+                    <div class="loop-marketing-graphic">
+                      <div class="loop-graphic-container">
+                        <div class="loop-graphic-top">
+                          <span class="loop-brand">{{ content.brand }}</span>
+                        </div>
+                        <div class="loop-graphic-bottom">
+                          <div class="loop-infinity-symbol">∞</div>
+                          <span class="loop-graphic-text">{{ content.graphicText }}</span>
                         </div>
                       </div>
-                      <!-- Right Side: Text Content -->
-                      <div class="loop-marketing-text">
-                        <h2 class="loop-marketing-title">{{ content.title }}</h2>
-                        <p class="loop-marketing-description">{{ content.description }}</p>
-                        <ul class="loop-features-list">
-                          <li class="loop-feature-item">
-                            <div class="loop-checkmark-circle">
-                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </div>
-                            <span>{{ content.expressFeature }}</span>
-                          </li>
-                          <li class="loop-feature-item">
-                            <div class="loop-checkmark-circle">
-                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </div>
-                            <span>{{ content.amplifyFeature }}</span>
-                          </li>
-                          <li class="loop-feature-item">
-                            <div class="loop-checkmark-circle">
-                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </div>
-                            <span>{{ content.tailorFeature }}</span>
-                          </li>
-                          <li class="loop-feature-item">
-                            <div class="loop-checkmark-circle">
-                              <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </div>
-                            <span>{{ content.evolveFeature }}</span>
-                          </li>
-                        </ul>
-                        <div class="loop-cta-container">
-                          <button type="button" class="loop-download-btn" (click)="downloadPromptLibrary()">{{ content.downloadButtonText }}</button>
-                          <a [href]="content.learnMoreUrl || '#'" target="_blank" rel="noopener noreferrer" class="loop-learn-more-link">
-                            {{ content.learnMoreText }}
-                            <svg class="loop-external-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 3H9M11 3V5M11 3L3 11M5 11H3M3 11V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                          </a>
-                        </div>
+                    </div>
+                    <!-- Right: Title, description, features, CTA -->
+                    <div class="loop-marketing-text">
+                      <h2 class="loop-marketing-title">{{ content.title | fixMojibake }}</h2>
+                      <p class="loop-marketing-description">{{ content.description }}</p>
+                      <ul class="loop-features-list">
+                        <li class="loop-feature-item">
+                          <div class="loop-checkmark-circle">
+                            <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </div>
+                          <span>{{ content.expressFeature }}</span>
+                        </li>
+                        <li class="loop-feature-item">
+                          <div class="loop-checkmark-circle">
+                            <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </div>
+                          <span>{{ content.tailorFeature }}</span>
+                        </li>
+                        <li class="loop-feature-item">
+                          <div class="loop-checkmark-circle">
+                            <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </div>
+                          <span>{{ content.amplifyFeature }}</span>
+                        </li>
+                        <li class="loop-feature-item">
+                          <div class="loop-checkmark-circle">
+                            <svg class="loop-checkmark-icon" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </div>
+                          <span>{{ content.evolveFeature }}</span>
+                        </li>
+                      </ul>
+                      <div class="loop-cta-container">
+                        <button type="button" class="loop-download-btn" (click)="downloadPromptLibrary()">{{ content.downloadButtonText }}</button>
+                        <a [href]="content.learnMoreUrl || '#'" target="_blank" rel="noopener noreferrer" class="loop-learn-more-link">
+                          {{ content.learnMoreText }}
+                          <svg class="loop-external-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 3H9M11 3V5M11 3L3 11M5 11H3M3 11V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </a>
                       </div>
-                    }
+                    </div>
                   </div>
                 </div>
               }
@@ -149,29 +147,29 @@
         </article>
       </div>
       <aside class="blog-sidebar">
-        <div class="blog-aside">
-          @if (sanitizedSections().length > 0) {
-            <div class="widget widget-post">
+        <div class="blog-aside" [class.blog-aside--stop]="sidebarStopMode()">
+          <div class="widget widget-post sidebar-single-card">
+            @if (sanitizedSections().length > 0) {
               <div class="blog-table-heading mt-3">
                 <span>Table of Contents</span>
               </div>
-              <div class="widget-body pt-0">
+              <div class="widget-body pt-0 sidebar-single-card__section">
                 <ul class="blog-toc__list blog-toc__list--scroll">
                   @for (section of sanitizedSections(); track section.id) {
                     <li class="toc-item">
                       <a
-                        [routerLink]="[]"
-                        [fragment]="sectionId(section.title)"
-                        class="toc-link">{{ section.title }}</a>
+                        [href]="'#' + sectionId(section.title)"
+                        (click)="scrollToSection($event, section.title)"
+                        class="toc-link"
+                        [class.active]="activeSection() === sectionId(section.title)"
+                        [attr.aria-current]="activeSection() === sectionId(section.title) ? 'location' : null">{{ section.title }}</a>
                     </li>
                   }
                 </ul>
               </div>
-            </div>
-          }
+            }
 
-          <div class="widget widget-post mt-2">
-            <div class="widget-body">
+            <div class="widget-body sidebar-single-card__section sidebar-single-card__section--social">
               <div class="social-sharing-section">
                 <div class="social-icons">
                   <a [href]="getFacebookShareUrl()" target="_blank" rel="noopener noreferrer" class="social-icon facebook" aria-label="Share on Facebook">
@@ -189,10 +187,8 @@
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="widget widget-post mt-2">
-            <div class="widget-body">
+            <div class="widget-body sidebar-single-card__section sidebar-single-card__section--newsletter">
               <div class="newsletter-signup-card">
                 <h3 class="newsletter-title">
                   Get Dialed In!
@@ -201,16 +197,19 @@
                 <p class="newsletter-description">
                   The weekly newsletter packed with industry insights and course updates for professionals who want to grow their expertise, not just complete a course.
                 </p>
-                <form class="newsletter-form" (ngSubmit)="subscribeNewsletterSidebar()" #newsletterForm="ngForm">
-                  <input type="email" class="newsletter-input" placeholder="Enter your email" [(ngModel)]="newsletterEmail" name="sidebarEmail" required email />
-                  <button type="submit" class="newsletter-subscribe-btn" [class.subscribed]="isSubscribedSidebar" [disabled]="!newsletterForm.valid || isSubscribingSidebar || isSubscribedSidebar">
-                    @if (isSubscribedSidebar) { Thanks for subscribing! }
-                    @else if (isSubscribingSidebar) { Subscribing... }
-                    @else { Subscribe }
-                  </button>
-                </form>
-                @if (newsletterMessage) {
-                  <div class="newsletter-message" [class.success]="isSubscribedSidebar" [class.error]="!isSubscribedSidebar">{{ newsletterMessage }}</div>
+                @if (!isSubscribedSidebar) {
+                  <form class="newsletter-form" (ngSubmit)="subscribeNewsletterSidebar()" #newsletterForm="ngForm">
+                    <input type="email" class="newsletter-input" placeholder="Enter your email" [(ngModel)]="newsletterEmail" name="sidebarEmail" required email />
+                    <button type="submit" class="newsletter-subscribe-btn" [disabled]="!newsletterForm.valid || isSubscribingSidebar">
+                      @if (isSubscribingSidebar) { Subscribing... }
+                      @else { Subscribe }
+                    </button>
+                  </form>
+                  @if (newsletterMessage) {
+                    <div class="newsletter-message error">{{ newsletterMessage }}</div>
+                  }
+                } @else {
+                  <p class="newsletter-success-placeholder">{{ newsletterMessage || 'Thanks for subscribing!' }}</p>
                 }
               </div>
             </div>

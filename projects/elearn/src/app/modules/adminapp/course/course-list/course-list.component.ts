@@ -43,6 +43,8 @@ export class CourseListComponent implements OnInit, OnDestroy {
   txtRoute: string;
   isPublish: boolean | null = null;
   showOnPublicListingFilter: boolean | null = null;
+  /** Course status filter: 1 = Pending Review (trainer requested review). */
+  statusFilter: number | null = null;
   categories: any;
   categoryID: any;
   AuthorList: any;
@@ -72,6 +74,22 @@ export class CourseListComponent implements OnInit, OnDestroy {
 
   get isManagementContext(): boolean {
     return this.router?.url?.includes('/management/') ?? false;
+  }
+
+  /** Course creation/review progress (0–100). Supports both camelCase and PascalCase from API. */
+  getCourseProgress(item: any): number {
+    if (!item) return 0;
+    const p = item.courseCreationProgress ?? item.CourseCreationProgress ?? item['courseCreationProgress'] ?? item['CourseCreationProgress'];
+    const n = Number(p);
+    return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 0;
+  }
+
+  /** True when course is in Pending Review (trainer requested review, status = 1). */
+  isPendingReview(item: any): boolean {
+    if (!item) return false;
+    const s = item.status ?? item.Status;
+    const n = typeof s === 'number' ? s : Number(s);
+    return Number.isFinite(n) && n === 1;
   }
 
   ngOnInit(): void {
@@ -127,33 +145,34 @@ export class CourseListComponent implements OnInit, OnDestroy {
   }
 
   fetchCourses(): void {
-    let obj: any = {
+    const obj: Record<string, string | number> = {
       'Filter.Title': this.searchTitle || '',
       'Sort.PropertyName': this.sortBy,
-      'Sort.IsAscending': this.isAsc,
+      'Sort.IsAscending': String(this.isAsc),
       pageSize: this.tableSize,
       pageNumber: this.page
     };
-    // Send as strings so false is not stripped from query params (Angular can omit falsy values)
+    // Apply all filters so backend returns filtered data
     if (this.isPublish !== null && this.isPublish !== undefined) {
       obj['Filter.IsPublished'] = this.isPublish === true ? 'true' : 'false';
     }
     if (this.showOnPublicListingFilter !== null && this.showOnPublicListingFilter !== undefined) {
       obj['Filter.ShowOnPublicListing'] = this.showOnPublicListingFilter === true ? 'true' : 'false';
     }
+    if (this.statusFilter != null && this.statusFilter !== undefined) {
+      obj['Filter.Status'] = String(this.statusFilter);
+    }
     if (this.categoryID) {
-      obj['Filter.CategoryId'] = this.categoryID
+      obj['Filter.CategoryId'] = this.categoryID;
     }
     if (this.AuthorID) {
-      obj['Filter.AuthorId'] = this.AuthorID
+      obj['Filter.AuthorId'] = this.AuthorID;
     }
-    if (this.createdDate) {
-      obj['Filter.CreatedDate'] = this.createdDate.month + '/' +
-        this.createdDate.day + '/' + this.createdDate.year
+    if (this.createdDate && this.createdDate.month != null && this.createdDate.day != null && this.createdDate.year != null) {
+      obj['Filter.CreatedDate'] = this.createdDate.month + '/' + this.createdDate.day + '/' + this.createdDate.year;
     }
-    if (this.updatedDate) {
-      obj['Filter.UpdatedDate'] = this.updatedDate.month + '/' +
-        this.updatedDate.day + '/' + this.updatedDate.year
+    if (this.updatedDate && this.updatedDate.month != null && this.updatedDate.day != null && this.updatedDate.year != null) {
+      obj['Filter.UpdatedDate'] = this.updatedDate.month + '/' + this.updatedDate.day + '/' + this.updatedDate.year;
     }
     if (this.isManagementContext) {
       this.subscription.add(this.appService.getAssignedCoursesForManagement(obj).subscribe({
@@ -235,21 +254,49 @@ export class CourseListComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.descText = 'Are you sure you want to delete?'
     modalRef.result.then((result) => {
       if (result === 'ok') {
-        this.subscription.add(this.appService.deleteCourseById(id)
-          .subscribe(
-            response => {
-              this.toasterService.showSuccess('Course deleted successfully');
-              this.page = 1;
-              this.fetchCourses();
-            },
-            error => {
-              console.log(error);
-              this.toasterService.showError('Something went wrong');
-            }));
+        // Defer delete until modal is torn down (avoids focus + aria-hidden on app-root warning)
+        setTimeout(() => {
+          (document.activeElement as HTMLElement | null)?.blur?.();
+          this.subscription.add(this.appService.deleteCourseById(id)
+            .subscribe(
+              response => {
+                this.toasterService.showSuccess('Course deleted successfully');
+                this.page = 1;
+                this.fetchCourses();
+              },
+              error => {
+                console.log(error);
+                const msg = this.extractApiErrorMessage(error);
+                this.toasterService.showError(msg);
+              }));
+        }, 0);
       }
     }, (reason) => {
 
     });
+  }
+
+  /** Backend ErrorResponse: { StatusCode, Messages: string[] } — show first line in toast */
+  private extractApiErrorMessage(error: unknown): string {
+    const fallback = 'Something went wrong';
+    const err = error as { error?: unknown; message?: string } | undefined;
+    const body = err?.error;
+    if (body == null) {
+      return typeof err?.message === 'string' && err.message ? err.message : fallback;
+    }
+    if (typeof body === 'string') {
+      try {
+        const parsed = JSON.parse(body) as { Messages?: string[]; messages?: string[]; message?: string };
+        return parsed.Messages?.[0] ?? parsed.messages?.[0] ?? parsed.message ?? body;
+      } catch {
+        return body;
+      }
+    }
+    if (typeof body === 'object' && body !== null) {
+      const o = body as { Messages?: string[]; messages?: string[]; message?: string };
+      return o.Messages?.[0] ?? o.messages?.[0] ?? (typeof o.message === 'string' ? o.message : null) ?? fallback;
+    }
+    return fallback;
   }
 
   dataChanged(word: string): void {
@@ -389,7 +436,8 @@ export class CourseListComponent implements OnInit, OnDestroy {
     }));
   }
   /** Map current course list filter to modal publish filter type so search panel shows correct state. */
-  private getCurrentPublishFilter(): 'all' | 'published-lms' | 'published-public' | 'unpublished-lms' | 'unpublished-public' {
+  private getCurrentPublishFilter(): 'all' | 'pending-review' | 'published-lms' | 'published-public' | 'unpublished-lms' | 'unpublished-public' {
+    if (this.statusFilter === 1) return 'pending-review';
     if (this.isPublish === false && this.showOnPublicListingFilter === null) return 'unpublished-lms';
     if (this.isPublish === true && this.showOnPublicListingFilter === false) return 'unpublished-public';
     if (this.isPublish === true && this.showOnPublicListingFilter === null) return 'published-lms';
@@ -417,9 +465,10 @@ export class CourseListComponent implements OnInit, OnDestroy {
       this.bindTagAndSearchData(result);
     }, () => {});
   }
-  bindTagAndSearchData(result: { isPublish?: boolean | null; showOnPublicListing?: boolean | null; categoryID: any; authorID: any; createdDate: any; updatedDate: any; publish: any; categoryName: any; authorName: any; }) {
+  bindTagAndSearchData(result: { isPublish?: boolean | null; showOnPublicListing?: boolean | null; statusFilter?: number | null; categoryID: any; authorID: any; createdDate: any; updatedDate: any; publish: any; categoryName: any; authorName: any; }) {
     this.isPublish = result.isPublish ?? null;
     this.showOnPublicListingFilter = result.showOnPublicListing ?? null;
+    this.statusFilter = result.statusFilter ?? null;
     this.categoryID = result.categoryID;
     this.AuthorID = result.authorID;
     this.createdDate = result.createdDate;
@@ -468,6 +517,7 @@ export class CourseListComponent implements OnInit, OnDestroy {
     if (item.searchBy == 'publish') {
       this.isPublish = null;
       this.showOnPublicListingFilter = null;
+      this.statusFilter = null;
     } else if (item.searchBy == 'categoryName') {
       this.categoryID = null;
     } else if (item.searchBy == 'authorName') {

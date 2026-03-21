@@ -14,16 +14,13 @@
   <div class="common-topbar__curriculum-wrap" *ngIf="showCurriculumToolbar">
     <nav class="common-topbar__curriculum-tabs" role="tablist">
       <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'concepts'" (click)="onCurriculumTabClick('concepts')">CURRICULUM</button>
-      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'description'" (click)="onCurriculumTabClick('description')">DESCRIPTION</button>
       <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'questionset'" (click)="onCurriculumTabClick('questionset')">TEST INFORMATION</button>
-      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'question'" (click)="onCurriculumTabClick('question')">QUESTION</button>
-      <button type="button" class="common-topbar__curriculum-tab" [class.common-topbar__curriculum-tab--active]="curriculumActiveTab === 'prices'" (click)="onCurriculumTabClick('prices')">PRICES</button>
     </nav>
     <div class="common-topbar__curriculum-actions">
     <input type="text" class="common-topbar__search" placeholder="Search curriculum..." [ngModel]="curriculumSearchTerm" (ngModelChange)="onCurriculumSearchChange($event)" />
-    <button *ngIf="showCurriculumEditActions" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumEditCourseClick()" title="Edit course"><i class="fa fa-pencil"></i> Edit course</button>
+    <button type="button" class="common-topbar__action-btn common-topbar__action-btn--landing" (click)="onCurriculumLandingPanelClick()" title="Edit landing page"><i class="fa fa-globe"></i> Landing page</button>
+    <button *ngIf="showCourseReviewButton" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumReviewPanelClick()" title="Open review panel"><i class="fa fa-clipboard"></i> Review</button>
     <button *ngIf="showCurriculumEditActions" type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumEditPriceClick()" title="Edit price"><i class="fa fa-pencil"></i> Edit price</button>
-    <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onCurriculumCheckCourseClick()">Check Course UI</button>
     <button *ngIf="showCurriculumEditActions" type="button" class="common-topbar__action-btn common-topbar__action-btn--primary" (click)="onCurriculumAddCurriculumClick()"><i class="fa fa-plus"></i> Add Curriculum</button>
     </div>
   </div>
@@ -55,11 +52,24 @@
           (click)="onStudentSelectCourse(course)"
           role="option"
         >
-          {{ course.title }}
+          {{ course.title | fixMojibake }}
         </button>
       </div>
     </div>
-    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerListToolbar || showTrainerDashboardToolbar || topbarPrimaryAction">
+    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerListToolbar || showTrainerDashboardToolbar || showBlogListToolbar || showEventListToolbar || topbarPrimaryAction || showBlogReviewButton || showEventReviewButton">
+      <ng-container *ngIf="showBlogListToolbar">
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onBlogListFilterClick()"><i class="fa fa-filter"></i> Filter</button>
+      </ng-container>
+      <ng-container *ngIf="showEventListToolbar">
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onEventListFilterClick()"><i class="fa fa-filter"></i> Filter</button>
+      </ng-container>
+      <ng-container *ngIf="showBlogReviewButton">
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onBlogReviewPanelClick()" title="Open review panel"><i class="fa fa-clipboard"></i> Review</button>
+      </ng-container>
+      <ng-container *ngIf="showEventReviewButton">
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onEventReviewPanelClick(); $event.stopPropagation()" title="Open review panel" tabindex="0"><i class="fa fa-clipboard"></i> Review</button>
+      </ng-container>
+      <!-- Approve/Reject for blog are only in the Review sidebar; not duplicated in topbar -->
       <ng-container *ngIf="topbarPrimaryAction && !(topbarPrimaryAction.contentType && isTrainer && isTrainerContext)">
         <a [routerLink]="topbarPrimaryAction.routerLink" class="common-topbar__action-btn common-topbar__action-btn--primary">
           <i class="fa" [ngClass]="topbarPrimaryAction.icon || 'fa-plus'" aria-hidden="true"></i> {{ topbarPrimaryAction.label }}

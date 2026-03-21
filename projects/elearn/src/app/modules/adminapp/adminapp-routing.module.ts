@@ -11,6 +11,7 @@ const routes: Routes = [
   { path: 'category', loadChildren: () => import('./category/category.module').then(m => m.CategoryModule) },
   { path: 'blog', loadChildren: () => import('./blog/blog.module').then(m => m.BlogModule) },
   { path: 'blog-users', loadChildren: () => import('./blog-users/blog-users.module').then(m => m.BlogUsersModule) },
+  { path: 'newsletter-subscriptions', loadChildren: () => import('./newsletter-subscriptions/newsletter-subscriptions.module').then(m => m.NewsletterSubscriptionsModule) },
   { path: 'loop-marketing', loadChildren: () => import('./loop-marketing/loop-marketing.module').then(m => m.LoopMarketingModule) },
   { path: 'events', loadChildren: () => import('./event/event.module').then(m => m.EventModule) },
   { path: 'chat', component: ChatComponent },

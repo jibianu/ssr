@@ -29,6 +29,7 @@ export class SearchCoursesComponent implements OnInit, OnChanges {
     isPublish: boolean | null;
     showOnPublicListing: boolean | null;
     publishFilter: PublishFilterTypeValue;
+    statusFilter: number | null;
     categoryID: string | null;
     authorID: string | null;
     createdDate: any;
@@ -40,6 +41,7 @@ export class SearchCoursesComponent implements OnInit, OnChanges {
     isPublish: null,
     showOnPublicListing: null,
     publishFilter: 'all',
+    statusFilter: null,
     categoryID: null,
     authorID: null,
     createdDate: null,
@@ -96,6 +98,7 @@ export class SearchCoursesComponent implements OnInit, OnChanges {
     this.sendData.publishFilter = publishFilter;
     const labels: Record<PublishFilterTypeValue, string> = {
       'all': 'All course',
+      'pending-review': 'Trainer requested review',
       'published-lms': 'Published on the Elearn LMS',
       'published-public': 'Published on Public marketing course page',
       'unpublished-lms': 'Unpublished on the Elearn LMS',
@@ -103,8 +106,13 @@ export class SearchCoursesComponent implements OnInit, OnChanges {
     };
     this.SelectedPublishType = labels[publishFilter];
     this.sendData.publish = publishFilter === 'all' ? null : labels[publishFilter];
+    this.sendData.statusFilter = publishFilter === 'pending-review' ? 1 : null;
     switch (publishFilter) {
       case 'all':
+        this.sendData.isPublish = null;
+        this.sendData.showOnPublicListing = null;
+        break;
+      case 'pending-review':
         this.sendData.isPublish = null;
         this.sendData.showOnPublicListing = null;
         break;
@@ -133,6 +141,7 @@ export class SearchCoursesComponent implements OnInit, OnChanges {
       isPublish: null,
       showOnPublicListing: null,
       publishFilter: 'all',
+      statusFilter: null,
       categoryID: null,
       authorID: null,
       createdDate: null,
@@ -150,4 +159,4 @@ export class SearchCoursesComponent implements OnInit, OnChanges {
 }
 
 /** Publish filter values for the search dropdown */
-export type PublishFilterTypeValue = 'all' | 'published-lms' | 'published-public' | 'unpublished-lms' | 'unpublished-public';
+export type PublishFilterTypeValue = 'all' | 'pending-review' | 'published-lms' | 'published-public' | 'unpublished-lms' | 'unpublished-public';

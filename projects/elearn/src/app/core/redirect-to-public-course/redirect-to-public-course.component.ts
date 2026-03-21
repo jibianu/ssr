@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 /**
- * Redirects old Elearn route /app/student/category-courses-description/:courseID
+ * Redirects legacy course URLs; canonical path is /app/student/categories/course/:courseID (see shared-routing).
  * to the site's canonical course URL: /:slug (no /courses/ prefix).
  */
 @Component({

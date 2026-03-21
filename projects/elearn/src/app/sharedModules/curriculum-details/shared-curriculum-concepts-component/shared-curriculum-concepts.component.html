@@ -12,7 +12,7 @@
         <img [src]="x.imageLink" alt="" class="concept-image">
       </div>
       
-      <div class="description" [innerHTML]="x?.description"></div>
+      <div class="description" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
     </div>
   </div>
 </div>

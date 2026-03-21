@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID, Inject, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { debounceTime, switchMap } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, switchMap, take } from 'rxjs/operators';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { environment } from 'src/environments/environment';
 import { PublicAppService } from 'src/app/modules/publicapp/publicapp.service';
+import { AuthenticationService } from 'src/app/modules/auth/auth.service';
 
 // ✅ PERFORMANCE: OnPush change detection for faster change detection (30-50% improvement)
 // ✅ HYDRATION: SSR-safe - menu visibility state handled in browser only
@@ -39,6 +40,12 @@ export class PublicTopbarComponent implements OnInit, OnDestroy {
   searchLoading = false;
   showDropdown = false;
 
+  /** When true, show profile avatar instead of Log in / Sign up (same-origin session only). */
+  isLoggedIn = false;
+  /** Hide broken profile image URLs and show initial instead. */
+  profileImageError = false;
+  private authSub: Subscription | null = null;
+
   /** Elearn app base URL for login/register (from environment). */
   get elearnBaseUrl(): string {
     const base = (environment as { elearnAppUrl?: string }).elearnAppUrl || '';
@@ -51,11 +58,18 @@ export class PublicTopbarComponent implements OnInit, OnDestroy {
     return this.elearnBaseUrl ? `${this.elearnBaseUrl}/auth/register` : '/auth/register';
   }
 
+  /** Student LMS profile (matches elearn sidebar). */
+  get profileHref(): string {
+    const b = this.elearnBaseUrl;
+    return b ? `${b}/app/student/profile` : '/auth/login';
+  }
+
   constructor(
     private cdr: ChangeDetectorRef, // ✅ PERFORMANCE: Required for OnPush - manually trigger change detection
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router,
-    private publicApp: PublicAppService
+    private publicApp: PublicAppService,
+    private auth: AuthenticationService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -71,11 +85,27 @@ export class PublicTopbarComponent implements OnInit, OnDestroy {
         this.showDropdown = this.searchText.trim().length >= 2;
         this.cdr.markForCheck();
       });
+
+      // Same JWT source as enroll/checkout: includes Elearn `token` cookie (no auth.idToken in localStorage).
+      this.isLoggedIn = this.auth.hasJwtForAuthenticatedApi();
+      this.authSub = this.auth.authState$.subscribe(() => {
+        this.isLoggedIn = this.auth.hasJwtForAuthenticatedApi();
+        this.profileImageError = false;
+        if (this.isLoggedIn) {
+          this.auth.getUserInfo().pipe(take(1)).subscribe({
+            next: () => this.cdr.markForCheck(),
+            error: () => this.cdr.markForCheck()
+          });
+        }
+        this.cdr.markForCheck();
+      });
     }
   }
 
   ngOnDestroy(): void {
     this.isDestroyed = true;
+    this.authSub?.unsubscribe();
+    this.authSub = null;
     if (this.searchSub) {
       this.searchSub.unsubscribe();
       this.searchSub = null;
@@ -209,6 +239,35 @@ export class PublicTopbarComponent implements OnInit, OnDestroy {
       event.stopPropagation();
     }
     this.closeMenu();
+  }
+
+  /** Profile image from `UserResponse.profilePictureUrl` (camelCase JSON). */
+  profilePictureUrl(): string {
+    const u = this.auth.currentUser();
+    const url = u?.profilePictureUrl ?? u?.ProfilePictureUrl;
+    return url && String(url).trim() ? String(url).trim() : '';
+  }
+
+  userDisplayInitial(): string {
+    const u = this.auth.currentUser();
+    const f = String(u?.firstName ?? u?.FirstName ?? '').trim();
+    const l = String(u?.lastName ?? u?.LastName ?? '').trim();
+    if (f) {
+      return f.charAt(0).toUpperCase();
+    }
+    if (l) {
+      return l.charAt(0).toUpperCase();
+    }
+    const e = String(u?.email ?? u?.Email ?? u?.userName ?? u?.UserName ?? '').trim();
+    if (e) {
+      return e.charAt(0).toUpperCase();
+    }
+    return '?';
+  }
+
+  onProfileImageError(): void {
+    this.profileImageError = true;
+    this.cdr.markForCheck();
   }
 
   // Navigate to courses page - SSR safe

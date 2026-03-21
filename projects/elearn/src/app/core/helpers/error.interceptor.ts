@@ -5,12 +5,16 @@ import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
 import { EMPTY, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-    constructor(private authenticationService: AuthenticationService,
+    constructor(
+        private authenticationService: AuthenticationService,
         private router: Router,
-        private toasterService: ToasterService) { }
+        private toasterService: ToasterService,
+        private modalService: NgbModal
+    ) { }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(catchError(err => {
@@ -32,6 +36,12 @@ export class ErrorInterceptor implements HttpInterceptor {
                 if (isShowError) {
                     this.toasterService.showError('Session expired or invalid. Please log in again.');
                 }
+                // Close any open modals/panels so login page is not obscured (e.g. Submit for Review, Event registrations)
+                try {
+                    if (this.modalService.hasOpenModals()) {
+                        this.modalService.dismissAll();
+                    }
+                } catch (_) { /* ignore */ }
                 this.router.navigateByUrl('/auth/login');
                 return EMPTY;
             } else if (err.status === 500) {

@@ -50,16 +50,16 @@ export class PaymentSuccessComponent implements OnInit {
       return;
     }
 
-    // Course: Payment Element return – ensure enrollment, set course in localStorage, then go to course (curriculum list).
+    // Course: Payment Element return – ensure enrollment, set course in localStorage, then go to course (curriculum page).
     if (this.entityId && !this.sessionId) {
       const paymentIntentId = sessionStorage.getItem('paymentIntentId_' + this.entityId);
       const goToCourse = () => {
         this.appService.getCourseByCourseID(this.entityId, true).subscribe({
           next: (course: any) => {
             if (course) localStorage.setItem('course', JSON.stringify(course));
-            this.router.navigate(['app/student/details/curriculum-list/', this.entityId]);
+            this.router.navigate(['/app/student/course', this.entityId]);
           },
-          error: () => this.router.navigate(['app/student/details/curriculum-list/', this.entityId])
+          error: () => this.router.navigate(['/app/student/course', this.entityId])
         });
       };
       if (paymentIntentId) {
@@ -75,7 +75,7 @@ export class PaymentSuccessComponent implements OnInit {
       }
       return;
     }
-    // Legacy Checkout Session: verify session then redirect.
+    // Legacy Checkout Session: verify session then redirect to course curriculum.
     if (!this.sessionId || !this.entityId) {
       this.router.navigate(['/app/student/courses']);
       return;
@@ -102,7 +102,7 @@ export class PaymentSuccessComponent implements OnInit {
           )
         )
         .subscribe({
-          next: () => this.router.navigate(['app/student/details/curriculum-list/', this.entityId]),
+          next: () => this.router.navigate(['/app/student/course', this.entityId]),
           error: () => this.router.navigate(['/app/student/courses'])
         })
     );

@@ -29,7 +29,7 @@
     <span class="assignment-block__icon">📋</span>
     <span class="assignment-block__title">{{ block.title || 'Assignment' }}</span>
   </div>
-  <div class="assignment-block__instructions" *ngIf="!isEditable && block.instructions" [innerHTML]="block.instructions"></div>
+  <div class="assignment-block__instructions" *ngIf="!isEditable && block.instructions" [innerHTML]="block.instructions | fixMojibakeSafeHtml"></div>
   <div class="assignment-block__action" *ngIf="!isEditable && mode === 'student'">
     <button type="button" class="btn btn-outline-primary btn-sm" disabled>
       Submit assignment

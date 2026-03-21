@@ -13,6 +13,7 @@ import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { AddCurriculumComponent } from '../../adminapp/curriculum/add-curriculum/add-curriculum.component';
 import { CurriculumOpenService } from '../../adminapp/curriculum/curriculum-open.service';
+import { SubmitForReviewModalComponent } from '../../adminapp/course/course-review/submit-for-review-modal/submit-for-review-modal.component';
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { isLessonContentJson } from 'src/app/shared/models/lesson-content.model';
 import type { LessonBlockType } from 'src/app/shared/models/lesson-content.model';
@@ -39,7 +40,12 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   txtRoute = 'trainer';
   @ViewChild('content') contentTemplate: TemplateRef<any>;
   @ViewChild('cContent') cContentRef: TemplateRef<any>;
+  @ViewChild('reviewSidebar') reviewSidebarRef: TemplateRef<any>;
   modalReference: NgbModalRef;
+  reviewSidebarModalRef: NgbModalRef;
+  submitForReviewInProgress = false;
+  /** Full review timeline from API (EventType: 0=Submitted, 1=Rejected, 2=Approved). */
+  reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
   curriculumId: string;
   questionLength:number = 0;
   questionItem:any[]= [];
@@ -91,6 +97,25 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   get uniqueStudyMaterials(): any[] {
     if (!this.studyMaterials?.length) return [];
     return this.studyMaterials.filter((s: any, i: number, a: any[]) => a.findIndex((x: any) => String(x?.id) === String(s?.id)) === i);
+  }
+
+  /** True when course is Draft (0) or Rejected (3) – allow Submit for Review. */
+  get canShowSubmitForReview(): boolean {
+    const status = Number(this.courseInfo?.status ?? this.courseInfo?.Status ?? -1);
+    return status === 0 || status === 3;
+  }
+
+  /** Same as canShowSubmitForReview – used to enable/disable the button when section is always visible. */
+  get canSubmitForReview(): boolean {
+    return this.canShowSubmitForReview;
+  }
+
+  /** Hint when Submit for Review is disabled (always show button, disable when not allowed). */
+  get submitForReviewHint(): string {
+    const status = Number(this.courseInfo?.status ?? this.courseInfo?.Status ?? -1);
+    if (status === 1) return 'Already submitted for review. Waiting for admin.';
+    if (status === 2) return 'Course is approved. Edit content to submit for review again.';
+    return '';
   }
 
   /** True if current user has Edit permission (from admin); view-only when false. */
@@ -196,7 +221,123 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.sharedService.curriculumEditCourseClick$.subscribe(() => this.openCourseEditPage())
     );
+    this.subscription.add(
+      this.sharedService.curriculumSubmitForReviewClick$.subscribe(() => this.submitCourseForReview())
+    );
+    this.subscription.add(
+      this.sharedService.curriculumReviewPanelClick$.subscribe(() => this.openReviewSidebar())
+    );
+    this.subscription.add(
+      this.sharedService.curriculumLandingPanelClick$.subscribe(() => this.openLandingPageInNewTab())
+    );
     this.formInit();
+  }
+
+  /** Open Edit landing page same as admin: navigate to curriculum list with openLanding=1 so the same sidebar opens. */
+  openLandingPageInNewTab(): void {
+    if (!this.courseId) return;
+    this.router.navigate(['/app/trainer/course/curriculum/list', this.courseId], { queryParams: { openLanding: '1' } });
+  }
+
+  /** Open right-side review panel (Submit for Review + approve/reject history). */
+  openReviewSidebar(): void {
+    if (!this.reviewSidebarRef) return;
+    if (this.courseId) {
+      this.getCourseById(this.courseId);
+      this.loadReviewHistory();
+    }
+    this.reviewSidebarModalRef = this.modalService.open(this.reviewSidebarRef, {
+      windowClass: 'modal-right review-sidebar-modal',
+      size: 'sm',
+      scrollable: true,
+    });
+    this.reviewSidebarModalRef.result.catch(() => {});
+    this.cdr.markForCheck();
+  }
+
+  getReviewSubmittedDate(): string | Date | null {
+    return this.courseInfo?.submittedDate ?? this.courseInfo?.SubmittedDate ?? null;
+  }
+
+  getReviewRejectionReason(): string | null {
+    const r = this.courseInfo?.rejectionReason ?? this.courseInfo?.RejectionReason;
+    return r && String(r).trim() ? String(r).trim() : null;
+  }
+
+  getReviewRejectedDate(): string | Date | null {
+    if (this.getReviewRejectionReason() == null) return null;
+    return this.courseInfo?.updatedOn ?? this.courseInfo?.UpdatedOn ?? null;
+  }
+
+  getReviewApprovedDate(): string | Date | null {
+    return this.courseInfo?.publishedDate ?? this.courseInfo?.PublishedDate ?? null;
+  }
+
+  getReviewApprovalNote(): string | null {
+    const n = this.courseInfo?.approvalNote ?? this.courseInfo?.ApprovalNote;
+    return n && String(n).trim() ? String(n).trim() : null;
+  }
+
+  /** Load full review timeline from API (used in Review sidebar). */
+  loadReviewHistory(): void {
+    if (!this.courseId) return;
+    this.subscription.add(
+      this.appService.getCourseReviewHistory(this.courseId).subscribe({
+        next: (list) => {
+          this.reviewHistoryList = Array.isArray(list) ? list : [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.reviewHistoryList = [];
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  /** Submit course for admin review (opens modal to add optional message, same as admin approve). */
+  submitCourseForReview(): void {
+    this.openSubmitForReviewModalAndSubmit(null);
+  }
+
+  /** Submit from review sidebar; optional review panel to close on success. */
+  submitCourseForReviewFromPanel(modal: { dismiss: (reason?: string) => void } | null): void {
+    this.openSubmitForReviewModalAndSubmit(modal);
+  }
+
+  private openSubmitForReviewModalAndSubmit(closeReviewPanelOnSuccess: { dismiss: (reason?: string) => void } | null): void {
+    if (!this.courseId) return;
+    const ref = this.modalService.open(SubmitForReviewModalComponent);
+    ref.result.then(
+      (message: string) => {
+        this.submitCourseForReviewCore(closeReviewPanelOnSuccess, message ?? '');
+      },
+      () => {}
+    );
+  }
+
+  private submitCourseForReviewCore(closeModalOnSuccess: { dismiss: (reason?: string) => void } | null, submissionMessage?: string): void {
+    if (!this.courseId) return;
+    this.submitForReviewInProgress = true;
+    this.cdr.markForCheck();
+    this.subscription.add(
+      this.appService.submitCourseForReview(this.courseId, submissionMessage).subscribe({
+        next: () => {
+          this.submitForReviewInProgress = false;
+          this.toasterService.showSuccess('Course submitted for review.');
+          this.getCourseById(this.courseId);
+          this.loadReviewHistory();
+          this.cdr.markForCheck();
+          if (closeModalOnSuccess) closeModalOnSuccess.dismiss('submitted');
+        },
+        error: (err) => {
+          this.submitForReviewInProgress = false;
+          const msg = err?.error?.message || err?.message || 'Cannot submit for review.';
+          this.toasterService.showError(msg);
+          this.cdr.markForCheck();
+        }
+      })
+    );
   }
 
   /** Read per-course canEdit passed from trainer dashboard when opening a course. */
@@ -233,6 +374,8 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
       this.appService.getCourseById(id).subscribe((res: any) => {
         if (res) {
           this.courseInfo = res;
+          const status = Number(res?.status ?? res?.Status ?? 0);
+          this.sharedService.curriculumCourseReviewContext.next({ courseId: id, status });
         }
       })
     );
@@ -282,6 +425,7 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
     });
     modalRef.componentInstance.setCourseId(this.courseId);
     modalRef.result.then(() => {
+      this.getCourseById(this.courseId);
       this.getCurriculumList(this.courseId, () => this.tryOpenDetailForNewCurriculum());
     }, () => {});
   }
@@ -1273,6 +1417,7 @@ changeProvider(provider:string,index:number){
    * */ 
 
   sharedMethodAfterSaveOrUpdate(){
+    this.getCourseById(this.courseId);
     this.getCurriculumList(this.courseId, () => {
       this.getStudyMaterialByCurriculumId(this.curriculumId);
       this.getConceptByCurriculumId(this.curriculumId);
@@ -1379,6 +1524,7 @@ changeProvider(provider:string,index:number){
           }
           this.isEditingCurriculum = false;
           this.getCurriculumList(this.courseId);
+          this.getCourseById(this.courseId);
           this.cdr.markForCheck();
         },
         error: () => this.toasterService.showError('Failed to update curriculum'),
@@ -1400,6 +1546,7 @@ changeProvider(provider:string,index:number){
   ngOnDestroy(): void {
     this.sharedService.showCurriculumToolbar.next(false);
     this.sharedService.showCurriculumEditActions.next(true);
+    this.sharedService.curriculumCourseReviewContext.next(null);
     this.sharedService.certificateName.next('');
     this.sharedService.curriculumSearchTerm$.next('');
     this.sharedService.curriculumActiveTab$.next('concepts');

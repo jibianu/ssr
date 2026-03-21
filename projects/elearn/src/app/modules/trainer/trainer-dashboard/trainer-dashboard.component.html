@@ -65,6 +65,7 @@
         <div class="course-card lms-card" *ngFor="let item of course; trackBy: trackByCourseId">
           <div class="lms-card__banner" [class.lms-card__banner--api]="isApiCategory(item)" [class.lms-card__banner--ndt]="!isApiCategory(item)">
             <span class="lms-card__badge">{{ item?.category?.name || 'Course' }}</span>
+            <span class="lms-card__status-badge" [ngClass]="'lms-card__status-badge--' + getCourseStatusClass(item)" [title]="getCourseStatusLabel(item)">{{ getCourseStatusLabel(item) }}</span>
             <div class="trainer-actions lms-card__trainer-actions" *ngIf="!isAssignedView">
               <button type="button" class="btn-progress" (click)="changeProgress(item.id, item.courseCreationProgress); $event.stopPropagation()" title="Change Progress">
                 <i class="fa fa-tasks"></i>

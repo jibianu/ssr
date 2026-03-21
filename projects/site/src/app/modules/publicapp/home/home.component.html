@@ -189,7 +189,7 @@
           <div class="home-card__body">
             <h3 class="home-card__title">{{ event.title }}</h3>
             <p class="home-card__meta">{{ event.subtitle }}</p>
-            <div class="home-card__copy" [innerHTML]="event.description"></div>
+            <div class="home-card__copy" [innerHTML]="event.description | fixMojibakeSafeHtml"></div>
           </div>
           <footer class="home-card__footer">
             @if (event.url) {

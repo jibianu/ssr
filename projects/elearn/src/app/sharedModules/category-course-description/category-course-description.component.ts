@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { PublicAppService } from 'src/app/modules/publicapp/publicapp.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
+import { AuthenticationService } from 'src/app/modules/auth/auth.service';
 
 /** GUID regex: so we can tell route param is course ID vs canonical slug. */
 const GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -36,20 +37,98 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
   /** Accordion: id of the expanded module, or null */
   expandedModuleId: string | null = null;
 
-  /** True when the logged-in user is enrolled (handles API returning camelCase or PascalCase). */
+  /** Override from enrollment-status API when set (so Resume shows even if course API was cached). */
+  enrollmentStatusEnrolled: boolean | null = null;
+  /** True while enrollment-status API is in progress; prevents wrong button flash. */
+  enrollmentStatusLoading = false;
+
+  /** True when the logged-in user is enrolled (handles API returning camelCase or PascalCase, or enrollment-status API). */
   get isEnrolled(): boolean {
+    if (this.enrollmentStatusEnrolled !== null) return this.enrollmentStatusEnrolled;
     const c = this.courses;
     if (!c) return false;
     return !!(c as any).isProgressedForLoggedInUser || !!(c as any).IsProgressedForLoggedInUser;
   }
+
+  /** True when course is free (final price 0). Used to show Enroll vs Buy Now when not enrolled. */
+  get isFreeCourse(): boolean {
+    const c = this.courses;
+    if (!c) return false;
+    const price = c.discountedPrice ?? c.price ?? c.Price ?? 0;
+    return Number(price) === 0;
+  }
+
+  /** True while free-enroll API is in progress. */
+  enrollingFree = false;
 
   constructor(
     private appService: AdminAppService,
     private publicAppService: PublicAppService,
     private activateRoute: ActivatedRoute,
     private router: Router,
-    private studentBreadcrumb: StudentBreadcrumbService
+    private studentBreadcrumb: StudentBreadcrumbService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthenticationService
   ) {}
+
+  /** JWT present — same gate as enrollment APIs. */
+  get isLoggedIn(): boolean {
+    return !!this.authService.currentToken();
+  }
+
+  /** Sidebar / mobile bar: primary CTA label (Udemy-style). */
+  get ctaLabel(): string {
+    if (this.enrollingFree) return 'Enrolling...';
+    if (!this.isLoggedIn) return 'Buy Now';
+    if (this.isEnrolled) return 'Resume';
+    if (this.isFreeCourse) return 'Enroll Now';
+    return 'Buy Now';
+  }
+
+  get ctaButtonClass(): string {
+    const base = 'cd-btn';
+    if (!this.isLoggedIn || (!this.isEnrolled && !this.isFreeCourse)) {
+      return `${base} cd-btn--primary`;
+    }
+    if (this.isEnrolled) return `${base} cd-btn--success`;
+    return `${base} cd-btn--enroll`;
+  }
+
+  get ctaIconClass(): string {
+    if (!this.isLoggedIn || (!this.isEnrolled && !this.isFreeCourse)) {
+      return 'fas fa-shopping-cart';
+    }
+    if (this.isEnrolled) return 'fas fa-play';
+    return 'fas fa-user-plus';
+  }
+
+  /**
+   * Single handler: guest → login; enrolled → resume; free → enroll; paid → checkout.
+   */
+  handleCourseAction(): void {
+    if (this.enrollmentStatusLoading || this.enrollingFree) return;
+    if (!this.isLoggedIn) {
+      this.fnGuestBuyOrLogin();
+      return;
+    }
+    if (this.isEnrolled) {
+      this.fnResume();
+      return;
+    }
+    if (this.isFreeCourse) {
+      this.fnEnrollFree();
+    } else {
+      this.fnGotoEntroll();
+    }
+  }
+
+  /** Guest CTA: send to login with return to this course marketing URL. */
+  fnGuestBuyOrLogin(): void {
+    if (!this.courseID) return;
+    const id = String(this.courseID).trim();
+    const returnUrl = `/app/student/categories/course/${id}`;
+    void this.router.navigate(['/auth/login'], { queryParams: { returnUrl } });
+  }
 
   ngOnInit(): void {
     this.WishListText = 'Add to Wishlist';
@@ -62,8 +141,8 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
         filter((e): e is NavigationEnd => e instanceof NavigationEnd)
       ).subscribe(() => {
         const url = this.router.url;
-        if (url.includes('category-courses-description/')) {
-          const match = url.match(/category-courses-description\/([^/?#]+)/);
+        if (url.includes('category-courses-description/') || url.includes('/categories/course/')) {
+          const match = url.match(/(?:category-courses-description|\/categories\/course)\/([^/?#]+)/);
           const id = match ? match[1] : null;
           if (id) {
             this.courseID = id;
@@ -76,13 +155,17 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
 
   private loadCourse(): void {
     if (!this.courseID) return;
+    this.enrollmentStatusEnrolled = null;
+    this.enrollmentStatusLoading = true;
     const isGuid = GUID_REGEX.test(String(this.courseID).trim());
     if (isGuid) {
+      this.fetchEnrollmentStatusForButton();
       this.GetCourseDetails(this.courseID, true);
       this.getCurriculumList(this.courseID);
     } else {
-      // Route param is canonical slug: redirect to canonical URL /courses/:slug (same content, correct address bar)
-      this.router.navigate(['/courses', this.courseID], { replaceUrl: true, queryParamsHandling: 'preserve' });
+      // Slug in URL (student app) — stay under /app/student/categories/course/:slug; do not use /courses/:slug (wrong router → 404).
+      this.fetchEnrollmentStatusForButton();
+      this.GetCourseDetailsBySlug(this.courseID, true);
     }
   }
 
@@ -139,26 +222,93 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
     return Math.max(0, v * 5 + q * 2 + c * 3);
   }
 
-  /** Content rows for accordion body: concepts, videos, exercises (from API counts) */
-  getModuleContentRows(item: any): { label: string; count: number; icon: string }[] {
-    const rows: { label: string; count: number; icon: string }[] = [];
+  /** Content rows for accordion body: same format as admin (Key Points : title, Study Materials : title, Video : title, Q/A (n)) */
+  getModuleContentRows(item: any): { displayText: string; icon: string }[] {
+    const rows: { displayText: string; icon: string }[] = [];
     if ((item?.curriculumConceptCount ?? 0) > 0) {
-      rows.push({ label: 'Concepts', count: item.curriculumConceptCount, icon: 'fa-lightbulb' });
-    }
-    if ((item?.curriculumVideoLectureCount ?? 0) > 0) {
-      rows.push({ label: 'Videos', count: item.curriculumVideoLectureCount, icon: 'fa-video' });
-    }
-    if ((item?.curriculumQuestionCount ?? 0) > 0) {
-      rows.push({ label: 'Exercises', count: item.curriculumQuestionCount, icon: 'fa-dumbbell' });
+      const text = item?.firstConceptTitle ? `Key Points : ${item.firstConceptTitle}` : `Key Points (${item.curriculumConceptCount})`;
+      rows.push({ displayText: text, icon: 'fa-lightbulb-o' });
     }
     if ((item?.curriculumStudyMaterialCount ?? 0) > 0) {
-      rows.push({ label: 'Study materials', count: item.curriculumStudyMaterialCount, icon: 'fa-book' });
+      const text = item?.firstStudyMaterialTitle ? `Study Materials : ${item.firstStudyMaterialTitle}` : `Study Materials (${item.curriculumStudyMaterialCount})`;
+      rows.push({ displayText: text, icon: 'fa-book' });
+    }
+    if ((item?.curriculumVideoLectureCount ?? 0) > 0) {
+      const text = item?.firstVideoLectureTitle ? `Video : ${item.firstVideoLectureTitle}` : `Video (${item.curriculumVideoLectureCount})`;
+      rows.push({ displayText: text, icon: 'fa-video-camera' });
+    }
+    if ((item?.curriculumQuestionCount ?? 0) > 0) {
+      rows.push({ displayText: `Q/A (${item.curriculumQuestionCount})`, icon: 'fa-question-circle' });
     }
     return rows;
   }
 
+  /** Go to checkout (paid course). */
   fnGotoEntroll(): void {
-    this.router.navigate(['/checkout', this.courseID]);
+    if (!this.courseID) return;
+    // Safety: if user already bought/enrolled, always go to curriculum instead of checkout.
+    this.subscription.add(
+      this.appService.getEnrollmentStatus(String(this.courseID).trim()).subscribe({
+        next: (r) => {
+          if (r?.isEnrolled) {
+            this.enrollmentStatusEnrolled = true;
+            this.fnResume();
+            return;
+          }
+          this.router.navigate(['/checkout', this.courseID]);
+        },
+        error: () => {
+          // Fallback to previous behavior if status API fails.
+          this.router.navigate(['/checkout', this.courseID]);
+        }
+      })
+    );
+  }
+
+  /** Enroll in free course: call API, then set enrolled and navigate to curriculum. */
+  fnEnrollFree(): void {
+    if (!this.courseID || this.enrollingFree) return;
+    // Safety: if already enrolled, do not call enroll API; go to curriculum directly.
+    this.subscription.add(
+      this.appService.getEnrollmentStatus(String(this.courseID).trim()).subscribe({
+        next: (r) => {
+          if (r?.isEnrolled) {
+            this.enrollmentStatusEnrolled = true;
+            this.fnResume();
+            return;
+          }
+          this.enrollingFree = true;
+          this.subscription.add(
+            this.appService.enrollFree(this.courseID).subscribe({
+              next: (res) => {
+                this.enrollingFree = false;
+                if (res?.success || res?.alreadyEnrolled) {
+                  this.enrollmentStatusEnrolled = true;
+                  this.router.navigate(['/app/student/course', this.courseID]);
+                }
+              },
+              error: () => { this.enrollingFree = false; }
+            })
+          );
+        },
+        error: () => {
+          // If status API fails, continue with existing free-enroll flow.
+          this.enrollingFree = true;
+          this.subscription.add(
+            this.appService.enrollFree(this.courseID).subscribe({
+              next: (res) => {
+                this.enrollingFree = false;
+                if (res?.success || res?.alreadyEnrolled) {
+                  this.enrollmentStatusEnrolled = true;
+                  this.router.navigate(['/app/student/course', this.courseID]);
+                }
+              },
+              error: () => { this.enrollingFree = false; }
+            })
+          );
+        }
+      })
+    );
   }
 
   getCurriculumList(courseID: string): void {
@@ -181,22 +331,73 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
     this.isWishListedAdded = res.isWishListedForLoggedInUser ?? res.IsWishListedForLoggedInUser;
     this.wishId = res.isWishListedIdForLoggedInUser ?? res.IsWishListedIdForLoggedInUser ?? '';
     this.WishListText = this.isWishListedAdded ? 'Wishlisted' : 'Add to Wishlist';
+    // Re-check latest enrollment status after course response resolves final course ID.
+    if (this.courseID) {
+      this.fetchEnrollmentStatusForButton();
+    }
     if (enrolled) {
       this.progressed = res.isProgressedIdForLoggedInUser ?? res.IsProgressedIdForLoggedInUser;
+      this.enrollmentStatusEnrolled = true;
+      this.cdr.detectChanges();
     }
     this.updateBreadcrumb();
+  }
+
+  /** Call enrollment-status API – single source of truth for showing Resume vs Enroll/Buy (same as Explore page). */
+  private fetchEnrollmentStatusForButton(): void {
+    if (!this.courseID) return;
+    const courseId = String(this.courseID).trim();
+    if (!this.isLoggedIn) {
+      this.enrollmentStatusEnrolled = null;
+      this.enrollmentStatusLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+    this.enrollmentStatusLoading = true;
+    this.subscription.add(
+      // Use the same bulk API as category cards (single id) so inside page and card page stay consistent.
+      this.appService.getEnrollmentStatusBulk([courseId]).subscribe({
+        next: (r) => {
+          const idLower = courseId.toLowerCase();
+          const entry = r
+            ? Object.entries(r).find(([k]) => (k || '').toLowerCase() === idLower)
+            : null;
+          const enrolled = entry ? entry[1] : undefined;
+          // Set only when API gives an explicit value; otherwise keep fallback to course response.
+          this.enrollmentStatusEnrolled = typeof enrolled === 'boolean' ? enrolled : null;
+          this.enrollmentStatusLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          // Do not force false on transient/API errors; fallback to course response enrollment flags.
+          this.enrollmentStatusEnrolled = null;
+          this.enrollmentStatusLoading = false;
+          this.cdr.detectChanges();
+        }
+      })
+    );
   }
 
   GetCourseDetails(courseID: string, skipCache?: boolean): void {
     this.subscription.add(
       this.appService.getCourseByCourseID(courseID, skipCache).subscribe((res: any) => {
         if (res) {
-          const canonicalSlug = (res.canonicalUrl ?? res.slug ?? res.Slug ?? '').toString().trim();
-          if (canonicalSlug && GUID_REGEX.test(String(courseID).trim()) && !GUID_REGEX.test(canonicalSlug)) {
-            this.router.navigate(['/courses', canonicalSlug], { replaceUrl: true, queryParamsHandling: 'preserve' });
-            return;
-          }
           this.applyCourseResponse(res);
+        }
+      })
+    );
+  }
+
+  /** Load when :courseID route param is a marketing slug (not GUID). */
+  GetCourseDetailsBySlug(slug: string, skipCache?: boolean): void {
+    this.subscription.add(
+      this.appService.getCourseBySlugOnly(slug, skipCache).subscribe((res: any) => {
+        if (res) {
+          this.applyCourseResponse(res);
+          const id = res.id ?? res.Id;
+          if (id) {
+            this.getCurriculumList(String(id));
+          }
         }
       })
     );
@@ -232,6 +433,6 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
 
   fnResume(): void {
     localStorage.setItem('course', JSON.stringify(this.courses));
-    this.router.navigate(['app/student/details/curriculum-list/', this.courseID]);
+    this.router.navigate(['/app/student/course', this.courseID]);
   }
 }

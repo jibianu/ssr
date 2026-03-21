@@ -283,6 +283,36 @@
     transform: scale(0.98); // ✅ Visual feedback on click
   }
 
+  &--resume {
+    background: #15803d;
+
+    &:hover {
+      background: #166534;
+    }
+
+    &:active {
+      background: #14532d;
+    }
+  }
+
+  &--enroll {
+    background: #475569;
+
+    &:hover {
+      background: #334155;
+    }
+
+    &:active {
+      background: #1e293b;
+    }
+  }
+
+  &--loading {
+    opacity: 0.85;
+    pointer-events: none;
+    cursor: wait !important;
+  }
+
   // ✅ Ensure button is always clickable
   &,
   &:link,

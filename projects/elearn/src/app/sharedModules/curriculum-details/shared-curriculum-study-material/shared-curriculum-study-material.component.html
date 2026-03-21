@@ -14,7 +14,7 @@
                           mode="student"
                         ></app-lesson-editor>
                         <!-- Legacy HTML description -->
-                        <p class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></p>
+                        <p class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></p>
                     </div>
                 </div>
             </div>

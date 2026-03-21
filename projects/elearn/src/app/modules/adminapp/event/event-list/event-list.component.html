@@ -57,6 +57,12 @@
 
     <!-- Table view: admin always; trainer when events exist -->
     <ng-container *ngIf="!isTrainerPage || filteredEvents.length > 0">
+      <div *ngIf="searchTags?.length" class="course-list__tags-wrap mb-2">
+        <span *ngFor="let tag of searchTags" class="course-list__tag">
+          {{ tag.value }}
+          <a href="javascript:void(0)" class="course-list__tag-remove" (click)="onFilterTagRemoved(tag)">&times;</a>
+        </span>
+      </div>
       <div class="event-list__search-row" *ngIf="!isTrainerPage">
         <div class="event-list__search-wrap">
           <i class="fas fa-search event-list__search-icon"></i>
@@ -93,6 +99,7 @@
                   <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
                 </th>
                 <th class="list-table-modern__th">Location</th>
+                <th class="list-table-modern__th">Created By</th>
                 <th class="list-table-modern__th">Progress</th>
                 <th class="list-table-modern__th list-table-modern__th--action">Action</th>
               </tr>
@@ -104,6 +111,10 @@
                 </td>
                 <td class="list-table-modern__td list-table-modern__td--date">{{ item.startDate | date:'dd-MM-yy' }} - {{ item.endDate | date:'dd-MM-yy' }}</td>
                 <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.location || '—' }}</td>
+                <td class="list-table-modern__td list-table-modern__td--ellipsis">
+                  <span>Created by: {{ item.createdByName || 'Unknown' }}</span>
+                  <span *ngIf="item.createdByRole" class="event-creator-badge event-creator-badge--{{ (item.createdByRole || '').toLowerCase() }}">({{ item.createdByRole }})</span>
+                </td>
                 <td class="list-table-modern__td list-table-modern__td--progress">
                   <button
                     type="button"
@@ -164,7 +175,7 @@
                 </td>
               </tr>
               <tr *ngIf="filteredEvents.length === 0 && !isTrainerPage">
-                <td colspan="5" class="list-table-modern__empty text-center py-4">
+                <td colspan="6" class="list-table-modern__empty text-center py-4">
                   No events found. Use <strong>Add Event</strong> in the top bar to create one, or if you had events in another database before the merge, run <code>Oilandgasclub_Migrate_Events_Data.sql</code> (see backend <code>DATABASE_MERGE_README.md</code>).
                 </td>
               </tr>

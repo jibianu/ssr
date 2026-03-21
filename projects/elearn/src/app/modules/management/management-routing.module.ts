@@ -32,6 +32,11 @@ const routes: Routes = [
     canActivate: [ManagementPermissionGuard]
   },
   {
+    path: 'newsletter-subscriptions',
+    loadChildren: () => import('../adminapp/newsletter-subscriptions/newsletter-subscriptions.module').then(m => m.NewsletterSubscriptionsModule),
+    canActivate: [ManagementPermissionGuard]
+  },
+  {
     path: 'loop-marketing',
     loadChildren: () => import('../adminapp/loop-marketing/loop-marketing.module').then(m => m.LoopMarketingModule),
     canActivate: [ManagementPermissionGuard]

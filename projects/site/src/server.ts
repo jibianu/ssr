@@ -4,6 +4,7 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
+import { ɵsetAngularAppEngineManifest as setAngularAppEngineManifest } from '@angular/ssr';
 import express from 'express';
 import { dirname, resolve, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -16,8 +17,21 @@ import { createCacheAdapter, CacheAdapter } from './server.cache.adapter';
 import { performanceMonitor } from './server.performance';
 import { cdnCacheMiddleware } from './server.cdn.middleware';
 
+/** Set after `main()` runs (Angular CLI may import before listen). */
+export let reqHandler: ReturnType<typeof createNodeRequestHandler>;
+
+// Angular 20: without `outputMode: "server"`, the build does not inject the virtual module that
+// calls setAngularAppEngineManifest. Load the generated file next to this bundle at startup.
+const angularAppEngineManifestUrl = new URL('./angular-app-engine-manifest.mjs', import.meta.url).href;
+
+function main(): void {
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
+
+/** Elearn SPA (no SSR): production build uses baseHref /Elearn/ — set ELEARN_BROWSER_DIST to override. */
+const elearnBrowserFolder = process.env['ELEARN_BROWSER_DIST']
+  ? resolve(process.env['ELEARN_BROWSER_DIST'])
+  : resolve(serverDistFolder, '../../elearn/browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
@@ -149,6 +163,31 @@ app.use(
   }),
 );
 
+// 1b️⃣ Elearn (student dashboard / course player): SPA only — must run BEFORE SSR catch-all.
+// Production build: baseHref /Elearn/ — assets load from /Elearn/*.js
+// Optional: build elearn with baseHref /app/ if you only mount /app (see docs/NGINX_SSR.md).
+function mountElearnSpaIfPresent(): void {
+  const indexFile = join(elearnBrowserFolder, 'index.html');
+  if (!existsSync(indexFile)) {
+    console.log(
+      `[SSR] Elearn browser not found at ${elearnBrowserFolder} — skip /Elearn & /app SPA mounts. ` +
+        `Build: ng build elearn --configuration production`
+    );
+    return;
+  }
+  const staticOpts = { maxAge: '1y' as const, index: false, etag: true, lastModified: true };
+  console.log(`[SSR] Elearn SPA: ${elearnBrowserFolder} → /Elearn/*, /app/*`);
+  app.use('/Elearn', express.static(elearnBrowserFolder, staticOpts));
+  app.get(/^\/Elearn(\/.*)?$/, (req, res) => {
+    res.sendFile(indexFile);
+  });
+  app.use('/app', express.static(elearnBrowserFolder, staticOpts));
+  app.get(/^\/app(\/.*)?$/, (req, res) => {
+    res.sendFile(indexFile);
+  });
+}
+mountElearnSpaIfPresent();
+
 // ✅ CACHING: Cache statistics endpoint (for monitoring)
 app.get('/cache-stats', async (req, res) => {
   const stats = htmlCache.getStats();
@@ -207,7 +246,7 @@ app.post('/cache/invalidate', express.json(), async (req, res) => {
       cdnPurged = await purgeCDNCache(`page:${pattern}`, cdnProvider);
     }
     
-    res.json({
+    return res.json({
       success: true,
       invalidated: matchingKeys.length,
       keys: matchingKeys,
@@ -216,7 +255,7 @@ app.post('/cache/invalidate', express.json(), async (req, res) => {
     });
   } catch (error) {
     console.error('Cache invalidation error:', error);
-    res.status(500).json({ error: 'Failed to invalidate cache' });
+    return res.status(500).json({ error: 'Failed to invalidate cache' });
   }
 });
 
@@ -265,8 +304,8 @@ app.get('/performance-metrics', (req, res) => {
 // ✅ CDN: Add CDN cache headers middleware before SSR
 app.use(cdnCacheMiddleware);
 
-// 2️⃣ SSR with caching middleware
-app.get('*', async (req, res, next) => {
+// 2️⃣ SSR with caching middleware (Express 5 / path-to-regexp v8: use named splat, not '*')
+app.get('/{*splat}', async (req, res, next) => {
   // ✅ PERFORMANCE: Start performance measurement
   const safeReq = ensureSafeRequest(req);
   const requestPath = getRequestPath(safeReq);
@@ -411,7 +450,7 @@ app.get('*', async (req, res, next) => {
 
 // ✅ FIX: Final fallback - serve index.html for any unmatched routes
 // This ensures Angular handles routing client-side when SSR doesn't match
-app.use('*', (req, res) => {
+app.use('/{*splat}', (req, res) => {
   try {
     const indexPath = join(browserDistFolder, 'index.html');
     if (existsSync(indexPath)) {
@@ -463,7 +502,7 @@ async function warmCache(): Promise<void> {
 }
 
 // 3️⃣ Start server
-if (isMainModule(import.meta.url)) {
+if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
   app.listen(port, async () => {
     console.log(`✅ Node Express server running at http://localhost:${port}`);
@@ -478,4 +517,10 @@ if (isMainModule(import.meta.url)) {
   });
 }
 
-export const reqHandler = createNodeRequestHandler(app);
+  reqHandler = createNodeRequestHandler(app);
+}
+
+void import(angularAppEngineManifestUrl).then(({ default: m }) => {
+  setAngularAppEngineManifest(m);
+  main();
+});

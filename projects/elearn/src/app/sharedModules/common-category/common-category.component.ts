@@ -8,6 +8,9 @@ import { Category } from 'src/app/modules/adminapp/category/category.model';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
 import { getElearnAppBaseUrl } from 'src/app/core/helpers/app-url.helper';
+import { resolveCourseId } from 'src/app/core/helpers/course-id.helper';
+import { navigateExploreCourseMarketingPage } from 'src/app/core/helpers/explore-course-nav.helper';
+import { environment } from 'src/environments/environment';
 
 export interface CategoryWithCourses {
   category: any;
@@ -27,6 +30,8 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
   /** One section (row) per category; each section lists that category's courses in a 4-per-row grid */
   categoriesWithCourses: CategoryWithCourses[] = [];
   currencyCode = 'INR';
+  /** courseId -> true if current user is enrolled (from bulk enrollment-status API) */
+  enrollmentByCourseId: Record<string, boolean> = {};
 
   constructor(
     private appService: AdminAppService,
@@ -64,11 +69,15 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
       this.categoriesWithCourses = [];
       return;
     }
+    // Same catalog rules as public site GET api/public/courses (ForPublicListing: Published + ShowOnPublicListing).
     const requests = list.map((cat) =>
       this.appService.getCourses({
         'Filter.CategoryId': cat.id,
-        'Filter.IsPublished': true,
-        pageSize: 12
+        'Filter.ForPublicListing': true,
+        pageSize: 12,
+        pageNumber: 1,
+        'Sort.PropertyName': 'Title',
+        'Sort.IsAscending': 'true'
       })
     );
     this.subscription.add(
@@ -77,6 +86,7 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
           const blocks = list.map((cat, i) => {
             const courses = (results[i]?.results || []).map((c) => ({
               ...c,
+              id: resolveCourseId(c) || (c?.id ?? c?.Id),
               bgColor: this.getRandomColor()
             }));
             return { category: cat, courses };
@@ -91,6 +101,7 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
             return 0;
           });
           this.enrichCoursesWithPrices(this.categoriesWithCourses);
+          this.fetchEnrollmentStatusBulk();
         },
         (error) => console.log(error)
       )
@@ -109,11 +120,64 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     return active ?? prices[0];
   }
 
+  /** Course id for routing/API (maps Id → id via shared helper). */
+  courseIdOf(item: any): string {
+    return resolveCourseId(item);
+  }
+
+  /** Fetch enrollment status for all visible courses so we can show Resume vs Buy/Enroll. */
+  private fetchEnrollmentStatusBulk(): void {
+    const courseIds = (this.categoriesWithCourses || []).flatMap((b) =>
+      (b.courses || []).map((c) => this.courseIdOf(c)).filter(Boolean)
+    );
+    if (courseIds.length === 0 || !this.authService.currentToken()) {
+      this.enrollmentByCourseId = {};
+      return;
+    }
+    this.subscription.add(
+      this.appService.getEnrollmentStatusBulk(courseIds).subscribe({
+        next: (map) => {
+          this.enrollmentByCourseId = map || {};
+        },
+        error: () => { this.enrollmentByCourseId = {}; }
+      })
+    );
+  }
+
+  isEnrolled(courseId: string): boolean {
+    if (!courseId) return false;
+    const target = String(courseId).toLowerCase();
+    for (const k of Object.keys(this.enrollmentByCourseId || {})) {
+      if (k.toLowerCase() === target && this.enrollmentByCourseId[k]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Open marketing / buy / wishlist course page (same as CategoryCourses “View course”). */
+  viewCourseDetails(event: Event, item: any): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const id = this.courseIdOf(item);
+    if (!id) {
+      return;
+    }
+    navigateExploreCourseMarketingPage(this.router, item, environment);
+  }
+
+  /** Resume: go to curriculum page. */
+  fnResume(item: any): void {
+    const id = this.courseIdOf(item);
+    if (!id) return;
+    this.router.navigate(['/app/student/course', id]);
+  }
+
   /** Attach price (originalPrice, discountedPrice) to each course from getCoursePrices API */
   private enrichCoursesWithPrices(blocks: CategoryWithCourses[]): void {
     const flatCourses = blocks.flatMap((b) => b.courses);
     if (flatCourses.length === 0) return;
-    const priceRequests = flatCourses.map((c) => this.appService.getCoursePrices(c.id));
+    const priceRequests = flatCourses.map((c) => this.appService.getCoursePrices(resolveCourseId(c) || c.id));
     this.subscription.add(
       forkJoin(priceRequests).subscribe(
         (pricesList) => {
@@ -137,8 +201,9 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
 
   /** Buy: if not logged in, redirect to login with returnUrl=/app/student/course/:id; after login user lands on course or checkout. If logged in, go to course details page. */
   goToCheckout(item: any): void {
-    if (!item?.id) return;
-    const returnUrl = '/app/student/course/' + item.id;
+    const id = this.courseIdOf(item);
+    if (!id) return;
+    const returnUrl = '/app/student/course/' + id;
     const token = this.authService.currentToken();
     if (!token) {
       const baseUrl = getElearnAppBaseUrl();
@@ -146,7 +211,8 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
       window.location.href = url;
       return;
     }
-    this.router.navigate(['/app/student/category-courses-description', item.id]);
+    // Marketing/buy page is sibling route categories/course/:id, not a child of categories (relative ['course', id] would not match).
+    navigateExploreCourseMarketingPage(this.router, item, environment);
   }
 
   getDisplayOriginalPrice(item: any): number | null {
@@ -161,14 +227,6 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
   getOfferPrice(item: any): number {
     const v = item?.discountedPrice ?? item?.coursePriceResponse?.discountedPrice ?? item?.coursePrices?.[0]?.discountedPrice ?? 0;
     return Number(v) || 0;
-  }
-
-  goToCourse(item: any): void {
-    if (item?.id) {
-      this.router.navigate(['category-courses-description', item.id], {
-        relativeTo: this.activatedRoute.parent
-      });
-    }
   }
 
   goToCategoryCourses(cat: any): void {

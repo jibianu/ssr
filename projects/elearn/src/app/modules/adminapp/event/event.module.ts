@@ -7,6 +7,9 @@ import { EventAddComponent } from './event-add/event-add.component';
 import { EventEditComponent } from './event-edit/event-edit.component';
 import { EventUserListComponent } from './event-user-list/event-user-list.component';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { SubmitForReviewModalComponent } from '../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
+import { CourseApproveModalComponent } from '../course/course-review/course-approve-modal/course-approve-modal.component';
+import { CourseRejectModalComponent } from '../course/course-review/course-reject-modal/course-reject-modal.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +22,10 @@ import { SharedModule } from 'src/app/shared/shared.module';
     EventRoutingModule,
     SharedModule,
     EventAddComponent,
-    EventEditComponent
+    EventEditComponent,
+    SubmitForReviewModalComponent,
+    CourseApproveModalComponent,
+    CourseRejectModalComponent
   ]
 })
 export class EventModule {}

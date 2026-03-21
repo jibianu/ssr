@@ -1,4 +1,5 @@
 import { SharedModule } from 'src/app/shared/shared.module';
+import { FixMojibakeSafeHtmlPipe } from 'src/app/shared/pipes/fix-mojibake-safe-html.pipe';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PublicappRoutingModule } from './publicapp-routing.module';
@@ -64,7 +65,8 @@ import { PaymentSuccessComponent } from './payment-success/payment-success.compo
     PublicappRoutingModule,
     SharedModule,
     PublicCourseModule,
-    RedirectCoursesToSlugComponent
+    RedirectCoursesToSlugComponent,
+    FixMojibakeSafeHtmlPipe
   ],
   providers: [ provideHttpClient(withFetch())],
   schemas: [

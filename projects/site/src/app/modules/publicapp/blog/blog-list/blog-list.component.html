@@ -84,7 +84,7 @@
                   </div>
                 }
                 @if (authorProfile()?.bio) {
-                  <div class="trainer-header__bio" [innerHTML]="authorProfile()!.bio"></div>
+                  <div class="trainer-header__bio" [innerHTML]="authorProfile()!.bio | fixMojibakeSafeHtml"></div>
                 }
                 <a routerLink="/blog" class="trainer-header__view-all">View all posts</a>
               </div>
@@ -96,17 +96,17 @@
             <div class="col-lg-4 col-md-6 mb-4">
               <div class="blog-card">
                 <div class="blog-card-image">
-                  <a [routerLink]="getBlogRoute(blog.canonicalUrl)" [attr.aria-label]="blog.title">
+                  <a [routerLink]="getBlogRoute(blog.canonicalUrl)" [attr.aria-label]="blog.title | fixMojibake">
                     <img
                       [src]="blog.titleImgUrl || placeholderImg"
-                      [alt]="blog.title"
+                      [alt]="blog.title | fixMojibake"
                       loading="lazy"
                       (error)="onImgError($event)" />
                   </a>
                 </div>
                 <div class="blog-card-content">
                   <h3 class="blog-card-title">
-                    <a [routerLink]="getBlogRoute(blog.canonicalUrl)">{{ blog.title }}</a>
+                    <a [routerLink]="getBlogRoute(blog.canonicalUrl)">{{ blog.title | fixMojibake }}</a>
                   </h3>
                   <div class="blog-card-meta">
                     @if (blog.authorId) {

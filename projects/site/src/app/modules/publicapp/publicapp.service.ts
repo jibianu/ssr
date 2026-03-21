@@ -1,5 +1,5 @@
 import { Category } from './../adminapp/category/category.model';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, throwError, TimeoutError } from 'rxjs';
 import { shareReplay, catchError, timeout, retry, delay, map } from 'rxjs/operators';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
@@ -856,6 +856,38 @@ export class PublicAppService {
     }
 
     /**
+     * Bulk enrollment status (same as Elearn AdminAppService). POST api/course/enrollment-status/bulk.
+     * Body: { courseIds: string[] }. Returns { [courseId]: boolean }. Requires auth.
+     */
+    getEnrollmentStatusBulk(courseIds: string[]): Observable<Record<string, boolean>> {
+        const ids = (courseIds ?? []).map(id => (id ?? '').trim()).filter(Boolean);
+        if (ids.length === 0) {
+            return of({});
+        }
+        return this.http
+            .post<Record<string, boolean>>(`${this.apiUrl}api/course/enrollment-status/bulk`, { courseIds: ids })
+            .pipe(
+                map(res => this.normalizeEnrollmentStatusMap(res)),
+                catchError(err => {
+                    if (!this.isServer) console.error('[PublicAppService] getEnrollmentStatusBulk error:', err);
+                    return throwError(() => err);
+                })
+            );
+    }
+
+    /** Normalize keys to lowercase for stable lookups with course Guids. */
+    private normalizeEnrollmentStatusMap(res: Record<string, boolean> | null | undefined): Record<string, boolean> {
+        const out: Record<string, boolean> = {};
+        if (!res || typeof res !== 'object') {
+            return out;
+        }
+        for (const k of Object.keys(res)) {
+            out[k.toLowerCase()] = !!res[k];
+        }
+        return out;
+    }
+
+    /**
      * Enroll current user in a free course (Enroll Now on public page).
      * POST api/course/enroll/free with body { courseId }. Requires auth.
      */
@@ -996,26 +1028,77 @@ export class PublicAppService {
         console.log('[PublicAppService] Events cache invalidated');
     }
 
+    /** Max wait for newsletter API (slow DB / wrong API URL should fail fast with a clear message). */
+    private static readonly newsletterRequestTimeoutMs = 15000;
+
     /**
-     * Subscribe to newsletter (same as old blog – Google Apps Script).
-     * Used by blog subscribe popup.
+     * Subscribe to newsletter – persisted via API (`NewsletterSubscriptions` table).
+     * Country is auto-detected from browser/IP metadata; no user input required.
      */
-    subscribeNewsletter(email: string, country?: string): Observable<{ success: boolean; message?: string; error?: string }> {
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwIMriXH94Qz2APCyxFzpgzZyU9bu4gEuOEY_9kJDDU377ehpve6kD3nwMIwk4cSgbbbg/exec';
-        return new Observable(observer => {
-            let url = `${scriptUrl}?email=${encodeURIComponent(email)}`;
-            if (country) url += `&country=${encodeURIComponent(country)}`;
-            const img = document.createElement('img');
-            img.style.display = 'none';
-            document.body.appendChild(img);
-            img.src = url;
-            setTimeout(() => {
-                if (img.parentNode) document.body.removeChild(img);
-                observer.next({ success: true, message: 'Subscribed successfully' });
-                observer.complete();
-            }, 1500);
-        });
+    subscribeNewsletter(
+        email: string,
+        options?: { source?: string; blogSlug?: string }
+    ): Observable<{ success: boolean; message?: string; error?: string }> {
+        const trimmed = (email ?? '').trim();
+        if (!trimmed) {
+            return of({ success: false, error: 'Email is required.' });
+        }
+        const body: { email: string; source?: string; blogSlug?: string; countryCode?: string } = { email: trimmed };
+        if (options?.source) body.source = options.source;
+        if (options?.blogSlug) body.blogSlug = options.blogSlug;
+        const countryCode = this.getLocaleCountryCode();
+        if (countryCode) body.countryCode = countryCode;
+        return this.http.post<{ success: boolean; message?: string; error?: string }>(
+            `${this.apiUrl}api/public/newsletter/subscribe`,
+            body,
+            { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }
+        ).pipe(
+            timeout(PublicAppService.newsletterRequestTimeoutMs),
+            catchError((err) => {
+                if (!this.isServer) console.error('[PublicAppService] subscribeNewsletter', err);
+                if (err instanceof TimeoutError || (err as any)?.name === 'TimeoutError') {
+                    return of({
+                        success: false,
+                        error: 'The server took too long to respond. Check that the API is running (see environment.apiUrl) and try again.'
+                    });
+                }
+                const status = err?.status;
+                const serverErr = err?.error?.error ?? err?.error?.Error ?? err?.error?.message;
+                if (status === 0 || status === undefined) {
+                    return of({
+                        success: false,
+                        error: 'Could not reach the server. Confirm the backend is running and CORS allows this origin.'
+                    });
+                }
+                const msg = serverErr ?? err?.message ?? 'Something went wrong. Please try again.';
+                return of({ success: false, error: typeof msg === 'string' ? msg : 'Something went wrong. Please try again.' });
+            })
+        );
     }
+
+    private getLocaleCountryCode(): string | null {
+        if (typeof navigator === 'undefined') return null;
+        const locales: string[] = [];
+        if (Array.isArray((navigator as any).languages)) {
+            locales.push(...(navigator as any).languages);
+        }
+        if ((navigator as any).language) {
+            locales.push((navigator as any).language);
+        }
+        if ((navigator as any).userLanguage) {
+            locales.push((navigator as any).userLanguage);
+        }
+        for (const locale of locales) {
+            if (!locale || typeof locale !== 'string') continue;
+            const parts = locale.split('-');
+            if (parts.length > 1) {
+                const cc = (parts[1] || '').trim().toUpperCase();
+                if (cc) return cc.length > 10 ? cc.slice(0, 10) : cc;
+            }
+        }
+        return null;
+    }
+
 }
 
 

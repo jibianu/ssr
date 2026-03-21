@@ -6,7 +6,7 @@
                     <strong class="mb-5 text-primary">{{item?.title}}</strong>
                     <div class="mt-2" *ngFor="let x of item.concepts">
                         <strong>{{x?.title}}</strong>
-                        <p class="ck-content post-body" [innerHTML]="x?.description">
+                        <p class="ck-content post-body" [innerHTML]="x?.description | fixMojibakeSafeHtml">
                         </p>
                     </div>
                 </div>

@@ -391,8 +391,8 @@
   color: #1a1a1a; // ✅ Changed text color to dark for contrast on light background
   width: 100%;
   box-sizing: border-box;
-  // ✅ Ensure content stays within border
-  overflow: hidden; // Prevent content overflow
+  // ✅ Allow subtitle/description to wrap and show in full (no clipping)
+  overflow: visible;
 }
 
 .course-header-badge {
@@ -430,47 +430,63 @@
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
   line-height: 1.2;
-  color: #1a1a1a; // ✅ Changed to dark for light background
+  color: #1a1a1a;
   margin: 0 0 1rem 0;
-  // ✅ Title width set to 75%
-  width: 75%;
-  max-width: 75%;
-  // ✅ Ensure title stays within border
+  width: 70%;
+  max-width: 70%;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
-.course-header-subtitle {
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  color: #333333; // ✅ Changed to dark for light background
+// ✅ Wrapper: checkmark + description; width constrained so content breaks before sidebar (same as reference)
+.course-header-subtitle-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   margin: 0 0 1.5rem 0;
-  line-height: 1.6;
-  // ✅ Ensure subtitle stays within border
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
+  width: 70%;
+  max-width: 70%;
+
+  .course-header-subtitle-icon {
+    color: #10b981;
+    font-size: 1rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .course-header-subtitle {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    color: #333;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .course-header-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 1.5rem 0;
-  // ✅ Description content width set to 70%
+  margin: 0 0 1.5rem;
   width: 70%;
   max-width: 70%;
-  
+
   li {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
     font-size: clamp(0.9rem, 1.5vw, 1rem);
-    color: #333333; // ✅ Changed to dark for light background
+    color: #333;
     line-height: 1.5;
-    // ✅ Ensure list items stay within border
     word-wrap: break-word;
     overflow-wrap: break-word;
-    
+
     i {
       color: #10b981; // ✅ Keep green checkmark color
       font-size: 1rem;
@@ -489,8 +505,8 @@
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.15); // ✅ Changed to dark border for light background
-  // ✅ Ensure footer stays within border
-  max-width: 100%;
+  width: 70%;
+  max-width: 70%;
   
   p {
     margin: 0.5rem 0;
@@ -990,6 +1006,30 @@
     &:hover {
       background: #9ca3af !important;
     }
+  }
+
+  /* Match /courses listing: Resume = green */
+  &.pricing-buy-btn--resume {
+    background: #15803d !important;
+    box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35);
+    &:hover:not(.pricing-buy-btn-disabled) {
+      background: #166534 !important;
+    }
+  }
+
+  /* Free + logged in + enroll: slate/blue (listing Enroll) */
+  &.pricing-buy-btn--enroll {
+    background: #475569 !important;
+    box-shadow: 0 4px 14px rgba(71, 85, 105, 0.35);
+    &:hover:not(.pricing-buy-btn-disabled) {
+      background: #334155 !important;
+    }
+  }
+
+  &.pricing-buy-btn--loading {
+    background: #64748b !important;
+    cursor: wait !important;
+    pointer-events: none;
   }
 }
 
@@ -2046,6 +2086,37 @@ h4.mb-0 {
       background-color: #0f766e !important;
     }
   }
+
+  /* Align mobile/desktop with /courses: Resume = green, Enroll = slate */
+  &.course-detail__cta--resume {
+    border: 1.5px solid #15803d !important;
+    background: #15803d !important;
+    background-color: #15803d !important;
+    border-color: #15803d !important;
+    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.35) !important;
+    &:hover {
+      background: #166534 !important;
+      border-color: #166534 !important;
+    }
+  }
+  &.course-detail__cta--enroll {
+    border: 1.5px solid #475569 !important;
+    background: #475569 !important;
+    background-color: #475569 !important;
+    border-color: #475569 !important;
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.35) !important;
+    &:hover {
+      background: #334155 !important;
+      border-color: #334155 !important;
+    }
+  }
+  &.course-detail__cta--loading {
+    border: 1.5px solid #64748b !important;
+    background: #64748b !important;
+    cursor: wait !important;
+    pointer-events: none !important;
+    opacity: 0.9 !important;
+  }
 }
 
 // ✅ Match image: Dark teal button color and style
@@ -2177,6 +2248,99 @@ a.course-detail__cta.course-detail__cta--info,
 
 .curriculum-section-content {
   background: #fff7ed; // ✅ Light orange background (matching curriculum item)
+}
+
+// ✅ Same elearn curriculum display as 4201: clickable sections, Key Points / Study Materials / Video / Q/A with orange icons
+.course-curriculum-list--elearn .curriculum-item--elearn {
+  background: #fff7ed;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.curriculum-section-header--elearn {
+  padding: 1rem 1.25rem;
+  background: #fff7ed;
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: default;
+  .curriculum-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e40af;
+    flex: 1;
+  }
+}
+.curriculum-section-header--clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s ease;
+  &:hover {
+    background: #ffedd5;
+  }
+  &.expanded {
+    background: #ffedd5;
+  }
+  .curriculum-section-chevron {
+    color: #6b7280;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+  &.expanded .curriculum-section-chevron {
+    color: #1e40af;
+  }
+}
+.curriculum-section-content--elearn {
+  /* Grid-row animation avoids layout jump (max-height + padding causes jank). */
+  padding: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 0);
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  background: transparent;
+  transition: grid-template-rows 0.35s ease, opacity 0.2s ease;
+
+  &.show {
+    grid-template-rows: minmax(0, 1fr);
+    opacity: 1;
+    background: #fff7ed;
+  }
+
+  .curriculum-subtitle-inner {
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    min-height: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #495057;
+    align-content: flex-start;
+  }
+
+  &.show .curriculum-subtitle-inner {
+    padding: 0 1.25rem 1rem;
+  }
+
+  .curriculum-subtitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    i {
+      color: #f97316;
+      font-size: 0.95rem;
+    }
+  }
+
+  .curriculum-subtitle-empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-style: italic;
+  }
 }
 
 .curriculum-lessons {
@@ -2506,12 +2670,15 @@ a.course-detail__cta.course-detail__cta--info,
     margin-bottom: 12px;
   }
 
-  .course-header-subtitle {
-    font-size: 15px;
-    line-height: 1.5;
+  .course-header-subtitle-wrap {
     margin-bottom: 16px;
     width: 100% !important;
     max-width: 100% !important;
+  }
+
+  .course-header-subtitle {
+    font-size: 15px;
+    line-height: 1.5;
   }
 
   .course-header-features {
@@ -3528,6 +3695,45 @@ a.course-detail__cta.course-detail__cta--info,
       background-color: #FF5A1F !important;
       color: #FFFFFF !important;
     }
+  }
+
+  .course-detail__cta--resume,
+  a.course-detail__cta--resume {
+    background: #15803d !important;
+    background-color: #15803d !important;
+    background-image: none !important;
+    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.35) !important;
+    &:hover,
+    &:focus,
+    &:visited {
+      background: #166534 !important;
+      background-color: #166534 !important;
+      background-image: none !important;
+    }
+  }
+
+  .course-detail__cta--enroll,
+  a.course-detail__cta--enroll {
+    background: #475569 !important;
+    background-color: #475569 !important;
+    background-image: none !important;
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.35) !important;
+    &:hover,
+    &:focus,
+    &:visited {
+      background: #334155 !important;
+      background-color: #334155 !important;
+      background-image: none !important;
+    }
+  }
+
+  .course-detail__cta--loading,
+  a.course-detail__cta--loading {
+    background: #64748b !important;
+    background-color: #64748b !important;
+    background-image: none !important;
+    cursor: wait !important;
+    pointer-events: none !important;
   }
 
   .course-detail__cta-text {

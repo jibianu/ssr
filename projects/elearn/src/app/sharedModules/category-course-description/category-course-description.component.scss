@@ -197,6 +197,23 @@ $cd-btn-radius: 12px;
   transform: translateY(-1px);
 }
 
+/* Free + not enrolled: distinct from orange Buy (primary). */
+.cd-btn--enroll {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+.cd-btn--enroll:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+}
+.cd-btn--enroll:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .cd-btn--ghost {
   background: #fff;
   color: $cd-primary;
@@ -376,6 +393,18 @@ $cd-btn-radius: 12px;
   gap: 0.5rem 1rem;
 }
 
+/* Same elearn icon style as admin curriculum: orange icon */
+.cd-accordion__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+  i {
+    color: #f97316;
+    font-size: 0.95rem;
+  }
+}
+
 .cd-accordion__chevron {
   flex-shrink: 0;
   color: $cd-text-muted;
@@ -428,9 +457,10 @@ $cd-btn-radius: 12px;
   li:last-child { border-bottom: none; }
 }
 
+/* Same elearn icon as admin curriculum list (orange) */
 .cd-lesson-list__icon {
-  color: $cd-primary;
-  font-size: 0.75rem;
+  color: #f97316;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
 

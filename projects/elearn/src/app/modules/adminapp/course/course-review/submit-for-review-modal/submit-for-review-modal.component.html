@@ -1,0 +1,13 @@
+<div class="modal-header">
+  <h5 class="modal-title">Submit for Review</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+</div>
+<div class="modal-body">
+  <label class="form-label">Message to admin (optional, shown in review history)</label>
+  <textarea class="form-control" [(ngModel)]="message" rows="4" placeholder="e.g. Ready for review. I've added the new section as discussed."></textarea>
+  <small class="form-text text-muted">This message is saved in the review history so you and the admin can see the full conversation.</small>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Cancel</button>
+  <button type="button" class="btn btn-primary" (click)="submit()"><i class="fa fa-paper-plane"></i> Submit for Review</button>
+</div>

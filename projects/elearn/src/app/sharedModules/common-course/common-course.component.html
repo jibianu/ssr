@@ -220,7 +220,7 @@
         <div class="lms-card__banner" [class.lms-card__banner--api]="isApiCategory(item)" [class.lms-card__banner--ndt]="!isApiCategory(item)">
           <span class="lms-card__badge">{{ item?.course?.category?.name || 'Course' }}</span>
         </div>
-        <div class="lms-card__body" routerLink="/app/{{redirectUrl}}/category-courses-description/{{item?.course?.id}}/{{item?.id}}">
+        <div class="lms-card__body" [routerLink]="wishlistMarketingLink(item)" [queryParams]="wishlistMarketingQueryParams(item)">
           <h3 class="lms-card__title">{{ item.course?.title | slice:0:120 }}{{ item.course?.title.length > 120 ? '...' : '' }}</h3>
           <p class="lms-card__meta">Wishlisted</p>
           <button type="button" class="lms-cta">View course →</button>

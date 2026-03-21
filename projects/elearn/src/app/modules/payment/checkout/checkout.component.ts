@@ -7,6 +7,7 @@ import { AdminAppService } from '../../adminapp/adminapp.service';
 import { StripePaymentService } from '../../../services/stripe-payment.service';
 import { UtmService } from '../../../services/utm.service';
 import { AuthenticationService } from '../../auth/auth.service';
+import { resolveCourseId, resolveCourseSlug } from 'src/app/core/helpers/course-id.helper';
 
 @Component({
   selector: 'app-checkout',
@@ -97,6 +98,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+  /** Back to course marketing page (handles course.id vs Id from API). */
+  get courseMarketingLink(): any[] {
+    const cid = resolveCourseId(this.data?.course) || this.courseId;
+    return ['/app/student/categories/course', cid];
+  }
+
+  /** So iframe loads site slug URL (e.g. /api-570-...) when returning from checkout. */
+  get courseMarketingQueryParams(): Record<string, string> {
+    const slug = resolveCourseSlug(this.data?.course);
+    return slug ? { publicSlug: slug } : {};
   }
 
   /** Call this when user clicks "Proceed to payment" so optional coupon is included. */

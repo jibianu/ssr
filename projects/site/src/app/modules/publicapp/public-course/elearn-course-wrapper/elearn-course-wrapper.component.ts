@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CanonicalService } from '../../../../shared/service/canonical.service';
 import { environment } from '../../../../../environments/environment';
@@ -20,13 +21,16 @@ export class ElearnCourseWrapperComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private canonicalService: CanonicalService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
   ngOnInit(): void {
     this.course = this.route.snapshot.data['course'] ?? this.route.parent?.snapshot?.data['course'] ?? null;
     if (!this.course) {
-      this.router.navigate(['/page-not-found'], { replaceUrl: true });
+      if (isPlatformBrowser(this.platformId)) {
+        void this.router.navigate(['/page-not-found'], { replaceUrl: true });
+      }
       return;
     }
     const slug = (this.course.canonicalUrl ?? this.course.CanonicalUrl ?? this.course.slug ?? this.course.Slug ?? '').toString().trim();

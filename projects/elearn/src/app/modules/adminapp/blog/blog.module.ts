@@ -8,6 +8,8 @@ import { BlogReviewComponent } from './blog-review/blog-review.component';
 import { BlogRejectModalComponent } from './blog-reject-modal/blog-reject-modal.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { CustomEditorComponent } from '../../../shared/component/custom-editor/custom-editor.component';
+import { SubmitForReviewModalComponent } from '../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
+import { CourseApproveModalComponent } from '../course/course-review/course-approve-modal/course-approve-modal.component';
 
 @NgModule({
   declarations: [BlogListComponent, BlogAddEditComponent, BlogReviewComponent],
@@ -17,7 +19,9 @@ import { CustomEditorComponent } from '../../../shared/component/custom-editor/c
     BlogRoutingModule,
     SharedModule,
     CustomEditorComponent,
-    BlogRejectModalComponent
+    BlogRejectModalComponent,
+    SubmitForReviewModalComponent,
+    CourseApproveModalComponent
   ]
 })
 export class BlogModule { }

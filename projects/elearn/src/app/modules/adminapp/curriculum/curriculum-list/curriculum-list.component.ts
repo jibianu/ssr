@@ -7,6 +7,8 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { AdminAppService } from '../../adminapp.service';
 import { CurriculumOpenService } from '../curriculum-open.service';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
+import { CourseRejectModalComponent } from '../../course/course-review/course-reject-modal/course-reject-modal.component';
+import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DatePipe, Location } from '@angular/common';
@@ -104,7 +106,12 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('pContent') pContentRef: TemplateRef<any>;
   @ViewChild('publicLandingSidebar') publicLandingSidebarRef: TemplateRef<any>;
   @ViewChild('landingUpdateSuccessModal') landingUpdateSuccessModalRef: TemplateRef<any>;
+  @ViewChild('adminReviewSidebar') adminReviewSidebarRef: TemplateRef<any>;
+  reviewActionInProgress = false;
+  /** Full review timeline from API (EventType: 0=Submitted, 1=Rejected, 2=Approved). */
+  reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
   private pendingOpenCurriculumId: string;
+  private pendingOpenLanding = false;
   private publicLandingModalRef: NgbModalRef | null = null;
 
   /** Public landing sidebar: in-place Edit / Add / Remove (no new page) */
@@ -236,12 +243,16 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
     });
     this.pendingOpenCurriculumId = this.curriculumOpenService.getAndClearCurriculumToOpen()
       || this.activatedRoute.snapshot.queryParams?.openCurriculum || null;
+    this.pendingOpenLanding = this.activatedRoute.snapshot.queryParams?.openLanding === '1';
     this.activatedRoute.queryParams.subscribe(q => {
       if (q?.openCurriculum) this.pendingOpenCurriculumId = q.openCurriculum;
+      if (q?.openLanding === '1') this.pendingOpenLanding = true;
     });
-    let routeData = this.document.location.href.includes('management');
-    if (routeData) {
+    const href = this.document.location.href;
+    if (href.includes('management')) {
       this.txtRoute = 'management';
+    } else if (href.includes('trainer')) {
+      this.txtRoute = 'trainer';
     } else {
       this.txtRoute = 'admin';
     }
@@ -276,6 +287,18 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
       this.sharedService.curriculumEditPriceClick$.subscribe(() => {
         if (this.pContentRef) this.priceContent(this.pContentRef, this.coursePrice || null);
       })
+    );
+    this.subscription.add(
+      this.sharedService.courseReviewApproveClick$.subscribe(() => this.onCourseReviewApprove())
+    );
+    this.subscription.add(
+      this.sharedService.courseReviewRejectClick$.subscribe(() => this.onCourseReviewReject())
+    );
+    this.subscription.add(
+      this.sharedService.curriculumReviewPanelClick$.subscribe(() => this.openAdminReviewSidebar())
+    );
+    this.subscription.add(
+      this.sharedService.curriculumLandingPanelClick$.subscribe(() => this.openPublicLandingPageSidebar())
     );
     this.editCurriculum('view');
     this.formInit();
@@ -389,13 +412,188 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
     }));
   }
 
+  /** Course status: 0=Draft, 1=Pending Review, 2=Published, 3=Rejected. Always set context so Review button and history are available for any status. */
   getCourseById(id) {
     this.subscription.add(this.appService.getCourseById(id).subscribe((res: any) => {
       if (res) {
         this.courseInfo = res;
+        const status = Number(res?.status ?? res?.Status ?? -1);
+        if (id) {
+          this.sharedService.curriculumCourseReviewContext.next({ courseId: id, status });
+        } else {
+          this.sharedService.curriculumCourseReviewContext.next(null);
+        }
         this.cdr.markForCheck();
+        if (this.pendingOpenLanding) {
+          this.pendingOpenLanding = false;
+          setTimeout(() => this.openPublicLandingPageSidebar(), 100);
+        }
       }
     }));
+  }
+
+  /** Topbar Approve: open approve modal (add message), then approve and refresh. */
+  onCourseReviewApprove(): void {
+    this.onCourseReviewApproveCore(null);
+  }
+
+  /** Open approve modal, then call API with note. Optional closeModalOnSuccess to close review sidebar. */
+  private onCourseReviewApproveCore(closeModalOnSuccess: { dismiss: (reason?: string) => void } | null): void {
+    if (!this.courseId) return;
+    const ref = this.modalService.open(CourseApproveModalComponent);
+    ref.result.then(
+      (approvalNote: string) => {
+        this.reviewActionInProgress = true;
+        this.cdr.markForCheck();
+        this.subscription.add(
+          this.appService.approveCourse(this.courseId, approvalNote || undefined).subscribe({
+            next: () => {
+              this.reviewActionInProgress = false;
+              this.toasterService.showSuccess('Course approved. Publish the course from Course List to make it live on the LMS.');
+              this.sharedService.curriculumCourseReviewContext.next(null);
+              this.getCourseById(this.courseId);
+              this.loadAdminReviewHistory();
+              this.cdr.markForCheck();
+              if (closeModalOnSuccess) closeModalOnSuccess.dismiss('approved');
+            },
+            error: () => {
+              this.reviewActionInProgress = false;
+              this.toasterService.showError('Failed to approve course.');
+              this.cdr.markForCheck();
+            }
+          })
+        );
+      },
+      () => {}
+    );
+  }
+
+  /** Topbar Reject: open reject modal, then reject with reason. */
+  onCourseReviewReject(): void {
+    this.onCourseReviewRejectCore(null);
+  }
+
+  /** Open admin review sidebar (Approve, Reject when pending, and history for any status). */
+  openAdminReviewSidebar(): void {
+    const ctx = this.sharedService.curriculumCourseReviewContext.getValue();
+    if (!ctx || !this.adminReviewSidebarRef) return;
+    this.getCourseById(this.courseId);
+    this.loadAdminReviewHistory();
+    this.modalService.open(this.adminReviewSidebarRef, {
+      windowClass: 'modal-right review-sidebar-modal',
+      size: 'sm',
+      scrollable: true,
+    }).result.catch(() => {}).finally(() => this.cdr.markForCheck());
+    this.cdr.markForCheck();
+  }
+
+  /** True when course status is Pending Review (1) – show Approve/Reject in sidebar. */
+  get isCoursePendingReview(): boolean {
+    const s = this.courseInfo?.status ?? this.courseInfo?.Status;
+    return Number(s) === 1;
+  }
+
+  getReviewSubmittedDate(): string | Date | null {
+    return this.courseInfo?.submittedDate ?? this.courseInfo?.SubmittedDate ?? null;
+  }
+
+  getReviewRejectionReason(): string | null {
+    const r = this.courseInfo?.rejectionReason ?? this.courseInfo?.RejectionReason;
+    return r && String(r).trim() ? String(r).trim() : null;
+  }
+
+  getReviewRejectedDate(): string | Date | null {
+    if (this.getReviewRejectionReason() == null) return null;
+    return this.courseInfo?.updatedOn ?? this.courseInfo?.UpdatedOn ?? null;
+  }
+
+  getReviewApprovedDate(): string | Date | null {
+    return this.courseInfo?.publishedDate ?? this.courseInfo?.PublishedDate ?? null;
+  }
+
+  getReviewApprovalNote(): string | null {
+    const n = this.courseInfo?.approvalNote ?? this.courseInfo?.ApprovalNote;
+    return n && String(n).trim() ? String(n).trim() : null;
+  }
+
+  /** Load full review timeline from API (admin). */
+  loadAdminReviewHistory(): void {
+    if (!this.courseId) return;
+    this.subscription.add(
+      this.appService.getAdminCourseReviewHistory(this.courseId).subscribe({
+        next: (list) => {
+          this.reviewHistoryList = Array.isArray(list) ? list : [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.reviewHistoryList = [];
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  /** Approve from review sidebar: open approve modal, then approve and close sidebar on success. */
+  onCourseReviewApproveFromPanel(modal: { dismiss: (reason?: string) => void }): void {
+    this.onCourseReviewApproveCore(modal);
+  }
+
+  /** Reject from review sidebar; open reject modal then close sidebar on success. */
+  onCourseReviewRejectFromPanel(modal: { dismiss: (reason?: string) => void }): void {
+    if (!this.courseId) return;
+    const ref = this.modalService.open(CourseRejectModalComponent);
+    ref.result.then(
+      (reason: string) => {
+        if (reason != null) {
+          this.reviewActionInProgress = true;
+          this.cdr.markForCheck();
+          this.subscription.add(
+            this.appService.rejectCourse(this.courseId, reason).subscribe({
+              next: () => {
+                this.reviewActionInProgress = false;
+                this.toasterService.showSuccess('Course rejected. Author can edit and resubmit.');
+                this.sharedService.curriculumCourseReviewContext.next(null);
+                this.getCourseById(this.courseId);
+                this.loadAdminReviewHistory();
+                this.cdr.markForCheck();
+                modal.dismiss('rejected');
+              },
+              error: () => {
+                this.reviewActionInProgress = false;
+                this.toasterService.showError('Failed to reject course.');
+                this.cdr.markForCheck();
+              }
+            })
+          );
+        }
+      },
+      () => {}
+    );
+  }
+
+  private onCourseReviewRejectCore(closeModalOnSuccess: { dismiss: (reason?: string) => void } | null): void {
+    if (!this.courseId) return;
+    const ref = this.modalService.open(CourseRejectModalComponent);
+    ref.result.then(
+      (reason: string) => {
+        if (reason != null) {
+          this.subscription.add(
+            this.appService.rejectCourse(this.courseId, reason).subscribe({
+              next: () => {
+                this.toasterService.showSuccess('Course rejected. Author can edit and resubmit.');
+                this.sharedService.curriculumCourseReviewContext.next(null);
+                this.getCourseById(this.courseId);
+                this.loadAdminReviewHistory();
+                this.cdr.markForCheck();
+                if (closeModalOnSuccess) closeModalOnSuccess.dismiss('rejected');
+              },
+              error: () => this.toasterService.showError('Failed to reject course.')
+            })
+          );
+        }
+      },
+      () => {}
+    );
   }
 
   /** URL of the site public course page for this course. Prefer course ID so preview always works (backend returns course by ID even when slug not set or not published). */
@@ -2671,6 +2869,7 @@ onQuestionSubmit() {
 
   ngOnDestroy() {
     this.sharedService.showCurriculumToolbar.next(false);
+    this.sharedService.curriculumCourseReviewContext.next(null);
     this.sharedService.curriculumSearchTerm$.next('');
     this.sharedService.curriculumActiveTab$.next('concepts');
     this.sharedService.certificateName.next('');

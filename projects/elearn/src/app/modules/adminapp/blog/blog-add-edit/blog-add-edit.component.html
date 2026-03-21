@@ -96,31 +96,31 @@
 
         <div class="mb-3">
           <label class="form-label"><i class="fa fa-heading"></i> Blog Title <span class="required">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="title" name="title" required maxlength="255" placeholder="Enter a compelling blog title...">
+          <input type="text" class="form-control" [(ngModel)]="title" name="title" required maxlength="255" placeholder="Enter a compelling blog title..." (ngModelChange)="markContentEdited()">
         </div>
         <div class="mb-3">
           <label class="form-label"><i class="fa fa-link"></i> Canonical URL <span class="required">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="canonicalUrl" name="canonicalUrl" required maxlength="100" placeholder="blog-post-url-slug">
+          <input type="text" class="form-control" [(ngModel)]="canonicalUrl" name="canonicalUrl" required maxlength="100" placeholder="blog-post-url-slug" (ngModelChange)="markContentEdited()">
           <small class="form-text">Used for SEO-friendly URLs</small>
         </div>
         <div class="mb-3">
           <label class="form-label"><i class="fa fa-folder"></i> Category <span class="required">*</span></label>
-          <select class="form-select" [(ngModel)]="categoryId" name="categoryId" required>
+          <select class="form-select" [(ngModel)]="categoryId" name="categoryId" required (ngModelChange)="markContentEdited()">
             <option value="">Select a category</option>
             <option *ngFor="let c of categories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
           </select>
         </div>
         <div class="mb-3">
           <label class="form-label"><i class="fa fa-image"></i> Blog Featured Image URL <span class="required">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="titleImgUrl" name="titleImgUrl" placeholder="https://... or leave blank to add later">
+          <input type="text" class="form-control" [(ngModel)]="titleImgUrl" name="titleImgUrl" placeholder="https://... or leave blank to add later" (ngModelChange)="markContentEdited()">
         </div>
         <div class="mb-3">
           <label class="form-label"><i class="fa fa-align-left"></i> Meta Description</label>
-          <textarea class="form-control" [(ngModel)]="metaDescription" name="metaDescription" rows="3" placeholder="Write a brief description for search engines..."></textarea>
+          <textarea class="form-control" [(ngModel)]="metaDescription" name="metaDescription" rows="3" placeholder="Write a brief description for search engines..." (ngModelChange)="markContentEdited()"></textarea>
           <small class="form-text">Recommended: 150-160 characters for optimal SEO</small>
         </div>
         <div class="mb-3 form-check">
-          <input type="checkbox" class="form-check-input" [(ngModel)]="showOnDashboard" name="showOnDashboard">
+          <input type="checkbox" class="form-check-input" [(ngModel)]="showOnDashboard" name="showOnDashboard" (ngModelChange)="markContentEdited()">
           <label class="form-check-label">Show on dashboard</label>
         </div>
       </div>
@@ -172,7 +172,7 @@
             </div>
             <div class="mb-2">
               <label class="form-label small">Section Title <span class="required">*</span></label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="section.title" [name]="'sectionTitle' + i" placeholder="Enter section title...">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="section.title" [name]="'sectionTitle' + i" placeholder="Enter section title..." (ngModelChange)="markContentEdited()">
             </div>
             <div>
               <label class="form-label small">Section Content</label>
@@ -190,17 +190,63 @@
       </div>
     </div>
 
-    <!-- Form Actions -->
+    <!-- Form Actions (Submit for Review is only in the Review sidebar) -->
     <div class="form-actions mt-4">
       <button type="button" class="btn btn-outline-secondary" (click)="cancel()"><i class="fa fa-times"></i> Cancel</button>
       <button type="submit" class="btn btn-primary" [disabled]="saving">
         <i class="fa" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
         {{ saving ? (id ? 'Saving...' : 'Saving...') : (txtRoute === 'trainer' ? (id ? 'Save Draft' : 'Save Draft') : (id ? 'Update' : 'Publish')) }}
       </button>
-      <button *ngIf="canSubmitForReview" type="button" class="btn btn-success" [disabled]="submittingForReview" (click)="submitForReview()">
-        <i class="fa" [ngClass]="submittingForReview ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-        {{ submittingForReview ? 'Submitting...' : 'Submit for Review' }}
-      </button>
     </div>
   </form>
 </div>
+
+<ng-template #blogReviewSidebar let-modal>
+  <div class="review-sidebar__header">
+    <h4 class="review-sidebar__title">Review</h4>
+    <button type="button" class="review-sidebar__close" aria-label="Close" (click)="modal.dismiss('Close')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="review-sidebar__body">
+    <!-- Submit for Review: only for trainer (hidden on admin page). -->
+    <section class="review-sidebar__section" *ngIf="showSubmitForReviewSection && txtRoute !== 'admin'">
+      <button type="button" class="review-sidebar__submit-btn" (click)="submitForReviewFromPanel(modal)" [disabled]="reviewActionInProgress || !canSubmitForReviewFromPanel">
+        <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        <span *ngIf="!reviewActionInProgress">Submit for Review</span>
+        <span *ngIf="reviewActionInProgress">Submitting…</span>
+      </button>
+      <p class="review-sidebar__hint" *ngIf="canSubmitForReviewFromPanel">Submit this blog for admin review. Admin can then approve or reject.</p>
+    </section>
+    <!-- Approve / Reject: only on admin page when blog is pending review. -->
+    <section class="review-sidebar__section" *ngIf="isBlogPendingReview && txtRoute === 'admin'">
+      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--success" (click)="onBlogReviewApproveFromPanel(modal)" [disabled]="reviewActionInProgress" title="Approve blog">
+        <i class="fa fa-check" aria-hidden="true"></i>
+        <span *ngIf="!reviewActionInProgress">Approve</span>
+        <span *ngIf="reviewActionInProgress">Processing…</span>
+      </button>
+      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--danger" (click)="onBlogReviewRejectFromPanel(modal)" [disabled]="reviewActionInProgress" title="Reject with feedback">
+        <i class="fa fa-times" aria-hidden="true"></i> Reject
+      </button>
+      <p class="review-sidebar__hint">Approve to accept this blog (then publish from Blog List). Reject to send feedback to the trainer.</p>
+    </section>
+    <section class="review-sidebar__section" *ngIf="showSubmitForReviewSection && !canSubmitForReviewFromPanel && submitForReviewHint && txtRoute !== 'admin'">
+      <p class="review-sidebar__hint review-sidebar__hint--muted">{{ submitForReviewHint }}</p>
+    </section>
+    <section class="review-sidebar__section">
+      <h5 class="review-sidebar__section-title">Approve / Reject history</h5>
+      <div class="review-sidebar__history">
+        <ng-container *ngIf="reviewHistoryList?.length">
+          <div class="review-sidebar__history-item" *ngFor="let h of reviewHistoryList"
+            [class.review-sidebar__history-item--rejected]="h.eventType === 1"
+            [class.review-sidebar__history-item--approved]="h.eventType === 2">
+            <span class="review-sidebar__history-label">{{ h.eventType === 0 ? 'Submitted for review' : (h.eventType === 1 ? 'Rejected' : 'Approved') }}</span>
+            <span class="review-sidebar__history-value">{{ h.eventDate | date:'medium' }}</span>
+            <span class="review-sidebar__history-note" *ngIf="h.message">{{ h.message }}</span>
+          </div>
+        </ng-container>
+        <p class="review-sidebar__history-empty" *ngIf="!reviewHistoryList?.length">No review activity yet.</p>
+      </div>
+    </section>
+  </div>
+</ng-template>

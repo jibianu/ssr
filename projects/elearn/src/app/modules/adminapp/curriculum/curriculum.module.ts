@@ -17,6 +17,8 @@ import { CourseQuestionComponent } from './course-question/course-question.compo
 import { CurriculumQuestionSetQuestionsListComponent } from './curriculum-questions-set/curriculum-question-set-questions-list/curriculum-question-set-questions-list.component';
 import { CoursePricesComponent } from './course-prices/course-prices.component';
 import { LessonEditorModule } from './../../../shared/component/lesson-editor/lesson-editor.module';
+import { CourseRejectModalComponent } from '../course/course-review/course-reject-modal/course-reject-modal.component';
+import { CourseApproveModalComponent } from '../course/course-review/course-approve-modal/course-approve-modal.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +39,9 @@ import { LessonEditorModule } from './../../../shared/component/lesson-editor/le
     CommonModule,
     SharedModule,
     CurriculumRoutingModule,
-    LessonEditorModule
+    LessonEditorModule,
+    CourseRejectModalComponent,
+    CourseApproveModalComponent
   ],
   exports: [
     AddCurriculumComponent,

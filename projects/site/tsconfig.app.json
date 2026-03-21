@@ -4,16 +4,5 @@
     "outDir": "../../out-tsc/site-app"
   },
   "include": ["src/**/*.ts"],
-  "exclude": [
-    "src/test.ts",
-    "**/*.spec.ts",
-    "src/server.ts",
-    "src/server.cache.adapter.ts",
-    "src/server.cache.config.ts",
-    "src/server.cdn.middleware.ts",
-    "src/server.performance.ts",
-    "src/app/app.config.server.ts",
-    "src/app/app.routes.server.ts",
-    "src/main.server.ts"
-  ]
+  "exclude": ["src/test.ts", "**/*.spec.ts"]
 }

@@ -1,0 +1,30 @@
+<div class="modal-header search-filter-sidebar__header">
+  <h4 class="modal-title">Search</h4>
+  <button type="button" class="search-filter-sidebar__close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body search-filter-sidebar__body">
+  <div class="search-filter-sidebar__form-wrap">
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Event status</label>
+      <div class="input-group">
+        <div ngbDropdown container="body" class="d-inline-block w-100">
+          <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownEventStatus" ngbDropdownToggle>
+            {{ selectedLabel }}
+          </button>
+          <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownEventStatus">
+            <button type="button" ngbDropdownItem (click)="filterByStatus('all')">All events</button>
+            <button type="button" ngbDropdownItem (click)="filterByStatus('pending-review')">Trainer requested review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer search-filter-sidebar__footer">
+  <div class="search-filter-sidebar__actions">
+    <button type="button" class="search-filter-sidebar__btn search-filter-sidebar__btn--cancel" (click)="reset()">Reset</button>
+    <button type="button" class="search-filter-sidebar__btn search-filter-sidebar__btn--primary" (click)="search()">Search</button>
+  </div>
+</div>

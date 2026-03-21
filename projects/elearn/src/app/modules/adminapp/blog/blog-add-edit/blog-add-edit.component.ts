@@ -1,12 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, TemplateRef, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminAppService } from '../../adminapp.service';
 import { SharedService } from '../../../../shared/service/shared-service.service';
 import { ToasterService } from '../../../../shared/component/toaster/toaster.service';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DOCUMENT } from '@angular/common';
 import { Inject } from '@angular/core';
-import { Observable, firstValueFrom, of } from 'rxjs';
+import { Observable, firstValueFrom, of, Subscription } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { BlogRejectModalComponent } from '../blog-reject-modal/blog-reject-modal.component';
+import { SubmitForReviewModalComponent } from '../../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
+import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
 
 export interface BlogSectionModel {
   id?: string;
@@ -21,9 +25,10 @@ export interface BlogSectionModel {
   styleUrls: ['./blog-add-edit.component.scss'],
   standalone: false
 })
-export class BlogAddEditComponent implements OnInit {
+export class BlogAddEditComponent implements OnInit, OnDestroy {
 
   id: string | null = null;
+  private sub = new Subscription();
   title = '';
   canonicalUrl = '';
   content = '';
@@ -47,6 +52,16 @@ export class BlogAddEditComponent implements OnInit {
   /** Admin rejection reason when status = Rejected (trainer can edit and resubmit). */
   rejectionReason: string | null = null;
   submittingForReview = false;
+  /** Snapshot of content when blog was loaded; used to detect edits so "Submit for Review" can be enabled when approved. */
+  private contentSnapshot: { title: string; content: string; categoryId: string; canonicalUrl: string; metaDescription: string; titleImgUrl: string; showOnDashboard: boolean; sectionsJson: string } | null = null;
+  /** Set true when user triggers any content change (fallback when snapshot compare misses editor updates). */
+  private contentEditDetected = false;
+  /** Set true after saving an approved blog so Submit for Review in sidebar stays enabled until they submit. */
+  justSavedCanResubmit = false;
+  @ViewChild('blogReviewSidebar') blogReviewSidebarRef: TemplateRef<any>;
+  reviewSidebarModalRef: NgbModalRef;
+  reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
+  reviewActionInProgress = false;
 
   /** Image upload for custom editor (same API as curriculum upload). */
   uploadImageFn = (file: File) =>
@@ -74,6 +89,8 @@ export class BlogAddEditComponent implements OnInit {
     private appService: AdminAppService,
     private sharedService: SharedService,
     private toasterService: ToasterService,
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef,
     @Inject(DOCUMENT) private document: Document
   ) {
     this.txtRoute = this.getAppSegmentFromRoute();
@@ -100,6 +117,8 @@ export class BlogAddEditComponent implements OnInit {
       next: (list) => this.categories = list || []
     });
     if (this.id) {
+      // Set context immediately so topbar Review button shows (same as course page); update with real status when blog loads.
+      this.sharedService.blogReviewContext.next({ blogId: this.id, status: 0 });
       this.loading = true;
       this.appService.getAdminBlogById(this.id).subscribe({
         next: (b) => {
@@ -124,19 +143,115 @@ export class BlogAddEditComponent implements OnInit {
           this.rejectionReason = b?.rejectionReason ?? b?.RejectionReason ?? null;
           this.loading = false;
           this.updateWordCount();
+          this.saveContentSnapshot();
+          this.sharedService.blogReviewContext.next({ blogId: this.id, status: this.blogStatus ?? 0 });
+          if (this.txtRoute === 'admin' && this.id && this.blogStatus === 1) {
+            this.sharedService.topbarBlogReviewActions.next({ blogId: this.id });
+          }
         },
-        error: () => this.loading = false
+        error: () => {
+          this.loading = false;
+          this.sharedService.blogReviewContext.next(null);
+        }
       });
+      this.sub.add(
+        this.sharedService.blogReviewPanelClick$.subscribe(() => this.openReviewSidebar())
+      );
+      this.sub.add(
+        this.sharedService.blogSubmitForReviewClick$.subscribe(() => this.submitForReview())
+      );
+      this.sub.add(
+        this.sharedService.blogReviewApproveClick$.subscribe(() => {
+          if (!this.id) return;
+          const ref = this.modalService.open(CourseApproveModalComponent);
+          ref.result.then(
+            (approvalNote: string) => {
+              this.appService.approveBlog(this.id!, approvalNote || undefined).subscribe({
+                next: () => {
+                  this.toasterService.showSuccess('Blog approved and published.');
+                  this.sharedService.topbarBlogReviewActions.next(null);
+                  this.sharedService.blogReviewContext.next(null);
+                  this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+                },
+                error: () => this.toasterService.showError('Failed to approve blog.')
+              });
+            },
+            () => {}
+          );
+        })
+      );
+      this.sub.add(
+        this.sharedService.blogReviewRejectClick$.subscribe(() => {
+          if (!this.id) return;
+          const ref = this.modalService.open(BlogRejectModalComponent);
+          ref.result.then(
+            (reason: string) => {
+              this.appService.rejectBlog(this.id!, reason ?? '').subscribe({
+                next: () => {
+                  this.toasterService.showSuccess('Blog rejected. Author can edit and resubmit.');
+                  this.sharedService.topbarBlogReviewActions.next(null);
+                  this.sharedService.blogReviewContext.next(null);
+                  this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+                },
+                error: () => this.toasterService.showError('Failed to reject blog.')
+              });
+            },
+            () => {}
+          );
+        })
+      );
     } else {
+      this.sharedService.blogReviewContext.next(null);
+      this.sharedService.topbarBlogReviewActions.next(null);
       this.blogSections = [{ title: '', content: '', sequenceNumber: 1 }];
     }
   }
 
+  private sectionsToJson(): string {
+    return JSON.stringify((this.blogSections || []).map(s => ({ title: s.title, content: s.content, sequenceNumber: s.sequenceNumber })));
+  }
+
+  private saveContentSnapshot(): void {
+    this.contentSnapshot = {
+      title: this.title,
+      content: this.content,
+      categoryId: this.categoryId,
+      canonicalUrl: this.canonicalUrl,
+      metaDescription: this.metaDescription,
+      titleImgUrl: this.titleImgUrl,
+      showOnDashboard: this.showOnDashboard,
+      sectionsJson: this.sectionsToJson()
+    };
+  }
+
+  /** True if user has edited content since load; used to enable Submit for Review when blog is already approved. */
+  get hasContentEdited(): boolean {
+    if (this.contentEditDetected) return true;
+    if (!this.contentSnapshot) return false;
+    const categoryMatch = String(this.categoryId || '') === String(this.contentSnapshot.categoryId || '');
+    return !categoryMatch
+      || this.title !== this.contentSnapshot.title
+      || this.content !== this.contentSnapshot.content
+      || this.canonicalUrl !== this.contentSnapshot.canonicalUrl
+      || this.metaDescription !== this.contentSnapshot.metaDescription
+      || this.titleImgUrl !== this.contentSnapshot.titleImgUrl
+      || this.showOnDashboard !== this.contentSnapshot.showOnDashboard
+      || this.sectionsToJson() !== this.contentSnapshot.sectionsJson;
+  }
+
+  /** Call when user edits any field so Submit for Review enables even if snapshot compare is delayed (e.g. rich text). */
+  markContentEdited(): void {
+    this.contentEditDetected = true;
+    this.cdr.markForCheck();
+  }
+
   onContentChange(): void {
+    this.markContentEdited();
     this.updateWordCount();
   }
 
   onSectionContentChange(): void {
+    this.markContentEdited();
     this.updateWordCount();
   }
 
@@ -255,11 +370,9 @@ export class BlogAddEditComponent implements OnInit {
     this.blogSections.forEach((s, i) => s.sequenceNumber = i + 1);
   }
 
-  save(): void {
-    if (!this.title?.trim() || !this.canonicalUrl?.trim() || !this.categoryId) {
-      this.toasterService.showError('Title, URL slug and Category are required.');
-      return;
-    }
+  /** Build save payload; returns null if validation fails. */
+  private buildSaveBody(): { title: string; canonicalUrl: string; content: string; metaDescription: string; categoryId: string; titleImgUrl: string | null; showOnDashboard: boolean; blogSections: any[] } | null {
+    if (!this.title?.trim() || !this.canonicalUrl?.trim() || !this.categoryId) return null;
     const blogSectionsPayload = this.blogSections
       .filter(s => (s.title || '').trim() || (s.content || '').replace(/<[^>]*>/g, '').trim())
       .map((s, i) => ({
@@ -268,7 +381,7 @@ export class BlogAddEditComponent implements OnInit {
         content: s.content || '',
         sequenceNumber: i + 1
       }));
-    const body = {
+    return {
       title: this.title.trim(),
       canonicalUrl: this.canonicalUrl.trim(),
       content: this.content || '',
@@ -278,12 +391,23 @@ export class BlogAddEditComponent implements OnInit {
       showOnDashboard: this.showOnDashboard,
       blogSections: blogSectionsPayload
     };
+  }
+
+  save(): void {
+    const body = this.buildSaveBody();
+    if (!body) {
+      this.toasterService.showError('Title, URL slug and Category are required.');
+      return;
+    }
     this.saving = true;
     if (this.id) {
-      this.appService.updateBlog(this.id, body).subscribe({
+      this.appService.updateBlog(this.id, body as any).subscribe({
         next: () => {
+          this.saving = false;
           this.toasterService.showSuccess(this.txtRoute === 'trainer' ? 'Draft saved.' : 'Blog updated.');
-          this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+          this.saveContentSnapshot();
+          if (this.blogStatus === 2) this.justSavedCanResubmit = true;
+          this.cdr.markForCheck();
         },
         error: () => { this.saving = false; this.toasterService.showError('Failed to update blog.'); }
       });
@@ -298,29 +422,230 @@ export class BlogAddEditComponent implements OnInit {
     }
   }
 
-  /** Trainer: submit blog for admin review. Only for Draft (0) or Rejected (3). */
+  /** Trainer: save current data then submit blog for admin review (opens modal for optional message). */
   submitForReview(): void {
     if (!this.id) return;
-    if (this.blogStatus !== 0 && this.blogStatus !== 3) {
-      this.toasterService.showSuccess('This blog is already submitted or published.');
+    if (this.blogStatus === 1) {
+      this.toasterService.showSuccess('This blog is already submitted for review. Waiting for admin.');
+      return;
+    }
+    if (this.blogStatus === 2 && !this.hasContentEdited && !this.justSavedCanResubmit) {
+      this.toasterService.showSuccess('Edit content to submit for review again.');
+      return;
+    }
+    const body = this.buildSaveBody();
+    if (!body) {
+      this.toasterService.showError('Title, URL slug and Category are required. Save your changes first.');
       return;
     }
     this.submittingForReview = true;
-    this.appService.submitBlogForReview(this.id).subscribe({
+    this.cdr.markForCheck();
+    this.appService.updateBlog(this.id, body as any).subscribe({
       next: () => {
-        this.toasterService.showSuccess('Blog submitted for review.');
-        this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+        const ref = this.modalService.open(SubmitForReviewModalComponent);
+        ref.result.then(
+          (message: string) => {
+            this.appService.submitBlogForReview(this.id!, message ?? undefined).subscribe({
+              next: () => {
+                this.submittingForReview = false;
+                this.justSavedCanResubmit = false;
+                this.toasterService.showSuccess('Blog saved and submitted for review.');
+                this.blogStatus = 1;
+                this.saveContentSnapshot();
+                this.sharedService.blogReviewContext.next({ blogId: this.id!, status: 1 });
+                this.loadReviewHistory();
+                this.cdr.markForCheck();
+              },
+              error: () => {
+                this.submittingForReview = false;
+                this.toasterService.showError('Failed to submit for review.');
+                this.cdr.markForCheck();
+              }
+            });
+          },
+          () => {
+            this.submittingForReview = false;
+            this.cdr.markForCheck();
+          }
+        );
       },
       error: () => {
         this.submittingForReview = false;
-        this.toasterService.showError('Failed to submit for review.');
+        this.toasterService.showError('Failed to save. Fix errors and try again.');
+        this.cdr.markForCheck();
       }
     });
   }
 
-  /** True when trainer can show "Submit for Review" (existing blog in Draft or Rejected). */
+  openReviewSidebar(): void {
+    if (!this.blogReviewSidebarRef || !this.id) return;
+    this.loadReviewHistory();
+    this.reviewSidebarModalRef = this.modalService.open(this.blogReviewSidebarRef, {
+      windowClass: 'modal-right review-sidebar-modal',
+      size: 'sm',
+      scrollable: true,
+    });
+    this.reviewSidebarModalRef.result.catch(() => {});
+    this.cdr.markForCheck();
+  }
+
+  loadReviewHistory(): void {
+    if (!this.id) return;
+    this.sub.add(
+      this.appService.getBlogReviewHistory(this.id).subscribe({
+        next: (list) => {
+          this.reviewHistoryList = Array.isArray(list) ? list : [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.reviewHistoryList = [];
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  /** True when Submit for Review button in sidebar should be enabled: Draft/Rejected, or Approved and (content edited or just saved). */
+  get canSubmitForReviewFromPanel(): boolean {
+    if (!this.id) return false;
+    if (this.blogStatus === 0 || this.blogStatus === 3) return true;
+    if (this.blogStatus === 2) return this.hasContentEdited || this.justSavedCanResubmit;
+    return false;
+  }
+
+  /** True when the Submit for Review section (button + hint) should be visible: existing blog and not Pending. */
+  get showSubmitForReviewSection(): boolean {
+    return !!this.id && this.blogStatus !== 1;
+  }
+
+  get isBlogPendingReview(): boolean {
+    return this.blogStatus === 1;
+  }
+
+  get submitForReviewHint(): string {
+    if (this.blogStatus === 1) return 'Already submitted for review. Waiting for admin.';
+    if (this.blogStatus === 2) return 'Blog is approved. Edit content to submit for review again.';
+    return '';
+  }
+
+  submitForReviewFromPanel(modal: { dismiss: (r?: string) => void }): void {
+    if (!this.id) return;
+    const body = this.buildSaveBody();
+    if (!body) {
+      this.toasterService.showError('Title, URL slug and Category are required. Save your changes first.');
+      return;
+    }
+    this.reviewActionInProgress = true;
+    this.cdr.markForCheck();
+    this.appService.updateBlog(this.id, body).subscribe({
+      next: () => {
+        const ref = this.modalService.open(SubmitForReviewModalComponent);
+        ref.result.then(
+          (message: string) => {
+            this.appService.submitBlogForReview(this.id!, message ?? undefined).subscribe({
+              next: () => {
+                this.reviewActionInProgress = false;
+                this.justSavedCanResubmit = false;
+                this.toasterService.showSuccess('Blog saved and submitted for review.');
+                this.blogStatus = 1;
+                this.saveContentSnapshot();
+                this.sharedService.blogReviewContext.next({ blogId: this.id!, status: 1 });
+                this.sharedService.topbarBlogReviewActions.next(null);
+                this.loadReviewHistory();
+                this.cdr.markForCheck();
+                modal.dismiss('submitted');
+              },
+              error: () => {
+                this.reviewActionInProgress = false;
+                this.toasterService.showError('Failed to submit for review.');
+                this.cdr.markForCheck();
+              }
+            });
+          },
+          () => {
+            this.reviewActionInProgress = false;
+            this.cdr.markForCheck();
+          }
+        );
+      },
+      error: () => {
+        this.reviewActionInProgress = false;
+        this.toasterService.showError('Failed to save. Fix errors and try again.');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onBlogReviewApproveFromPanel(modal: { dismiss: (r?: string) => void }): void {
+    if (!this.id) return;
+    const ref = this.modalService.open(CourseApproveModalComponent);
+    ref.result.then(
+      (approvalNote: string) => {
+        this.reviewActionInProgress = true;
+        this.cdr.markForCheck();
+        this.appService.approveBlog(this.id!, approvalNote || undefined).subscribe({
+          next: () => {
+            this.reviewActionInProgress = false;
+            this.toasterService.showSuccess('Blog approved and published.');
+            this.sharedService.topbarBlogReviewActions.next(null);
+            this.sharedService.blogReviewContext.next(null);
+            this.cdr.markForCheck();
+            modal.dismiss('approved');
+            this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+          },
+          error: () => {
+            this.reviewActionInProgress = false;
+            this.toasterService.showError('Failed to approve blog.');
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      () => {}
+    );
+  }
+
+  onBlogReviewRejectFromPanel(modal: { dismiss: (r?: string) => void }): void {
+    if (!this.id) return;
+    const ref = this.modalService.open(BlogRejectModalComponent);
+    ref.result.then(
+      (reason: string) => {
+        if (reason != null) {
+          this.reviewActionInProgress = true;
+          this.cdr.markForCheck();
+          this.appService.rejectBlog(this.id!, reason ?? '').subscribe({
+            next: () => {
+              this.reviewActionInProgress = false;
+              this.toasterService.showSuccess('Blog rejected. Author can edit and resubmit.');
+              this.sharedService.topbarBlogReviewActions.next(null);
+              this.blogStatus = 3;
+              this.loadReviewHistory();
+              this.cdr.markForCheck();
+              modal.dismiss('rejected');
+            },
+            error: () => {
+              this.reviewActionInProgress = false;
+              this.toasterService.showError('Failed to reject blog.');
+              this.cdr.markForCheck();
+            }
+          });
+        }
+      },
+      () => {}
+    );
+  }
+
+  /** True when trainer can submit: existing blog, and (Draft/Rejected or Approved with edits). */
   get canSubmitForReview(): boolean {
-    return this.txtRoute === 'trainer' && !!this.id && (this.blogStatus === 0 || this.blogStatus === 3);
+    if (this.txtRoute !== 'trainer' || !this.id) return false;
+    if (this.blogStatus === 0 || this.blogStatus === 3) return true;
+    if (this.blogStatus === 2) return this.hasContentEdited;
+    return false;
+  }
+
+  ngOnDestroy(): void {
+    this.sharedService.topbarBlogReviewActions.next(null);
+    this.sharedService.blogReviewContext.next(null);
+    this.sub.unsubscribe();
   }
 
   cancel(): void {

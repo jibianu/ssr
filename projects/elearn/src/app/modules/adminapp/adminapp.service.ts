@@ -166,8 +166,8 @@ export class AdminAppService {
         return this.http.delete<void>(this.apiUrl + `api/admin/blog/` + id);
     }
     /** Trainer: submit blog for admin review. POST /api/admin/blog/{id}/submit-for-review */
-    submitBlogForReview(id: string): Observable<void> {
-        return this.http.post<void>(this.apiUrl + `api/admin/blog/` + id + `/submit-for-review`, {});
+    submitBlogForReview(id: string, message?: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/blog/` + id + `/submit-for-review`, { message: message ?? '' });
     }
     /** Admin: get blogs pending review. GET /api/admin/blog/review */
     getPendingReviewBlogs(pageNumber: number = 1, pageSize: number = 100): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
@@ -176,12 +176,86 @@ export class AdminAppService {
         });
     }
     /** Admin: approve blog. POST /api/admin/blog/review/{id}/approve */
-    approveBlog(id: string): Observable<void> {
-        return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/approve`, {});
+    approveBlog(id: string, approvalNote?: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/approve`, { approvalNote: approvalNote ?? '' });
     }
     /** Admin: reject blog with reason. POST /api/admin/blog/review/{id}/reject */
     rejectBlog(id: string, rejectionReason: string): Observable<void> {
         return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/reject`, { rejectionReason: rejectionReason || '' });
+    }
+    /** Normalize review history from API (handles camelCase/PascalCase and wrapped { data } / { results }). */
+    private normalizeReviewHistory(raw: any): { eventType: number; eventDate: string; message: string | null }[] {
+        const arr = Array.isArray(raw) ? raw : (raw?.data ?? raw?.results ?? []);
+        if (!Array.isArray(arr)) return [];
+        return arr.map((item: any) => ({
+            eventType: item?.eventType ?? item?.EventType ?? 0,
+            eventDate: item?.eventDate ?? item?.EventDate ?? '',
+            message: item?.message ?? item?.Message ?? null
+        }));
+    }
+
+    getBlogReviewHistory(blogId: string): Observable<{ eventType: number; eventDate: string; message: string | null }[]> {
+        return this.http.get<any>(this.apiUrl + `api/admin/blog/` + blogId + `/review-history`).pipe(
+            map((res) => this.normalizeReviewHistory(res))
+        );
+    }
+
+    /** Trainer: submit course for admin review with optional message (shown in review history). POST api/course/{courseId}/submit-for-review */
+    submitCourseForReview(courseId: string, message?: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/course/` + courseId + `/submit-for-review`, { message: message ?? '' });
+    }
+    /** Admin: get courses pending review. GET api/admin/course/review */
+    getPendingReviewCourses(pageNumber: number = 1, pageSize: number = 100): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
+        return this.http.get<any>(this.apiUrl + `api/admin/course/review`, {
+            params: { pageNumber: String(pageNumber), pageSize: String(pageSize) }
+        });
+    }
+    /** Admin: approve course with optional note. POST api/admin/course/review/{id}/approve */
+    approveCourse(id: string, approvalNote?: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/course/review/` + id + `/approve`, { approvalNote: approvalNote ?? '' });
+    }
+    /** Admin: reject course with reason. POST api/admin/course/review/{id}/reject */
+    rejectCourse(id: string, rejectionReason: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/course/review/` + id + `/reject`, { rejectionReason: rejectionReason || '' });
+    }
+    /** Full review timeline (trainer). GET api/course/{courseId}/review-history */
+    getCourseReviewHistory(courseId: string): Observable<{ eventType: number; eventDate: string; message: string | null }[]> {
+        return this.http.get<any>(this.apiUrl + `api/course/` + courseId + `/review-history`).pipe(
+            map((res) => this.normalizeReviewHistory(res))
+        );
+    }
+    /** Full review timeline (admin). GET api/admin/course/review/{id}/review-history */
+    getAdminCourseReviewHistory(courseId: string): Observable<{ eventType: number; eventDate: string; message: string | null }[]> {
+        return this.http.get<any>(this.apiUrl + `api/admin/course/review/` + courseId + `/review-history`).pipe(
+            map((res) => this.normalizeReviewHistory(res))
+        );
+    }
+
+    /** Admin: list newsletter subscriptions from DB. GET /api/admin/newsletter-subscriptions */
+    getNewsletterSubscriptions(
+        pageNumber: number = 1,
+        pageSize: number = 25,
+        search?: string,
+        fromDate?: string,
+        toDate?: string
+    ): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
+        const params: Record<string, string> = {
+            pageNumber: String(pageNumber),
+            pageSize: String(pageSize)
+        };
+        if (search != null && search.trim() !== '') {
+            params['search'] = search.trim();
+        }
+        if (fromDate && fromDate.trim() !== '') {
+            params['fromDate'] = fromDate;
+        }
+        if (toDate && toDate.trim() !== '') {
+            params['toDate'] = toDate;
+        }
+        return this.http.get<any>(this.apiUrl + `api/admin/newsletter-subscriptions`, { params });
+    }
+    deleteNewsletterSubscription(id: string): Observable<void> {
+        return this.http.delete<void>(this.apiUrl + `api/admin/newsletter-subscriptions/${id}`);
     }
 
     /** Loop Marketing: get content by category (null = default). GET /api/admin/loop-marketing/category */
@@ -247,6 +321,21 @@ export class AdminAppService {
 
     getEventUsers(eventId: string): Observable<any[]> {
         return this.http.get<any[]>(this.apiUrl + `api/events/users/` + eventId);
+    }
+    submitEventForReview(eventId: string, message?: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/events/` + eventId + `/submit-for-review`, { message: message ?? '' });
+    }
+    /** Full review timeline (trainer or admin). GET api/events/{eventId}/review-history – same pattern as course (api/course/{courseId}/review-history). */
+    getEventReviewHistory(eventId: string): Observable<{ eventType: number; eventDate: string; message: string | null }[]> {
+        return this.http.get<any>(this.apiUrl + `api/events/` + eventId + `/review-history`).pipe(
+            map((res) => this.normalizeReviewHistory(res))
+        );
+    }
+    approveEvent(eventId: string, approvalNote?: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/event/review/` + eventId + `/approve`, { approvalNote: approvalNote ?? '' });
+    }
+    rejectEvent(eventId: string, rejectionReason: string): Observable<void> {
+        return this.http.post<void>(this.apiUrl + `api/admin/event/review/` + eventId + `/reject`, { rejectionReason: rejectionReason || '' });
     }
 
     getUsers(params) {
@@ -721,10 +810,48 @@ export class AdminAppService {
         return this.http.post<any>(this.apiUrl + `api/Course/EnrollCourses`, obj);
     }
     getCourseByCourseID(id: string, skipCache?: boolean) {
+        const encoded = encodeURIComponent(String(id).trim());
         const url = skipCache
-            ? `${this.apiUrl}api/Course/${id}?_t=${Date.now()}`
-            : `${this.apiUrl}api/Course/${id}`;
+            ? `${this.apiUrl}api/Course/${encoded}?_t=${Date.now()}`
+            : `${this.apiUrl}api/Course/${encoded}`;
+        // Students often lack Course.GetCourse; anonymous by-slug accepts GUID and returns same CourseResponse shape.
+        return this.http.get(url).pipe(
+            catchError((err: HttpErrorResponse) => {
+                const status = err?.status;
+                if (status === 403 || status === 401 || status === 404) {
+                    const slugUrl = skipCache
+                        ? `${this.apiUrl}api/Course/by-slug/${encoded}?_t=${Date.now()}`
+                        : `${this.apiUrl}api/Course/by-slug/${encoded}`;
+                    return this.http.get(slugUrl);
+                }
+                return throwError(() => err);
+            })
+        );
+    }
+
+    /** Public read by slug (AllowAnonymous). Use when route param is a slug, not a GUID. */
+    getCourseBySlugOnly(slug: string, skipCache?: boolean): Observable<any> {
+        const encoded = encodeURIComponent(String(slug).trim());
+        const url = skipCache
+            ? `${this.apiUrl}api/Course/by-slug/${encoded}?_t=${Date.now()}`
+            : `${this.apiUrl}api/Course/by-slug/${encoded}`;
         return this.http.get(url);
+    }
+
+    /** Check if current user is enrolled in course. GET api/course/enrollment-status/{courseId}. For Resume vs Enroll/Buy UI. */
+    getEnrollmentStatus(courseId: string): Observable<{ isEnrolled: boolean }> {
+        return this.http.get<{ isEnrolled: boolean }>(this.apiUrl + `api/course/enrollment-status/${courseId}`);
+    }
+
+    /** Enroll current user in a free course. POST api/course/enroll/free. Returns { success, alreadyEnrolled?, message? }. */
+    enrollFree(courseId: string): Observable<{ success?: boolean; alreadyEnrolled?: boolean; message?: string }> {
+        return this.http.post<any>(this.apiUrl + `api/course/enroll/free`, { courseId });
+    }
+
+    /** Bulk enrollment status for multiple courses. POST api/course/enrollment-status/bulk. Body: { courseIds: string[] }. Returns { [courseId]: boolean }. */
+    getEnrollmentStatusBulk(courseIds: string[]): Observable<Record<string, boolean>> {
+        if (!courseIds?.length) return of({});
+        return this.http.post<Record<string, boolean>>(this.apiUrl + `api/course/enrollment-status/bulk`, { courseIds });
     }
     publishCourse(id): Observable<any> {
         return this.http.patch<any>(this.apiUrl + `api/Course/Publish/` + id, null);
@@ -999,4 +1126,5 @@ export class AdminAppService {
         return this.http.delete<{ message: string }>(this.apiUrl + `api/notifications/${id}`);
     }
 }
+
 

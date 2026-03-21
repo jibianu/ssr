@@ -49,35 +49,15 @@
   </div>
 
   <ng-container *ngIf="txtRoute !== 'trainer' || loading || loadError || (blogs?.length > 0)">
-    <div class="blog-filters mb-3">
-      <div class="row g-2 align-items-end">
-        <div class="col-md-3">
-          <label class="form-label small mb-0">Search</label>
-          <input type="text" class="form-control form-control-sm" placeholder="Search blogs by title..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label small mb-0">Category</label>
-          <select class="form-select form-select-sm" [(ngModel)]="filterCategoryId" (ngModelChange)="applyFilters()">
-            <option value="">All Categories</option>
-            <option *ngFor="let c of categories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label small mb-0">Author</label>
-          <select class="form-select form-select-sm" [(ngModel)]="filterAuthor" (ngModelChange)="applyFilters()">
-            <option value="">All Authors</option>
-            <option *ngFor="let a of uniqueAuthors" [value]="a">{{ a }}</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label small mb-0">Date From</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDateFrom" (ngModelChange)="applyFilters()">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label small mb-0">Date To</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDateTo" (ngModelChange)="applyFilters()">
-        </div>
-      </div>
+    <div *ngIf="searchTags?.length" class="course-list__tags-wrap mb-2">
+      <span *ngFor="let tag of searchTags" class="course-list__tag">
+        {{ tag.value }}
+        <a href="javascript:void(0)" class="course-list__tag-remove" (click)="onFilterTagRemoved(tag)">&times;</a>
+      </span>
+    </div>
+    <div class="blog-list__search-row mb-3">
+      <label class="form-label small mb-0">Search</label>
+      <input type="text" class="form-control form-control-sm" style="max-width: 20rem;" placeholder="Search blogs by title..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
     </div>
     <div class="list-page__table-wrap list-table-modern__wrap">
       <p class="blog-list-hint">Click a row to open the blog edit page.</p>

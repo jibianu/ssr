@@ -10,6 +10,7 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { CommonServiceService } from 'src/app/shared/service/common-service.service';
 import { AuthenticationService } from 'src/app/modules/auth/auth.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
+import { resolveCourseId, resolveCourseSlug } from 'src/app/core/helpers/course-id.helper';
 
 @Component({
     selector: 'app-common-course',
@@ -258,19 +259,23 @@ export class CommonCourseComponent implements OnInit, OnDestroy {
   /** Resume / continue course: set course and navigate to curriculum (used by CTA button). */
   fnResume(item: any): void {
     this.setCourse(item);
-    this.router.navigate(['/app', this.redirectUrl, 'details', 'curriculum-list', item.id]);
+    const cid = resolveCourseId(item);
+    if (!cid) return;
+    this.router.navigate(['/app/student/course', cid]);
   }
 
   setCourse(item) {
     // debugger
     let courseProgressID = '';
+    const cid = resolveCourseId(item);
+    if (!cid) return;
 
     localStorage.setItem('course', JSON.stringify(item));
     if (!item.courseProgress) {
       let date = new Date();
       var req = {
         usersCourseEnrollmentsId: item.courseEnrollmentsResponse.id,
-        courseId: item.id,
+        courseId: cid,
         progressStatusCodeId: ProgressStatus.InProgress,
         startDateTime: date//"2022-04-02"//date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay()
       }
@@ -288,7 +293,26 @@ export class CommonCourseComponent implements OnInit, OnDestroy {
       sessionStorage.setItem('courseProgressID', item.courseProgress.id);
       courseProgressID = item.courseProgress.id;
     }
-    this._commonService.setCourseProgressDetails(courseProgressID, CurriculamStatus.Course, item.id);
+    this._commonService.setCourseProgressDetails(courseProgressID, CurriculamStatus.Course, cid);
+  }
+
+  /** Wishlist card → marketing URL with optional wish id (same pattern as Explore). */
+  wishlistMarketingLink(item: any): any[] {
+    const courseId = resolveCourseId(item?.course);
+    if (!courseId) {
+      return ['/app', this.redirectUrl, 'categories'];
+    }
+    const wishId = item?.id ?? item?.Id;
+    if (wishId != null && String(wishId).trim() !== '') {
+      return ['/app', this.redirectUrl, 'categories', 'course', courseId, String(wishId)];
+    }
+    return ['/app', this.redirectUrl, 'categories', 'course', courseId];
+  }
+
+  /** Pass slug so embedded public site opens /{slug} (same as marketing site). */
+  wishlistMarketingQueryParams(item: any): Record<string, string> {
+    const slug = resolveCourseSlug(item?.course);
+    return slug ? { publicSlug: slug } : {};
   }
   getWishListCourse() {
     this.isWishList = true;

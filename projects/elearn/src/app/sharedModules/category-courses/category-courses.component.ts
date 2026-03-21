@@ -10,6 +10,9 @@ import { Role } from 'src/app/shared/models/role';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
 import { getElearnAppBaseUrl } from 'src/app/core/helpers/app-url.helper';
+import { resolveCourseId } from 'src/app/core/helpers/course-id.helper';
+import { navigateExploreCourseMarketingPage } from 'src/app/core/helpers/explore-course-nav.helper';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'app-category-courses',
@@ -78,10 +81,13 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
     const obj: Record<string, string | number | boolean> = {
       'Filter.CategoryId': item,
       pageNumber: this.page,
-      pageSize: 100
+      pageSize: 100,
+      'Sort.PropertyName': 'Title',
+      'Sort.IsAscending': 'true'
     };
     if (this.role == Role.Company || this.role == Role.Student) {
-      obj['Filter.IsPublished'] = true;
+      // Mirror public marketing catalog (same as GET api/public/courses?categorySlug=…)
+      obj['Filter.ForPublicListing'] = true;
       obj['Filter.IsProgressInfo'] = true;
     }
     this.subscription.add(
@@ -100,7 +106,7 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
             this.gadata = [];
             return;
           }
-          const priceRequests = courses.map((c) => this.appService.getCoursePrices(c.id));
+          const priceRequests = courses.map((c) => this.appService.getCoursePrices(resolveCourseId(c) || c.id));
           forkJoin(priceRequests).subscribe(
             (pricesList) => {
               this.gadata = courses.map((x, i) => {
@@ -108,6 +114,7 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
                 const isActiveDiscount = priceRow && this.isPriceRowActive(priceRow);
                 return {
                   ...x,
+                  id: resolveCourseId(x) || x.id,
                   bgColor: this.getRandomColor(),
                   originalPrice: priceRow?.originalPrice ?? x.originalPrice,
                   discountedPrice: isActiveDiscount ? priceRow?.discountedPrice : (priceRow?.originalPrice ?? x.discountedPrice),
@@ -116,7 +123,11 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
               });
             },
             () => {
-              this.gadata = courses.map((x) => ({ ...x, bgColor: this.getRandomColor() }));
+              this.gadata = courses.map((x) => ({
+                ...x,
+                id: resolveCourseId(x) || x.id,
+                bgColor: this.getRandomColor()
+              }));
             }
           );
         },
@@ -137,9 +148,11 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
   //   // this.route.navigate(['/category-courses-description']);
   // }
   fnAddWishList(item) {
+    const cid = resolveCourseId(item);
+    if (!cid) return;
     let obj: any;
     obj = {
-      courseId: item.id,
+      courseId: cid,
       comments: 'testing'
     }
     this.subscription.add(this.appService.addWishList(obj).subscribe((res: any) => {
@@ -157,10 +170,12 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
       item["wishListsResponse"] = false;
     }));
   }
-  fnResume(item) {
-    // app/student/details/curriculum-list/f016466b-d621-4ad3-90e3-b75e53ccbd66
-    localStorage.setItem('course', JSON.stringify(item))
-    this.route.navigate(['app/student/details/curriculum-list/', item?.courseProgress.courseId])
+  /** Resume: open curriculum page. Use course id from item.id or enrollment progress. */
+  fnResume(item: any) {
+    const courseId = resolveCourseId(item) || item?.courseProgress?.courseId;
+    if (!courseId) return;
+    localStorage.setItem('course', JSON.stringify(item));
+    this.route.navigate(['/app/student/course', courseId]);
   }
   pageChanged(event) {
     this.page = event;
@@ -171,14 +186,17 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
     this._location.back();
   }
   redirectToDescription(item) {
-    this.route.navigate(['/app/student/category-courses-description/', item.id]);
+    const id = resolveCourseId(item);
+    if (!id) return;
+    navigateExploreCourseMarketingPage(this.route, item, environment);
   }
 
   /** Navigate to checkout for course purchase */
   /** Buy: if not logged in, redirect to login with returnUrl=/app/student/course/:id; after login user lands on course or checkout. If logged in, go to course details page. */
   goToCheckout(item: any) {
-    if (!item?.id) return;
-    const returnUrl = '/app/student/course/' + item.id;
+    const id = resolveCourseId(item);
+    if (!id) return;
+    const returnUrl = '/app/student/course/' + id;
     const token = this.authService.currentToken();
     if (!token) {
       const baseUrl = getElearnAppBaseUrl();
@@ -186,7 +204,7 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
       window.location.href = url;
       return;
     }
-    this.route.navigate(['/app/student/category-courses-description', item.id]);
+    navigateExploreCourseMarketingPage(this.route, item, environment);
   }
 
   /** Pick the active price (StartDate <= now <= EndDate), or first if none active. Same logic as backend CourseProfile. */

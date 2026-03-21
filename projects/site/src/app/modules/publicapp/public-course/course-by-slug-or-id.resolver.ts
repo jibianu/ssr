@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
@@ -25,7 +26,8 @@ export class CourseBySlugOrIdResolver implements Resolve<any> {
   constructor(
     private publicAppService: PublicAppService,
     private router: Router,
-    private headerContext: CourseHeaderContextService
+    private headerContext: CourseHeaderContextService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
   resolve(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): Observable<any> {
@@ -57,7 +59,9 @@ export class CourseBySlugOrIdResolver implements Resolve<any> {
         }
       }),
       catchError(() => {
-        this.router.navigate(['/page-not-found'], { replaceUrl: true });
+        if (isPlatformBrowser(this.platformId)) {
+          void this.router.navigate(['/page-not-found'], { replaceUrl: true });
+        }
         return of(null);
       })
     );

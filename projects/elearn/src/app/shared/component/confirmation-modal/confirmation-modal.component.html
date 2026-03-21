@@ -9,7 +9,7 @@
     </button>
   </div>
   <div class="confirmation-modal__body">
-    <p class="confirmation-modal__message" [innerHTML]="descText"></p>
+    <p class="confirmation-modal__message" [innerHTML]="descText | fixMojibakeSafeHtml"></p>
   </div>
   <div class="confirmation-modal__footer">
     <button type="button" class="confirmation-modal__btn confirmation-modal__btn--secondary" (click)="closeModal('close')">

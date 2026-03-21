@@ -73,25 +73,33 @@ export class GoogleCallbackComponent implements OnInit {
                     this.loading = false;
                     return;
                   }
-                  const stateRedirect = (this.route.snapshot.queryParamMap.get('state') ?? '').trim();
+                  // Prefer state (from Google OAuth); fallback to localStorage (set by login page from returnUrl query)
+              let stateRedirect = (this.route.snapshot.queryParamMap.get('state') ?? '').trim();
+              if (!stateRedirect && typeof localStorage !== 'undefined') {
+                try {
+                  stateRedirect = (localStorage.getItem('returnUrl') ?? '').trim();
+                  if (stateRedirect) localStorage.removeItem('returnUrl');
+                } catch (_) {}
+              }
                   if (stateRedirect && (stateRedirect.startsWith('/') || stateRedirect.startsWith('http'))) {
                     const courseMatch = stateRedirect.match(/^\/app\/student\/course\/([^/?#]+)/);
                     if (courseMatch) {
                       const courseId = courseMatch[1];
+                      // Enroll flow: land on Elearn course page; startPurchase may enroll free or return redirectUrl
                       this.adminAppService.startPurchase(courseId).pipe(first()).subscribe({
                         next: (res: any) => {
                           const redirectUrl = (res?.redirectUrl ?? '').toString().trim();
-                          if (redirectUrl) {
+                          if (redirectUrl && redirectUrl.includes('/app/student/course/')) {
                             if (redirectUrl.startsWith('http')) {
                               window.location.href = redirectUrl;
                             } else {
                               this.router.navigateByUrl(redirectUrl);
                             }
                           } else {
-                            this.router.navigate(['/checkout', courseId]);
+                            this.router.navigateByUrl(stateRedirect);
                           }
                         },
-                        error: () => this.router.navigate(['/checkout', courseId])
+                        error: () => this.router.navigateByUrl(stateRedirect)
                       });
                     } else {
                       this.authService.getUserInfo().subscribe({

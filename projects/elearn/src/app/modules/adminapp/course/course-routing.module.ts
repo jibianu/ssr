@@ -3,8 +3,13 @@ import { AddCourseComponent } from './add-course/add-course.component';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { CourseListComponent } from './course-list/course-list.component';
+import { CourseReviewComponent } from './course-review/course-review.component';
 
 const routes: Routes = [
+  {
+    path: 'review',
+    component: CourseReviewComponent,
+  },
   {
     path: 'list',
     component: CourseListComponent,

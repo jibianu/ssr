@@ -1,0 +1,48 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="list-page__table-wrap list-table-modern__wrap">
+    <p class="mb-2 text-muted">Courses submitted by trainers for review. Approve to publish or reject with feedback.</p>
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">Title</th>
+            <th class="list-table-modern__th">Category</th>
+            <th class="list-table-modern__th">Author</th>
+            <th class="list-table-modern__th">Submitted</th>
+            <th class="list-table-modern__th list-table-modern__th--action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading" class="list-table-modern__row">
+            <td colspan="5" class="list-table-modern__empty">Loading...</td>
+          </tr>
+          <tr *ngIf="!loading && loadError" class="list-table-modern__row">
+            <td colspan="5" class="list-table-modern__empty text-warning">
+              {{ loadError }}
+              <button type="button" class="btn btn-sm btn-outline-primary ms-2" (click)="fetchPending()">Retry</button>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && !loadError && !courses?.length" class="list-table-modern__row">
+            <td colspan="5" class="list-table-modern__empty">No courses pending review</td>
+          </tr>
+          <tr *ngFor="let item of courses" class="list-table-modern__row">
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.title }}</td>
+            <td class="list-table-modern__td">{{ item.categoryName }}</td>
+            <td class="list-table-modern__td">{{ item.authorName }}</td>
+            <td class="list-table-modern__td">{{ (item.submittedDate || item.createdOn) | date:'MMM d, y' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--action">
+              <div class="list-table-modern__actions">
+                <button type="button" class="btn btn-sm btn-success me-1" (click)="approve(item)" title="Approve and publish">
+                  <i class="fa fa-check"></i> Approve
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" (click)="openRejectModal(item)" title="Reject with feedback">
+                  <i class="fa fa-times"></i> Reject
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

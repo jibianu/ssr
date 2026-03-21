@@ -9,6 +9,7 @@ import { TrainerAnalyticsDashboardComponent } from './trainer-analytics-dashboar
 import { TrainerProfileComponent } from './trainer-profile/trainer-profile.component';
 import { TrainerCourseDetailsComponent } from './trainer-course-details/trainer-course-details.component';
 import { LessonEditorModule } from 'src/app/shared/component/lesson-editor/lesson-editor.module';
+import { SubmitForReviewModalComponent } from '../adminapp/course/course-review/submit-for-review-modal/submit-for-review-modal.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { LessonEditorModule } from 'src/app/shared/component/lesson-editor/lesso
     SharedModule,
     CurriculumModule,
     LessonEditorModule,
-    TrainerRoutingModule
+    TrainerRoutingModule,
+    SubmitForReviewModalComponent
   ]
 })
 export class TrainerModule { }

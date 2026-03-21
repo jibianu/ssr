@@ -37,10 +37,28 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   trainerListSearchTerm = '';
   showCurriculumToolbar = false;
   showCurriculumEditActions = true;
+  /** Show Submit for Review when course is Draft (0) or Rejected (3). */
+  showCourseSubmitForReview = false;
+  /** Show Approve and Reject in course edit topbar when course status is Pending Review (1). */
+  showCourseReviewActions = false;
+  /** Show Review button whenever a course is loaded (any status) so admin can always open panel and see history. */
+  showCourseReviewButton = false;
   curriculumSearchTerm = '';
   curriculumActiveTab = 'concepts';
   /** Set by Event List (and similar pages); shows e.g. "Add Event" button in topbar. */
   topbarPrimaryAction: { routerLink: string; label: string; icon?: string; contentType?: 'Course' | 'Blog' | 'Event' } | null = null;
+  /** When set, show Approve and Reject for blog review in topbar. */
+  topbarBlogReviewActions: { blogId: string } | null = null;
+  /** Show Blog List toolbar (Filter button) in topbar. */
+  showBlogListToolbar = false;
+  /** Show Event List toolbar (Filter button) in topbar. */
+  showEventListToolbar = false;
+  /** Show Review button when blog context is set (blog add-edit with blog loaded); opens blog review sidebar. */
+  showBlogReviewButton = false;
+  /** Show Submit for Review in topbar when on blog edit and status is not Pending (trainer can submit). */
+  showBlogSubmitForReviewButton = false;
+  /** Show Review button when event context is set (event edit with event loaded); opens event review sidebar. */
+  showEventReviewButton = false;
   logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
   homeRoute = '/app/student/courses';
   userEmail = '';
@@ -151,6 +169,18 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
       })
     );
     this.sub.add(
+      this.sharedService.showBlogListToolbar.subscribe((show) => {
+        this.showBlogListToolbar = show;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.showEventListToolbar.subscribe((show) => {
+        this.showEventListToolbar = show;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
       this.sharedService.trainerListSearchTerm$.subscribe((term) => {
         this.trainerListSearchTerm = term;
       })
@@ -204,6 +234,35 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
       })
     );
     this.sub.add(
+      this.sharedService.topbarBlogReviewActions.subscribe((actions) => {
+        this.topbarBlogReviewActions = actions;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.curriculumCourseReviewContext.subscribe((ctx) => {
+        const s = ctx ? Number(ctx.status) : NaN;
+        this.showCourseSubmitForReview = !!(ctx && (s === 0 || s === 3));
+        this.showCourseReviewActions = !!(ctx && s === 1);
+        /** Show Review whenever context is set so admin can always open the panel and see history (any status). */
+        this.showCourseReviewButton = !!ctx;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.blogReviewContext.subscribe((ctx) => {
+        this.showBlogReviewButton = !!ctx;
+        this.showBlogSubmitForReviewButton = !!(ctx && ctx.status !== 1);
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.eventReviewContext.subscribe((ctx) => {
+        this.showEventReviewButton = !!ctx;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
       this.studentSearchSubject.pipe(
         debounceTime(300),
         switchMap(term => this.adminAppService.searchCourses(term))
@@ -240,6 +299,34 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.sharedService.curriculumEditPriceClick$.next();
   }
 
+  onCurriculumSubmitForReviewClick(): void {
+    this.sharedService.curriculumSubmitForReviewClick$.next();
+  }
+
+  /** Open review sidebar (trainer course details handles and shows Submit for Review + history). */
+  onCurriculumReviewPanelClick(): void {
+    this.sharedService.curriculumReviewPanelClick$.next();
+  }
+
+  /** Open Edit landing page sidebar (curriculum list handles). */
+  onCurriculumLandingPanelClick(): void {
+    this.sharedService.curriculumLandingPanelClick$.next();
+  }
+
+  /** Open blog review sidebar (blog add-edit handles and shows Submit for Review / Approve / Reject + history). */
+  onBlogReviewPanelClick(): void {
+    this.sharedService.blogReviewPanelClick$.next();
+  }
+
+  onBlogSubmitForReviewClick(): void {
+    this.sharedService.blogSubmitForReviewClick$.next();
+  }
+
+  /** Open event review sidebar (event edit handles and shows Submit for Review / Approve / Reject + history). */
+  onEventReviewPanelClick(): void {
+    this.sharedService.eventReviewPanelClick$.next();
+  }
+
   onUserMappingClick(): void {
     this.sharedService.userMappingClick$.next();
   }
@@ -260,6 +347,14 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.sharedService.courseListFilterClick$.next();
   }
 
+  onBlogListFilterClick(): void {
+    this.sharedService.blogListFilterClick$.next();
+  }
+
+  onEventListFilterClick(): void {
+    this.sharedService.eventListFilterClick$.next();
+  }
+
   onTrainerListSearchChange(value: string): void {
     this.sharedService.trainerListSearchTerm$.next(value);
   }
@@ -274,6 +369,22 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
 
   onCourseListAddCourseClick(): void {
     this.sharedService.courseListAddCourseClick$.next();
+  }
+
+  onBlogReviewApproveClick(): void {
+    this.sharedService.blogReviewApproveClick$.next();
+  }
+
+  onBlogReviewRejectClick(): void {
+    this.sharedService.blogReviewRejectClick$.next();
+  }
+
+  onCourseReviewApproveClick(): void {
+    this.sharedService.courseReviewApproveClick$.next();
+  }
+
+  onCourseReviewRejectClick(): void {
+    this.sharedService.courseReviewRejectClick$.next();
   }
 
   onTrainerAddCourseClick(): void {

@@ -54,9 +54,23 @@
           <li class="menu-item">
             <a [routerLink]="'/become-our-trainer'">Become an Instructor</a>
           </li>
-          <li class="menu-actions">
+          <li class="menu-actions" *ngIf="!isLoggedIn">
             <a [href]="loginUrl" class="btn-login">Log in</a>
             <a [href]="registerUrl" class="btn-signup">Sign up</a>
+          </li>
+          <li class="menu-actions menu-actions--profile" *ngIf="isLoggedIn">
+            <a [href]="profileHref" class="user-profile-link" title="My profile" aria-label="My profile">
+              <img
+                *ngIf="profilePictureUrl() && !profileImageError"
+                class="user-profile-link__img"
+                [src]="profilePictureUrl()"
+                alt=""
+                width="40"
+                height="40"
+                (error)="onProfileImageError()"
+              />
+              <span *ngIf="!profilePictureUrl() || profileImageError" class="user-profile-link__initial">{{ userDisplayInitial() }}</span>
+            </a>
           </li>
         </ul>
       </nav>
@@ -79,9 +93,18 @@
         </div>
 
         <div class="mobile-actions">
-          <a [href]="loginUrl" 
-             class="btn-login-mobile-top">
-            Log in
+          <a *ngIf="!isLoggedIn" [href]="loginUrl" class="btn-login-mobile-top">Log in</a>
+          <a *ngIf="isLoggedIn" [href]="profileHref" class="user-profile-link user-profile-link--mobile-top" title="My profile" aria-label="My profile">
+            <img
+              *ngIf="profilePictureUrl() && !profileImageError"
+              class="user-profile-link__img"
+              [src]="profilePictureUrl()"
+              alt=""
+              width="36"
+              height="36"
+              (error)="onProfileImageError()"
+            />
+            <span *ngIf="!profilePictureUrl() || profileImageError" class="user-profile-link__initial">{{ userDisplayInitial() }}</span>
           </a>
         </div>
       </div>
@@ -139,16 +162,25 @@
         </li>
       </ul>
       
-      <div class="mobile-menu-actions">
-        <a [href]="loginUrl" 
-           class="btn-login-mobile-menu" 
-           (click)="toggleinVisibility()">
-          Log in
-        </a>
-        <a [href]="registerUrl" 
-           class="btn-signup-mobile-menu" 
-           (click)="toggleinVisibility()">
-          Sign up
+      <div class="mobile-menu-actions" *ngIf="!isLoggedIn">
+        <a [href]="loginUrl" class="btn-login-mobile-menu" (click)="toggleinVisibility()">Log in</a>
+        <a [href]="registerUrl" class="btn-signup-mobile-menu" (click)="toggleinVisibility()">Sign up</a>
+      </div>
+      <div class="mobile-menu-actions mobile-menu-actions--profile" *ngIf="isLoggedIn">
+        <a [href]="profileHref" class="user-profile-menu-row" (click)="toggleinVisibility()">
+          <span class="user-profile-link user-profile-link--menu">
+            <img
+              *ngIf="profilePictureUrl() && !profileImageError"
+              class="user-profile-link__img"
+              [src]="profilePictureUrl()"
+              alt=""
+              width="40"
+              height="40"
+              (error)="onProfileImageError()"
+            />
+            <span *ngIf="!profilePictureUrl() || profileImageError" class="user-profile-link__initial">{{ userDisplayInitial() }}</span>
+          </span>
+          <span class="user-profile-menu-row__label">My profile</span>
         </a>
       </div>
     </nav>

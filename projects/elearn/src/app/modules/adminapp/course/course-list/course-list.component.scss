@@ -78,6 +78,25 @@
   }
 }
 
+/* Badge for trainer-requested review (status = Pending Review) in course list */
+.course-list__badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.course-list__badge--pending-review {
+  background: #f57722;
+  color: #fff;
+  border: 1px solid #e06b18;
+}
+
 .course-list__tags-wrap {
   display: flex;
   flex-wrap: wrap;

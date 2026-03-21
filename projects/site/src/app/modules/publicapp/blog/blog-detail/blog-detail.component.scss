@@ -2,6 +2,17 @@
 :host {
   display: block;
   overflow: visible;
+  --blog-sticky-top: 80px;
+}
+
+/* Public layout (regular topbar) */
+:host-context(.public-main-wrapper) {
+  --blog-sticky-top: 80px;
+}
+
+/* Elearn-in-site layout has sticky topbar + side layout; keep more breathing room */
+:host-context(.public-main-wrapper--elearn) {
+  --blog-sticky-top: 96px;
 }
 
 /* Blog detail page wrapper - no overflow so sticky works (SSR-safe) */
@@ -21,14 +32,18 @@
   overflow: visible;
 }
 
-/* Layout: grid 2fr 1fr - mirrors original blog, supports sticky */
+/* Main blog layout: content + right sidebar */
 .blog-container {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 10px;
   align-items: start;
   margin-top: 1.5rem;
   overflow: visible;
+  align-content: stretch;
+  grid-auto-flow: column;
+  justify-content: center;
+  justify-items: center;
 }
 
 .blog-main {
@@ -38,34 +53,72 @@
 
 /* Same as original blog: main column vertical margin */
 .m-15px-tb {
-  margin-top: 15px;
-  margin-bottom: 15px;
+  margin-top: 1px;
+  margin-bottom: 5px;
 }
 
-/* Sticky sidebar - same as original blog (sticky-top + top offset) */
+/* Sticky sidebar: stays in flow and respects page/footer bounds */
 .blog-sidebar {
-  position: sticky;
-  top: 120px;
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  justify-self: end;
   height: fit-content;
   overflow: visible;
   padding: 0;
-  z-index: 10;
 }
 
 /* Same as original blog: inner sidebar wrapper */
 .blog-aside {
   padding: 0;
+  position: static;
+  top: auto;
+  height: auto;
+  z-index: 10;
+  will-change: top, bottom;
+  transition: top 120ms ease, bottom 120ms ease, left 120ms ease;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
 }
 
-/* Disable sticky on mobile - sidebar flows normally */
-@media (max-width: 768px) {
+.blog-aside--stop {
+  /* Class hook for stop mode (styles mainly controlled by TS for dynamic bottom value) */
+}
+
+/* Tablet/mobile: stack and disable sticky */
+@media (max-width: 992px) {
   .blog-sidebar {
     position: static;
+    top: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .blog-aside {
+    position: static;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .blog-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 993px) {
+  :host {
+    --blog-sticky-top: 72px;
+  }
+
+  :host-context(.public-main-wrapper--elearn) {
+    --blog-sticky-top: 84px;
   }
 }
 
@@ -313,21 +366,46 @@
 
 .widget {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
+  border: 1px solid #edf0f3;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   overflow: hidden;
 }
 
+.sidebar-single-card {
+  display: block;
+}
+
+.sidebar-single-card__section {
+  margin: 0;
+  border-top: 1px solid #edf0f3;
+}
+
+.sidebar-single-card__section:first-of-type {
+  border-top: 0;
+}
+
+.sidebar-single-card__section--social {
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+}
+
+.sidebar-single-card__section--newsletter {
+  padding-top: 0.8rem;
+}
+
 .widget-body {
-  padding-top: 0;
+  padding: 0.65rem 0.9rem 0.85rem;
 }
 
 /* Same as original blog: TOC heading sticks when list scrolls */
 .blog-table-heading {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #000;
+  color: #111827;
+  letter-spacing: 0.2px;
   padding-bottom: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
   border-bottom: none;
   position: sticky;
   top: 0;
@@ -349,12 +427,12 @@
   }
 
   a {
-    color: #999;
+    color: #6b7280;
     text-decoration: none;
     display: block;
-    padding: 0.4rem 0;
-    font-size: 0.95rem;
-    line-height: 1.3;
+    padding: 0.45rem 0;
+    font-size: 0.97rem;
+    line-height: 1.35;
     transition: all 0.2s ease;
 
     &:hover {
@@ -400,10 +478,10 @@
 }
 
 .toc-link {
-  color: #999;
+  color: #6b7280;
   text-decoration: none;
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.97rem;
   line-height: 1.3;
   padding: 0.4rem 0;
   transition: all 0.2s ease;
@@ -420,13 +498,13 @@
 
 .social-sharing-section {
   padding: 0;
-  margin-top: 0.5rem;
+  margin-top: 0;
 }
 
 .social-icons {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -434,14 +512,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 4px;
-  background: transparent;
-  color: #999;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #6b7280;
   text-decoration: none;
   transition: all 0.2s ease;
-  border: none;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
   padding: 0;
 
@@ -451,7 +529,9 @@
   }
 
   &:hover {
-    color: #666;
+    color: #374151;
+    border-color: #d1d5db;
+    background: #fff;
   }
 
   &.facebook:hover {
@@ -470,15 +550,15 @@
 .newsletter-signup-card {
   background: linear-gradient(180deg, #20B2AA 0%, #008B8B 100%);
   border-radius: 12px;
-  padding: 1.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  box-shadow: 0 10px 22px rgba(13, 148, 136, 0.2);
 }
 
 .newsletter-title {
-  font-size: 1.5rem;
+  font-size: 1.85rem;
   font-weight: 700;
   color: #fff;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.55rem 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -489,10 +569,10 @@
 }
 
 .newsletter-description {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: #fff;
   line-height: 1.6;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 0.9rem 0;
   opacity: 0.95;
 }
 
@@ -504,23 +584,23 @@
 
 .newsletter-input {
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.78rem 0.95rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #333;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .newsletter-subscribe-btn {
   width: 100%;
-  padding: 0.875rem 1.5rem;
+  padding: 0.78rem 1.15rem;
   background: rgba(255, 255, 255, 0.95);
   color: #008B8B;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -542,6 +622,18 @@
     color: #fff;
     cursor: default;
   }
+}
+
+.newsletter-success-placeholder {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgba(50, 205, 50, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .newsletter-message {
@@ -729,51 +821,62 @@
   }
 }
 
-/* Loop Marketing – same as before blog merge: cream background, white card, purple header, orange */
+/* Loop Marketing – modern course card: beige bg, white card, left graphic + right content */
 .loop-marketing-section {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: #F5F5DC; /* Light cream/beige – before merge */
-  border-radius: 8px;
+  margin: 1rem 0;
+  padding: 0 14px;
+  background: beige;
   border: 1px solid #E8E8D3;
+  border-radius: 8px;
+  font-family: 'Inter', 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* White card with rounded corners (before merge design) */
+/* White card: soft drop shadow, rounded corners */
 .loop-marketing-content {
   display: flex;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   justify-content: flex-start;
   gap: 0;
   position: relative;
-  background: #fff;
+  background: transparent;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: visible;
+  box-shadow: none;
+  padding: 0;
 }
 
+/* Left graphic: rounded left side only, subtle depth */
+.loop-marketing-content .loop-graphic-container {
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Badge column ~35% width, vertical card */
 .loop-marketing-graphic {
   flex-shrink: 0;
   width: 200px;
-  height: 200px;
+  min-width: 200px;
+  max-width: 35%;
+  height: 230px;
   position: relative;
 }
 
-/* Left block: purple top, orange bottom – rounded where it meets the card */
 .loop-graphic-container {
   width: 100%;
   height: 100%;
-  min-height: 200px;
-  border-radius: 12px 0 0 12px; /* Rounded left edge of card */
+  min-height: 230px;
   overflow: hidden;
-  box-shadow: none;
   display: flex;
   flex-direction: column;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .loop-graphic-top {
-  flex: 0 0 35%;
-  min-height: 70px;
-  background: #4C198A; /* Dark purple header – before merge */
+  flex: 0 0 30%;
+  min-height: 0;
+  background: #4B1589;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -784,13 +887,14 @@
   color: #fff;
   font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  text-transform: lowercase;
 }
 
 .loop-graphic-bottom {
-  flex: 0 0 65%;
-  min-height: 130px;
-  background: #FF7F3A; /* Bright orange – before merge */
+  flex: 0 0 70%;
+  min-height: 0;
+  background: #FF7034;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -800,42 +904,44 @@
 }
 
 .loop-infinity-symbol {
-  font-size: 3.5rem;
+  font-size: 3.25rem;
   color: #fff;
   font-weight: 300;
   line-height: 1;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .loop-graphic-text {
   color: #fff;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.35;
+  max-width: 92%;
 }
 
-/* Right side: white content area (before merge) */
+/* Right content: generous padding, breathable spacing */
 .loop-marketing-text {
   flex: 1;
   min-width: 0;
-  background: #fff;
-  padding: 1.5rem 2rem;
+  background: transparent;
+  padding: 36px 44px 36px 40px;
 }
 
 .loop-marketing-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #333;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.2;
+  color: #222;
+  margin: 0 0 0.875rem 0;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
 }
 
 .loop-marketing-description {
-  font-size: 0.95rem;
-  color: #666;
+  font-size: 0.9375rem;
+  color: #5c5c5c;
   margin: 0 0 1.5rem 0;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .loop-features-list {
@@ -844,7 +950,7 @@
   margin: 0 0 1.5rem 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.625rem 1.5rem;
 }
 
 .loop-feature-item {
@@ -852,15 +958,15 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #333;
-  font-weight: 500;
+  color: #222;
+  font-weight: 400;
 }
 
 .loop-marketing-section .loop-checkmark-circle {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #FF7F3A; /* Orange – before merge */
+  background: #FF7034;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -879,22 +985,23 @@
   flex-wrap: wrap;
 }
 
+/* Pill-shaped CTA: fully rounded, subtle shadow */
 .loop-download-btn {
-  background: #FF7F3A; /* Bright orange – before merge */
+  background: #FF7034;
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border-radius: 8px;
+  padding: 12px 26px;
+  font-size: 0.9375rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(255, 127, 58, 0.35);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(255, 112, 52, 0.35);
 
   &:hover {
-    background: #e86f2e;
+    background: #e85a20;
     transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(255, 127, 58, 0.45);
+    box-shadow: 0 4px 14px rgba(255, 112, 52, 0.4);
   }
 
   &:active {
@@ -902,27 +1009,27 @@
   }
 
   &:focus {
-    outline: 2px solid #FF7F3A;
+    outline: 2px solid #FF7034;
     outline-offset: 2px;
   }
 }
 
 .loop-learn-more-link {
-  color: #333;
+  color: #222;
   text-decoration: underline;
   font-size: 0.9rem;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   transition: color 0.2s ease;
 
   &:hover {
-    color: #FF7F3A;
+    color: #FF7034;
   }
 
   &:focus {
-    outline: 2px solid #FF7F3A;
+    outline: 2px solid #FF7034;
     outline-offset: 2px;
     border-radius: 2px;
   }
@@ -936,24 +1043,32 @@
 
 @media (max-width: 991px) {
   .loop-marketing-section {
-    padding: 1.25rem;
-    margin: 1.5rem 0;
+    padding: 0 14px;
+    margin: 1rem 0;
   }
 
   .loop-marketing-content {
     flex-direction: column;
-    gap: 0;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  /* Graphic on top when stacked: full radius */
+  .loop-marketing-content .loop-graphic-container {
+    border-radius: 12px;
   }
 
   .loop-marketing-graphic {
     width: 100%;
-    height: 180px;
-    margin: 0;
+    max-width: 220px;
+    height: 220px;
+    margin: 0 auto;
   }
 
   .loop-graphic-container {
-    border-radius: 12px 12px 0 0; /* Rounded top when stacked */
-    min-height: 180px;
+    border-radius: 12px;
+    min-height: 220px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   }
 
   .loop-marketing-text {
@@ -973,23 +1088,24 @@
   }
 
   .loop-marketing-description {
-    font-size: 0.9rem;
+    font-size: 16px;
   }
 }
 
 @media (max-width: 767px) {
   .loop-marketing-section {
-    padding: 1rem;
-    margin: 1.25rem 0;
+    padding: 0 14px;
+    margin: 1rem 0;
+    border-radius: 8px;
   }
 
   .loop-marketing-graphic {
-    width: 100%;
-    height: 160px;
+    max-width: 220px;
+    height: 200px;
   }
 
   .loop-graphic-container {
-    min-height: 160px;
+    min-height: 200px;
   }
 
   .loop-marketing-text {
@@ -1005,7 +1121,7 @@
   }
 
   .loop-marketing-description {
-    font-size: 0.85rem;
+    font-size: 15px;
     margin-bottom: 1.25rem;
   }
 
@@ -1026,7 +1142,7 @@
 
   .loop-download-btn {
     width: 100%;
-    padding: 0.7rem 1.25rem;
+    padding: 12px 20px;
     font-size: 0.9rem;
   }
 

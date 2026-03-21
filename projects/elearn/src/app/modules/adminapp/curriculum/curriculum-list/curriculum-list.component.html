@@ -1,9 +1,6 @@
 <div class="curriculum-page">
   <div class="curriculum-page__course-header" *ngIf="courseInfo?.title">
-    <h1 class="curriculum-page__course-name">{{ courseInfo.title }}</h1>
-    <button type="button" class="curriculum-page__public-link btn btn-sm btn-outline-primary" (click)="openPublicLandingPageSidebar()" title="Edit course landing page">
-      <i class="fa fa-pencil"></i> Edit landing page
-    </button>
+    <h1 class="curriculum-page__course-name">{{ courseInfo.title | fixMojibake }}</h1>
   </div>
   <div class="tab-content" id="tabContent">
     <div class="tab-pane fade" [class.show]="activeTabId === 'concepts'" [class.active]="activeTabId === 'concepts'" id="concepts" role="tabpanel" aria-labelledby="concepts-tab">
@@ -29,12 +26,11 @@
               <tr *ngFor="let item of curriculumList | filter:term | paginate: config; trackBy: trackByCurriculumId" class="curriculum-page__row">
                 <td class="curriculum-page__cell">
                   <a href="javascript:void(0)" class="curriculum-page__link" (click)="checkCourse(content, item)">{{item?.title}}</a>
-                  <div class="curriculum-page__meta">
-                    <span *ngIf="item?.curriculumConceptCount">Concepts ({{item.curriculumConceptCount}})</span>
-                    <span *ngIf="item?.curriculumQuestionCount">Questions ({{item.curriculumQuestionCount}})</span>
-                    <span *ngIf="item?.curriculumStudyMaterialCount">StudyMaterials ({{item.curriculumStudyMaterialCount}})</span>
-                    <span *ngIf="item?.curriculumTopicCount">Topics ({{item.curriculumTopicCount}})</span>
-                    <span *ngIf="item?.curriculumVideoLectureCount">VideoLectures ({{item.curriculumVideoLectureCount}})</span>
+                  <div class="curriculum-page__subtitles" aria-label="Curriculum content types" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
+                    <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+                    <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
+                    <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
+                    <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>
                   </div>
                 </td>
                 <td class="curriculum-page__cell curriculum-page__cell--desc">{{item?.description}}</td>
@@ -87,7 +83,7 @@
       <!-- Row 1: Title + Edit button -->
       <div class="curriculum-modal-header__title-row">
         <div class="curriculum-modal-header__title-wrap" *ngIf="!isEditingCurriculum">
-          <h4 class="modal-title curriculum-modal-header__title">{{curriculumDetailstitle}}</h4>
+          <h4 class="modal-title curriculum-modal-header__title">{{ curriculumDetailstitle | fixMojibake }}</h4>
           <p class="curriculum-modal-header__desc" *ngIf="selectedCurriculumItem?.description">{{selectedCurriculumItem?.description}}</p>
         </div>
         <div class="curriculum-modal-header__title-edit" *ngIf="isEditingCurriculum">
@@ -155,7 +151,7 @@
               <div class="curriculum-view__content-list" *ngFor="let item of concepts; trackBy: trackByCurriculumId">
                 <div class="curriculum-view__content-card">
                   <div class="curriculum-view__card-header curriculum-view__card-header--with-actions">
-                    <h5 class="curriculum-view__card-title">{{item?.title}}</h5>
+                    <h5 class="curriculum-view__card-title">{{ item?.title | fixMojibake }}</h5>
                     <div class="curriculum-view__card-actions">
                       <button type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('concepts', item)" title="Edit Key Point">
                         <i class="fa fa-pencil"></i> Edit
@@ -166,13 +162,13 @@
                     </div>
                   </div>
                   <div class="curriculum-view__card-body" *ngFor="let x of item.concepts; trackBy: trackByConceptId">
-                    <h6 class="curriculum-view__item-title">{{x?.title}}</h6>
+                    <h6 class="curriculum-view__item-title">{{ x?.title | fixMojibake }}</h6>
                     <div class="curriculum-view__item-image" *ngIf="x.imageLink">
                       <img [src]="x.imageLink" alt="Concept" />
                     </div>
                     <div class="curriculum-view__item-content">
                       <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></div>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
                     </div>
                   </div>
                 </div>
@@ -194,7 +190,7 @@
               <div class="curriculum-view__content-list" *ngFor="let item of studyMaterials; trackBy: trackByCurriculumId">
                 <div class="curriculum-view__content-card">
                   <div class="curriculum-view__card-header curriculum-view__card-header--with-actions">
-                    <h5 class="curriculum-view__card-title">{{item?.title}}</h5>
+                    <h5 class="curriculum-view__card-title">{{ item?.title | fixMojibake }}</h5>
                     <div class="curriculum-view__card-actions">
                       <button type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('study-material', item)" title="Edit Study Material">
                         <i class="fa fa-pencil"></i> Edit
@@ -205,13 +201,13 @@
                     </div>
                   </div>
                   <div class="curriculum-view__card-body" *ngFor="let x of item.studyMaterials; trackBy: trackByConceptId">
-                    <h6 class="curriculum-view__item-title">{{x?.title}}</h6>
+                    <h6 class="curriculum-view__item-title">{{ x?.title | fixMojibake }}</h6>
                     <div class="curriculum-view__item-image" *ngIf="x.imageLink">
                       <img [src]="x.imageLink" alt="Study material" />
                     </div>
                     <div class="curriculum-view__item-content">
                       <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></div>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
                     </div>
                   </div>
                 </div>
@@ -257,7 +253,7 @@
                       </div>
                       <div class="curriculum-view__video-details">
                         <div class="curriculum-view__card-header">
-                          <h5 class="curriculum-view__card-title">{{videoObj?.title}}</h5>
+                          <h5 class="curriculum-view__card-title">{{ videoObj?.title | fixMojibake }}</h5>
                         </div>
                         <p class="curriculum-view__video-desc">{{videoObj?.description}}</p>
                       </div>
@@ -286,7 +282,7 @@
               <div class="curriculum-view__question-list">
                 <div class="curriculum-view__question-card" *ngFor="let data of questionItem; trackBy: trackByQuestionId">
                   <div class="curriculum-view__card-header">
-                    <p class="curriculum-view__question-title">{{data.title}}</p>
+                    <p class="curriculum-view__question-title">{{ data.title | fixMojibake }}</p>
                     <div class="curriculum-view__question-actions">
                       <button type="button" (click)="editSpecificCurriculum('questions', data)" class="btn btn-sm btn-outline-primary curriculum-view__edit-btn"><i class="fa fa-pencil"></i> Edit</button>
                       <button type="button" (click)="deleteQuestion(data)" class="btn btn-sm btn-outline-danger curriculum-view__delete-btn" title="Delete question"><i class="fa fa-trash"></i> Delete</button>
@@ -1128,5 +1124,62 @@
   </div>
   <div class="modal-footer border-0">
     <button type="button" class="btn btn-primary" (click)="modal.close()">OK</button>
+  </div>
+</ng-template>
+
+<!-- Admin course review sidebar: Approve, Reject, and approve/reject history -->
+<ng-template #adminReviewSidebar let-modal>
+  <div class="review-sidebar__header">
+    <h4 class="review-sidebar__title">Review</h4>
+    <button type="button" class="review-sidebar__close" aria-label="Close" (click)="modal.dismiss('Close')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="review-sidebar__body">
+    <section class="review-sidebar__section" *ngIf="isCoursePendingReview">
+      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--success" (click)="onCourseReviewApproveFromPanel(modal)" [disabled]="reviewActionInProgress" title="Approve course">
+        <i class="fa fa-check" aria-hidden="true"></i>
+        <span *ngIf="!reviewActionInProgress">Approve</span>
+        <span *ngIf="reviewActionInProgress">Processing…</span>
+      </button>
+      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--danger" (click)="onCourseReviewRejectFromPanel(modal)" [disabled]="reviewActionInProgress" title="Reject with feedback">
+        <i class="fa fa-times" aria-hidden="true"></i> Reject
+      </button>
+      <p class="review-sidebar__hint">Approve to accept this course (then publish from Course List). Reject to send feedback to the trainer.</p>
+    </section>
+    <section class="review-sidebar__section">
+      <h5 class="review-sidebar__section-title">Approve / Reject history</h5>
+      <div class="review-sidebar__history">
+        <ng-container *ngIf="courseInfo">
+          <ng-container *ngIf="reviewHistoryList?.length">
+            <div class="review-sidebar__history-item" *ngFor="let h of reviewHistoryList"
+              [class.review-sidebar__history-item--rejected]="h.eventType === 1"
+              [class.review-sidebar__history-item--approved]="h.eventType === 2">
+              <span class="review-sidebar__history-label">{{ h.eventType === 0 ? 'Submitted for review' : (h.eventType === 1 ? 'Rejected' : 'Approved') }}</span>
+              <span class="review-sidebar__history-value">{{ h.eventDate | date:'medium' }}</span>
+              <span class="review-sidebar__history-note" *ngIf="h.message">{{ h.message }}</span>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!reviewHistoryList?.length">
+            <div class="review-sidebar__history-item" *ngIf="getReviewSubmittedDate()">
+              <span class="review-sidebar__history-label">Submitted for review</span>
+              <span class="review-sidebar__history-value">{{ getReviewSubmittedDate() | date:'medium' }}</span>
+            </div>
+            <div class="review-sidebar__history-item review-sidebar__history-item--rejected" *ngIf="getReviewRejectionReason()">
+              <span class="review-sidebar__history-label">Rejected</span>
+              <span class="review-sidebar__history-value">{{ getReviewRejectionReason() }}</span>
+              <span class="review-sidebar__history-date" *ngIf="getReviewRejectedDate()">{{ getReviewRejectedDate() | date:'medium' }}</span>
+            </div>
+            <div class="review-sidebar__history-item review-sidebar__history-item--approved" *ngIf="getReviewApprovedDate()">
+              <span class="review-sidebar__history-label">Approved</span>
+              <span class="review-sidebar__history-value">{{ getReviewApprovedDate() | date:'medium' }}</span>
+              <span class="review-sidebar__history-note" *ngIf="getReviewApprovalNote()">{{ getReviewApprovalNote() }}</span>
+            </div>
+            <p class="review-sidebar__history-empty" *ngIf="!getReviewSubmittedDate() && !getReviewRejectionReason() && !getReviewApprovedDate()">No review activity yet.</p>
+          </ng-container>
+        </ng-container>
+        <p class="review-sidebar__history-empty" *ngIf="!courseInfo">Loading course…</p>
+      </div>
+    </section>
   </div>
 </ng-template>

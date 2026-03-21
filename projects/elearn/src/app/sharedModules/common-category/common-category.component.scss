@@ -208,7 +208,7 @@ $app-orange-border: #fdba74;
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
   overflow: hidden;
-  cursor: pointer;
+  cursor: default;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -219,6 +219,18 @@ $app-orange-border: #fdba74;
     transform: translateY(-6px);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(249, 115, 22, 0.2);
     border-color: $app-orange;
+  }
+
+  .category-course-card__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:hover .course-title {
+      color: #ea580c;
+    }
   }
 
   .card-header {
@@ -286,7 +298,8 @@ $app-orange-border: #fdba74;
     margin-bottom: 8px;
   }
 
-  .btn-buy {
+  .btn-buy,
+  .btn-enroll {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid $app-orange-border;
@@ -316,6 +329,35 @@ $app-orange-border: #fdba74;
     }
   }
 
+  .btn-resume {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #86efac;
+    border-radius: 12px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      background: #bbf7d0;
+      border-color: #22c55e;
+      color: #14532d;
+      transform: translateY(-1px);
+    }
+
+    i {
+      font-size: 0.875rem;
+      color: #166534;
+    }
+  }
+
   .card-cta {
     margin-top: 0;
     width: 100%;
@@ -328,6 +370,10 @@ $app-orange-border: #fdba74;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    display: inline-block;
+    text-align: center;
+    box-sizing: border-box;
+    text-decoration: none;
 
     &:hover {
       background: #fff7ed;
@@ -338,6 +384,11 @@ $app-orange-border: #fdba74;
     &--secondary {
       margin-top: 0;
     }
+  }
+
+  .card-content--actions {
+    flex: 1;
+    justify-content: flex-end;
   }
 }
 

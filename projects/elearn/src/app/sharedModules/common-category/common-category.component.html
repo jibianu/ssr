@@ -21,26 +21,41 @@
       </a>
     </div>
     <div class="category-row__courses">
-      <div class="category-course-card" *ngFor="let item of block.courses" (click)="goToCourse(item)">
-        <div class="card-header">
-          <span class="course-category-tag">{{ item?.category?.name }}</span>
-        </div>
-        <div class="card-content">
-          <h4 class="course-title">{{ item.title | slice:0:50 }}{{ item.title?.length > 50 ? '...' : '' }}</h4>
-          <div class="card-price-block">
-            <span class="price-actual" *ngIf="getDisplayOriginalPrice(item) as orig">{{ orig | currency:currencyCode:'symbol':'1.2-2' }}</span>
-            <span class="price-offer">{{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}</span>
+      <!-- Programmatic navigate + normalized id (id/Id) so “View course” and card header always open marketing URL. -->
+      <article class="category-course-card" *ngFor="let item of block.courses">
+        <a href="javascript:void(0)" class="category-course-card__link" (click)="viewCourseDetails($event, item)">
+          <div class="card-header">
+            <span class="course-category-tag">{{ item?.category?.name }}</span>
           </div>
-          <div class="card-actions">
-            <button type="button" class="btn-buy" (click)="goToCheckout(item); $event.stopPropagation()">
-              <i class="fa fa-shopping-cart"></i> Buy {{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}
+          <div class="card-content">
+            <h4 class="course-title">{{ item.title | slice:0:50 }}{{ item.title?.length > 50 ? '...' : '' }}</h4>
+          </div>
+        </a>
+        <div class="card-content card-content--actions">
+          <!-- Enrolled: show Resume only -->
+          <div class="card-actions" *ngIf="isEnrolled(item.id)">
+            <button type="button" class="btn-resume" (click)="fnResume(item)">
+              <i class="fa fa-play" aria-hidden="true"></i> Resume
             </button>
           </div>
-          <button type="button" class="card-cta card-cta--secondary" (click)="goToCourse(item); $event.stopPropagation()">
-            View course
-          </button>
+          <!-- Not enrolled: price + Enroll (free) or Buy (paid) -->
+          <ng-container *ngIf="!isEnrolled(item.id)">
+            <div class="card-price-block">
+              <span class="price-actual" *ngIf="getDisplayOriginalPrice(item) as orig">{{ orig | currency:currencyCode:'symbol':'1.2-2' }}</span>
+              <span class="price-offer">{{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="card-actions">
+              <button type="button" class="btn-buy" (click)="goToCheckout(item)" *ngIf="getOfferPrice(item) > 0">
+                <i class="fa fa-shopping-cart"></i> Buy {{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}
+              </button>
+              <button type="button" class="btn-enroll" (click)="goToCheckout(item)" *ngIf="getOfferPrice(item) === 0">
+                Enroll
+              </button>
+            </div>
+          </ng-container>
+          <a href="javascript:void(0)" class="card-cta card-cta--secondary" (click)="viewCourseDetails($event, item)">View course</a>
         </div>
-      </div>
+      </article>
     </div>
   </div>
 </div>

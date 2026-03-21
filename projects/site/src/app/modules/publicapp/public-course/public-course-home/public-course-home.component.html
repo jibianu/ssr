@@ -1,5 +1,5 @@
 <div class="course-home" style="min-height: 90vh;">
-  <ng-container *ngIf="items$ | async as items; else loadingTemplate">
+  <ng-container *ngIf="!viewLoading && displayVm as vm; else loadingTemplate">
     <div *ngIf="error" class="course-home__alert">
       <h5>
         <i class="fa fa-exclamation-triangle"></i>
@@ -20,11 +20,11 @@
       </button>
     </div>
 
-    <div *ngIf="items.length === 0 && !error" class="course-home__empty">
+    <div *ngIf="(vm.sections?.length ?? 0) === 0 && !error" class="course-home__empty">
       <p>No categories available at the moment.</p>
     </div>
 
-    <section class="course-section public-container" *ngFor="let item of items; trackBy: trackByItemIndex">
+    <section class="course-section public-container" *ngFor="let item of vm.sections || []; trackBy: trackByItemIndex">
       <header class="course-section__header">
         <div>
           <h2 class="course-section__title">{{ item.categoryName }}</h2>
@@ -76,14 +76,20 @@
           </div>
 
           <footer class="course-card__footer">
-            <a class="course-card__cta" 
-               [href]="getBuyButtonUrl(course)"
-               [attr.aria-label]="'Buy ' + (course?.title || 'course')"
-               (click)="handleBuyClick($event, course)"
-               target="_self">
+            <a
+              class="course-card__cta"
+              [class.course-card__cta--resume]="getCtaModifierClass(course) === 'course-card__cta--resume'"
+              [class.course-card__cta--enroll]="getCtaModifierClass(course) === 'course-card__cta--enroll'"
+              [class.course-card__cta--loading]="isCtaLoading(course)"
+              [href]="getCourseActionHref(course)"
+              [attr.aria-label]="getCtaLabel(course) + ' ' + (course?.title || 'course')"
+              (click)="handleCourseActionClick($event, course)"
+              [attr.tabindex]="isCtaLoading(course) ? -1 : null"
+              target="_self">
               <span class="course-card__cta-text">
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                Buy
+                <i *ngIf="!isCtaLoading(course)" [class]="getCtaIconClass(course)" aria-hidden="true"></i>
+                <i *ngIf="isCtaLoading(course)" class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+                {{ getCtaLabel(course) }}
               </span>
               <span class="course-card__cta-price">
                 {{ (course.amount ?? 0) === 0 ? 'Free' : (course.amount | currency:'INR':'symbol') }}

@@ -194,6 +194,19 @@ export class AuthenticationService {
    * ✅ NEW: Force load tokens from storage into memory
    * Useful before navigation to ensure guard can validate tokens
    */
+  /**
+   * True when a JWT is available for Bearer auth (localStorage, idToken cookie, or Elearn `token` cookie).
+   * Use for public-site actions (enroll, checkout) instead of only hasValidAccessToken()+getIdToken().
+   */
+  public hasJwtForAuthenticatedApi(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    this.ensureTokensLoaded();
+    const t = this.getIdToken();
+    return !!t && typeof t === 'string' && t.trim().length > 0;
+  }
+
   public ensureTokensLoaded(): void {
     // ✅ FIX: Always try to load tokens, even if platform check fails
     // This handles cases where platformId might not be properly detected
@@ -231,7 +244,7 @@ export class AuthenticationService {
    */
   public login(username: string, password: string): Observable<string> {
     return this.http.post<any>(
-      `${this.apiUrl}page/account/login`,
+      `${this.apiUrl}api/Account/login`,
       { username, password },
       { withCredentials: true }
     ).pipe(
@@ -346,7 +359,7 @@ export class AuthenticationService {
 
   public register(payload: unknown): Observable<any> {
     return this.http.post<any>(
-      `${this.apiUrl}page/account/register`,
+      `${this.apiUrl}api/Account/registerstudent`,
       payload,
       { withCredentials: true }
     ).pipe(
@@ -381,8 +394,8 @@ export class AuthenticationService {
 
     // ✅ Always make the request - let interceptor handle token refresh if needed
     if (!this.userInfoCache$) {
-      // ✅ FIX: Use consistent URL casing - backend route is case-insensitive but be explicit
-      const getInfoUrl = `${this.apiUrl}page/Account/getinfo`;
+      // Elearn.Serverless: Account API lives under api/Account (not legacy page/Account).
+      const getInfoUrl = `${this.apiUrl}api/Account/getinfo`;
       if (typeof ngDevMode === 'undefined' || ngDevMode) {
         console.log(`[AuthService] getUserInfo() - Making request to: ${getInfoUrl}`);
         console.log(`[AuthService]   Token available: ${!!token}`);
@@ -650,6 +663,20 @@ export class AuthenticationService {
           console.log(`[AuthService]   Cookie token is valid format: ${isToken}`);
         }
         this.idToken = isToken ? normalizedToken : null;
+      }
+    }
+
+    /**
+     * Elearn stores the app JWT only in the `token` cookie (and sometimes only auth.accessToken in localStorage).
+     * JwtInterceptor and enroll/checkout use getIdToken(). Sync id slot from access when missing so 4200 + 4201 share one session.
+     */
+    if (!this.idToken) {
+      this.ensureAccessTokenLoaded();
+      if (this.accessToken && this.isLikelyToken(this.accessToken)) {
+        this.idToken = this.accessToken;
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          console.debug('[AuthService] ensureIdTokenLoaded() - Synced idToken from accessToken (Elearn token cookie / shared JWT)');
+        }
       }
     }
 

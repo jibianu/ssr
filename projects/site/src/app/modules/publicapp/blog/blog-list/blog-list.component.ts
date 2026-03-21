@@ -4,13 +4,15 @@ import { BlogService, BlogListItemDto, PagedBlogResponse, AuthorProfileDto, Auth
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { FixMojibakePipe } from '../../../../shared/pipes/fix-mojibake.pipe';
+import { FixMojibakeSafeHtmlPipe } from '../../../../shared/pipes/fix-mojibake-safe-html.pipe';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, FixMojibakePipe, FixMojibakeSafeHtmlPipe],
   templateUrl: './blog-list.component.html',
   styleUrls: ['./blog-list.component.scss']
 })

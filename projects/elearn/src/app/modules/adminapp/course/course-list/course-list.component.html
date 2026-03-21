@@ -42,6 +42,7 @@
           <tr *ngFor="let item of course; trackBy: trackByCourseId" class="list-table-modern__row">
             <td class="list-table-modern__td list-table-modern__td--ellipsis">
               <a class="list-table-modern__link" routerLink="/app/{{ txtRoute }}/course/curriculum/list/{{ item.id }}" [attr.title]="item?.title || ''">{{ item.title }}</a>
+              <span *ngIf="!isManagementContext && isPendingReview(item)" class="course-list__badge course-list__badge--pending-review" title="Trainer requested review – open course to Approve or Reject">Pending review</span>
             </td>
             <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item?.category?.name }}</td>
             <td class="list-table-modern__td">{{ item?.price }}</td>
@@ -51,17 +52,17 @@
               <div class="list-table-modern__actions">
                 <button *ngIf="managerListEnbale && !isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--warning course-list__action-tooltip" title="Remove from Management" (click)="openRemoveFromManagement(item)"><i class="fa fa-user-times"></i><span class="course-list__tooltip-text">Remove from Management</span></button>
                 <button *ngIf="!isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip" title="Delete course" (click)="deleteCourse(item.id)"><i class="fa fa-trash"></i><span class="course-list__tooltip-text">Delete course</span></button>
-                <button *ngIf="!isManagementContext && !item.isPublished" type="button" class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip" (click)="openPublishUnpublishModal(item)"><i class="fa fa-flag"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Not published. Click to publish on Elearn LMS and optionally on Public marketing site.</span></button>
-                <button *ngIf="!isManagementContext && item.isPublished" type="button" class="list-table-modern__btn list-table-modern__btn--success course-list__action-tooltip" (click)="openPublishUnpublishModal(item)"><i class="fa fa-flag-o"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Published on Elearn LMS. Public site: {{ (item.showOnPublicListing ?? item.ShowOnPublicListing) ? 'Yes' : 'No' }}. Click to change or unpublish.</span></button>
-                <button type="button" class="course-list__progress-ring-wrap course-list__action-tooltip" (click)="changeProgress(item.id, item.courseCreationProgress)" title="Set course creation progress ({{ item.courseCreationProgress ?? 0 }}%)">
+                <button *ngIf="!isManagementContext && !item.isPublished" type="button" class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip" (click)="openPublishUnpublishModal(item)"><i class="fa fa-flag"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Not on LMS / public listings until you publish here. Needs 100% setup ring + use Publish to enable Elearn and (optionally) Public /courses.</span></button>
+                <button *ngIf="!isManagementContext && item.isPublished" type="button" class="list-table-modern__btn list-table-modern__btn--success course-list__action-tooltip" (click)="openPublishUnpublishModal(item)"><i class="fa fa-flag-o"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">LMS: published. Public /courses: {{ (item.showOnPublicListing ?? item.ShowOnPublicListing) !== false ? 'visible (default on)' : 'hidden — enable Public in Publish dialog' }}. Listing also needs 100% setup. Click to change.</span></button>
+                <button type="button" class="course-list__progress-ring-wrap course-list__action-tooltip" (click)="changeProgress(item.id, getCourseProgress(item))" [attr.title]="'Set course creation progress (' + (getCourseProgress(item)) + '%)'">
                   <span class="course-list__progress-ring">
                     <svg class="course-list__progress-ring-svg" viewBox="0 0 36 36">
                       <path class="course-list__progress-ring-bg" pathLength="100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                      <path class="course-list__progress-ring-fill" pathLength="100" [attr.stroke-dasharray]="(item.courseCreationProgress ?? 0) + ' ' + (100 - (item.courseCreationProgress ?? 0))" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="course-list__progress-ring-fill" pathLength="100" [attr.stroke-dasharray]="getCourseProgress(item) + ' ' + (100 - getCourseProgress(item))" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
-                    <span class="course-list__progress-ring-pct">{{ item.courseCreationProgress ?? 0 }}%</span>
+                    <span class="course-list__progress-ring-pct">{{ getCourseProgress(item) }}%</span>
                   </span>
-                  <span class="course-list__tooltip-text">Progress {{ item.courseCreationProgress ?? 0 }}% – Click to change</span>
+                  <span class="course-list__tooltip-text">Progress {{ getCourseProgress(item) }}% – Click to change</span>
                 </button>
               </div>
             </td>

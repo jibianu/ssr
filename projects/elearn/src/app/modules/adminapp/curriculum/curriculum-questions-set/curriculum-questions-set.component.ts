@@ -31,6 +31,8 @@ export class CurriculumQuestionsSetComponent implements OnInit, OnChanges, OnDes
   totalQuestionsCount:number;
   questionsList=[];
   questionsPassMarkList=[];
+  /** Test selected for opening questions in side modal (same design as curriculum detail). */
+  selectedTest: { id?: string; title?: string } | null = null;
 
   constructor(
     private modalService: NgbModal,
@@ -53,6 +55,18 @@ export class CurriculumQuestionsSetComponent implements OnInit, OnChanges, OnDes
 
   goBack() {
     this.location.back();
+  }
+
+  /** Open test questions in a side modal (same design as curriculum-based question modal). */
+  openTestQuestionsModal(content: any, testItem: { id?: string; title?: string }) {
+    this.selectedTest = testItem;
+    this.modalService.open(content, {
+      size: 'xl',
+      scrollable: true,
+      windowClass: 'modal-right curriculum-detail-modal',
+      backdrop: 'static',
+      keyboard: false
+    });
   }
 
   addQuetionSet(content) {

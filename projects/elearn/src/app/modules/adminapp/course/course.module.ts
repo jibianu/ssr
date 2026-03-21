@@ -5,6 +5,9 @@ import { CourseRoutingModule } from './course-routing.module';
 import { AddCourseComponent } from './add-course/add-course.component';
 import { CourseListComponent } from './course-list/course-list.component';
 import { UserCourseComponent } from './user-course/user-course.component';
+import { CourseReviewComponent } from './course-review/course-review.component';
+import { CourseRejectModalComponent } from './course-review/course-reject-modal/course-reject-modal.component';
+import { CourseApproveModalComponent } from './course-review/course-approve-modal/course-approve-modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { SharedModule } from 'src/app/shared/shared.module';
@@ -15,13 +18,15 @@ import { LocationMetadataComponent } from './location-metadata/location-metadata
 
 
 @NgModule({
-  declarations: [AddCourseComponent, CourseListComponent, UserCourseComponent, LocationMetadataComponent],
+  declarations: [AddCourseComponent, CourseListComponent, UserCourseComponent, LocationMetadataComponent, CourseReviewComponent],
   imports: [
     CommonModule,
     CourseRoutingModule,
     NgxPaginationModule,
     ReactiveFormsModule,
-    SharedModule
+    SharedModule,
+    CourseRejectModalComponent,
+    CourseApproveModalComponent
     // TagInputModule // TEMPORARILY DISABLED - View Engine incompatible
   ]
 })

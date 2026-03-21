@@ -6,13 +6,16 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
 import { ChangeProgressComponent } from 'src/app/shared/modals/change-progress/change-progress.component';
 import { AdminAppService } from '../../adminapp.service';
+import { Subscription } from 'rxjs';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { SearchEventComponent } from '../../../../shared/modals/search-event/search-event.component';
 
 function norm(e: any): any {
   const id = e?.id ?? e?.Id;
   const rawPct = e?.completionPercent ?? e?.CompletionPercent;
   const completionPercent = rawPct != null ? Math.min(100, Math.max(0, Number(rawPct))) : 0;
+  const status = e?.status ?? e?.Status ?? 0;
   return {
     id: id != null ? String(id) : '',
     title: e?.title ?? e?.Title ?? '—',
@@ -20,7 +23,10 @@ function norm(e: any): any {
     endDate: e?.endDate ?? e?.EndDate,
     location: e?.location ?? e?.Location ?? '',
     isPublished: e?.isPublished ?? e?.IsPublished ?? false,
-    completionPercent
+    completionPercent,
+    status: Number(status),
+    createdByName: e?.createdByName ?? e?.CreatedByName ?? null,
+    createdByRole: e?.createdByRole ?? e?.CreatedByRole ?? null
   };
 }
 
@@ -50,6 +56,10 @@ export class EventListComponent implements OnInit, OnDestroy {
   publishingId: string | null = null;
   config: any = { itemsPerPage: 5, currentPage: 1 };
   tableSizes = [5, 10, 25, 50];
+  /** Event status filter: null = all, 1 = Pending Review (trainer requested review). */
+  statusFilter: number | null = null;
+  searchTags: { value: string; searchBy: string }[] = [];
+  private sub = new Subscription();
 
   // Registrations: admin = side drawer with full details; trainer = modal with count only
   registrationEventTitle = '';
@@ -92,6 +102,12 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sharedService.certificateName.next('Event List');
+    if (!this.isTrainerPage) {
+      this.sharedService.showEventListToolbar.next(true);
+      this.sub.add(
+        this.sharedService.eventListFilterClick$.subscribe(() => this.openFilterModal())
+      );
+    }
     this.sharedService.topbarPrimaryAction.next({
       routerLink: this.eventsBasePath + '/add',
       label: 'Add Event',
@@ -120,8 +136,41 @@ export class EventListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!this.isTrainerPage) this.sharedService.showEventListToolbar.next(false);
     this.sharedService.topbarPrimaryAction.next(null);
     this.sharedService.certificateName.next('');
+    this.sub.unsubscribe();
+  }
+
+  openFilterModal(): void {
+    const modalRef = this.modalService.open(SearchEventComponent, {
+      windowClass: 'modal-right search-filter-sidebar',
+      scrollable: true,
+      backdrop: true,
+      keyboard: true
+    });
+    modalRef.componentInstance.setInitialStatusFilter(this.statusFilter);
+    modalRef.result.then(
+      (result: { statusFilter: number | null; statusLabel: string | null }) => {
+        this.statusFilter = result.statusFilter ?? null;
+        this.searchTags = [];
+        if (result.statusLabel) {
+          this.searchTags.push({ value: result.statusLabel, searchBy: 'status' });
+        }
+        this.applyFilter();
+        this.cdr.markForCheck();
+      },
+      () => {}
+    );
+  }
+
+  onFilterTagRemoved(tag: { searchBy: string }): void {
+    if (tag.searchBy === 'status') {
+      this.statusFilter = null;
+      this.searchTags = this.searchTags.filter((t) => t.searchBy !== 'status');
+    }
+    this.applyFilter();
+    this.cdr.markForCheck();
   }
 
   loadEvents(): void {
@@ -149,11 +198,15 @@ export class EventListComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(): void {
+    let list = this.events;
+    if (this.statusFilter != null && this.statusFilter !== undefined) {
+      list = list.filter((e) => (e.status ?? 0) === this.statusFilter);
+    }
     if (!this.term?.trim()) {
-      this.filteredEvents = [...this.events];
+      this.filteredEvents = [...list];
     } else {
       const q = this.term.toLowerCase();
-      this.filteredEvents = this.events.filter(
+      this.filteredEvents = list.filter(
         (e) =>
           (e.title && String(e.title).toLowerCase().includes(q)) ||
           (e.startDate && String(e.startDate).toLowerCase().includes(q)) ||

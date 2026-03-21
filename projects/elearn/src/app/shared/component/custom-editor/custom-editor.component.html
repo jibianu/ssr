@@ -92,7 +92,7 @@
             <div class="suggestion-item" *ngFor="let blog of blogSuggestions" (click)="selectBlog(blog)">
               <i class="fa fa-file-text-o suggestion-icon"></i>
               <div class="suggestion-content">
-                <div class="suggestion-title">{{ blog.title }}</div>
+                <div class="suggestion-title">{{ blog.title | fixMojibake }}</div>
                 <div class="suggestion-url">{{ blog.url || blog.canonicalUrl }}</div>
               </div>
             </div>

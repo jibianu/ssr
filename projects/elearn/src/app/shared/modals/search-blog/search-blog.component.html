@@ -1,0 +1,74 @@
+<div class="modal-header search-filter-sidebar__header">
+  <h4 class="modal-title">Filter</h4>
+  <button type="button" class="search-filter-sidebar__close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body search-filter-sidebar__body">
+  <div class="search-filter-sidebar__form-wrap">
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Blog status</label>
+      <div class="input-group">
+        <div ngbDropdown class="d-inline-block w-100">
+          <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownBlogStatus" ngbDropdownToggle>
+            {{ selectedLabel }}
+          </button>
+          <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownBlogStatus">
+            <button type="button" ngbDropdownItem (click)="filterByStatus('all')">All blog</button>
+            <button type="button" ngbDropdownItem (click)="filterByStatus('pending-review')">Trainer requested review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Category</label>
+      <div class="input-group">
+        <div ngbDropdown class="d-inline-block w-100">
+          <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownCategory" ngbDropdownToggle>
+            {{ selectedCategoryName }}
+          </button>
+          <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownCategory">
+            <button type="button" ngbDropdownItem (click)="filterByCategory(null, 'All Categories')">All Categories</button>
+            <button type="button" ngbDropdownItem *ngFor="let c of categories" (click)="filterByCategory(c.id || c.Id, c.name || c.Name)">
+              {{ c.name || c.Name }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Author</label>
+      <div class="input-group">
+        <div ngbDropdown class="d-inline-block w-100">
+          <button type="button" class="btn search-filter-sidebar__dropdown-toggle" id="dropdownAuthor" ngbDropdownToggle>
+            {{ selectedAuthorName }}
+          </button>
+          <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownAuthor">
+            <button type="button" ngbDropdownItem (click)="filterByAuthor(null)">All Authors</button>
+            <button type="button" ngbDropdownItem *ngFor="let a of authorList" (click)="filterByAuthor(a)">{{ a }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Date From</label>
+      <div class="input-group">
+        <input type="date" class="form-control search-filter-sidebar__input" [(ngModel)]="dateFrom" placeholder="mm/dd/yyyy" />
+        <span class="input-group-text"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+      </div>
+    </div>
+    <div class="form-group search-filter-sidebar__field">
+      <label class="search-filter-sidebar__label">Date To</label>
+      <div class="input-group">
+        <input type="date" class="form-control search-filter-sidebar__input" [(ngModel)]="dateTo" placeholder="mm/dd/yyyy" />
+        <span class="input-group-text"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer search-filter-sidebar__footer">
+  <div class="search-filter-sidebar__actions">
+    <button type="button" class="search-filter-sidebar__btn search-filter-sidebar__btn--cancel" (click)="reset()">Reset</button>
+    <button type="button" class="search-filter-sidebar__btn search-filter-sidebar__btn--primary" (click)="search()">Search</button>
+  </div>
+</div>

@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { UntypedFormBuilder, Validators, UntypedFormArray, AbstractControl, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-// CKEditor removed - using textarea instead
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { ConfirmationModalComponent } from 'src/app/shared/component/confirmation-modal/confirmation-modal.component';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { isLessonContentJson } from 'src/app/shared/models/lesson-content.model';
+import type { LessonBlockType } from 'src/app/shared/models/lesson-content.model';
 import { AdminAppService } from '../../../adminapp.service';
 import { Location } from '@angular/common';
 
@@ -16,9 +18,14 @@ import { Location } from '@angular/common';
     styleUrls: ['./curriculum-question-set-questions-list.component.scss'],
     standalone: false
 })
-export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
+export class CurriculumQuestionSetQuestionsListComponent implements OnInit, OnChanges {
 
-  questionSetId : string;
+  /** When set (e.g. from parent modal), use this instead of route param. */
+  @Input() questionSetId: string;
+  /** When true, used inside Test Information side modal; hide back button and use compact header. */
+  @Input() isEmbeddedInModal = false;
+
+  questionSetIdResolved: string;
   modalReference: NgbModalRef;
   questions = [];
   subscription: Subscription = new Subscription();
@@ -31,6 +38,13 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
   previewUrl: any = null;
   fileUploadProgress: string = null;
   uploadedFilePath: string = null;
+  isLessonContent = isLessonContentJson;
+  questionEditorBlockTypes: LessonBlockType[] = ['text'];
+  uploadImageFn = (file: File) =>
+    this.appService.uploadImage(file).pipe(map((res: any) => res?.url || res?.Url || res?.documentPath || ''));
+  deleteImageFn = (url: string) => this.appService.deleteImage(url);
+  uploadInProgress = false;
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private modalService: NgbModal,
@@ -42,18 +56,33 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.activatedRoute
-    .params
-    .subscribe(params => {
-      if (params.questionSetId) {
-        this.questionSetId = params.questionSetId;
-        this.getQuestionsByQuestionSetId(this.questionSetId)
-      }
-    });
+    if (this.questionSetId) {
+      this.questionSetIdResolved = this.questionSetId;
+      this.getQuestionsByQuestionSetId(this.questionSetIdResolved);
+    } else {
+      this.activatedRoute.params.subscribe(params => {
+        this.questionSetIdResolved = params.questionSetId;
+        if (this.questionSetIdResolved) {
+          this.getQuestionsByQuestionSetId(this.questionSetIdResolved);
+          if (this.questionForm) {
+            this.questionForm.get('questionSetId').patchValue(this.questionSetIdResolved);
+          }
+        }
+      });
+    }
     this.formInit();
   }
 
-  getQuestionsByQuestionSetId(id) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['questionSetId'] && this.questionSetId && this.questionSetId !== this.questionSetIdResolved) {
+      this.questionSetIdResolved = this.questionSetId;
+      this.getQuestionsByQuestionSetId(this.questionSetIdResolved);
+      this.formInit();
+    }
+  }
+
+  getQuestionsByQuestionSetId(id: string) {
+    if (!id) return;
     this.subscription.add(this.appService.getQuestionByquestionSetId(id).subscribe((res: any) => {
       if (res) {
         this.questions = res;
@@ -75,7 +104,7 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
           .subscribe(
             response => {
               this.toasterService.showSuccess('Question deleted successfully');
-              this.getQuestionsByQuestionSetId(this.questionSetId);
+              this.getQuestionsByQuestionSetId(this.questionSetIdResolved);
             },
             error => {
               console.log(error);
@@ -93,7 +122,7 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
 
   addQuestion(content) {
     this.setvalue(null);
-    this.pageTitle = 'Add Question';
+    this.pageTitle = 'Add New Question';
     this.btntext = 'Save';
     this.modalService.open(content, { windowClass: 'modal-right question-modal-panel', size: 'xl', scrollable: true });
   }
@@ -105,14 +134,16 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
     this.modalService.open(content, { windowClass: 'modal-right question-modal-panel', size: 'xl', scrollable: true });
   }
 
+  private readonly emptyLessonJson = '{"version":1,"blocks":[]}';
+
   formInit() {
     this.questionForm = this.formBuilder.group({
       title: ['', Validators.required],
-      description: [''],
+      description: [this.emptyLessonJson],
       id: [this.guid],
-      questionSetId: [this.questionSetId ? this.questionSetId :  this.guid],
+      questionSetId: [this.questionSetIdResolved ? this.questionSetIdResolved : this.guid],
       options: this.formBuilder.array([])
-    })
+    });
   }
 
   get f() { return this.questionForm.controls; }
@@ -127,17 +158,19 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
 
   setvalue(res) {
     const questionId = (res?.id ?? res?.Id ?? this.guid) as string;
+    const desc = (res?.description ?? '').trim();
     this.questionForm.patchValue({
       title: res?.title ? res.title : '',
       id: questionId,
-      description: res?.description ? res.description : ''
+      description: desc || this.emptyLessonJson
     });
     if (res && res.options && res.options.length > 0) {
-      let array = [];
+      const array = [];
       res.options.forEach((x) => {
+        const optDesc = (x.description ?? '').trim();
         array.push(this.formBuilder.group(
           {
-            description: new UntypedFormControl(x.description ? x.description : '', [Validators.required]),
+            description: new UntypedFormControl(optDesc || this.emptyLessonJson, [Validators.required]),
             isCorrect: new UntypedFormControl(x.isCorrect ? x.isCorrect : false, [Validators.required]),
             id: x.id ? x.id : this.guid,
             extraInformation: x.extraInformation ? x.extraInformation : '',
@@ -152,12 +185,12 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
   }
 
   createQuestionItems() {
-    let group = {};
-    group['extraInformation'] = new UntypedFormControl('');
-    group['description'] = new UntypedFormControl('', [Validators.required]);
-    group['isCorrect'] = new UntypedFormControl(false, [Validators.required]);
-    group['id'] = new UntypedFormControl(this.guid);
-    return this.formBuilder.group(group);
+    return this.formBuilder.group({
+      extraInformation: new UntypedFormControl(''),
+      description: new UntypedFormControl(this.emptyLessonJson, [Validators.required]),
+      isCorrect: new UntypedFormControl(false, [Validators.required]),
+      id: new UntypedFormControl(this.guid)
+    });
   }
 
   addQuestionOptionsItems(): void {
@@ -179,13 +212,30 @@ export class CurriculumQuestionSetQuestionsListComponent implements OnInit {
     if (isUpdate) {
       this.subscription.add(this.appService.updateQuestion(this.questionForm.value, questionId).subscribe(() => {
         this.toasterService.showSuccess('Question updated successfully');
-        this.getQuestionsByQuestionSetId(this.questionSetId);
+        this.getQuestionsByQuestionSetId(this.questionSetIdResolved);
       }));
     } else {
       this.subscription.add(this.appService.addQuestion(this.questionForm.value).subscribe(() => {
         this.toasterService.showSuccess('Question created successfully');
-        this.getQuestionsByQuestionSetId(this.questionSetId);
+        this.getQuestionsByQuestionSetId(this.questionSetIdResolved);
       }));
+    }
+  }
+
+  trackByQuestionId(_index: number, item: { id?: string }): string {
+    return item?.id ?? `${_index}`;
+  }
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  onQuestionDescriptionJsonChange(json: string): void {
+    this.questionForm.patchValue({ description: json });
+  }
+  onQuestionOptionJsonChange(json: string, index: number): void {
+    const options = this.questionOptionArray;
+    if (options && index >= 0 && index < options.length) {
+      options.at(index).patchValue({ description: json });
     }
   }
 

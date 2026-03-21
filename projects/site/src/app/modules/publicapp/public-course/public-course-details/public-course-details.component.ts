@@ -29,6 +29,12 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   categoryName = '';
   courseSummaryText = ''; // First course summary or description for header (replaces category in that spot)
   courseId = '';
+  /** Main header description: eventInfo (events) or first Course Title Summary / metaDescription (courses). What you add in Edit landing page → Course Title Summaries shows here. */
+  get headerDescriptionText(): string {
+    const eventInfo = this.courseDetails?.eventInfo ?? this.courseDetails?.EventInfo;
+    if (eventInfo && typeof eventInfo === 'string' && eventInfo.trim()) return eventInfo.trim();
+    return this.courseSummaryText || '';
+  }
   /** Category ID from course for related courses (same as Elearn getCoursesByCategory(categoryId)). */
   get courseCategoryId(): string | null {
     const c = this.course ?? this.courseDetails;
@@ -107,6 +113,17 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   /** Shown when free enroll API fails */
   enrollError: string | null = null;
   enrollInProgress = false;
+  resumeInProgress = false;
+
+  /** Course Content: which section index is expanded (same as elearn edit page). First section (0) expanded by default. */
+  expandedCurriculumIndex: number = 0;
+  toggleCurriculumSection(index: number): void {
+    this.expandedCurriculumIndex = this.expandedCurriculumIndex === index ? -1 : index;
+    this.changeDetectorRef.markForCheck();
+  }
+  isCurriculumSectionExpanded(index: number): boolean {
+    return this.expandedCurriculumIndex === index;
+  }
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -131,6 +148,18 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
 
   /** When true, page is shown inside admin "Public landing page" sidebar (embed=1); hide "Edit in admin" links so all edit is in the sidebar. */
   isEmbedMode = false;
+  /** When true, page is in Elearn iframe (embed=1) and user is enrolled (enrolled=1); show "Resume" instead of Enroll/Buy. */
+  isEnrolledFromEmbed = false;
+
+  /** True while POST enrollment-status/bulk is in flight (browser + logged in only). */
+  enrollmentStatusLoading = false;
+  /** Result of bulk enrollment check for current courseId; null = not checked or error. */
+  private enrollmentBulkEnrolled: boolean | null = null;
+  /** Bulk API failed — fall back to Buy-style CTA (same as /courses listing). */
+  enrollmentBulkFailed = false;
+  /** After successful free enroll on this page, show Resume without waiting for bulk. */
+  sidebarEnrolledOverride = false;
+  private lastEnrollmentCheckCourseId: string | null = null;
 
   ngOnInit(): void {
     const getSlug = () =>
@@ -159,6 +188,10 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     if (this.route.parent?.params) this.subscription.add(this.route.parent.params.subscribe(() => run()));
     const querySub = this.route.queryParamMap.subscribe(q => {
       this.isEmbedMode = q.get('embed') === '1';
+      this.isEnrolledFromEmbed = this.isEmbedMode && (q.get('enrolled') === '1' || q.get('enrolled') === 'true');
+      if (this.isBrowser && this.courseId) {
+        this.refreshEnrollmentStatus();
+      }
       this.changeDetectorRef.markForCheck();
     });
     this.subscription.add(querySub);
@@ -172,6 +205,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.normalizeCourseDetailResponse(data);
     this.course = data;
     this.courseDetails = data;
+    this.expandedCurriculumIndex = 0;
     const slug = (this.courseSlug ?? (data.canonicalUrl ?? data.CanonicalUrl ?? '')).toString().trim();
     this.setComponentProperties(data, null, slug, true);
     this.isLoaded = true;
@@ -263,6 +297,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.course = null;
     this.courseDetails = null;
     this._courseFeaturesWarningLogged = false;
+    this.resetSidebarEnrollmentState();
     this.changeDetectorRef.markForCheck();
 
     // ✅ Use refresh so we get fresh About, FAQ, Trainers after Edit landing page saves (avoids stale cache)
@@ -295,6 +330,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         // ✅ Set course data (only after successful API response)
         this.course = data;
         this.courseDetails = data; // ✅ Alias for backward compatibility
+        this.expandedCurriculumIndex = 0; // First Course Content section expanded (same as elearn edit page)
         this.setComponentProperties(data, location);
         this.isLoaded = true;
         this.isLoading = false;
@@ -373,6 +409,19 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     d.categoryName = d.categoryName ?? d.CategoryName ?? (d.category && (d.category.name ?? d.category.Name)) ?? '';
     if (!Array.isArray(d.courseFeatures)) d.courseFeatures = [];
     if (!Array.isArray(d.courseContents)) d.courseContents = [];
+    // Normalize courseContents (curriculum) so subtopics show: camelCase for template and PascalCase from API
+    (d.courseContents as any[]).forEach((item: any) => {
+      if (item && typeof item === 'object') {
+        if (item.title === undefined && item.Title !== undefined) item.title = item.Title;
+        if (item.firstConceptTitle === undefined && item.FirstConceptTitle !== undefined) item.firstConceptTitle = item.FirstConceptTitle;
+        if (item.firstStudyMaterialTitle === undefined && item.FirstStudyMaterialTitle !== undefined) item.firstStudyMaterialTitle = item.FirstStudyMaterialTitle;
+        if (item.firstVideoLectureTitle === undefined && item.FirstVideoLectureTitle !== undefined) item.firstVideoLectureTitle = item.FirstVideoLectureTitle;
+        if (item.curriculumConceptCount === undefined && item.CurriculumConceptCount !== undefined) item.curriculumConceptCount = item.CurriculumConceptCount;
+        if (item.curriculumStudyMaterialCount === undefined && item.CurriculumStudyMaterialCount !== undefined) item.curriculumStudyMaterialCount = item.CurriculumStudyMaterialCount;
+        if (item.curriculumVideoLectureCount === undefined && item.CurriculumVideoLectureCount !== undefined) item.curriculumVideoLectureCount = item.CurriculumVideoLectureCount;
+        if (item.curriculumQuestionCount === undefined && item.CurriculumQuestionCount !== undefined) item.curriculumQuestionCount = item.CurriculumQuestionCount;
+      }
+    });
     if (!Array.isArray(d.frequentlyAskedQuestions)) d.frequentlyAskedQuestions = [];
     if (!Array.isArray(d.courseTeachers)) d.courseTeachers = [];
     if (!Array.isArray(d.courseInformation)) d.courseInformation = [];
@@ -578,6 +627,130 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
       });
       
       this.structuredDataService.setBreadcrumbs(breadcrumbs);
+
+    if (this.isBrowser) {
+      this.refreshEnrollmentStatus();
+    }
+  }
+
+  private resetSidebarEnrollmentState(): void {
+    this.enrollmentStatusLoading = false;
+    this.enrollmentBulkEnrolled = null;
+    this.enrollmentBulkFailed = false;
+    this.sidebarEnrolledOverride = false;
+    this.lastEnrollmentCheckCourseId = null;
+  }
+
+  /**
+   * Same as /courses: POST api/course/enrollment-status/bulk for this course when user has JWT.
+   */
+  private refreshEnrollmentStatus(): void {
+    if (!this.isBrowser) return;
+    if (this.isEnrolledFromEmbed) {
+      this.enrollmentStatusLoading = false;
+      return;
+    }
+    const cid = String(this.courseId || '').trim();
+    if (!cid) {
+      this.enrollmentStatusLoading = false;
+      return;
+    }
+    if (cid !== this.lastEnrollmentCheckCourseId) {
+      this.lastEnrollmentCheckCourseId = cid;
+      this.sidebarEnrolledOverride = false;
+      this.enrollmentBulkEnrolled = null;
+      this.enrollmentBulkFailed = false;
+    }
+    this.authService.ensureTokensLoaded();
+    if (!this.authService.hasJwtForAuthenticatedApi()) {
+      this.enrollmentStatusLoading = false;
+      this.enrollmentBulkEnrolled = null;
+      this.enrollmentBulkFailed = false;
+      this.changeDetectorRef.markForCheck();
+      return;
+    }
+    this.enrollmentStatusLoading = true;
+    this.changeDetectorRef.markForCheck();
+    this.subscription.add(
+      this.publicAppService.getEnrollmentStatusBulk([cid]).subscribe({
+        next: (map) => {
+          const idLower = cid.toLowerCase();
+          const entry =
+            map && typeof map === 'object'
+              ? Object.entries(map).find(([k]) => (k || '').toLowerCase() === idLower)
+              : null;
+          this.enrollmentBulkEnrolled = entry ? !!entry[1] : false;
+          this.enrollmentBulkFailed = false;
+          this.enrollmentStatusLoading = false;
+          this.changeDetectorRef.markForCheck();
+        },
+        error: () => {
+          this.enrollmentBulkFailed = true;
+          this.enrollmentBulkEnrolled = null;
+          this.enrollmentStatusLoading = false;
+          this.changeDetectorRef.markForCheck();
+        }
+      })
+    );
+  }
+
+  /** Logged in with token (site + API auth). */
+  get isUserLoggedIn(): boolean {
+    if (!this.isBrowser) return false;
+    this.authService.ensureTokensLoaded();
+    return this.authService.hasJwtForAuthenticatedApi();
+  }
+
+  /** Show Resume (green) — embed flag, API bulk, or just finished free enroll on this page. */
+  get isEnrolledForSidebar(): boolean {
+    if (this.isEnrolledFromEmbed) return true;
+    if (this.sidebarEnrolledOverride) return true;
+    return this.enrollmentBulkEnrolled === true;
+  }
+
+  /** Main CTA label when not in Resume state (matches /courses). */
+  get sidebarSecondaryCtaLabel(): string {
+    if (!this.isUserLoggedIn) {
+      return !this.isFreeCourse && this.isCountdownExpired ? 'Offer Expired' : 'Buy Now';
+    }
+    if (this.enrollmentBulkFailed) {
+      return !this.isFreeCourse && this.isCountdownExpired ? 'Offer Expired' : 'Buy Now';
+    }
+    if (this.isFreeCourse) {
+      return this.enrollInProgress ? 'Enrolling…' : 'Enroll Now';
+    }
+    return !this.isFreeCourse && this.isCountdownExpired ? 'Offer Expired' : 'Buy Now';
+  }
+
+  /** Logged-in free + not bulk-failed: Enroll styling (slate); guests always Buy (cart) look. */
+  get sidebarSecondaryUsesEnrollStyle(): boolean {
+    return this.isUserLoggedIn && this.isFreeCourse && !this.enrollmentBulkFailed;
+  }
+
+  /** Unified click for non-Resume sidebar/mobile CTA. */
+  handleSidebarSecondaryCtaClick(event: Event): void {
+    if (!this.isBrowser) return;
+    if (this.enrollmentStatusLoading && this.isUserLoggedIn) {
+      event.preventDefault();
+      return;
+    }
+    if (!this.isUserLoggedIn) {
+      if (this.isFreeCourse) {
+        this.handleEnrollNowClick(event);
+      } else {
+        this.handleDesktopBuyClick(event);
+      }
+      return;
+    }
+    if (this.enrollmentBulkFailed) {
+      this.handleDesktopBuyClick(event);
+      return;
+    }
+    if (this.isFreeCourse) {
+      this.handleEnrollNowClick(event);
+    } else {
+      this.handleDesktopBuyClick(event);
+    }
   }
 
   // onImgError(event) {
@@ -700,6 +873,32 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   get adminCurriculumUrl(): string {
     const base = (environment as any).elearnAppUrl || (environment as any).elearnUrl || 'http://localhost:4201';
     return `${base.replace(/\/$/, '')}/app/admin/course/curriculum/list/${this.courseId}`;
+  }
+
+  /** Course Content subtopic rows with number (1., 2., ...) and icon for template. Same order as elearn: Key Points, Study Materials, Video, Q/A. Uses Font Awesome 6 classes (fas) so Key Points lightbulb and others render. */
+  getCurriculumSubtitleRows(item: any): { num: number; displayText: string; icon: string }[] {
+    const rows: { num: number; displayText: string; icon: string }[] = [];
+    let n = 0;
+    if ((item?.curriculumConceptCount ?? 0) > 0) {
+      n++;
+      const text = item?.firstConceptTitle ? `Key Points : ${item.firstConceptTitle}` : `Key Points (${item.curriculumConceptCount})`;
+      rows.push({ num: n, displayText: text, icon: 'fas fa-lightbulb' });
+    }
+    if ((item?.curriculumStudyMaterialCount ?? 0) > 0) {
+      n++;
+      const text = item?.firstStudyMaterialTitle ? `Study Materials : ${item.firstStudyMaterialTitle}` : `Study Materials (${item.curriculumStudyMaterialCount})`;
+      rows.push({ num: n, displayText: text, icon: 'fas fa-book' });
+    }
+    if ((item?.curriculumVideoLectureCount ?? 0) > 0) {
+      n++;
+      const text = item?.firstVideoLectureTitle ? `Video : ${item.firstVideoLectureTitle}` : `Video (${item.curriculumVideoLectureCount})`;
+      rows.push({ num: n, displayText: text, icon: 'fas fa-video' });
+    }
+    if ((item?.curriculumQuestionCount ?? 0) > 0) {
+      n++;
+      rows.push({ num: n, displayText: `Q/A (${item.curriculumQuestionCount})`, icon: 'fas fa-question-circle' });
+    }
+    return rows;
   }
 
   // ✅ PERFORMANCE: TrackBy functions for ngFor optimization
@@ -1202,6 +1401,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
    */
   handleEnrollNowClick(event: Event): void {
     if (!this.isBrowser) return;
+    if (this.enrollInProgress) return; // prevent double enroll requests
     event.preventDefault();
     event.stopPropagation();
     this.enrollError = null;
@@ -1236,15 +1436,23 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
 
   private doEnrollFreeCourse(courseId: string): void {
     if (!this.isBrowser) return;
+    if (this.enrollInProgress) return; // extra guard for repeated clicks
     this.authService.ensureTokensLoaded();
-    if (!this.authService.hasValidAccessToken() && !this.authService.getIdToken()) {
-      const returnUrl = `/app/student/course/${encodeURIComponent(courseId)}`;
+    // Elearn may only set the `token` cookie — hasJwtForAuthenticatedApi syncs idToken from accessToken.
+    if (!this.authService.hasJwtForAuthenticatedApi()) {
+      const returnUrl = `/app/student/course/${courseId}`;
       if (typeof window !== 'undefined' && window.localStorage) {
         try {
           window.localStorage.setItem('returnUrl', returnUrl);
         } catch (_) {}
       }
-      this.router.navigate(['/login'], { queryParams: { returnUrl } });
+      const elearnBase = (environment.elearnAppUrl || '').trim().replace(/\/$/, '') || (this.isBrowser ? window.location.origin : '');
+      const loginUrl = elearnBase ? `${elearnBase}/auth/login?returnUrl=${encodeURIComponent(returnUrl)}` : `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+      if (elearnBase && this.isBrowser) {
+        window.location.href = loginUrl;
+      } else {
+        this.router.navigate(['/login'], { queryParams: { returnUrl } });
+      }
       return;
     }
     this.enrollInProgress = true;
@@ -1254,6 +1462,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         this.enrollInProgress = false;
         this.changeDetectorRef.markForCheck();
         if (res?.success || res?.alreadyEnrolled) {
+          this.sidebarEnrolledOverride = true;
           const courseLearningPath = '/app/student/course/' + encodeURIComponent(courseId);
           const base = (environment.elearnAppUrl || '').trim().replace(/\/$/, '') || (this.isBrowser ? window.location.origin : '');
           const absoluteUrl = base ? base + courseLearningPath : courseLearningPath;
@@ -1271,6 +1480,22 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         this.changeDetectorRef.markForCheck();
       }
     });
+  }
+
+  /**
+   * Resume (when already enrolled in embed): go to Elearn course curriculum page.
+   */
+  handleResumeClick(event: Event): void {
+    if (!this.isBrowser) return;
+    if (this.resumeInProgress) return; // prevent duplicate navigation
+    event.preventDefault();
+    event.stopPropagation();
+    const cid = this.courseId || (this.course ?? this.courseDetails)?.id || (this.course ?? this.courseDetails)?.Id;
+    if (!cid) return;
+    this.resumeInProgress = true;
+    const base = (environment.elearnAppUrl || '').trim().replace(/\/$/, '');
+    const url = base ? `${base}/app/student/course/${encodeURIComponent(String(cid))}` : `/app/student/course/${encodeURIComponent(String(cid))}`;
+    this.navigateToUrl(url);
   }
 
   /**
@@ -1294,9 +1519,22 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     event.stopPropagation();
     const c = this.course ?? this.courseDetails;
     const cid = this.courseId || (c?.id ?? c?.Id);
+    const elearnBase = (environment.elearnAppUrl || '').trim().replace(/\/$/, '');
+    const returnUrl = cid ? `/app/student/course/${String(cid)}` : '';
     if (cid) {
-      const base = (environment.elearnAppUrl || '').trim().replace(/\/$/, '');
-      const checkoutUrl = base ? `${base}/checkout/${encodeURIComponent(String(cid))}` : `/checkout/${encodeURIComponent(String(cid))}`;
+      this.authService.ensureTokensLoaded();
+      if (!this.authService.hasValidAccessToken() && !this.authService.getIdToken()) {
+        if (typeof window !== 'undefined' && window.localStorage && returnUrl) {
+          try {
+            window.localStorage.setItem('returnUrl', returnUrl);
+          } catch (_) {}
+        }
+        if (elearnBase) {
+          window.location.href = `${elearnBase}/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+          return;
+        }
+      }
+      const checkoutUrl = elearnBase ? `${elearnBase}/checkout/${encodeURIComponent(String(cid))}` : `/checkout/${encodeURIComponent(String(cid))}`;
       this.navigateToUrl(checkoutUrl);
       return;
     }
@@ -1306,6 +1544,17 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         next: (res) => {
           if (res?.id) {
             const base = (environment.elearnAppUrl || '').trim().replace(/\/$/, '');
+            const rUrl = `/app/student/course/${res.id}`;
+            this.authService.ensureTokensLoaded();
+            if (!this.authService.hasJwtForAuthenticatedApi()) {
+              if (typeof window !== 'undefined' && window.localStorage) {
+                try { window.localStorage.setItem('returnUrl', rUrl); } catch (_) {}
+              }
+              if (base) {
+                window.location.href = `${base}/auth/login?returnUrl=${encodeURIComponent(rUrl)}`;
+                return;
+              }
+            }
             const checkoutUrl = base ? `${base}/checkout/${encodeURIComponent(res.id)}` : `/checkout/${encodeURIComponent(res.id)}`;
             this.navigateToUrl(checkoutUrl);
           } else {

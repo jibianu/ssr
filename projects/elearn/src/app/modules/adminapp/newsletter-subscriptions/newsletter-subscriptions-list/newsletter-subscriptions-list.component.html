@@ -1,0 +1,91 @@
+<div class="newsletter-subscriptions">
+  <div class="newsletter-subscriptions__header">
+    <h4 class="newsletter-subscriptions__title">Newsletter Subscriptions</h4>
+    <p class="newsletter-subscriptions__subtitle">Emails collected from blog sidebar and popup.</p>
+  </div>
+
+  <div class="newsletter-subscriptions__toolbar">
+    <input
+      class="form-control newsletter-subscriptions__search"
+      type="text"
+      [(ngModel)]="search"
+      placeholder="Search email, source, blog, country, or IP"
+      (keyup.enter)="onSearch()" />
+    <input
+      class="form-control newsletter-subscriptions__date"
+      type="date"
+      [(ngModel)]="fromDate"
+      title="From date" />
+    <input
+      class="form-control newsletter-subscriptions__date"
+      type="date"
+      [(ngModel)]="toDate"
+      title="To date" />
+    <button type="button" class="btn btn-sm btn-primary" (click)="onSearch()">Search</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onClear()">Clear</button>
+    <button type="button" class="btn btn-sm btn-outline-success" (click)="exportCsv()" [disabled]="isExporting">
+      {{ isExporting ? 'Exporting...' : 'Export CSV' }}
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="newsletter-subscriptions__loading">Loading...</div>
+  }
+
+  @if (loadError) {
+    <div class="newsletter-subscriptions__error">
+      {{ loadError }}
+      <button type="button" class="btn btn-sm btn-outline-primary ms-2" (click)="fetch()">Retry</button>
+    </div>
+  }
+
+  @if (!loading && !loadError && rows.length === 0) {
+    <div class="newsletter-subscriptions__empty">No subscriptions found.</div>
+  }
+
+  @if (!loading && !loadError && rows.length > 0) {
+    <div class="newsletter-subscriptions__table-wrap">
+      <table class="newsletter-subscriptions__table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Blog Source</th>
+            <th>Blog</th>
+            <th>Country</th>
+            <th>IP</th>
+            <th>Subscribed On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.id) {
+            <tr>
+              <td>{{ row.email }}</td>
+              <td>{{ row.source || 'site' }}</td>
+              <td>{{ row.blogSlug }}</td>
+              <td>{{ displayCountry(row) }}</td>
+              <td class="text-muted small">{{ row.ipAddress || '—' }}</td>
+              <td>{{ formatDate(row.createdOn) }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="remove(row)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="newsletter-subscriptions__pager">
+      <button class="btn btn-sm btn-outline-secondary" (click)="prevPage()" [disabled]="pageNumber <= 1">Previous</button>
+      <span>Page {{ pageNumber }} / {{ lastPage }}</span>
+      <button
+        class="btn btn-sm btn-outline-secondary"
+        (click)="nextPage()"
+        [disabled]="pageNumber >= lastPage">
+        Next
+      </button>
+    </div>
+  }
+</div>

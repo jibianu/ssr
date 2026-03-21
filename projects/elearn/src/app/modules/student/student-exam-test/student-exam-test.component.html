@@ -10,13 +10,13 @@
                   <div *ngFor="let item of selectedQuestion.options; let j= index;" class="card-options ck-content post-body"
                     (click)="selectOption(j)" [class.active]="j == selectedAnswer" [class.disableCard]="isSubmit"
                     [class.correct]="isSubmit && selectedQuestion.options[j].isCorrect == true"
-                    [class.wrong]="isSubmit && selectedQuestion.options[j].isCorrect == false && j == selectedAnswer" [innerHTML]="item?.description">
+                    [class.wrong]="isSubmit && selectedQuestion.options[j].isCorrect == false && j == selectedAnswer" [innerHTML]="item?.description | fixMojibakeSafeHtml">
                   </div>
                 </div>
   
                 <div class="justify-content-between description" *ngIf="isSubmit || (selectedQuestion && selectedQuestion.options && selectedQuestion.options.length)  === 1">
                   <strong>Solution</strong>
-                  <div class="mt-2 mb-5 ck-content post-body" [innerHTML]="selectedQuestion?.description">
+                  <div class="mt-2 mb-5 ck-content post-body" [innerHTML]="selectedQuestion?.description | fixMojibakeSafeHtml">
                   </div>
                 </div>
   

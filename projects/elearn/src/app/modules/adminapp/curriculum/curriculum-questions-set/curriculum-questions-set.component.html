@@ -1,45 +1,37 @@
-<div class="test-info-page">
-  <header class="test-info-page__header">
-    <div class="test-info-page__header-main">
-      <button type="button" class="test-info-page__back" (click)="goBack()" title="Back">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-      </button>
-      <h2 class="test-info-page__title">Test Information</h2>
-    </div>
-    <div class="test-info-page__header-actions">
-      <button type="button" class="test-info-page__add-btn" (click)="addQuetionSet(content); $event.preventDefault()">
-        <i class="fa fa-plus" aria-hidden="true"></i> Add Test Information
-      </button>
-    </div>
-  </header>
-
-  <div class="test-info-page__table-wrap">
+<div class="curriculum-page curriculum-page--test-info">
+  <div class="curriculum-page__section-row">
+    <h2 class="curriculum-page__section-title">Test Information</h2>
+    <button type="button" class="curriculum-page__add-btn" (click)="addQuetionSet(content); $event.preventDefault()">
+      <i class="fa fa-plus" aria-hidden="true"></i> Add Test Information
+    </button>
+  </div>
+  <div class="curriculum-page__table-wrap">
     <div class="table-responsive">
-      <table class="test-info-page__table">
+      <table class="curriculum-page__table">
         <thead>
           <tr>
-            <th class="test-info-page__th">Title</th>
-            <th class="test-info-page__th test-info-page__th--actions">Action</th>
+            <th class="curriculum-page__th">Title</th>
+            <th class="curriculum-page__th curriculum-page__th--actions">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="!questionSet?.length" class="test-info-page__empty-row">
+          <tr *ngIf="!questionSet?.length" class="curriculum-page__empty-row">
             <td colspan="2">
-              <div class="test-info-page__empty">
-                <i class="fa fa-file-text-o test-info-page__empty-icon" aria-hidden="true"></i>
-                <p class="test-info-page__empty-text">No test information yet. Click "Add Test Information" to create one.</p>
+              <div class="curriculum-page__empty">
+                <i class="fa fa-file-text-o curriculum-page__empty-icon" aria-hidden="true"></i>
+                <p class="curriculum-page__empty-text">No test information yet. Click "Add Test Information" to create one.</p>
               </div>
             </td>
           </tr>
-          <tr *ngFor="let item of questionSet; trackBy: trackByQuestionSetId" class="test-info-page__row">
-            <td class="test-info-page__cell">
-              <a [routerLink]="['/app/admin/course/curriculum/questionlist', item.id]" class="test-info-page__link">{{item?.title}}</a>
+          <tr *ngFor="let item of questionSet; trackBy: trackByQuestionSetId" class="curriculum-page__row">
+            <td class="curriculum-page__cell">
+              <a href="javascript:void(0)" class="curriculum-page__link" (click)="openTestQuestionsModal(testQuestionsModal, item)">{{item?.title}}</a>
             </td>
-            <td class="test-info-page__cell test-info-page__cell--actions">
-              <button type="button" class="test-info-page__icon-btn test-info-page__icon-btn--edit" (click)="updateQuetionSet(content, item)" title="Edit">
+            <td class="curriculum-page__cell curriculum-page__cell--actions">
+              <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--edit" (click)="updateQuetionSet(content, item)" title="Edit">
                 <i class="fa fa-edit" aria-hidden="true"></i>
               </button>
-              <button type="button" class="test-info-page__icon-btn test-info-page__icon-btn--danger" (click)="deleteQuetionSet(item.id)" title="Delete">
+              <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--danger" (click)="deleteQuetionSet(item.id)" title="Delete">
                 <i class="fa fa-trash" aria-hidden="true"></i>
               </button>
             </td>
@@ -49,6 +41,24 @@
     </div>
   </div>
 </div>
+
+<ng-template #testQuestionsModal let-modal>
+  <div class="modal-header curriculum-modal-header">
+    <div class="curriculum-modal-header__container">
+      <h4 class="modal-title curriculum-modal-header__title">{{ selectedTest?.title }} – Questions</h4>
+      <button type="button" class="curriculum-modal-header__close-btn" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="modal-body curriculum-detail-modal__body">
+    <app-curriculum-question-set-questions-list
+      *ngIf="selectedTest?.id"
+      [questionSetId]="selectedTest.id"
+      [isEmbeddedInModal]="true">
+    </app-curriculum-question-set-questions-list>
+  </div>
+</ng-template>
 
 <ng-template #content let-modal>
   <div class="test-info-modal__header curriculum-navbar-header">

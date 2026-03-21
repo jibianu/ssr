@@ -1,12 +1,12 @@
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID, Optional } from '@angular/core';
-import { isPlatformBrowser, isPlatformServer } from '@angular/common';
-import { Observable, of } from 'rxjs';
-import { map, shareReplay, catchError, tap } from 'rxjs/operators';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, of, Subscription } from 'rxjs';
+import { map, shareReplay, catchError, switchMap } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
+import { AuthenticationService } from '../../../auth/auth.service';
 import { BackendHealthService } from 'src/app/core/services/backend-health.service';
 import { environment } from 'src/environments/environment';
-import { getApiUrl } from 'src/app/core/config/api-url.config';
 
 interface HomeCourseFeature {
   id?: string;
@@ -32,6 +32,15 @@ interface HomeCategorySection {
   totalCourses: number;
 }
 
+/** Dashboard sections + optional enrollment map (browser + JWT only). */
+interface CourseHomeViewModel {
+  sections: HomeCategorySection[];
+  /** courseId (lowercase) → enrolled */
+  enrolled: Record<string, boolean>;
+  /** Bulk API failed — fall back to legacy Buy/checkout behavior */
+  enrollmentFailed: boolean;
+}
+
 @Component({
     selector: 'app-public-course-home',
     templateUrl: './public-course-home.component.html',
@@ -40,9 +49,18 @@ interface HomeCategorySection {
     changeDetection: ChangeDetectionStrategy.OnPush // ✅ PERFORMANCE: OnPush change detection
 })
 export class PublicCourseHomeComponent implements OnInit, OnDestroy {
-  // ✅ SSR OPTIMIZATION: Use Observable with async pipe - no blocking
-  items$: Observable<HomeCategorySection[]>;
-  
+  /** Sections + enrollment; bound in template after first load */
+  displayVm: CourseHomeViewModel | null = null;
+  viewModel$!: Observable<CourseHomeViewModel>;
+  viewLoading = true;
+
+  /** After successful free enroll before list refresh */
+  private readonly enrollmentLocalPatch: Record<string, boolean> = {};
+  /** Prevent double POST enroll */
+  enrollingCourseId: string | null = null;
+
+  private dataSub = new Subscription();
+
   // ✅ ERROR HANDLING: Loading and error states
   loading = false;
   error: string | null = null;
@@ -62,75 +80,122 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private publicAppService: PublicAppService,
+    private authService: AuthenticationService,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     backendHealthService: BackendHealthService
   ) {
-    // ✅ FIX: Initialize injected service in constructor to ensure injector is available
     this.backendHealthService = backendHealthService;
-    // ✅ SSR OPTIMIZATION: Non-blocking Observable pipeline
-    // Data processing moved to RxJS pipeline - no blocking during SSR
-    this.items$ = this.publicAppService.getDashboardCategories().pipe(
-      map(categories => {
-        if (!categories || categories.length === 0) {
-          return [] as HomeCategorySection[];
+  }
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.checkBackendHealth();
+    }
+    this.subscribeViewModel();
+  }
+
+  private subscribeViewModel(): void {
+    this.viewLoading = true;
+    this.displayVm = null;
+    this.viewModel$ = this.createViewModel$();
+    this.dataSub.add(
+      this.viewModel$.subscribe({
+        next: vm => {
+          this.displayVm = vm;
+          this.viewLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.viewLoading = false;
+          this.cdr.markForCheck();
         }
-        // ✅ Process data in RxJS pipeline - executes asynchronously
-        return categories
-          .map((ele: any) => {
-            const categoryName = ele.name || '';
-            const categorySlug = this.normalizeCategorySlug(categoryName);
-            const originalCourses = Array.isArray(ele.courses) ? ele.courses : [];
+      })
+    );
+  }
 
-            let filteredCourses = originalCourses.filter((course: any) => {
-              const courseCategory = course?.category?.name || course?.categoryName || course?.category || '';
-              return this.normalizeCategoryName(courseCategory) === this.normalizeCategoryName(categoryName);
-            });
-
-            if (filteredCourses.length === 0 && originalCourses.length > 0) {
-              filteredCourses = originalCourses;
-            }
-
-            const mappedCourses: HomeCourse[] = filteredCourses.map(course => this.mapCourse(course));
-
-            return {
-              categoryName,
-              categorySlug,
-              courses: mappedCourses,
-              totalCourses: filteredCourses.length,
-              sortOrder: ele.sortOrder || 0
-            } as HomeCategorySection & { sortOrder: number };
-          })
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map(({ sortOrder, ...rest }) => rest);
-      }),
+  private createViewModel$(): Observable<CourseHomeViewModel> {
+    return this.publicAppService.getDashboardCategories().pipe(
+      map(categories => this.buildSectionsFromCategories(categories)),
       catchError(error => {
-        // ✅ ERROR HANDLING: Graceful fallback on timeout/error
         console.error('Error loading dashboard categories:', error);
-        
-        // If backend health check also failed, show detailed backend unavailable message
         if (!this.backendAvailable) {
           const actualApiUrl = this.backendHealthService.getActualBackendUrl();
           this.error = `Unable to connect to API server. Please ensure the backend is running at ${actualApiUrl}`;
         } else {
-          // Backend is available but API call failed - show generic error
           this.error = error?.error?.message || 'Failed to load categories. Please refresh the page.';
         }
-        
-        return of([] as HomeCategorySection[]); // Return empty array instead of breaking
+        return of([] as HomeCategorySection[]);
       }),
-      shareReplay(1) // ✅ Cache for multiple subscriptions/renders
+      switchMap(sections => this.mergeEnrollmentIntoViewModel(sections)),
+      shareReplay(1)
     );
   }
 
-  ngOnInit(): void {
-    // ✅ SSR OPTIMIZATION: No blocking operations
-    // HTTP transfer cache automatically handles SSR data transfer
-    // Observable is already set up in constructor - template uses async pipe
-    
-    // ✅ BACKEND HEALTH: Check if backend is available (browser only)
-    if (isPlatformBrowser(this.platformId)) {
-      this.checkBackendHealth();
+  private buildSectionsFromCategories(categories: any[] | null | undefined): HomeCategorySection[] {
+    if (!categories || categories.length === 0) {
+      return [];
     }
+    return categories
+      .map((ele: any) => {
+        const categoryName = ele.name || '';
+        const categorySlug = this.normalizeCategorySlug(categoryName);
+        const originalCourses = Array.isArray(ele.courses) ? ele.courses : [];
+
+        let filteredCourses = originalCourses.filter((course: any) => {
+          const courseCategory = course?.category?.name || course?.categoryName || course?.category || '';
+          return this.normalizeCategoryName(courseCategory) === this.normalizeCategoryName(categoryName);
+        });
+
+        if (filteredCourses.length === 0 && originalCourses.length > 0) {
+          filteredCourses = originalCourses;
+        }
+
+        const mappedCourses: HomeCourse[] = filteredCourses.map(course => this.mapCourse(course));
+
+        return {
+          categoryName,
+          categorySlug,
+          courses: mappedCourses,
+          totalCourses: filteredCourses.length,
+          sortOrder: ele.sortOrder || 0
+        } as HomeCategorySection & { sortOrder: number };
+      })
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(({ sortOrder, ...rest }) => rest);
+  }
+
+  private collectCourseIds(sections: HomeCategorySection[]): string[] {
+    const set = new Set<string>();
+    for (const s of sections) {
+      for (const c of s.courses) {
+        const id = this.getCourseIdString(c);
+        if (id) set.add(id);
+      }
+    }
+    return Array.from(set);
+  }
+
+  private mergeEnrollmentIntoViewModel(sections: HomeCategorySection[]): Observable<CourseHomeViewModel> {
+    const base: CourseHomeViewModel = { sections, enrolled: {}, enrollmentFailed: false };
+    if (!isPlatformBrowser(this.platformId)) {
+      return of(base);
+    }
+    this.authService.ensureTokensLoaded();
+    if (!this.authService.hasJwtForAuthenticatedApi()) {
+      return of(base);
+    }
+    const ids = this.collectCourseIds(sections);
+    if (ids.length === 0) {
+      return of(base);
+    }
+    return this.publicAppService.getEnrollmentStatusBulk(ids).pipe(
+      map(enrolled => ({ sections, enrolled, enrollmentFailed: false })),
+      catchError(err => {
+        console.warn('[PublicCourseHome] enrollment bulk failed, falling back to Buy behavior', err);
+        return of({ sections, enrolled: {}, enrollmentFailed: true });
+      })
+    );
   }
   
   /**
@@ -152,60 +217,13 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
   // ✅ ERROR HANDLING: Reload on retry
   reload(): void {
     this.error = null;
-    // ✅ BACKEND HEALTH: Clear health check cache and re-check
+    Object.keys(this.enrollmentLocalPatch).forEach(k => delete this.enrollmentLocalPatch[k]);
+    this.enrollingCourseId = null;
     this.backendHealthService.clearCache();
     this.checkBackendHealth();
-    
-    // Re-initialize the Observable (clear cache first)
-    this.items$ = this.publicAppService.getDashboardCategories().pipe(
-      map(categories => {
-        if (!categories || categories.length === 0) {
-          return [] as HomeCategorySection[];
-        }
-        return categories
-          .map((ele: any) => {
-            const categoryName = ele.name || '';
-            const categorySlug = this.normalizeCategorySlug(categoryName);
-            const originalCourses = Array.isArray(ele.courses) ? ele.courses : [];
-
-            let filteredCourses = originalCourses.filter((course: any) => {
-              const courseCategory = course?.category?.name || course?.categoryName || course?.category || '';
-              return this.normalizeCategoryName(courseCategory) === this.normalizeCategoryName(categoryName);
-            });
-
-            if (filteredCourses.length === 0 && originalCourses.length > 0) {
-              filteredCourses = originalCourses;
-            }
-
-            const mappedCourses: HomeCourse[] = filteredCourses.map(course => this.mapCourse(course));
-
-            return {
-              categoryName,
-              categorySlug,
-              courses: mappedCourses,
-              totalCourses: filteredCourses.length,
-              sortOrder: ele.sortOrder || 0
-            } as HomeCategorySection & { sortOrder: number };
-          })
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map(({ sortOrder, ...rest }) => rest);
-      }),
-      catchError(error => {
-        console.error('Error loading dashboard categories:', error);
-        
-        // If backend health check also failed, show detailed backend unavailable message
-        if (!this.backendAvailable) {
-          const actualApiUrl = this.backendHealthService.getActualBackendUrl();
-          this.error = `Unable to connect to API server. Please ensure the backend is running at ${actualApiUrl}`;
-        } else {
-          // Backend is available but API call failed - show generic error
-          this.error = error?.error?.message || 'Failed to load categories. Please refresh the page.';
-        }
-        
-        return of([] as HomeCategorySection[]);
-      }),
-      shareReplay(1)
-    );
+    this.dataSub.unsubscribe();
+    this.dataSub = new Subscription();
+    this.subscribeViewModel();
   }
 
   // ✅ PERFORMANCE: Add trackBy functions for ngFor optimization
@@ -296,18 +314,85 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
 
 
-  // ✅ Get buy button URL - same flow as elearn: redirect to elearn login with returnUrl to course page; after login user lands on course/checkout.
+  getCourseIdString(course: HomeCourse | null | undefined): string | null {
+    if (!course) return null;
+    const courseId = course.id || (course as any).Id || (course as any).ID;
+    return courseId ? String(courseId) : null;
+  }
+
+  isLoggedIn(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    this.authService.ensureTokensLoaded();
+    return this.authService.hasJwtForAuthenticatedApi();
+  }
+
+  isFreeCourse(course: HomeCourse | null | undefined): boolean {
+    return Number(course?.amount ?? 0) === 0;
+  }
+
+  isEnrolled(course: HomeCourse | null | undefined): boolean {
+    const id = this.getCourseIdString(course)?.toLowerCase();
+    if (!id) return false;
+    if (this.enrollmentLocalPatch[id]) return true;
+    return !!this.displayVm?.enrolled?.[id];
+  }
+
+  getCtaLabel(course: HomeCourse | null | undefined): string {
+    if (!course) return 'Buy';
+    if (!this.isLoggedIn()) return 'Buy';
+    if (this.displayVm?.enrollmentFailed) return 'Buy';
+    if (this.isEnrolled(course)) return 'Resume';
+    if (this.isFreeCourse(course)) return 'Enroll';
+    return 'Buy';
+  }
+
+  getCtaIconClass(course: HomeCourse | null | undefined): string {
+    if (!course) return 'fa fa-shopping-cart';
+    if (this.displayVm?.enrollmentFailed || !this.isLoggedIn()) return 'fa fa-shopping-cart';
+    if (this.isEnrolled(course)) return 'fa fa-play';
+    if (this.isFreeCourse(course)) return 'fa fa-user-plus';
+    return 'fa fa-shopping-cart';
+  }
+
+  getCtaModifierClass(course: HomeCourse | null | undefined): string {
+    if (!course) return '';
+    if (this.displayVm?.enrollmentFailed || !this.isLoggedIn()) return '';
+    if (this.isEnrolled(course)) return 'course-card__cta--resume';
+    if (this.isFreeCourse(course)) return 'course-card__cta--enroll';
+    return '';
+  }
+
+  isCtaLoading(course: HomeCourse | null | undefined): boolean {
+    const id = this.getCourseIdString(course);
+    return !!id && this.enrollingCourseId === id;
+  }
+
+  /**
+   * Legacy Buy URL (used when enrollment bulk failed or guest).
+   */
   getBuyButtonUrl(course: HomeCourse | null | undefined): string {
     if (!course) return '#';
 
-    const courseId = course.id || (course as any).Id || (course as any).ID;
-    const courseIdString = courseId ? String(courseId) : null;
+    const courseIdString = this.getCourseIdString(course);
 
     if (courseIdString) {
       const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
+      if (!elearnBase) return '#';
+
+      if (isPlatformBrowser(this.platformId)) {
+        this.authService.ensureTokensLoaded();
+        if (this.authService.hasJwtForAuthenticatedApi()) {
+          const amount = Number(course.amount ?? 0);
+          if (amount === 0) {
+            return `${elearnBase}/app/student/course/${encodeURIComponent(courseIdString)}`;
+          }
+          return `${elearnBase}/checkout/${encodeURIComponent(courseIdString)}`;
+        }
+      }
+
       const returnUrl = '/app/student/course/' + courseIdString;
       const loginPath = `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
-      return elearnBase ? `${elearnBase}${loginPath}` : '#';
+      return `${elearnBase}${loginPath}`;
     }
 
     if (course.canonicalUrl) {
@@ -317,60 +402,101 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     return '#';
   }
 
-  // ✅ Handle buy button click - force navigation
-  handleBuyClick(event: Event, course: HomeCourse | null | undefined): void {
-    // ✅ Only handle in browser (not SSR)
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
+  getCourseActionHref(course: HomeCourse | null | undefined): string {
+    if (!course) return '#';
+    if (this.displayVm?.enrollmentFailed || !this.isLoggedIn()) {
+      return this.getBuyButtonUrl(course);
     }
+    const id = this.getCourseIdString(course);
+    const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
+    if (!id || !elearnBase) return '#';
 
-    if (!course) {
-      console.warn('Buy button: No course data');
-      event.preventDefault();
-      return;
+    if (this.isEnrolled(course)) {
+      return `${elearnBase}/app/student/course/${encodeURIComponent(id)}`;
     }
+    if (this.isFreeCourse(course)) {
+      return '#';
+    }
+    return `${elearnBase}/checkout/${encodeURIComponent(id)}`;
+  }
 
-    // ✅ Get the URL
-    const url = this.getBuyButtonUrl(course);
-    
-    // ✅ If URL is valid and not '#', navigate
-    if (url && url !== '#' && url !== 'javascript:void(0)') {
-      event.preventDefault();
-      event.stopPropagation();
-      
-      // ✅ Log for debugging
-      if (this.isBrowser) {
-        console.log('Buy button: Navigating to', url, { course });
-      }
-      
+  private navigateHard(url: string): void {
+    try {
+      window.location.href = url;
+    } catch {
       try {
-        // ✅ Force navigation using window.location
-        window.location.href = url;
-      } catch (error) {
-        console.error('Buy button: Navigation error', error);
-        // ✅ Fallback methods
-        try {
-          window.location.assign(url);
-        } catch (e1) {
-          try {
-            window.location.replace(url);
-          } catch (e2) {
-            console.error('Buy button: All navigation methods failed', e2);
-          }
-        }
+        window.location.assign(url);
+      } catch {
+        window.location.replace(url);
       }
-    } else {
-      // ✅ Invalid URL - log warning
-      console.warn('Buy button: Invalid URL', { url, course });
     }
   }
 
-  // ✅ Browser check helper
-  private get isBrowser(): boolean {
-    return isPlatformBrowser(this.platformId);
+  /**
+   * Udemy-style: guest → login; enrolled → resume; free → enroll API then course; paid → checkout.
+   */
+  handleCourseActionClick(event: Event, course: HomeCourse | null | undefined): void {
+    if (!isPlatformBrowser(this.platformId) || !course) {
+      event.preventDefault();
+      return;
+    }
+
+    if (this.displayVm?.enrollmentFailed || !this.isLoggedIn()) {
+      event.preventDefault();
+      event.stopPropagation();
+      const url = this.getBuyButtonUrl(course);
+      if (url && url !== '#') this.navigateHard(url);
+      return;
+    }
+
+    const id = this.getCourseIdString(course);
+    const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
+    if (!id || !elearnBase) {
+      event.preventDefault();
+      return;
+    }
+
+    if (this.isEnrolled(course)) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.navigateHard(`${elearnBase}/app/student/course/${encodeURIComponent(id)}`);
+      return;
+    }
+
+    if (this.isFreeCourse(course)) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.enrollingCourseId === id) return;
+      this.enrollingCourseId = id;
+      this.cdr.markForCheck();
+      this.publicAppService.enrollFreeCourse(id).subscribe({
+        next: res => {
+          this.enrollingCourseId = null;
+          if (res?.success || res?.alreadyEnrolled) {
+            this.enrollmentLocalPatch[id.toLowerCase()] = true;
+            this.navigateHard(`${elearnBase}/app/student/course/${encodeURIComponent(id)}`);
+          } else {
+            const path = course.canonicalUrl?.startsWith('/') ? course.canonicalUrl : `/${course.canonicalUrl || ''}`;
+            if (path && path !== '/') this.navigateHard(path);
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.enrollingCourseId = null;
+          this.cdr.markForCheck();
+          const path = course.canonicalUrl?.startsWith('/') ? course.canonicalUrl : `/${course.canonicalUrl || ''}`;
+          if (path && path !== '/') this.navigateHard(path);
+        }
+      });
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.navigateHard(`${elearnBase}/checkout/${encodeURIComponent(id)}`);
   }
 
   ngOnDestroy(): void {
-    // ✅ No subscriptions to clean up - async pipe handles unsubscribe automatically
+    this.dataSub.unsubscribe();
   }
 }

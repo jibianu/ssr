@@ -4,7 +4,7 @@
   <div
     *ngIf="!isEditable"
     class="text-block__content text-block__content--view"
-    [innerHTML]="block.content"
+    [innerHTML]="block.content | fixMojibakeSafeHtml"
   ></div>
   <!-- Author mode: contenteditable -->
   <div

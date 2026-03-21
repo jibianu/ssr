@@ -32,13 +32,18 @@
           <span class="cd-price__old" *ngIf="courses?.price != null && courses?.price !== courses?.discountedPrice"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.price | number:'1.2-2' }}</span>
           <span class="cd-price__current"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.discountedPrice != null ? (courses?.discountedPrice | number:'1.2-2') : (courses?.price | number:'1.2-2') }}</span>
         </div>
-        <button *ngIf="!isEnrolled" class="cd-btn cd-btn--primary" (click)="fnGotoEntroll()">
-          <i class="fas fa-shopping-cart" aria-hidden="true"></i> Enroll Now
+        <button
+          *ngIf="!enrollmentStatusLoading"
+          type="button"
+          [class]="ctaButtonClass"
+          (click)="handleCourseAction()"
+          [disabled]="enrollingFree"
+          [attr.aria-label]="ctaLabel">
+          <i *ngIf="enrollingFree" class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+          <i *ngIf="!enrollingFree" [class]="ctaIconClass" aria-hidden="true"></i>
+          {{ ctaLabel }}
         </button>
-        <button *ngIf="isEnrolled" class="cd-btn cd-btn--success" (click)="fnResume()">
-          <i class="fas fa-play" aria-hidden="true"></i> Resume Learning
-        </button>
-        <button *ngIf="!isEnrolled" class="cd-btn cd-btn--ghost cd-wishlist" [class.cd-wishlist--active]="isWishListedAdded" (click)="fnAddWishList()">
+        <button *ngIf="!enrollmentStatusLoading && isLoggedIn && !isEnrolled" type="button" class="cd-btn cd-btn--ghost cd-wishlist" [class.cd-wishlist--active]="isWishListedAdded" (click)="fnAddWishList()">
           <i class="fa-heart" [ngClass]="isWishListedAdded ? 'fas' : 'far'" aria-hidden="true"></i> {{ WishListText }}
         </button>
         <div class="cd-includes">
@@ -76,9 +81,11 @@
             <span class="cd-accordion__num">{{ i + 1 }}</span>
             <div class="cd-accordion__head-text">
               <h3 class="cd-accordion__title">{{ item?.title }}</h3>
-              <div class="cd-accordion__meta">
-                <span *ngIf="(item?.curriculumQuestionCount ?? 0) > 0">{{ item?.curriculumQuestionCount }} exercises</span>
-                <span *ngIf="getModuleDurationMinutes(item) > 0">{{ getModuleDurationMinutes(item) }} min</span>
+              <div class="cd-accordion__meta" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
+                <span class="cd-accordion__meta-item" *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+                <span class="cd-accordion__meta-item" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
+                <span class="cd-accordion__meta-item" *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
+                <span class="cd-accordion__meta-item" *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>
               </div>
             </div>
             <i class="fas fa-chevron-down cd-accordion__chevron" aria-hidden="true"></i>
@@ -87,8 +94,8 @@
             <div class="cd-accordion__inner">
               <ul class="cd-lesson-list" *ngIf="getModuleContentRows(item).length">
                 <li *ngFor="let row of getModuleContentRows(item)">
-                  <i class="fas fa-play cd-lesson-list__icon" aria-hidden="true"></i>
-                  <span>{{ row.label }} ({{ row.count }})</span>
+                  <i class="fa {{ row.icon }} cd-lesson-list__icon" aria-hidden="true"></i>
+                  <span>{{ row.displayText }}</span>
                 </li>
               </ul>
               <p *ngIf="!getModuleContentRows(item).length" class="cd-accordion__empty">No content items in this module.</p>
@@ -156,11 +163,16 @@
       <span class="cd-price__old" *ngIf="courses?.price != null && courses?.price !== courses?.discountedPrice"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.price | number:'1.2-2' }}</span>
       <span class="cd-price__current"><span class="cd-currency" aria-label="INR">₹</span>{{ courses?.discountedPrice != null ? (courses?.discountedPrice | number:'1.2-2') : (courses?.price | number:'1.2-2') }}</span>
     </div>
-    <button *ngIf="!isEnrolled" class="cd-btn cd-btn--primary cd-mobile-bar__btn" (click)="fnGotoEntroll()">
-      <i class="fas fa-shopping-cart" aria-hidden="true"></i> Enroll Now
-    </button>
-    <button *ngIf="isEnrolled" class="cd-btn cd-btn--success cd-mobile-bar__btn" (click)="fnResume()">
-      <i class="fas fa-play" aria-hidden="true"></i> Resume Learning
+    <button
+      *ngIf="!enrollmentStatusLoading"
+      type="button"
+      [class]="ctaButtonClass + ' cd-mobile-bar__btn'"
+      (click)="handleCourseAction()"
+      [disabled]="enrollingFree"
+      [attr.aria-label]="ctaLabel">
+      <i *ngIf="enrollingFree" class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+      <i *ngIf="!enrollingFree" [class]="ctaIconClass" aria-hidden="true"></i>
+      {{ ctaLabel }}
     </button>
   </footer>
 </div>

@@ -1,4 +1,5 @@
 import { SharedModule } from './../../../shared/shared.module';
+import { FixMojibakeSafeHtmlPipe } from '../../../shared/pipes/fix-mojibake-safe-html.pipe';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -32,7 +33,8 @@ import { NgxPaginationModule } from "ngx-pagination";
     SharedModule,
     NgxPaginationModule,
     LearningCourseIframeComponent,
-    ElearnLayoutComponent
+    ElearnLayoutComponent,
+    FixMojibakeSafeHtmlPipe
   ],
   exports: [
     PublicCategoryComponent,

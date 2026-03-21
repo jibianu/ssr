@@ -16,6 +16,10 @@
             "outputPath": "dist/site",
             "index": "projects/site/src/index.html",
             "browser": "projects/site/src/main.ts",
+            "server": "projects/site/src/main.server.ts",
+            "ssr": {
+              "entry": "projects/site/src/server.ts"
+            },
             "polyfills": ["@angular/localize/init", "projects/site/src/polyfills.ts"],
             "tsConfig": "projects/site/tsconfig.app.json",
             "assets": ["projects/site/src/favicon.ico", "projects/site/src/assets", { "glob": "**/*", "input": "projects/site/public", "output": "/" }],

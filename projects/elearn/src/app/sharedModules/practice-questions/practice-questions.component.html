@@ -86,7 +86,7 @@
           </div>
           <div class="quiz-solution" *ngIf="(isSubmit || (selectedQuestion && selectedQuestion.options && selectedQuestion.options.length) === 1) && selectedQuestion?.description && questionType !== '1'">
             <strong class="quiz-solution__label">Solution</strong>
-            <div class="quiz-solution__body ck-content post-body" [innerHTML]="selectedQuestion?.description"></div>
+            <div class="quiz-solution__body ck-content post-body" [innerHTML]="selectedQuestion?.description | fixMojibakeSafeHtml"></div>
           </div>
         </div>
         <div class="quiz-actions">

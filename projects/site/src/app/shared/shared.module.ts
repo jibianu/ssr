@@ -20,6 +20,7 @@ import { SkeletonCourseListComponent } from './components/skeleton-loaders/skele
 import { SkeletonEventCardComponent } from './components/skeleton-loaders/skeleton-event-card/skeleton-event-card.component';
 import { SkeletonRelatedCourseComponent } from './components/skeleton-loaders/skeleton-related-course/skeleton-related-course.component';
 import { SafeUrlPipe } from './pipes/safe-url.pipe';
+import { FixMojibakeSafeHtmlPipe } from './pipes/fix-mojibake-safe-html.pipe';
 
 const errorPages = [PageNotFoundComponent];
 
@@ -41,6 +42,7 @@ const errorPages = [PageNotFoundComponent];
         NgbToastModule,
         NgbModule,
         FormsModule,
+        FixMojibakeSafeHtmlPipe,
         // ✅ Note: Ng2SearchPipeModule removed - not compatible with Angular 20 module system
         // Import directly in EventModule where filterBy pipe is used
         NgxPaginationModule,

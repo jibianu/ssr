@@ -149,6 +149,23 @@
 .event-list__page-size-select { width: auto; min-width: 70px; }
 .event-list__loading, .event-list__error { margin: 1rem 0; }
 
+/* Creator role badges: Trainer=blue, Admin=red, Management=purple */
+.event-creator-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+.event-creator-badge--trainer { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+.event-creator-badge--admin { background: rgba(220, 38, 38, 0.15); color: #b91c1c; }
+.event-creator-badge--management { background: rgba(168, 85, 247, 0.15); color: #6b21a8; }
+.event-creator-badge--company { background: #f1f5f9; color: #475569; }
+.event-creator-badge--student { background: #fef3c7; color: #b45309; }
+.event-creator-badge--affiliate { background: #e0e7ff; color: #3730a3; }
+
 /* ===== Trainer empty state: reference design (student completed courses style) ===== */
 $empty-bg: #F5F7FA;
 $empty-bg-soft: #EEF1F5;

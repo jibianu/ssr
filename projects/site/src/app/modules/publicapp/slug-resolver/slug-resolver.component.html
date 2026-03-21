@@ -5,7 +5,7 @@
 } @else if (type() === 'course' && course(); as c) {
   <app-public-course-details [resolvedCourse]="c" [courseSlug]="slug()"></app-public-course-details>
 } @else if (type() === 'blog') {
-  <app-blog-detail [slugInput]="slug()"></app-blog-detail>
+  <app-blog-detail [slugInput]="slug()" [prefetchedBlog]="blogPrefetch()"></app-blog-detail>
 } @else if (type() === 'event' && eventData(); as ev) {
   <app-event-details [resolvedEventInput]="ev"></app-event-details>
 }

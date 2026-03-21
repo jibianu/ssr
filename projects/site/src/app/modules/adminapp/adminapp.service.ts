@@ -282,7 +282,7 @@ export class AdminAppService {
     // ✅ PERFORMANCE: Cache user info - called from multiple components
     getUserInfo(): Observable<any> {
         if (!this.userInfoCache$) {
-            this.userInfoCache$ = this.http.get<any>(this.apiUrl + `page/account/getinfo/`).pipe(
+            this.userInfoCache$ = this.http.get<any>(this.apiUrl + `api/Account/getinfo`).pipe(
                 shareReplay({ bufferSize: 1, refCount: true }),
                 catchError(error => {
                     console.error('Error fetching user info:', error);
@@ -297,7 +297,7 @@ export class AdminAppService {
     profileUpdate(obj): Observable<any> {
         // ✅ PERFORMANCE: Invalidate user info cache on profile update
         this.userInfoCache$ = null;
-        return this.http.put<any>(this.apiUrl + `page/account/updateinfo/`, obj).pipe(
+        return this.http.put<any>(this.apiUrl + `api/Account/updateinfo`, obj).pipe(
             catchError(error => {
                 console.error('Error updating profile:', error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling
@@ -306,7 +306,7 @@ export class AdminAppService {
     }
 
     passwordUpdate(obj): Observable<any> {
-        return this.http.put<any>(this.apiUrl + `page/account/changepassword/`, obj).pipe(
+        return this.http.put<any>(this.apiUrl + `api/Account/changepassword`, obj).pipe(
             catchError(error => {
                 console.error('Error updating password:', error);
                 throw error; // ✅ ERROR HANDLING: Re-throw for component error handling

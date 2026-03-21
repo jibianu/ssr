@@ -74,7 +74,7 @@
       <div class="checkout__cart-col">
         <div class="checkout__cart-card">
           <h2 class="checkout__cart-heading">Cart</h2>
-          <a routerLink="/app/student/category-courses-description/{{ data.course?.id }}" class="checkout__back">
+          <a [routerLink]="courseMarketingLink" [queryParams]="courseMarketingQueryParams" class="checkout__back">
             <i class="fas fa-arrow-left"></i> Back to course
           </a>
           <div class="checkout__divider"></div>

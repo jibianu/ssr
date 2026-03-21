@@ -1,5 +1,5 @@
-<div class="questions-page">
-  <header class="questions-page__header">
+<div class="questions-page" [class.questions-page--embedded]="isEmbeddedInModal">
+  <header class="questions-page__header" *ngIf="!isEmbeddedInModal">
     <div class="questions-page__header-main">
       <button type="button" class="questions-page__back" (click)="goBack()" title="Back">
         <i class="fa fa-arrow-left" aria-hidden="true"></i>
@@ -12,49 +12,68 @@
       </button>
     </div>
   </header>
+  <header class="questions-page__header questions-page__header--embedded" *ngIf="isEmbeddedInModal">
+    <h2 class="questions-page__title questions-page__title--sm">Questions</h2>
+    <button type="button" class="questions-page__add-btn questions-page__add-btn--sm" (click)="addQuestion(content)">
+      <i class="fa fa-plus" aria-hidden="true"></i> Add Questions
+    </button>
+  </header>
 
-  <div class="questions-page__table-wrap">
-    <div class="table-responsive">
-      <table class="questions-page__table">
-        <thead>
-          <tr>
-            <th class="questions-page__th">Title</th>
-            <th class="questions-page__th questions-page__th--actions">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="!questions?.length" class="questions-page__empty-row">
-            <td colspan="2">
-              <div class="questions-page__empty">
-                <i class="fa fa-question-circle questions-page__empty-icon" aria-hidden="true"></i>
-                <p class="questions-page__empty-text">No questions yet. Click "Add Questions" to create one.</p>
+  <div class="questions-page__content" *ngIf="questions?.length">
+    <div class="questions-page__section-header">
+      <div class="questions-page__section-title">
+        <i class="fa fa-question-circle" aria-hidden="true"></i>
+        <span>Questions &amp; Answers</span>
+        <span class="questions-page__section-count" *ngIf="questions?.length">({{ questions.length }})</span>
+      </div>
+      <div class="questions-page__section-actions">
+        <button type="button" class="questions-page__add-btn" (click)="addQuestion(content)">
+          <i class="fa fa-plus" aria-hidden="true"></i> Add New Question
+        </button>
+      </div>
+    </div>
+    <div class="questions-page__question-list">
+      <div class="questions-page__question-card" *ngFor="let data of questions; trackBy: trackByQuestionId">
+        <div class="questions-page__card-header">
+          <p class="questions-page__question-title">{{ data?.title }}</p>
+          <div class="questions-page__question-actions">
+            <button type="button" class="questions-page__edit-btn" (click)="updateQuestion(content, data)" title="Edit">
+              <i class="fa fa-pencil" aria-hidden="true"></i> Edit
+            </button>
+            <button type="button" class="questions-page__delete-btn" (click)="deleteQuestion(data.id)" title="Delete">
+              <i class="fa fa-trash" aria-hidden="true"></i> Delete
+            </button>
+          </div>
+        </div>
+        <div class="questions-page__options-list">
+          <div class="questions-page__option-row" *ngFor="let option of data.options; trackBy: trackByIndex">
+            <div class="questions-page__option-content">
+              <app-lesson-editor *ngIf="isLessonContent(option?.description)" [content]="option.description" mode="student"></app-lesson-editor>
+              <div class="ck-content post-body questions-page__option-text" *ngIf="!isLessonContent(option?.description)" [innerHTML]="(option?.description || '') | fixMojibakeSafeHtml"></div>
+              <div class="questions-page__option-image-wrap" *ngIf="option.extraInformation">
+                <img [src]="option.extraInformation" alt="Option" class="questions-page__option-image" />
               </div>
-            </td>
-          </tr>
-          <tr *ngFor="let item of questions; index as i" class="questions-page__row">
-            <td class="questions-page__cell">
-              <span class="questions-page__title-text">{{item?.title}}</span>
-            </td>
-            <td class="questions-page__cell questions-page__cell--actions">
-              <button type="button" class="questions-page__icon-btn questions-page__icon-btn--edit"
-                (click)="updateQuestion(content, item)" title="Edit">
-                <i class="fa fa-edit" aria-hidden="true"></i>
-              </button>
-              <button type="button" class="questions-page__icon-btn questions-page__icon-btn--danger"
-                (click)="deleteQuestion(item.id)" title="Delete">
-                <i class="fa fa-trash" aria-hidden="true"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+            <span class="questions-page__correct-badge" *ngIf="option.isCorrect">✓ Correct</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="questions-page__empty-wrap" *ngIf="!questions?.length">
+    <div class="questions-page__empty">
+      <i class="fa fa-question-circle questions-page__empty-icon" aria-hidden="true"></i>
+      <p class="questions-page__empty-text">No questions yet. Click "Add New Question" to create one.</p>
+      <button type="button" class="questions-page__add-btn questions-page__add-btn--empty" (click)="addQuestion(content)">
+        <i class="fa fa-plus" aria-hidden="true"></i> Add New Question
+      </button>
     </div>
   </div>
 </div>
 
 <ng-template #content let-modal>
   <div class="question-modal__header curriculum-navbar-header">
-    <h4 class="question-modal__title">{{pageTitle}}</h4>
+    <h4 class="question-modal__title question-modal__title--orange">{{ pageTitle }}</h4>
     <button type="button" class="question-modal__close" aria-label="Close" (click)="modal.dismiss('Cross click')">
       <i class="fa fa-times" aria-hidden="true"></i>
     </button>
@@ -62,7 +81,7 @@
   <div class="question-modal__body">
     <form [formGroup]="questionForm" class="question-modal__form">
       <section class="question-modal__section">
-        <h5 class="question-modal__section-title">Question</h5>
+        <h5 class="question-modal__section-title question-modal__section-title--orange">Question</h5>
         <div class="form-group question-modal__field">
           <label class="question-modal__label">Title</label>
           <input type="text" formControlName="title" class="form-control question-modal__input"
@@ -72,11 +91,19 @@
             <div *ngIf="f.title.errors.required">Title is required</div>
           </div>
         </div>
-        <div class="form-group question-modal__field">
+        <div class="form-group question-modal__field question-modal__field--editor">
           <label class="question-modal__label">Description</label>
-          <textarea formControlName="description" class="form-control question-modal__textarea" rows="4"
-            placeholder="Question text or prompt"
-            [ngClass]="{ 'is-invalid': submitted && f.description?.errors }"></textarea>
+          <div class="question-modal__lesson-editor-wrap">
+            <app-lesson-editor
+              [content]="f.description?.value"
+              mode="author"
+              [allowedBlockTypes]="questionEditorBlockTypes"
+              [uploadImage]="uploadImageFn"
+              [deleteImage]="deleteImageFn"
+              (uploadInProgressChange)="uploadInProgress = $event"
+              (jsonChange)="onQuestionDescriptionJsonChange($event)"
+            ></app-lesson-editor>
+          </div>
           <div *ngIf="submitted && f.description?.errors" class="invalid-feedback d-block">
             <div *ngIf="f.description?.errors?.required">Description is required</div>
           </div>
@@ -84,20 +111,27 @@
       </section>
 
       <section class="question-modal__section question-modal__section--options" formArrayName="options">
-        <h5 class="question-modal__section-title">Answer options</h5>
+        <h5 class="question-modal__section-title question-modal__section-title--orange">Answer options</h5>
 
         <div *ngFor="let item of questionArrayControls(); index as i" class="question-modal__option-card" [formGroupName]="i">
           <div class="question-modal__option-header">
-            <span class="question-modal__option-badge">Option {{i + 1}}</span>
+            <span class="question-modal__option-badge">Option {{ i + 1 }} Answer</span>
             <button type="button" class="question-modal__remove-option-btn" (click)="removeQuestionOptionsItems(i)" title="Remove option">
               <i class="fa fa-trash-o" aria-hidden="true"></i> Remove
             </button>
           </div>
-          <div class="form-group question-modal__field">
-            <label class="question-modal__label">Answer text</label>
-            <textarea formControlName="description" class="form-control question-modal__textarea question-modal__textarea--sm" rows="3"
-              placeholder="Enter this option's text"
-              [ngClass]="{ 'is-invalid': submitted && item.controls.description?.errors }"></textarea>
+          <div class="form-group question-modal__field question-modal__field--editor">
+            <div class="question-modal__lesson-editor-wrap">
+              <app-lesson-editor
+                [content]="item.controls.description?.value"
+                mode="author"
+                [allowedBlockTypes]="questionEditorBlockTypes"
+                [uploadImage]="uploadImageFn"
+                [deleteImage]="deleteImageFn"
+                (uploadInProgressChange)="uploadInProgress = $event"
+                (jsonChange)="onQuestionOptionJsonChange($event, i)"
+              ></app-lesson-editor>
+            </div>
             <div *ngIf="submitted && item.controls.description?.errors" class="invalid-feedback d-block">
               <div *ngIf="item.controls.description?.errors?.required">Answer text is required</div>
             </div>
@@ -125,8 +159,8 @@
     </form>
   </div>
   <div class="question-modal__footer">
-    <button class="question-modal__btn question-modal__btn--primary" type="button" (click)="onSubmit()">
-      <i class="fa fa-check" aria-hidden="true"></i> {{btntext}}
+    <button class="question-modal__btn question-modal__btn--primary" type="button" (click)="onSubmit()" [disabled]="uploadInProgress">
+      <i class="fa fa-check" aria-hidden="true"></i> {{ btntext }}
     </button>
     <button type="button" class="question-modal__btn question-modal__btn--secondary" (click)="modal.close('Close click')">
       Cancel

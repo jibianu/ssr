@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, ChangeDetectorRef, DestroyRef } from
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { PublicAppService } from '../../publicapp.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -50,28 +51,20 @@ export class SubscribePopupComponent implements OnInit {
     this.showMessage.set(false);
     this.cdr.markForCheck();
 
-    const safetyTimeout = setTimeout(() => {
-      if (this.isSubscribing()) {
+    const slug = (typeof window !== 'undefined'
+      ? window.location.pathname.split('/').filter(Boolean).pop()
+      : undefined) || undefined;
+    this.publicAppService.subscribeNewsletter(email, { source: 'subscribe-popup', blogSlug: slug }).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
         this.isSubscribing.set(false);
-        this.showMessage.set(true);
-        this.messageText.set('Thank you for subscribing!');
-        this.isSuccess.set(true);
-        this.subscribeForm.reset();
-        this.markUserAsSubscribed(email);
-        if (typeof localStorage !== 'undefined') localStorage.setItem('user_subscribed', 'true');
         this.cdr.markForCheck();
-        setTimeout(() => this.closePopup(), 2000);
-      }
-    }, 2000);
-
-    this.publicAppService.subscribeNewsletter(email).pipe(
-      takeUntilDestroyed(this.destroyRef)
+      })
     ).subscribe({
       next: (response) => {
-        clearTimeout(safetyTimeout);
         if (response?.success) {
           this.showMessage.set(true);
-          this.messageText.set('Thank you for subscribing! Check your email to confirm.');
+          this.messageText.set(response?.message || 'Thank you for subscribing!');
           this.isSuccess.set(true);
           this.markUserAsSubscribed(email);
           if (typeof localStorage !== 'undefined') localStorage.setItem('user_subscribed', 'true');
@@ -82,15 +75,12 @@ export class SubscribePopupComponent implements OnInit {
           this.showMessage.set(true);
           this.messageText.set((response as any)?.error || 'Something went wrong. Please try again.');
         }
-        this.isSubscribing.set(false);
         this.cdr.markForCheck();
       },
       error: (err) => {
-        clearTimeout(safetyTimeout);
         this.isSuccess.set(false);
         this.showMessage.set(true);
         this.messageText.set(err?.error?.error || err?.message || 'Something went wrong. Please try again.');
-        this.isSubscribing.set(false);
         this.cdr.markForCheck();
       }
     });

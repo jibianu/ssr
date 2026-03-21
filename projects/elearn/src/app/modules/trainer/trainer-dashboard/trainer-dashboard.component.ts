@@ -295,6 +295,35 @@ export class TrainerDashboardComponent implements OnInit, OnDestroy {
     return item?.id ?? `${_index}`;
   }
 
+  /** Show "Published" only when admin has published the course (IsPublished). Otherwise status 2 = "Approved". */
+  getCourseStatusLabel(item: { status?: number; Status?: number; isPublished?: boolean; IsPublished?: boolean } | null): string {
+    if (!item) return 'Draft';
+    const status = Number(item.status ?? item.Status ?? 0);
+    const isPublished = item.isPublished === true || item.IsPublished === true;
+    if (isPublished) return 'Published';
+    switch (status) {
+      case 0: return 'Draft';
+      case 1: return 'Pending Review';
+      case 2: return 'Approved';
+      case 3: return 'Rejected';
+      default: return 'Draft';
+    }
+  }
+
+  getCourseStatusClass(item: { status?: number; Status?: number; isPublished?: boolean; IsPublished?: boolean } | null): string {
+    if (!item) return 'draft';
+    const status = Number(item.status ?? item.Status ?? 0);
+    const isPublished = item.isPublished === true || item.IsPublished === true;
+    if (isPublished) return 'published';
+    switch (status) {
+      case 0: return 'draft';
+      case 1: return 'pending';
+      case 2: return 'approved';
+      case 3: return 'rejected';
+      default: return 'draft';
+    }
+  }
+
   ngOnDestroy(): void {
     this.sharedService.certificateName.next('');
     this.sharedService.showTrainerDashboardToolbar.next(false);

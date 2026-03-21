@@ -209,6 +209,8 @@ $bg-card: #ffffff;
   gap: 12px;
   flex-shrink: 0;
   margin-left: auto;
+  position: relative;
+  z-index: 2; /* Above any overlay so Review/Filter buttons stay clickable */
 }
 
 .common-topbar__actions {
@@ -216,6 +218,8 @@ $bg-card: #ffffff;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .common-topbar__action-btn {
@@ -241,6 +245,24 @@ $bg-card: #ffffff;
   color: $primary-btn;
 }
 
+/* Curriculum toolbar: Landing page — light green */
+.common-topbar__action-btn--landing {
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #047857;
+}
+
+.common-topbar__action-btn--landing:hover {
+  background: #d1fae5;
+  border-color: #34d399;
+  color: #065f46;
+}
+
+.common-topbar__action-btn--landing:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+
 .common-topbar__action-btn--primary {
   background: $primary-btn;
   border: 1px solid $primary-btn;
@@ -251,6 +273,37 @@ $bg-card: #ffffff;
   background: $primary-btn-dark;
   border-color: $primary-btn-dark;
   color: #fff;
+}
+
+.common-topbar__action-btn--success {
+  background: #22c55e;
+  border: 1px solid #22c55e;
+  color: #fff;
+}
+
+.common-topbar__action-btn--success:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+.common-topbar__action-btn--danger {
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  color: #fff;
+}
+
+.common-topbar__action-btn--danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+}
+
+.common-topbar__actions-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $text;
+  margin-right: 8px;
 }
 
 .common-topbar__action-btn--pending {

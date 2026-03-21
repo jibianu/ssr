@@ -1,4 +1,7 @@
-<div class="public-course-embed">
+<!-- Native course UI (API-driven) — used on localhost dev so 4201 works without the site app iframe -->
+<app-category-course-description *ngIf="!usePublicSiteIframe"></app-category-course-description>
+
+<div class="public-course-embed" *ngIf="usePublicSiteIframe">
   <iframe
     *ngIf="iframeUrl"
     class="public-course-embed__iframe"

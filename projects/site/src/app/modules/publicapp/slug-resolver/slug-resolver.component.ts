@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil, switchMap, catchError } from 'rxjs/operators';
+import { takeUntil, switchMap, catchError, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SlugResolverService, SlugResolverResponse } from './slug-resolver.service';
+import { SlugPageData } from './slug-page.resolver';
 import { PublicAppService } from '../publicapp.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { PublicCourseModule } from '../public-course/public-course.module';
@@ -26,7 +27,15 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   private publicAppService = inject(PublicAppService);
   private adminService = inject(AdminAppService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
+
+  /** Avoid SSR navigating to /page-not-found when API is unreachable from Node — client will retry. */
+  private navigateToNotFound(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      void this.router.navigate(['/page-not-found'], { replaceUrl: true });
+    }
+  }
 
   resolved = signal<SlugResolverResponse | null>(null);
   loading = signal(true);
@@ -35,12 +44,30 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   slug = signal('');
   course = signal<any>(null);
   eventData = signal<any>(null);
+  /** SSR: blog HTML from slugPageResolver — passed to BlogDetail to avoid duplicate GET. */
+  blogPrefetch = signal<unknown | null>(null);
 
   ngOnInit(): void {
-    this.route.params.pipe(
+    const pre = this.route.snapshot.data['slugPage'] as SlugPageData | undefined;
+    if (pre?.notFound) {
+      this.notFound.set(true);
+      this.loading.set(false);
+      this.navigateToNotFound();
+      return;
+    }
+    if (pre && pre.type && !pre.notFound) {
+      this.applySlugPageData(pre);
+      return;
+    }
+
+    const slugParam$ = this.route.parent
+      ? this.route.parent.paramMap.pipe(map((p) => ({ slug: p.get('slug') || '' })))
+      : this.route.paramMap.pipe(map((p) => ({ slug: p.get('slug') || '' })));
+
+    slugParam$.pipe(
       takeUntil(this.destroy$),
-      switchMap(params => {
-        const slug = params['slug'] || '';
+      switchMap((params) => {
+        const slug = params.slug || '';
         if (!slug) {
           this.notFound.set(true);
           this.loading.set(false);
@@ -52,6 +79,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         this.resolved.set(null);
         this.course.set(null);
         this.eventData.set(null);
+        this.blogPrefetch.set(null);
         this.type.set(null);
         return this.slugResolver.resolve(slug);
       }),
@@ -99,7 +127,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     ).subscribe(result => {
       if (result === null && this.type() !== 'blog') {
         this.loading.set(false);
-        if (this.notFound()) this.router.navigate(['/page-not-found'], { replaceUrl: true });
+        if (this.notFound()) this.navigateToNotFound();
         return;
       }
       if (this.type() === 'course' && result && typeof result === 'object') {
@@ -108,6 +136,29 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       this.loading.set(false);
       this.cdr.markForCheck();
     });
+  }
+
+  private applySlugPageData(pre: SlugPageData): void {
+    this.slug.set(pre.slug);
+    this.type.set(pre.type);
+    this.loading.set(false);
+    this.notFound.set(false);
+    if (pre.type) {
+      this.resolved.set({ type: pre.type, slug: pre.slug });
+    }
+    this.course.set(null);
+    this.eventData.set(null);
+    this.blogPrefetch.set(null);
+    if (pre.type === 'course' && pre.course) {
+      this.course.set(pre.course);
+    }
+    if (pre.type === 'event' && pre.eventData) {
+      this.eventData.set(pre.eventData);
+    }
+    if (pre.type === 'blog' && pre.blog) {
+      this.blogPrefetch.set(pre.blog);
+    }
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {

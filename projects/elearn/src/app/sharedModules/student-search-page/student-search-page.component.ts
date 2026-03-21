@@ -5,6 +5,9 @@ import { Category } from 'src/app/modules/adminapp/category/category.model';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
+import { resolveCourseId } from 'src/app/core/helpers/course-id.helper';
+import { navigateExploreCourseMarketingPage } from 'src/app/core/helpers/explore-course-nav.helper';
+import { environment } from 'src/environments/environment';
 
 export interface SearchCourseItem {
   id: string;
@@ -105,7 +108,10 @@ export class StudentSearchPageComponent implements OnInit, OnDestroy {
     this.showSearchDropdown = false;
     this.searchQuery = course.title;
     this.searchResults = [];
-    this.router.navigate(['/app/student/details/curriculum-list', course.id]);
+    const cid = resolveCourseId(course) || course.id;
+    if (cid) {
+      navigateExploreCourseMarketingPage(this.router, course, environment);
+    }
   }
 
   onTopSearchClick(tag: string): void {
@@ -119,8 +125,9 @@ export class StudentSearchPageComponent implements OnInit, OnDestroy {
   }
 
   goToCategory(category: Category): void {
-    if (category?.id) {
-      this.router.navigate(['/app/student/category-courses', category.id, (category.name || '').replace(/\s+/g, '-')]);
+    const catId = resolveCourseId(category) || (category as any)?.id;
+    if (catId) {
+      this.router.navigate(['/app/student/category-courses', catId, (category.name || '').replace(/\s+/g, '-')]);
     }
   }
 

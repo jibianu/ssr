@@ -12,9 +12,13 @@
             <i class="fa fa-star"></i>
             {{ event.badge }}
           </span>
-          <h1 class="hero-title">{{ event?.title }}</h1>
+          <h1 class="hero-title">{{ event?.title | fixMojibake }}</h1>
         </div>
-
+        <div class="student-event-detail__creator" *ngIf="event">
+          <span class="student-event-detail__creator-label">Created by:</span>
+          <span class="student-event-detail__creator-name">{{ event?.createdByName ?? 'Unknown' }}</span>
+          <span *ngIf="event?.createdByRole" class="event-creator-badge event-creator-badge--{{ (event.createdByRole || '').toLowerCase() }}">({{ event.createdByRole }})</span>
+        </div>
         <div class="hero-meta">
           <div class="hero-meta__item" *ngIf="event?.startDate">
             <div class="hero-meta__icon hero-meta__icon--calendar">
@@ -79,7 +83,7 @@
           </p>
           <div class="summary-tags" *ngIf="getInfo('tags')?.length">
             <span class="summary-tag" *ngFor="let tag of getInfo('tags'); trackBy: trackByTagId">
-              {{ tag.title || tag.tag }}
+              {{ (tag.title || tag.tag) | fixMojibake }}
             </span>
           </div>
         </article>
@@ -231,7 +235,7 @@
                   <img
                     class="host-card__avatar"
                     [src]="host?.imageUrl || 'assets/img/oilandgas_club.svg'"
-                    [alt]="host?.title || 'Host'"
+                    [alt]="(host?.title || 'Host') | fixMojibake"
                     loading="lazy"
                   />
                   <div class="host-card__avatar-badge">
@@ -239,7 +243,7 @@
                   </div>
                 </div>
                 <div class="host-card__header">
-                  <h3 class="host-card__name">{{ host?.title || 'Event Host' }}</h3>
+                  <h3 class="host-card__name">{{ (host?.title || 'Event Host') | fixMojibake }}</h3>
                   <p class="host-card__role" *ngIf="host?.tag">
                     <i class="fa fa-briefcase"></i>
                     {{ host.tag }}
@@ -276,7 +280,7 @@
                   <img
                     class="host-card__avatar"
                     [src]="hostList[0]?.imageUrl || 'assets/img/oilandgas_club.svg'"
-                    [alt]="hostList[0]?.title || 'Host'"
+                    [alt]="(hostList[0]?.title || 'Host') | fixMojibake"
                     loading="lazy"
                   />
                   <div class="host-card__avatar-badge">
@@ -284,7 +288,7 @@
                   </div>
                 </div>
                 <div class="host-card__header">
-                  <h3 class="host-card__name">{{ hostList[0]?.title || 'Event Host' }}</h3>
+                  <h3 class="host-card__name">{{ (hostList[0]?.title || 'Event Host') | fixMojibake }}</h3>
                   <p class="host-card__role" *ngIf="hostList[0]?.tag">
                     <i class="fa fa-briefcase"></i>
                     {{ hostList[0].tag }}
@@ -341,7 +345,7 @@
         <div class="learning-grid">
           <article class="learning-item" *ngFor="let item of getLearningItems(); trackBy: trackByCurriculumId">
             <div>
-              <h3>{{ item.title }}</h3>
+              <h3>{{ item.title | fixMojibake }}</h3>
               <p>{{ item.description }}</p>
             </div>
           </article>
@@ -365,7 +369,7 @@
         <div class="bonus-grid">
           <article class="bonus-item" *ngFor="let bonus of getInfo('bonuse'); trackBy: trackByBonusId">
             <span class="bonus-tag">{{ bonus.tag }}</span>
-            <h3>{{ bonus.title }}</h3>
+            <h3>{{ bonus.title | fixMojibake }}</h3>
             <p>{{ bonus.description }}</p>
             <strong class="bonus-value" *ngIf="bonus.amount">₹{{ bonus.amount | number: '1.0-0' }}</strong>
           </article>
@@ -430,7 +434,7 @@
         </header>
         <div class="faq">
           <details class="faq-item" *ngFor="let faq of getInfo('qa'); trackBy: trackByQaId">
-            <summary>{{ faq.title }}</summary>
+            <summary>{{ faq.title | fixMojibake }}</summary>
             <p>{{ faq.description }}</p>
           </details>
         </div>
@@ -486,7 +490,7 @@
         </header>
         <div class="related-grid">
           <article class="related-card" *ngFor="let related of events; trackBy: trackByEventId">
-            <h3>{{ related.title }}</h3>
+            <h3>{{ related.title | fixMojibake }}</h3>
             <p>{{ related.subTitle }}</p>
             <div class="related-meta">
               <span>{{ related.startDate | date: 'mediumDate' }}</span>
@@ -607,7 +611,7 @@
             <p class="certificate-text">This Certificate is Proudly Presented to the honorable achievement to</p>
             <p class="certificate-name">PARTICIPANT NAME</p>
             <p class="certificate-description">
-              Has successfully completed the training program of <strong>{{ event?.title || 'Event Training Program' }}</strong>.
+              Has successfully completed the training program of <strong>{{ (event?.title || 'Event Training Program') | fixMojibake }}</strong>.
               The Program has Conducted during the period of {{ event?.startDate | date: 'dd MMM yyyy' }} to {{ event?.endDate ? (event.endDate | date: 'dd MMM yyyy') : 'Completion' }}.
             </p>
           </div>
@@ -641,7 +645,7 @@
     <!-- Event Details Card -->
     <div class="event-card-summary">
       <div class="event-thumbnail">
-        <img [src]="getEventImage()" [alt]="event?.title" *ngIf="getEventImage(); else defaultThumbnail" />
+        <img [src]="getEventImage()" [alt]="event?.title | fixMojibake" *ngIf="getEventImage(); else defaultThumbnail" />
         <ng-template #defaultThumbnail>
           <div class="default-thumbnail">
             <i class="fa fa-calendar"></i>
@@ -649,7 +653,7 @@
         </ng-template>
       </div>
       <div class="event-info">
-        <h3 class="event-title-truncated">{{ event?.title || 'Event Registration' }}</h3>
+        <h3 class="event-title-truncated">{{ (event?.title || 'Event Registration') | fixMojibake }}</h3>
         <p class="event-price">₹{{ (event?.amount || 0) | number: '1.2-2' }}</p>
       </div>
     </div>

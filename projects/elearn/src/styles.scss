@@ -2377,6 +2377,167 @@ body{
   opacity: 1 !important;
   color: #fff !important;
 }
+
+/* Trainer course review sidebar (Review button → panel with Submit for Review + history) */
+.review-sidebar-modal.modal-right .modal-dialog {
+  width: 420px !important;
+  max-width: 95vw !important;
+}
+.review-sidebar-modal.modal-right .modal-content {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 0 !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+.review-sidebar-modal.modal-right .review-sidebar__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
+  border-bottom: none;
+}
+.review-sidebar-modal.modal-right .review-sidebar__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}
+.review-sidebar-modal.modal-right .review-sidebar__close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  opacity: 0.95;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+.review-sidebar-modal.modal-right .review-sidebar__close:hover {
+  opacity: 1;
+  color: #fff;
+}
+.review-sidebar-modal.modal-right .review-sidebar__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem;
+  background: #f8fafc;
+}
+.review-sidebar-modal .review-sidebar__section {
+  margin-bottom: 1.5rem;
+}
+.review-sidebar-modal .review-sidebar__section-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #334155;
+}
+.review-sidebar-modal .review-sidebar__submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.review-sidebar-modal .review-sidebar__submit-btn:hover:not(:disabled) {
+  opacity: 0.95;
+}
+.review-sidebar-modal .review-sidebar__submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.review-sidebar-modal .review-sidebar__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.review-sidebar-modal .review-sidebar__action-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.review-sidebar-modal .review-sidebar__action-btn--success {
+  color: #fff;
+  background: #16a34a;
+}
+.review-sidebar-modal .review-sidebar__action-btn--success:hover:not(:disabled) {
+  background: #15803d;
+}
+.review-sidebar-modal .review-sidebar__action-btn--danger {
+  color: #fff;
+  background: #dc2626;
+}
+.review-sidebar-modal .review-sidebar__action-btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+.review-sidebar-modal .review-sidebar__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+.review-sidebar-modal .review-sidebar__hint--muted {
+  color: #94a3b8;
+}
+.review-sidebar-modal .review-sidebar__history-item {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.review-sidebar-modal .review-sidebar__history-item--rejected .review-sidebar__history-value {
+  color: #dc2626;
+}
+.review-sidebar-modal .review-sidebar__history-item--approved .review-sidebar__history-value {
+  color: #16a34a;
+}
+.review-sidebar-modal .review-sidebar__history-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.25rem;
+}
+.review-sidebar-modal .review-sidebar__history-value,
+.review-sidebar-modal .review-sidebar__history-date {
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+.review-sidebar-modal .review-sidebar__history-date {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+.review-sidebar-modal .review-sidebar__history-note {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: #475569;
+  font-style: italic;
+}
+.review-sidebar-modal .review-sidebar__history-empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
 .search-filter-sidebar.modal-right .modal-body.search-filter-sidebar__body {
   flex: 1 !important;
   min-height: 0 !important;

@@ -1,0 +1,14 @@
+.search-filter-sidebar__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Prevent Event status dropdown from being clipped by modal overflow */
+.search-filter-sidebar__field .input-group {
+  overflow: visible;
+}
+.search-filter-sidebar__field .dropdown {
+  overflow: visible;
+}

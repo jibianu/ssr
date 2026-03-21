@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -45,7 +46,8 @@ export class CourseShellComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private headerContext: CourseHeaderContextService
+    private headerContext: CourseHeaderContextService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
   private applySlugAndCourse(slug: string, resolved: any): void {
@@ -53,7 +55,9 @@ export class CourseShellComponent implements OnInit, OnDestroy {
     this.course = resolved;
 
     if (!this.course) {
-      this.router.navigate(['/page-not-found'], { replaceUrl: true });
+      if (isPlatformBrowser(this.platformId)) {
+        void this.router.navigate(['/page-not-found'], { replaceUrl: true });
+      }
       this.cdr.markForCheck();
       return;
     }

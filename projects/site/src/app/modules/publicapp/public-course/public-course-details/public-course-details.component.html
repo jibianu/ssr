@@ -16,12 +16,11 @@
 <div *ngIf="course" class="course-header-old">
   <div class="course-header-card">
     <h1 class="course-header-title">{{ course.title }}</h1>
-    <p class="course-header-category text-muted small mb-1" *ngIf="courseSummaryText">
-      {{ courseSummaryText }}
-    </p>
-    <p class="course-header-subtitle" *ngIf="courseDetails?.eventInfo">
-      {{ courseDetails.eventInfo }}
-    </p>
+    <!-- Main description: first Course Title Summary (from Edit landing page) or eventInfo for events; fallback metaDescription -->
+    <div class="course-header-subtitle-wrap" *ngIf="headerDescriptionText">
+      <i class="fa fa-check course-header-subtitle-icon" aria-hidden="true"></i>
+      <p class="course-header-subtitle">{{ headerDescriptionText }}</p>
+    </div>
     <ul class="course-header-features" *ngIf="(courseDetails?.courseSummaries && courseDetails?.courseSummaries.length > 1)">
           <li *ngFor="let item of courseDetails?.courseSummaries | slice:1; trackBy: trackBySummaryIndex">
         <i class="fa fa-check"></i>
@@ -172,74 +171,28 @@
           <span>Course Content</span>
           <a *ngIf="showEditSection && !isEmbedMode" [href]="adminCurriculumUrl" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">Edit in admin</a>
         </h3>
-        <div class="course-curriculum-list">
-          <div class="curriculum-item" *ngFor="let item of courseDetails.courseContents; let i = index; trackBy: trackByCourseContentId">
-            <!-- Section Header -->
-            <a class="curriculum-section-header" 
-               [class.expanded]="i === 0"
-               [class.collapsed]="i !== 0"
-               data-toggle="collapse" 
-               [attr.href]="'#curriculumContent' + i" 
-               [attr.aria-expanded]="i === 0 ? 'true' : 'false'"
-               [attr.aria-controls]="'curriculumContent' + i"
-               (click)="preventNavigation($event)">
-              <div class="curriculum-section-left">
-                <i class="fa" [class.fa-minus]="i === 0" [class.fa-plus]="i !== 0" aria-hidden="true"></i>
-                <span class="curriculum-section-title">{{ item?.title || 'Untitled Section' }}</span>
-                </div>
-              <span class="curriculum-preview-link" *ngIf="i !== 0">Preview</span>
-            </a>
-
-            <!-- Section Content -->
-            <div [id]="'curriculumContent' + i" 
-                 class="collapse curriculum-section-content" 
-                 [class.show]="i === 0"
-                 [attr.data-parent]="'.course-curriculum-list'">
-              <div class="curriculum-lessons" *ngIf="item && item.courseContentSubTypes && item.courseContentSubTypes.length > 0">
-                <!-- Lessons -->
-                <div class="curriculum-lesson" *ngFor="let subItem of item.courseContentSubTypes; let j = index; trackBy: trackBySubContentId">
-                  <!-- Lesson with nested items -->
-                  <div *ngIf="subItem && subItem.courseContentSubSubTypes && subItem.courseContentSubSubTypes.length > 0">
-                    <a class="curriculum-lesson-header"
-                       [class.expanded]="i === 0 && j === 0"
-                       [class.collapsed]="i !== 0 || j !== 0"
-                       data-toggle="collapse"
-                       [attr.href]="'#lessonContent' + i + '-' + j"
-                       [attr.aria-expanded]="i === 0 && j === 0 ? 'true' : 'false'"
-                       [attr.aria-controls]="'lessonContent' + i + '-' + j"
-                       (click)="preventNavigation($event)">
-                      <i class="fa" [class.fa-minus]="i === 0 && j === 0" [class.fa-plus]="i !== 0 || j !== 0" aria-hidden="true"></i>
-                      <span class="curriculum-lesson-title">{{ subItem?.title }}</span>
-                      <span class="curriculum-duration" *ngIf="subItem?.duration">{{ subItem.duration }}</span>
-                    </a>
-                    <div [id]="'lessonContent' + i + '-' + j"
-                         class="collapse curriculum-lesson-items"
-                         [class.show]="i === 0 && j === 0"
-                         [attr.data-parent]="'#curriculumContent' + i">
-                      <ul class="curriculum-item-list">
-                        <li *ngFor="let subSubItem of subItem.courseContentSubSubTypes; trackBy: trackBySubSubContentId" class="curriculum-item-row">
-                          <span class="curriculum-item-title">{{ subSubItem?.title || 'Untitled' }}</span>
-                          <div class="curriculum-item-actions">
-                            <i class="fa fa-play-circle curriculum-play-icon" aria-hidden="true"></i>
-                            <span class="curriculum-item-duration" *ngIf="subSubItem?.duration">{{ subSubItem.duration }}</span>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <!-- Lesson without nested items -->
-                  <div *ngIf="!subItem?.courseContentSubSubTypes || !subItem.courseContentSubSubTypes || subItem.courseContentSubSubTypes.length === 0" class="curriculum-lesson-simple">
-                    <span class="curriculum-lesson-title">{{ subItem?.title || 'Untitled' }}</span>
-                    <span class="curriculum-duration" *ngIf="subItem?.duration">{{ subItem.duration }}</span>
-                  </div>
-                </div>
-                      </div>
-              <!-- ✅ Fallback: Show section title if no sub-items -->
-              <div class="curriculum-lessons" *ngIf="!item?.courseContentSubTypes || !item.courseContentSubTypes || item.courseContentSubTypes.length === 0">
-                <div class="curriculum-lesson-simple">
-                  <span class="curriculum-lesson-title">{{ item?.title || 'Untitled Section' }}</span>
-                </div>
+        <div class="course-curriculum-list course-curriculum-list--elearn">
+          <div class="curriculum-item curriculum-item--elearn" *ngFor="let item of courseDetails.courseContents; let i = index; trackBy: trackByCourseContentId">
+            <button type="button" class="curriculum-section-header curriculum-section-header--elearn curriculum-section-header--clickable"
+              [class.expanded]="isCurriculumSectionExpanded(i)"
+              [attr.aria-expanded]="isCurriculumSectionExpanded(i)"
+              [attr.aria-controls]="'curriculumContent' + i"
+              [id]="'curriculumHead' + i"
+              (click)="toggleCurriculumSection(i)">
+              <i class="fa curriculum-section-chevron" [class.fa-chevron-down]="isCurriculumSectionExpanded(i)" [class.fa-chevron-right]="!isCurriculumSectionExpanded(i)" aria-hidden="true"></i>
+              <span class="curriculum-section-title">{{ item?.title || 'Untitled Section' }}</span>
+            </button>
+            <div [id]="'curriculumContent' + i" class="curriculum-section-content curriculum-section-content--elearn"
+              [class.show]="isCurriculumSectionExpanded(i)"
+              role="region"
+              [attr.aria-labelledby]="'curriculumHead' + i">
+              <div class="curriculum-subtitle-inner">
+                <ng-container *ngIf="getCurriculumSubtitleRows(item) as subtitleRows">
+                  <span class="curriculum-subtitle" *ngFor="let row of subtitleRows">
+                    <i class="{{ row.icon }}" aria-hidden="true"></i> {{ row.num }}. {{ row.displayText }}
+                  </span>
+                  <p class="curriculum-subtitle-empty" *ngIf="subtitleRows.length === 0">No subtopics or questions in this section.</p>
+                </ng-container>
               </div>
             </div>
           </div>
@@ -258,7 +211,7 @@
         <div class="description-container" id="description">
           <div class="description-content">
             <strong class="description-heading">{{courseDetails?.becomeCourse?.title}}</strong>
-            <div class="description-text" [innerHTML]="courseDetails?.becomeCourse?.description">
+            <div class="description-text" [innerHTML]="courseDetails?.becomeCourse?.description | fixMojibakeSafeHtml">
             </div>
           </div>
         </div>
@@ -409,18 +362,32 @@
             Limited Time Offer
           </p>
           
-          <!-- CTA: Enroll Now (free) → login or enroll API then /app/student/course/:id; Buy Now (paid) → /checkout -->
-          <a [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
+          <!-- CTA: same rules as /courses — bulk enrollment API + Resume (green) / Enroll / Buy -->
+          <a *ngIf="courseDetails && isUserLoggedIn && enrollmentStatusLoading && !isEnrolledForSidebar"
+             href="#"
+             class="pricing-buy-btn pricing-buy-btn--loading"
+             (click)="$event.preventDefault()"
+             aria-disabled="true">
+            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+            Loading…
+          </a>
+          <a *ngIf="courseDetails && isEnrolledForSidebar"
+             href="#"
+             class="pricing-buy-btn pricing-buy-btn--resume"
+             (click)="handleResumeClick($event)"
+             target="_self">
+            <i class="fa fa-play" aria-hidden="true"></i> Resume
+          </a>
+          <a *ngIf="courseDetails && !isEnrolledForSidebar && !(isUserLoggedIn && enrollmentStatusLoading)"
+             [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
              class="pricing-buy-btn"
-             [class.pricing-buy-btn--enroll]="isFreeCourse"
+             [class.pricing-buy-btn--enroll]="sidebarSecondaryUsesEnrollStyle"
              [class.pricing-buy-btn-disabled]="(!isFreeCourse && isCountdownExpired) || (isFreeCourse && enrollInProgress)"
              [attr.aria-disabled]="(!isFreeCourse && isCountdownExpired) || (isFreeCourse && enrollInProgress)"
-             (click)="isFreeCourse ? handleEnrollNowClick($event) : handleDesktopBuyClick($event)"
-             *ngIf="courseDetails"
+             (click)="handleSidebarSecondaryCtaClick($event)"
              target="_self">
-            <i class="fa" [class.fa-user-plus]="isFreeCourse" [class.fa-shopping-cart]="!isFreeCourse"></i>
-            <ng-container *ngIf="isFreeCourse">{{ enrollInProgress ? 'Enrolling…' : 'Enroll Now' }}</ng-container>
-            <ng-container *ngIf="!isFreeCourse">{{ isCountdownExpired ? 'Offer Expired' : 'Buy Now' }}</ng-container>
+            <i class="fa" [class.fa-user-plus]="sidebarSecondaryUsesEnrollStyle" [class.fa-shopping-cart]="!sidebarSecondaryUsesEnrollStyle"></i>
+            {{ sidebarSecondaryCtaLabel }}
           </a>
           <p class="pricing-enroll-error" *ngIf="enrollError">{{ enrollError }}</p>
           
@@ -485,14 +452,31 @@
         </div>
       </div>
       <div class="d-block d-sm-none footer">
-        <a [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
+        <a *ngIf="courseDetails && isUserLoggedIn && enrollmentStatusLoading && !isEnrolledForSidebar"
+           href="#"
+           class="course-detail__cta course-detail__cta--loading"
+           (click)="$event.preventDefault()"
+           aria-disabled="true">
+          <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+          <span class="course-detail__cta-text">Loading…</span>
+        </a>
+        <a *ngIf="courseDetails && isEnrolledForSidebar"
+           href="#"
+           class="course-detail__cta course-detail__cta--resume"
+           (click)="handleResumeClick($event)"
+           target="_self">
+          <i class="fa fa-play" aria-hidden="true"></i>
+          <span class="course-detail__cta-text">Resume</span>
+        </a>
+        <a *ngIf="courseDetails && !isEnrolledForSidebar && !(isUserLoggedIn && enrollmentStatusLoading)"
+          [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
           class="course-detail__cta"
-          [class.course-detail__cta--enroll]="isFreeCourse"
-          [class.course-detail__cta--buy]="!isFreeCourse"
-          (click)="isFreeCourse ? handleEnrollNowClick($event) : handleMobileBuyClick($event)"
+          [class.course-detail__cta--enroll]="sidebarSecondaryUsesEnrollStyle"
+          [class.course-detail__cta--buy]="!sidebarSecondaryUsesEnrollStyle"
+          (click)="handleSidebarSecondaryCtaClick($event)"
           target="_self">
-          <i class="fa" [class.fa-user-plus]="isFreeCourse" [class.fa-shopping-cart]="!isFreeCourse" aria-hidden="true"></i>
-          <span class="course-detail__cta-text">{{ isFreeCourse ? (enrollInProgress ? 'Enrolling…' : 'Enroll Now') : 'Buy Now' }}</span>
+          <i class="fa" [class.fa-user-plus]="sidebarSecondaryUsesEnrollStyle" [class.fa-shopping-cart]="!sidebarSecondaryUsesEnrollStyle" aria-hidden="true"></i>
+          <span class="course-detail__cta-text">{{ sidebarSecondaryCtaLabel }}</span>
         </a>
         <p class="pricing-enroll-error" *ngIf="enrollError">{{ enrollError }}</p>
       </div>

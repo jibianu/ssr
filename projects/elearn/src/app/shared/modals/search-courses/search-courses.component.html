@@ -15,6 +15,7 @@
         </button>
         <div ngbDropdownMenu class="search-filter-sidebar__menu" aria-labelledby="dropdownPublish">
           <button type="button" ngbDropdownItem (click)="filterByPublishType('all')">All course</button>
+          <button type="button" ngbDropdownItem (click)="filterByPublishType('pending-review')">Trainer requested review</button>
           <button type="button" ngbDropdownItem (click)="filterByPublishType('published-lms')">Published on the Elearn LMS</button>
           <button type="button" ngbDropdownItem (click)="filterByPublishType('published-public')">Published on Public marketing course page</button>
           <button type="button" ngbDropdownItem (click)="filterByPublishType('unpublished-lms')">Unpublished on the Elearn LMS</button>

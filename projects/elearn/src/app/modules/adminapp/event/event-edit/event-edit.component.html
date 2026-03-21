@@ -3,6 +3,12 @@
     <h2>Edit Event</h2>
   </div>
 
+  <div class="event-edit__creator mb-2" *ngIf="!loading">
+    <span class="event-edit__creator-label">Created by:</span>
+    <span class="event-edit__creator-name">{{ loadedEvent?.createdByName ?? 'Unknown' }}</span>
+    <span *ngIf="loadedEvent?.createdByRole" class="event-creator-badge event-creator-badge--{{ (loadedEvent.createdByRole || '').toLowerCase() }}">({{ loadedEvent.createdByRole }})</span>
+  </div>
+
   <div *ngIf="loading" class="event-edit__loading">Loading event…</div>
 
   <div class="card-body" *ngIf="!loading">
@@ -347,3 +353,51 @@
     </form>
   </div>
 </div>
+
+<ng-template #eventReviewSidebar let-modal>
+  <div class="review-sidebar__header">
+    <h4 class="review-sidebar__title">Review</h4>
+    <button type="button" class="review-sidebar__close" aria-label="Close" (click)="modal.dismiss('Close')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="review-sidebar__body">
+    <section class="review-sidebar__section" *ngIf="showSubmitForReviewSection">
+      <button type="button" class="review-sidebar__submit-btn" (click)="submitForReviewFromPanel(modal)" [disabled]="reviewActionInProgress || !canSubmitForReviewFromPanel">
+        <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        <span *ngIf="!reviewActionInProgress">Submit for Review</span>
+        <span *ngIf="reviewActionInProgress">Submitting…</span>
+      </button>
+      <p class="review-sidebar__hint" *ngIf="canSubmitForReviewFromPanel">Submit this event for admin review. Admin can then approve or reject.</p>
+    </section>
+    <section class="review-sidebar__section" *ngIf="isEventPendingReview && isAdminRoute">
+      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--success" (click)="onEventReviewApproveFromPanel(modal)" [disabled]="reviewActionInProgress" title="Approve event">
+        <i class="fa fa-check" aria-hidden="true"></i>
+        <span *ngIf="!reviewActionInProgress">Approve</span>
+        <span *ngIf="reviewActionInProgress">Processing…</span>
+      </button>
+      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--danger" (click)="onEventReviewRejectFromPanel(modal)" [disabled]="reviewActionInProgress" title="Reject with feedback">
+        <i class="fa fa-times" aria-hidden="true"></i> Reject
+      </button>
+      <p class="review-sidebar__hint">Approve to publish this event. Reject to send feedback to the author.</p>
+    </section>
+    <section class="review-sidebar__section" *ngIf="showSubmitForReviewSection && !canSubmitForReviewFromPanel && submitForReviewHint">
+      <p class="review-sidebar__hint review-sidebar__hint--muted">{{ submitForReviewHint }}</p>
+    </section>
+    <section class="review-sidebar__section">
+      <h5 class="review-sidebar__section-title">Approve / Reject history</h5>
+      <div class="review-sidebar__history">
+        <ng-container *ngIf="reviewHistoryList?.length">
+          <div class="review-sidebar__history-item" *ngFor="let h of reviewHistoryList"
+            [class.review-sidebar__history-item--rejected]="h.eventType === 1"
+            [class.review-sidebar__history-item--approved]="h.eventType === 2">
+            <span class="review-sidebar__history-label">{{ h.eventType === 0 ? 'Submitted for review' : (h.eventType === 1 ? 'Rejected' : 'Approved') }}</span>
+            <span class="review-sidebar__history-value">{{ h.eventDate | date:'medium' }}</span>
+            <span class="review-sidebar__history-note" *ngIf="h.message">{{ h.message }}</span>
+          </div>
+        </ng-container>
+        <p class="review-sidebar__history-empty" *ngIf="!reviewHistoryList?.length">No review activity yet.</p>
+      </div>
+    </section>
+  </div>
+</ng-template>

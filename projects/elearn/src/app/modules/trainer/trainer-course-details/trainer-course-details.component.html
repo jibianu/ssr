@@ -25,11 +25,11 @@
             <div class="trainer-curriculum-page__card-body">
               <h3 class="trainer-curriculum-page__card-title">{{ item?.title }}</h3>
               <p class="trainer-curriculum-page__card-desc" *ngIf="item?.description">{{ item?.description }}</p>
-              <div class="trainer-curriculum-page__card-meta">
-                <span class="trainer-curriculum-page__card-meta-item" *ngIf="item?.curriculumConceptCount"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> {{ item.curriculumConceptCount }} Concepts</span>
-                <span class="trainer-curriculum-page__card-meta-item" *ngIf="item?.curriculumQuestionCount"><i class="fa fa-question-circle" aria-hidden="true"></i> {{ item.curriculumQuestionCount }} Questions</span>
-                <span class="trainer-curriculum-page__card-meta-item" *ngIf="item?.curriculumStudyMaterialCount"><i class="fa fa-book" aria-hidden="true"></i> {{ item.curriculumStudyMaterialCount }} Study</span>
-                <span class="trainer-curriculum-page__card-meta-item" *ngIf="item?.curriculumVideoLectureCount"><i class="fa fa-video-camera" aria-hidden="true"></i> {{ item.curriculumVideoLectureCount }} Videos</span>
+              <div class="trainer-curriculum-page__card-meta" aria-label="Curriculum content types" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
+                <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+                <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
+                <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
+                <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>
               </div>
             </div>
             <div class="trainer-curriculum-page__card-actions" (click)="$event.stopPropagation()">
@@ -156,7 +156,7 @@
                     </div>
                     <div class="curriculum-view__item-content">
                       <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></div>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
                     </div>
                   </div>
                 </div>
@@ -192,7 +192,7 @@
                     </div>
                     <div class="curriculum-view__item-content">
                       <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description"></div>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
                     </div>
                   </div>
                 </div>
@@ -277,7 +277,7 @@
                     <div class="curriculum-view__option-row" *ngFor="let option of data.options; trackBy: trackByIndex">
                       <div class="curriculum-view__option-content">
                         <app-lesson-editor *ngIf="isLessonContent(option?.description)" [content]="option.description" mode="student"></app-lesson-editor>
-                        <div class="ck-content post-body curriculum-view__option-text" *ngIf="!isLessonContent(option?.description)" [innerHTML]="option?.description"></div>
+                        <div class="ck-content post-body curriculum-view__option-text" *ngIf="!isLessonContent(option?.description)" [innerHTML]="option?.description | fixMojibakeSafeHtml"></div>
                         <div class="curriculum-view__option-image-wrap" *ngIf="option.extraInformation">
                           <img [src]="option.extraInformation" alt="Option" class="curriculum-view__option-image" />
                         </div>
@@ -683,5 +683,57 @@
       <button type="button" class="update-course-modal__btn update-course-modal__btn--cancel" (click)="modal.close('Close click')">Cancel</button>
       <button type="button" class="update-course-modal__btn update-course-modal__btn--primary" (click)="updateCourse()">Update</button>
     </div>
+  </div>
+</ng-template>
+
+<ng-template #reviewSidebar let-modal>
+  <div class="review-sidebar__header">
+    <h4 class="review-sidebar__title">Review</h4>
+    <button type="button" class="review-sidebar__close" aria-label="Close" (click)="modal.dismiss('Close')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="review-sidebar__body">
+    <section class="review-sidebar__section">
+      <button type="button" class="review-sidebar__submit-btn" (click)="submitCourseForReviewFromPanel(modal)" [disabled]="submitForReviewInProgress || !canSubmitForReview">
+        <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        <span *ngIf="!submitForReviewInProgress">Submit for Review</span>
+        <span *ngIf="submitForReviewInProgress">Submitting…</span>
+      </button>
+      <p class="review-sidebar__hint" *ngIf="canSubmitForReview">Submit this course for admin review. Admin can then approve or reject.</p>
+      <p class="review-sidebar__hint review-sidebar__hint--muted" *ngIf="!canSubmitForReview && submitForReviewHint">{{ submitForReviewHint }}</p>
+    </section>
+    <section class="review-sidebar__section">
+      <h5 class="review-sidebar__section-title">Approve / Reject history</h5>
+      <div class="review-sidebar__history" *ngIf="courseInfo">
+        <ng-container *ngIf="reviewHistoryList?.length">
+          <div class="review-sidebar__history-item" *ngFor="let h of reviewHistoryList"
+            [class.review-sidebar__history-item--rejected]="h.eventType === 1"
+            [class.review-sidebar__history-item--approved]="h.eventType === 2">
+            <span class="review-sidebar__history-label">{{ h.eventType === 0 ? 'Submitted for review' : (h.eventType === 1 ? 'Rejected' : 'Approved') }}</span>
+            <span class="review-sidebar__history-value">{{ h.eventDate | date:'medium' }}</span>
+            <span class="review-sidebar__history-note" *ngIf="h.message">{{ h.message }}</span>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!reviewHistoryList?.length">
+          <div class="review-sidebar__history-item" *ngIf="getReviewSubmittedDate()">
+            <span class="review-sidebar__history-label">Submitted for review</span>
+            <span class="review-sidebar__history-value">{{ getReviewSubmittedDate() | date:'medium' }}</span>
+          </div>
+          <div class="review-sidebar__history-item review-sidebar__history-item--rejected" *ngIf="getReviewRejectionReason()">
+            <span class="review-sidebar__history-label">Rejected</span>
+            <span class="review-sidebar__history-value">{{ getReviewRejectionReason() }}</span>
+            <span class="review-sidebar__history-date" *ngIf="getReviewRejectedDate()">{{ getReviewRejectedDate() | date:'medium' }}</span>
+          </div>
+          <div class="review-sidebar__history-item review-sidebar__history-item--approved" *ngIf="getReviewApprovedDate()">
+            <span class="review-sidebar__history-label">Approved</span>
+            <span class="review-sidebar__history-value">{{ getReviewApprovedDate() | date:'medium' }}</span>
+            <span class="review-sidebar__history-note" *ngIf="getReviewApprovalNote()">{{ getReviewApprovalNote() }}</span>
+          </div>
+          <p class="review-sidebar__history-empty" *ngIf="!getReviewSubmittedDate() && !getReviewRejectionReason() && !getReviewApprovedDate()">No review activity yet.</p>
+        </ng-container>
+      </div>
+      <p class="review-sidebar__history-empty" *ngIf="!courseInfo">Load course to see history.</p>
+    </section>
   </div>
 </ng-template>

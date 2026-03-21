@@ -1,11 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, TemplateRef, ChangeDetectorRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { Subscription } from 'rxjs';
 import { AdminAppService } from '../../adminapp.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
+import { SubmitForReviewModalComponent } from '../../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
+import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
+import { CourseRejectModalComponent } from '../../course/course-review/course-reject-modal/course-reject-modal.component';
 
 @Component({
   selector: 'app-event-edit',
@@ -14,7 +19,7 @@ import { SharedService } from 'src/app/shared/service/shared-service.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule]
 })
-export class EventEditComponent implements OnInit {
+export class EventEditComponent implements OnInit, OnDestroy {
   form: UntypedFormGroup;
   eventId: string;
   loading = true;
@@ -32,6 +37,12 @@ export class EventEditComponent implements OnInit {
   qaExpanded = false;
   organizedByExpanded = false;
   optionsExpanded = true;
+  eventStatus = 0;
+  @ViewChild('eventReviewSidebar') eventReviewSidebarRef: TemplateRef<any>;
+  reviewSidebarModalRef: NgbModalRef;
+  reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
+  reviewActionInProgress = false;
+  private sub = new Subscription();
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -40,7 +51,9 @@ export class EventEditComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sharedService: SharedService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private modalService: NgbModal,
+    private cdr: ChangeDetectorRef
   ) {}
 
   /** Use backend stream proxy for S3 URLs so video plays (avoids CORS). */
@@ -69,6 +82,14 @@ export class EventEditComponent implements OnInit {
     }
     this.buildForm();
     this.loadEvent();
+    this.sub.add(
+      this.sharedService.eventReviewPanelClick$.subscribe(() => this.openReviewSidebar())
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.sharedService.eventReviewContext.next(null);
+    this.sub.unsubscribe();
   }
 
   private get eventsListPath(): string {
@@ -234,6 +255,9 @@ export class EventEditComponent implements OnInit {
           }));
         });
         if (titleImageUrl) this.titleImageUploadedUrl = titleImageUrl;
+        this.eventStatus = e?.status ?? e?.Status ?? 0;
+        this.form.markAsPristine();
+        this.sharedService.eventReviewContext.next({ eventId: this.eventId, status: this.eventStatus });
         this.loading = false;
       },
       error: () => {
@@ -417,5 +441,161 @@ export class EventEditComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate([this.eventsListPath]);
+  }
+
+  openReviewSidebar(): void {
+    if (!this.eventId) return;
+    // Defer so ViewChild is ready and click from topbar is fully processed (trainer Events topbar Review button)
+    setTimeout(() => {
+      if (!this.eventReviewSidebarRef) {
+        this.cdr.detectChanges();
+      }
+      if (!this.eventReviewSidebarRef) return;
+      if (this.reviewSidebarModalRef) return; // already open
+      this.loadReviewHistory();
+      this.reviewSidebarModalRef = this.modalService.open(this.eventReviewSidebarRef, {
+        windowClass: 'modal-right review-sidebar-modal',
+        size: 'sm',
+        scrollable: true,
+      });
+      this.reviewSidebarModalRef.result.catch(() => {}).finally(() => {
+        this.reviewSidebarModalRef = null;
+      });
+      this.cdr.markForCheck();
+    }, 0);
+  }
+
+  loadReviewHistory(): void {
+    if (!this.eventId) return;
+    this.sub.add(
+      this.appService.getEventReviewHistory(this.eventId).subscribe({
+        next: (list) => {
+          this.reviewHistoryList = Array.isArray(list) ? list : [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.reviewHistoryList = [];
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  /** True if user has edited form or selected a new title image since load; enables Submit for Review when event is already approved. */
+  get hasContentEdited(): boolean {
+    return (this.form?.dirty === true) || !!this.titleImageFile;
+  }
+
+  /** True when Submit for Review button should be enabled: Draft/Rejected, or Approved and content edited. */
+  get canSubmitForReviewFromPanel(): boolean {
+    if (!this.eventId) return false;
+    if (this.eventStatus === 0 || this.eventStatus === 3) return true;
+    if (this.eventStatus === 2) return this.hasContentEdited;
+    return false;
+  }
+
+  /** True when the Submit for Review section (button + hint) should be visible: existing event and not Pending. */
+  get showSubmitForReviewSection(): boolean {
+    return !!this.eventId && this.eventStatus !== 1;
+  }
+
+  get isEventPendingReview(): boolean {
+    return this.eventStatus === 1;
+  }
+
+  get submitForReviewHint(): string {
+    if (this.eventStatus === 1) return 'Already submitted for review. Waiting for admin.';
+    if (this.eventStatus === 2) return 'Event is approved. Edit content to submit for review again.';
+    return '';
+  }
+
+  get isAdminRoute(): boolean {
+    return (this.router?.url ?? '').includes('/admin/');
+  }
+
+  submitForReviewFromPanel(modal: { dismiss: (r?: string) => void }): void {
+    if (!this.eventId) return;
+    const ref = this.modalService.open(SubmitForReviewModalComponent);
+    ref.result.then(
+      (message: string) => {
+        this.reviewActionInProgress = true;
+        this.cdr.markForCheck();
+        this.appService.submitEventForReview(this.eventId, message ?? undefined).subscribe({
+          next: () => {
+            this.reviewActionInProgress = false;
+            this.toaster.showSuccess('Event submitted for review.');
+            this.sharedService.eventReviewContext.next(null);
+            this.eventStatus = 1;
+            this.loadReviewHistory();
+            this.loadEvent();
+            this.cdr.markForCheck();
+            modal.dismiss('submitted');
+          },
+          error: () => {
+            this.reviewActionInProgress = false;
+            this.toaster.showError('Failed to submit for review.');
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      () => {}
+    );
+  }
+
+  onEventReviewApproveFromPanel(modal: { dismiss: (r?: string) => void }): void {
+    if (!this.eventId) return;
+    const ref = this.modalService.open(CourseApproveModalComponent);
+    ref.result.then(
+      (approvalNote: string) => {
+        this.reviewActionInProgress = true;
+        this.cdr.markForCheck();
+        this.appService.approveEvent(this.eventId, approvalNote || undefined).subscribe({
+          next: () => {
+            this.reviewActionInProgress = false;
+            this.toaster.showSuccess('Event approved and published.');
+            this.sharedService.eventReviewContext.next(null);
+            this.cdr.markForCheck();
+            modal.dismiss('approved');
+            this.router.navigate([this.eventsListPath]);
+          },
+          error: () => {
+            this.reviewActionInProgress = false;
+            this.toaster.showError('Failed to approve event.');
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      () => {}
+    );
+  }
+
+  onEventReviewRejectFromPanel(modal: { dismiss: (r?: string) => void }): void {
+    if (!this.eventId) return;
+    const ref = this.modalService.open(CourseRejectModalComponent);
+    ref.result.then(
+      (reason: string) => {
+        if (reason != null) {
+          this.reviewActionInProgress = true;
+          this.cdr.markForCheck();
+          this.appService.rejectEvent(this.eventId, reason ?? '').subscribe({
+            next: () => {
+              this.reviewActionInProgress = false;
+              this.toaster.showSuccess('Event rejected. Author can edit and resubmit.');
+              this.eventStatus = 3;
+              this.loadReviewHistory();
+              this.loadEvent();
+              this.cdr.markForCheck();
+              modal.dismiss('rejected');
+            },
+            error: () => {
+              this.reviewActionInProgress = false;
+              this.toaster.showError('Failed to reject event.');
+              this.cdr.markForCheck();
+            }
+          });
+        }
+      },
+      () => {}
+    );
   }
 }
