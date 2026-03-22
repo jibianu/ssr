@@ -13,6 +13,7 @@ export const environment = {
   stripeKey: 'pk_live_N0CVrqPSTq9ECjQxRSODpGUE00Jg3I2H71',
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
-  cognitoRedirectUri: 'https://elearn.oilandgasclub.com/auth/callback',
-  googleRedirectUri: 'https://elearn.oilandgasclub.com/auth/google-callback'
+  /** Must match baseHref /Elearn/ on this build — same path Google Console redirect URI. */
+  cognitoRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/auth/callback',
+  googleRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/auth/google-callback'
 };

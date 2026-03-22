@@ -4,6 +4,7 @@ import { first } from 'rxjs/operators';
 import { AuthenticationService } from '../auth.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { environment } from 'src/environments/environment';
+import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
 
 @Component({
   selector: 'app-register',
@@ -21,7 +22,7 @@ export class RegisterComponent implements OnInit {
   /** Logo URL from environment; otherwise local asset. Same as Login. */
   logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
   /** True when Google OAuth (code flow) is configured; same custom button as Login. */
-  googleEnabled = !!(environment.oauthKey && environment.googleRedirectUri);
+  googleEnabled = !!environment.oauthKey?.trim();
 
   constructor(
     private router: Router,
@@ -66,7 +67,7 @@ export class RegisterComponent implements OnInit {
    */
   continueWithGoogle(): void {
     const clientId = environment.oauthKey?.trim();
-    const redirectUri = (environment.googleRedirectUri || `${window.location.origin}/auth/google-callback`).trim().replace(/\/+$/, '');
+    const redirectUri = getGoogleOAuthRedirectUri();
     if (!clientId || !redirectUri) return;
     const params = new URLSearchParams({
       client_id: clientId,

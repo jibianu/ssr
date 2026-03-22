@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
+import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
 
 @Component({
     selector: 'app-login',
@@ -20,7 +21,7 @@ export class LoginComponent implements OnInit {
     /** Logo URL from S3 when set in environment; otherwise local asset */
     logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
     /** True when Google OAuth (code flow) is configured; custom button shown immediately, no SDK load. */
-    googleEnabled = !!(environment.oauthKey && environment.googleRedirectUri);
+    googleEnabled = !!environment.oauthKey?.trim();
 
     /** Blocking modal when role is not configured */
     showAlert = false;
@@ -48,7 +49,7 @@ export class LoginComponent implements OnInit {
    */
   continueWithGoogle(): void {
     const clientId = environment.oauthKey?.trim();
-    const redirectUri = (environment.googleRedirectUri || `${window.location.origin}/auth/google-callback`).trim().replace(/\/+$/, '');
+    const redirectUri = getGoogleOAuthRedirectUri();
     if (!clientId || !redirectUri) return;
     const redirect = (this.route.snapshot.queryParams['redirect'] ?? this.route.snapshot.queryParams['returnUrl'] ?? '').toString().trim();
     const params = new URLSearchParams({

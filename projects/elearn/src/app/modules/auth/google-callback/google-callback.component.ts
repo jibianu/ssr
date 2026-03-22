@@ -3,12 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService, getLandingRoute } from '../auth.service';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
-import { environment } from 'src/environments/environment';
+import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
 
-/** Normalize redirect_uri to match the value used in the auth URL (no trailing slash). */
+/** Same redirect_uri as login/register (must match Google token exchange). */
 function normalizedRedirectUri(): string {
-  const raw = (environment.googleRedirectUri || `${window.location.origin}/auth/google-callback`).trim();
-  return raw.replace(/\/+$/, '');
+  return getGoogleOAuthRedirectUri();
 }
 
 /**
