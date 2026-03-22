@@ -5,7 +5,7 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'https://elearnbackend.oilandgasclub.com/',
+  apiUrl: 'https://coursebackend.oilandgasclub.com/',
   publicCourseSiteUrl: 'https://oilandgasclub.com',
   forcePublicCourseIframe: false,
   exploreOpenMarketingSiteInSameTab: false,

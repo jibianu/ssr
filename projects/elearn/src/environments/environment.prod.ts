@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://elearnbackend.oilandgasclub.com/',
+  apiUrl: 'https://coursebackend.oilandgasclub.com/',
   /** Base URL of the site app (SSR). All public course URLs are /courses/:slug on the site. Redirect from old Elearn route uses this. */
   publicCourseSiteUrl: 'https://www.oilandgasclub.com',
   forcePublicCourseIframe: false,
