@@ -548,6 +548,18 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     return validFeatures;
   }
 
+  /** Absolute URL for meta/OG (and <img>); relative paths are resolved against marketing origin. */
+  private toAbsoluteSeoUrl(pathOrUrl: string, originNoTrailingSlash: string): string {
+    const s = (pathOrUrl ?? '').toString().trim();
+    if (!s) {
+      return `${originNoTrailingSlash}/assets/img/oilandgasclub.jpg`;
+    }
+    if (/^https?:\/\//i.test(s)) {
+      return s;
+    }
+    return `${originNoTrailingSlash}/${s.replace(/^\//, '')}`;
+  }
+
   setComponentProperties(courseDetails: any, location: string | null, canonicalSlugOverride?: string, noCoursesPrefix = true) {
     const canonicalUrl = canonicalSlugOverride ?? (location ?
       `${courseDetails.canonicalUrl}-${location.toLowerCase()}` :
@@ -562,7 +574,10 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     const summaries = courseDetails.courseSummaries ?? courseDetails.CourseSummaries;
     const firstSummary = Array.isArray(summaries) && summaries.length > 0 ? summaries[0] : null;
     this.courseSummaryText = (firstSummary && (firstSummary.summary ?? firstSummary.Summary)) ? (firstSummary.summary ?? firstSummary.Summary).trim() : (courseDetails.metaDescription ?? courseDetails.MetaDescription ?? courseDetails.description ?? courseDetails.Description ?? '').trim();
-    this.image = this.courseDetails.titleImageUrl || (this.courseDetails as any).TitleImageUrl || 'assets/img/oilandgasclub.jpg';
+    const rawImage =
+      this.courseDetails.titleImageUrl || (this.courseDetails as any).TitleImageUrl || 'assets/img/oilandgasclub.jpg';
+    // OG / Twitter require absolute URLs when SSR emits meta tags
+    this.image = this.toAbsoluteSeoUrl(rawImage, base);
       const authorName = this.courseDetails.createdByUser?.firstname && this.courseDetails?.createdByUser?.lastname
         ? `${this.courseDetails.createdByUser.firstname} ${this.courseDetails.createdByUser.lastname}`
         : 'Oilandgasclub';

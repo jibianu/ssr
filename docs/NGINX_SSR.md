@@ -51,6 +51,16 @@ The Express server falls back to `index.html` when the Angular SSR engine return
 
 The frontend image must run **`CMD ["node", "dist/site/server/server.mjs"]`** (see repo `Dockerfile`). If the container only runs `nginx` or a static file server, you get CSR only.
 
+### 4. Cloudflare (or similar) caching HTML
+
+If **Cache Everything** or aggressive page rules cache `text/html`, users can receive a **stale CSR shell** (generic `<title>`, no `og:*` tags) even when origin SSR is correct.
+
+**Fix:** Bypass cache for document requests, or exclude HTML from edge cache. Purge cache after deploy.
+
+### 5. `www` vs apex
+
+`environment.seoUrl` should match the hostname users see (e.g. `https://www.oilandgasclub.com/` if the live site is `www`). Mismatches affect canonical/OG URLs only; they do not cause missing tags unless SSR is already bypassed.
+
 ### Quick check: response header
 
 When traffic hits the real Node SSR server, HTML responses include:
@@ -68,6 +78,10 @@ curl -sI "https://oilandgasclub.com/your-course-slug" | grep -i x-ogc-ssr
 
 - **No header** → response is **not** from this Node server (static hosting or another tier).  
 - **`csr-fallback`** → Node is up but SSR failed; inspect logs and API URL from the container.
+
+## Full production example
+
+See **`docs/nginx-ssr-production.example.conf`** in this repo for a complete `server { }` block (proxy to Node `:4000`, API upstream, no `try_files` for `/`).
 
 ## Nginx example
 
