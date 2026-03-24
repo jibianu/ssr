@@ -16,6 +16,7 @@ import { getCacheConfig, isStaticRoute as checkStaticRoute } from './server.cach
 import { createCacheAdapter, CacheAdapter } from './server.cache.adapter';
 import { performanceMonitor } from './server.performance';
 import { cdnCacheMiddleware } from './server.cdn.middleware';
+import { enrichCsrShellHtml } from './server.seo-shell';
 
 /** Set after `main()` runs (Angular CLI may import before listen). */
 export let reqHandler: ReturnType<typeof createNodeRequestHandler>;
@@ -650,11 +651,17 @@ app.get('/{*splat}', async (req, res, next) => {
         }
         const indexPath = join(browserDistFolder, 'index.html');
         if (existsSync(indexPath)) {
-          const html = readFileSync(indexPath, 'utf-8');
+          let html = readFileSync(indexPath, 'utf-8');
+          const { html: enriched, injected } = await enrichCsrShellHtml(html, requestPath, req);
+          html = enriched;
           setNoStoreHtmlHeaders(res);
           setSsrDiagnosticHeader(res, 'csr-fallback');
+          if (injected) {
+            res.setHeader('X-OGC-SEO-Inject', 'course');
+          }
           console.warn(
-            `[SSR] csr-fallback for ${requestPath}: Angular engine returned no response — check SSR logs / API reachability from container`
+            `[SSR] csr-fallback for ${requestPath}: Angular engine returned no response — check SSR logs / API reachability from container` +
+              (injected ? ' (public course meta injected into shell)' : '')
           );
           res.status(200).send(html);
           performanceMonitor.endMeasure(markId, false);
@@ -680,9 +687,14 @@ app.get('/{*splat}', async (req, res, next) => {
       }
       const indexPath = join(browserDistFolder, 'index.html');
       if (existsSync(indexPath)) {
-        const html = readFileSync(indexPath, 'utf-8');
+        let html = readFileSync(indexPath, 'utf-8');
+        const { html: enriched, injected } = await enrichCsrShellHtml(html, requestPath, req);
+        html = enriched;
         setNoStoreHtmlHeaders(res);
         setSsrDiagnosticHeader(res, 'csr-fallback');
+        if (injected) {
+          res.setHeader('X-OGC-SEO-Inject', 'course');
+        }
         console.warn(`[SSR] csr-fallback after error for ${requestPath}:`, err);
         res.status(200).send(html);
         performanceMonitor.endMeasure(markId, false);
@@ -700,7 +712,7 @@ app.get('/{*splat}', async (req, res, next) => {
 
 // ✅ FIX: Final fallback - serve index.html for any unmatched routes
 // This ensures Angular handles routing client-side when SSR doesn't match
-app.use('/{*splat}', (req, res) => {
+app.use('/{*splat}', async (req, res, next) => {
   try {
     const path = getRequestPath(ensureSafeRequest(req));
     if (isAssetRequest(path)) {
@@ -727,16 +739,21 @@ app.use('/{*splat}', (req, res) => {
     }
     const indexPath = join(browserDistFolder, 'index.html');
     if (existsSync(indexPath)) {
-      const html = readFileSync(indexPath, 'utf-8');
+      let html = readFileSync(indexPath, 'utf-8');
+      const { html: enriched, injected } = await enrichCsrShellHtml(html, path, req);
+      html = enriched;
       setNoStoreHtmlHeaders(res);
       setSsrDiagnosticHeader(res, 'csr-fallback');
+      if (injected) {
+        res.setHeader('X-OGC-SEO-Inject', 'course');
+      }
       res.status(200).send(html);
     } else {
       res.status(404).send('Not Found');
     }
   } catch (error) {
     console.error('Error serving index.html fallback:', error);
-    res.status(500).send('Internal Server Error');
+    next(error);
   }
 });
 
