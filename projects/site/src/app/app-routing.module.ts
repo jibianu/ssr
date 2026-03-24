@@ -46,6 +46,7 @@ export const routes: Routes = [
         component: PublicLayoutComponent,
         children: [
             { path: 'login', component: RedirectToElearnComponent },
+            { path: 'register', component: RedirectToElearnComponent },
             {
                 path: 'auth',
                 children: [

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve site",
-    "start:site": "ng serve site --port 4200",
+    "start": "npm run start:site",
+    "start:site": "npm run dev:ssr",
     "start:elearn": "ng serve elearn --port 4201",
     "start:both": "concurrently -n site,elearn -c blue,green \"npm run start:site\" \"npm run start:elearn\"",
     "build": "ng build site",
@@ -23,7 +23,9 @@
     "copy:all": "node scripts/copy-all.js",
     "build:ssr": "ng build site --configuration production",
     "serve:ssr": "node dist/site/server/server.mjs",
-    "preview:ssr": "npm run build:ssr && npm run serve:ssr"
+    "preview:ssr": "npm run build:ssr && npm run serve:ssr",
+    "dev:ssr": "ng build elearn --configuration unified && npm run build:ssr && node scripts/serve-ssr-dev.mjs",
+    "dev:ssr:watch": "ng serve site --ssr --port 4200"
   },
   "private": true,
   "dependencies": {

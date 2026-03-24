@@ -26,9 +26,9 @@ export const environment = {
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
   /** Redirect URI registered in Cognito app client. Elearn dev runs on 4201. */
-  cognitoRedirectUri: 'http://localhost:4201/auth/callback',
+  cognitoRedirectUri: 'http://localhost:4201/callback',
   /** Google OAuth redirect URI for code flow (response_type=code). Must match Google Cloud Console. Elearn dev runs on 4201. */
-  googleRedirectUri: 'http://localhost:4201/auth/google-callback'
+  googleRedirectUri: 'http://localhost:4201/google-callback'
 };
 
 /*

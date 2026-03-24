@@ -147,6 +147,6 @@ export class GoogleCallbackComponent implements OnInit {
     const state = this.route.snapshot.queryParamMap.get('state');
     const params: Record<string, string> = {};
     if (state) params['state'] = state;
-    this.router.navigate(['/auth', 'google-callback'], { queryParams: params, replaceUrl: true });
+    this.router.navigate(['/google-callback'], { queryParams: params, replaceUrl: true });
   }
 }

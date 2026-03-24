@@ -1,7 +1,7 @@
 /**
- * Unified domain: Elearn served under https://oilandgasclub.com/course/ (baseHref /course/)
+ * Unified domain: Elearn also at /login, /register, /course/* (Express); build uses baseHref /
  * Build: ng build elearn --configuration unified
- * Update Cognito / Google OAuth redirect URIs to include .../course/auth/...
+ * OAuth redirect URIs: /callback, /google-callback on merged domain (not `/course/auth/...`).
  */
 export const environment = {
   production: true,
@@ -17,6 +17,6 @@ export const environment = {
   stripeKey: 'pk_live_N0CVrqPSTq9ECjQxRSODpGUE00Jg3I2H71',
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
-  cognitoRedirectUri: 'https://oilandgasclub.com/course/auth/callback',
-  googleRedirectUri: 'https://oilandgasclub.com/course/auth/google-callback'
+  cognitoRedirectUri: 'https://oilandgasclub.com/callback',
+  googleRedirectUri: 'https://oilandgasclub.com/google-callback'
 };

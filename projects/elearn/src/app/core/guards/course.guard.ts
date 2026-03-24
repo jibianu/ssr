@@ -27,6 +27,16 @@ export class CourseGuard {
         } catch {
             // keep as-is
         }
+        // Reserved one-segment paths: avoid treating "register" / "login" as course slugs.
+        const reserved = url.toLowerCase();
+        if (reserved === 'register') {
+            void this.router.navigate(['/register']);
+            return of(false);
+        }
+        if (reserved === 'login') {
+            void this.router.navigate(['/login']);
+            return of(false);
+        }
         const isSlugLike = SLUG_REGEX.test(url);
         if (isSlugLike) {
             return this.publicAppService.getCourseBySlug(url).pipe(

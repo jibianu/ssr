@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { environment } from 'src/environments/environment';
+import { buildElearnAuthUrl } from '../helpers/elearn-auth-url.helper';
 
 /**
  * Redirects to the merged Elearn app (login/auth) so all auth flows use the e-learning app.
@@ -15,11 +15,30 @@ export class RedirectToElearnComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    const base = (environment as { elearnAppUrl?: string }).elearnAppUrl || '/Elearn';
+    // Canonical URLs: /login, /register (Elearn SPA routes at site root on merged server).
+    // Full elearnAppUrl (e.g. http://localhost:4201) → that origin + /login, etc.
     const query = this.route.snapshot.queryParams;
     const returnUrl = query['returnUrl'];
-    const params = returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : '';
-    const target = `${base.replace(/\/$/, '')}/auth/login${params}`;
+    const queryStr = returnUrl ? `returnUrl=${encodeURIComponent(returnUrl)}` : '';
+    const currentPath = (this.route.snapshot.routeConfig?.path || this.route.snapshot.url?.[0]?.path || 'login').toLowerCase();
+    // Allow all Elearn auth routes from auth-routing.module.ts
+    const allowedAuthRoutes = new Set([
+      'login',
+      'callback',
+      'google-callback',
+      'verification',
+      'forget-password',
+      'change-password',
+      'fg-code',
+      'register',
+      'register-company',
+      'register-trainer',
+      'register-affiliate',
+      'register-management',
+      'user-unavailable'
+    ]);
+    const authPath = allowedAuthRoutes.has(currentPath) ? currentPath : (currentPath.includes('register') ? 'register' : 'login');
+    const target = buildElearnAuthUrl(authPath, queryStr);
     window.location.href = target;
   }
 }

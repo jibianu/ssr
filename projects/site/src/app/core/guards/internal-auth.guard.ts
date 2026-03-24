@@ -5,7 +5,7 @@ import { AuthenticationService } from '../../modules/auth/auth.service';
 @Injectable({ providedIn: 'root' })
 export class InternalAuthGuard {
   private readonly adminRestrictedRoutes = ['user', 'category', 'location'];
-  private readonly loginUrl = '/auth/login';
+  private readonly loginUrl = '/login';
   private readonly defaultAdminUrl = '/app/course';
 
   constructor(

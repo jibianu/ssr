@@ -7,7 +7,7 @@ import { filter } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard {
-  private readonly loginRoute = '/auth/login';
+  private readonly loginRoute = '/login';
 
   constructor(
     private router: Router,

@@ -27,7 +27,11 @@ export class ErrorInterceptor implements HttpInterceptor {
                 this.authenticationService.logout();
                 // Do not redirect to login when on a public page (e.g. affiliate course URL) so anonymous users can view
                 const url = this.router.url.split('?')[0];
-                const isPublicPage = url === '/' || url === '' || (!url.startsWith('/app/') && !url.startsWith('/auth/'));
+                const isAuthShellRoute =
+                    /^\/(login|register|callback|google-callback|forget-password|verification|fg-code|change-password|user-unavailable)(?:\/|$|\?)/.test(url) ||
+                    /^\/register\//.test(url) ||
+                    /^\/register-/.test(url);
+                const isPublicPage = url === '/' || url === '' || (!url.startsWith('/app/') && !isAuthShellRoute);
                 const isGetInfo = request.url.toLowerCase().includes('getinfo');
                 if (isGetInfo || isPublicPage) {
                     return throwError(() => err);
@@ -42,7 +46,7 @@ export class ErrorInterceptor implements HttpInterceptor {
                         this.modalService.dismissAll();
                     }
                 } catch (_) { /* ignore */ }
-                this.router.navigateByUrl('/auth/login');
+                this.router.navigateByUrl('/login');
                 return EMPTY;
             } else if (err.status === 500) {
                 if (err?.error?.Messages?.length) {

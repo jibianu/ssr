@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AuthenticationService } from '../auth.service';
 
 @Component({
@@ -17,7 +18,7 @@ export class RegisterTrainerComponent implements OnInit {
   name = '';
 
   /** Logo URL from environment; same as Login/Register. */
-  logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
+  logoUrl = environment.logoUrl || getDefaultLogoUrl();
 
   constructor(
     private router: Router,
@@ -53,7 +54,7 @@ export class RegisterTrainerComponent implements OnInit {
       this.authenticationService.registerTrainer(request).pipe(first()).subscribe({
         next: (data) => {
           if (data) {
-            this.router.navigate(['auth', 'verification'], { queryParams: { code: btoa(this.email) } });
+            this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
           }
         },
         error: (err) => {

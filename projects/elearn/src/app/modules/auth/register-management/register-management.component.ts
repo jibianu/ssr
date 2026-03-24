@@ -57,7 +57,7 @@ export class RegisterManagementComponent implements OnInit {
       this.authenticationService.registerManagement(request).pipe(first()).subscribe({
         next: (data) => {
           if (data) {
-            this.router.navigate(['auth', 'verification'], { queryParams: { code: btoa(this.email) } });
+            this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
           }
         },
         error: (err) => {
@@ -83,6 +83,6 @@ export class RegisterManagementComponent implements OnInit {
 
   closeAlertAndGoToLogin(): void {
     this.closeAlert();
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
   }
 }

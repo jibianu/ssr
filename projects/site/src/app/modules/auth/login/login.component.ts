@@ -242,7 +242,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                       console.error('[LoginComponent]     2. Lazy loading failed');
                       console.error('[LoginComponent]     3. Route redirect failed');
                       this.error = 'Route not found. Check console for details.';
-                    } else if (finalUrl === '/auth/login' || finalUrl.startsWith('/auth/login')) {
+                    } else if (finalUrl === '/login' || finalUrl.startsWith('/login')) {
                       console.error('[LoginComponent] ❌ NAVIGATION FAILED - Redirected to login!');
                       console.error('[LoginComponent] ⚠️  DIAGNOSIS: AuthGuard blocked navigation');
                       console.error('[LoginComponent]   Check AuthGuard logs above for token validation');

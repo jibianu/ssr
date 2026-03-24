@@ -33,7 +33,7 @@ if(this.password==this.confirmPassword){
   }
   this.authenticationService.change_password(obj)
   .subscribe(res=>{
-    this.router.navigate(['auth','login']);
+    this.router.navigate(['/login']);
   })
 }
   }

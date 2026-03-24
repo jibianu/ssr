@@ -18,7 +18,7 @@ export class AuthGuard {
         }
         const token = this.authenticationService.currentToken();
         if (!token) {
-            this.router.navigate(['/auth/login'], { queryParams: { redirect: state.url } });
+            this.router.navigate(['/login'], { queryParams: { redirect: state.url } });
             return false;
         }
         // Restore session on refresh: we have token but no currentUser cookie – fetch user and set cookie
@@ -26,7 +26,7 @@ export class AuthGuard {
             first(),
             map(() => !!this.authenticationService.currentUser()),
             catchError(() => {
-                this.router.navigate(['/auth/login'], { queryParams: { redirect: state.url } });
+                this.router.navigate(['/login'], { queryParams: { redirect: state.url } });
                 return of(false);
             })
         );

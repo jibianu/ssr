@@ -86,9 +86,22 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       switchMap(res => {
         if (res === undefined) return of(null);
         if (res === null) {
-          this.notFound.set(true);
-          this.loading.set(false);
-          return of(null);
+          // Fallback: slug resolver table may miss some older course slugs.
+          const fallbackSlug = this.slug();
+          if (!fallbackSlug) {
+            this.notFound.set(true);
+            this.loading.set(false);
+            return of(null);
+          }
+          this.type.set('course');
+          this.resolved.set({ type: 'course', slug: fallbackSlug });
+          return this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false }).pipe(
+            catchError(() => {
+              this.notFound.set(true);
+              this.loading.set(false);
+              return of(null);
+            })
+          );
         }
         this.resolved.set(res);
         this.type.set(res.type);

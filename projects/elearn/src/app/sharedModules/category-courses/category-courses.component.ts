@@ -200,7 +200,7 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
     const token = this.authService.currentToken();
     if (!token) {
       const baseUrl = getElearnAppBaseUrl();
-      const url = baseUrl ? `${baseUrl}/auth/login?returnUrl=${encodeURIComponent(returnUrl)}` : `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+      const url = baseUrl ? `${baseUrl}/login?returnUrl=${encodeURIComponent(returnUrl)}` : `/login?returnUrl=${encodeURIComponent(returnUrl)}`;
       window.location.href = url;
       return;
     }

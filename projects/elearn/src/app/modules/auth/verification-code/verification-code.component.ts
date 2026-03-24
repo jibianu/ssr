@@ -41,7 +41,7 @@ export class VerificationCodeComponent implements OnInit {
     this.verifying = true;
     const obj = { email: this.email, ConfirmationCode: this.code.trim() };
     this.authenticationService.confirmation(obj).subscribe({
-      next: () => this.router.navigate(['auth', 'login']),
+      next: () => this.router.navigate(['/login']),
       error: () => { this.verifying = false; }
     });
   }

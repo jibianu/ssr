@@ -19,7 +19,7 @@ export class UnauthorizedComponent {
 
   goToLogin(): void {
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
   }
 
   goHome(): void {

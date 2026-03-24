@@ -39,7 +39,7 @@ export class AuthCallbackComponent implements OnInit {
       return;
     }
 
-    const redirectUri = environment.cognitoRedirectUri || `${window.location.origin}/auth/callback`;
+    const redirectUri = environment.cognitoRedirectUri || `${window.location.origin}/callback`;
 
     this.authService.cognitoAuth(code, redirectUri).subscribe({
       next: (res) => {

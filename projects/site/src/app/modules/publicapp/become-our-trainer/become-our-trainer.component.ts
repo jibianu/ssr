@@ -3,6 +3,7 @@ import { Component, Inject, OnInit, Renderer2, ChangeDetectionStrategy, ChangeDe
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+
 @Component({
     selector: 'app-become-our-trainer',
     templateUrl: './become-our-trainer.component.html',
@@ -815,7 +816,10 @@ export class BecomeOurTrainerComponent implements OnInit {
   /** Elearn trainer signup page URL (auth/register-trainer). Used for "Sign Up as Instructor" link. */
   getTrainerSignupUrl(): string {
     const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
-    return elearnBase ? `${elearnBase}/auth/register-trainer` : '/auth/register-trainer';
+    if (elearnBase.startsWith('http://') || elearnBase.startsWith('https://')) {
+      return `${elearnBase}/register-trainer`;
+    }
+    return '/register-trainer';
   }
 
   /** Navigate to elearn trainer signup page so user can register as a trainer. */

@@ -140,7 +140,7 @@ export class RegisterCompanyComponent implements OnInit {
       this.authenticationService.registerCompany(request).pipe(first()).subscribe({
         next: (data) => {
           if (data) {
-            this.router.navigate(['auth', 'verification'], { queryParams: { code: btoa(this.email) } });
+            this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
           }
         },
         error: (err) => {

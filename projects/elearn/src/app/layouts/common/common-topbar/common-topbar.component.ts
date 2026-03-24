@@ -356,11 +356,11 @@ export class CommonTopbarComponent implements OnInit, OnDestroy {
     if (this.roleUrl === 'student') {
       this.studentSessionService.endSession().subscribe(() => {
         this.authService.logout();
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/login']);
       });
     } else {
       this.authService.logout();
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
     }
   }
 }

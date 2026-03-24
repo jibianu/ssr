@@ -52,16 +52,16 @@ export class PublicTopbarComponent implements OnInit, OnDestroy {
     return base.trim().replace(/\/$/, '');
   }
   get loginUrl(): string {
-    return this.elearnBaseUrl ? `${this.elearnBaseUrl}/auth/login` : '/auth/login';
+    return '/auth/login';
   }
   get registerUrl(): string {
-    return this.elearnBaseUrl ? `${this.elearnBaseUrl}/auth/register` : '/auth/register';
+    return '/register';
   }
 
   /** Student LMS profile (matches elearn sidebar). */
   get profileHref(): string {
     const b = this.elearnBaseUrl;
-    return b ? `${b}/app/student/profile` : '/auth/login';
+    return b ? `${b}/app/student/profile` : '/login';
   }
 
   constructor(

@@ -39,45 +39,14 @@
     <div class="public-container">
       <div class="sub-div">
         <div class="main-img" #scroll>
-          <!-- Welding -->
-          <div class="icon-card">
-            <div class="icon-container">
-              <img src="assets/welding-oilandgasclub.svg" alt="Welding" loading="eager" width="64" height="64">
-            </div>
-            <h4>Welding</h4>
-          </div>
-
-          <!-- Process -->
-          <div class="icon-card">
-            <div class="icon-container">
-              <img src="assets/process-oilandgasclub.svg" alt="Process" loading="eager" width="64" height="64">
-            </div>
-            <h4>Process</h4>
-          </div>
-
-          <!-- Piping -->
-          <div class="icon-card">
-            <div class="icon-container">
-              <img src="assets/piping-oilandgasclub.svg" alt="Piping" loading="eager" width="64" height="64">
-            </div>
-            <h4>Piping</h4>
-          </div>
-
-          <!-- Instrumentation -->
-          <div class="icon-card">
-            <div class="icon-container">
-              <img src="assets/instrumentation-oilandgasclub.svg" alt="Instrumentation" loading="eager" width="64" height="64">
-            </div>
-            <h4>Instrumentation</h4>
-          </div>
-
-          <!-- Structural -->
-          <div class="icon-card">
-            <div class="icon-container">
-              <img src="assets/structural-oilandgasclub.svg" alt="Structural" loading="eager" width="64" height="64">
-            </div>
-            <h4>Structural</h4>
-          </div>
+          @for (cat of heroCategoryIcons; track cat.label) {
+            <a class="icon-card" [routerLink]="['/category', cat.categorySegment]" [attr.aria-label]="'Browse ' + cat.label + ' courses'">
+              <div class="icon-container">
+                <img [src]="cat.src" [alt]="cat.label" loading="eager" width="64" height="64">
+              </div>
+              <h4>{{ cat.label }}</h4>
+            </a>
+          }
         </div>
       </div>
     </div>

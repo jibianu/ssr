@@ -7,6 +7,7 @@ import { PublicAppService } from '../../publicapp.service';
 import { AuthenticationService } from '../../../auth/auth.service';
 import { BackendHealthService } from 'src/app/core/services/backend-health.service';
 import { environment } from 'src/environments/environment';
+import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
 
 interface HomeCourseFeature {
   id?: string;
@@ -248,6 +249,17 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     return normalized ? `/${normalized}` : '';
   }
 
+  /**
+   * Fast route for course cards from /courses page.
+   * Canonical public URL is /:slug (no /course prefix).
+   */
+  getFastCourseRoute(course: HomeCourse | null | undefined): string[] {
+    const canonical = (course?.canonicalUrl || '').toString().trim();
+    const slug = canonical.replace(/^\/+/, '');
+    if (!slug) return ['/courses'];
+    return ['/', slug];
+  }
+
   // ✅ FILTER: Normalize category name for case-insensitive comparison
   private normalizeCategoryName(categoryName: string | null | undefined): string {
     if (!categoryName) return '';
@@ -391,8 +403,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       }
 
       const returnUrl = '/app/student/course/' + courseIdString;
-      const loginPath = `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
-      return `${elearnBase}${loginPath}`;
+      return buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(returnUrl)}`, elearnBase);
     }
 
     if (course.canonicalUrl) {

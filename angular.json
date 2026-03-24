@@ -96,7 +96,11 @@
             "main": "projects/elearn/src/main.ts",
             "polyfills": ["@angular/localize/init", "zone.js"],
             "tsConfig": "projects/elearn/tsconfig.app.json",
-            "assets": ["projects/elearn/src/favicon.ico", "projects/elearn/src/assets"],
+            "assets": [
+              "projects/elearn/src/favicon.ico",
+              "projects/elearn/src/favicon.svg",
+              "projects/elearn/src/assets"
+            ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.css",
               "projects/elearn/src/styles.scss",
@@ -124,7 +128,7 @@
                   "with": "projects/elearn/src/environments/environment.unified.prod.ts"
                 }
               ],
-              "baseHref": "/course/",
+              "baseHref": "/",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false
@@ -152,7 +156,11 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/elearn/tsconfig.spec.json",
             "karmaConfig": "projects/elearn/karma.conf.js",
-            "assets": ["projects/elearn/src/favicon.ico", "projects/elearn/src/assets"],
+            "assets": [
+              "projects/elearn/src/favicon.ico",
+              "projects/elearn/src/favicon.svg",
+              "projects/elearn/src/assets"
+            ],
             "styles": ["projects/elearn/src/styles.scss"]
           }
         }

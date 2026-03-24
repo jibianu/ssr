@@ -9,6 +9,11 @@ import { FormsModule } from '@angular/forms';
 import { fixUtf8Mojibake } from '../../../../shared/utils/fix-mojibake';
 import { FixMojibakePipe } from '../../../../shared/pipes/fix-mojibake.pipe';
 import { finalize } from 'rxjs/operators';
+import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
+import { MetadataService } from '../../../../shared/service/meta.service';
+import { CanonicalService } from '../../../../shared/service/canonical.service';
+import { StructuredDataService } from '../../../../shared/service/structured-data.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-blog-detail',
@@ -24,6 +29,9 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private publicAppService = inject(PublicAppService);
   private cdr = inject(ChangeDetectorRef);
+  private metadataService = inject(MetadataService);
+  private canonicalService = inject(CanonicalService);
+  private structuredDataService = inject(StructuredDataService);
 
   /** When set, use this slug instead of route params (e.g. when embedded in slug-resolver). */
   @Input() set slugInput(value: string | null) {
@@ -77,8 +85,16 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   });
 
   ngOnInit(): void {
+    // SSR / embedded: resolver data lives on the same ActivatedRoute as SlugResolverComponent.
+    const slugPage = this.route.snapshot.data['slugPage'] as SlugPageData | undefined;
+    if (slugPage?.type === 'blog' && slugPage.blog != null) {
+      this.applyBlogData(slugPage.blog as BlogDetailDto);
+      this.initBlogDetailBrowserOnly();
+      return;
+    }
     if (this.prefetchedBlog) {
       this.applyBlogData(this.prefetchedBlog);
+      this.initBlogDetailBrowserOnly();
       return;
     }
     const slugFromInput = this._slugInput();
@@ -94,10 +110,14 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.loadBySlug(slug);
       });
     }
+    this.initBlogDetailBrowserOnly();
+  }
+
+  /** Sidebar / popup / scroll helpers — browser only (after content path chosen). */
+  private initBlogDetailBrowserOnly(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.syncNewsletterSidebarSubscribedFromStorage();
       this.setupSubscribePopup();
-      // Initial sync for sticky/fixed sidebar behavior
       setTimeout(() => this.updateSidebarPosition(), 0);
     }
   }
@@ -121,6 +141,7 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
     this.notFound.set(!data);
     this.loading.set(false);
     this.activeSection.set('');
+    this.applySeoForBlog(data);
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
         this.updateSidebarPosition();
@@ -140,6 +161,58 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private applySeoForBlog(data: BlogDetailDto | null): void {
+    if (!data) {
+      return;
+    }
+
+    const slug = (data.canonicalUrl || '').toString().replace(/^\/+/, '');
+    if (!slug) {
+      return;
+    }
+
+    const base = (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/?$/, '/');
+    const canonicalUrl = `${base}${slug}`;
+    const title = fixUtf8Mojibake(data.title || '').trim() || 'Blog - Oilandgasclub';
+    const description = fixUtf8Mojibake(data.metaDescription || '').trim() || 'Read this blog on Oilandgasclub.';
+    const image = data.titleImgUrl || environment.imgUrl;
+    const authorName = this.getAuthorDisplayName(data.authorName) || 'Oilandgasclub';
+    const categoryName = data.category?.name || 'Blog';
+
+    this.metadataService.updateMetadata({
+      title,
+      description,
+      author: authorName,
+      type: 'article',
+      image,
+      imageWidth: 1200,
+      imageHeight: 630,
+      seoUrl: canonicalUrl,
+      time: data.createdOn,
+      updatedTime: data.updatedOn || data.createdOn,
+      category: categoryName,
+      canonicalUrl
+    });
+    this.canonicalService.setCanonicalURL(canonicalUrl);
+
+    this.structuredDataService.setArticle({
+      headline: title,
+      description,
+      url: canonicalUrl,
+      image,
+      datePublished: data.createdOn,
+      dateModified: data.updatedOn || data.createdOn,
+      authorName,
+      section: categoryName
+    });
+
+    this.structuredDataService.setBreadcrumbs([
+      { name: 'Home', url: base.replace(/\/$/, '') },
+      { name: 'Blog', url: `${base}blog` },
+      { name: title, url: canonicalUrl }
+    ]);
   }
 
   private loadBySlug(slug: string): void {

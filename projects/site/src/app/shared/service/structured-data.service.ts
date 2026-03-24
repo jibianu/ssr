@@ -81,6 +81,17 @@ export interface BreadcrumbData {
   url: string;
 }
 
+export interface ArticleData {
+  headline: string;
+  description: string;
+  url: string;
+  image?: string;
+  datePublished?: string;
+  dateModified?: string;
+  authorName?: string;
+  section?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -240,6 +251,37 @@ export class StructuredDataService {
   }
 
   /**
+   * Add BlogPosting/Article schema.
+   */
+  setArticle(data: ArticleData): void {
+    const structuredData: any = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: data.headline,
+      description: data.description,
+      url: data.url,
+      mainEntityOfPage: data.url,
+      ...(data.image && { image: data.image }),
+      ...(data.datePublished && { datePublished: data.datePublished }),
+      ...(data.dateModified && { dateModified: data.dateModified }),
+      ...(data.section && { articleSection: data.section }),
+      ...(data.authorName && {
+        author: {
+          '@type': 'Person',
+          name: data.authorName
+        }
+      }),
+      publisher: {
+        '@type': 'Organization',
+        name: 'Oilandgasclub',
+        url: 'https://oilandgasclub.com'
+      }
+    };
+
+    this.injectStructuredData('structured-data-article', structuredData);
+  }
+
+  /**
    * Add BreadcrumbList schema
    * ✅ SSR: Works in both server-side and browser rendering
    * 
@@ -303,6 +345,7 @@ export class StructuredDataService {
       'structured-data-organization',
       'structured-data-course',
       'structured-data-event',
+      'structured-data-article',
       'structured-data-breadcrumbs',
       'structured-data-website'
     ];

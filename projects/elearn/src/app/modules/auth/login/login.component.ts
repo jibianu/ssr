@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
 
@@ -19,7 +20,7 @@ export class LoginComponent implements OnInit {
     socialUser: any;
     isLoggedin: boolean | false;
     /** Logo URL from S3 when set in environment; otherwise local asset */
-    logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
+    logoUrl = environment.logoUrl || getDefaultLogoUrl();
     /** True when Google OAuth (code flow) is configured; custom button shown immediately, no SDK load. */
     googleEnabled = !!environment.oauthKey?.trim();
 
@@ -205,7 +206,7 @@ export class LoginComponent implements OnInit {
     closeAlertAndLogout(): void {
       this.closeAlert();
       this.authenticationService.logout();
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
     }
 
     isVisible: boolean = false; 

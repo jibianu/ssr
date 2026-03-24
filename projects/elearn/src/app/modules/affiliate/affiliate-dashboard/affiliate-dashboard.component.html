@@ -10,7 +10,7 @@
         <h1 class="impact-dashboard__title">Affiliate Dashboard</h1>
         <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Approved'">Share your link and earn {{ commissionRate }}% on every purchase.</p>
         <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Pending'">Your application is under review. You will receive your referral link after approval.</p>
-        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'None'">You are not registered as an affiliate. <a routerLink="/auth/register-affiliate">Apply here</a>.</p>
+        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'None'">You are not registered as an affiliate. <a href="/register-affiliate">Apply here</a>.</p>
       </div>
 
       <!-- Pending: complete application -->

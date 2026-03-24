@@ -151,12 +151,12 @@ export class ErrorInterceptor implements HttpInterceptor {
                 console.warn('[ErrorInterceptor] 401 Unauthorized - No refresh token available. User must login again.');
                 this.authenticationService.logout();
                 this.toasterService.showError("Your session has expired. Please log in again.");
-                this.router.navigate(['/auth/login']);
+                this.router.navigate(['/login']);
             } else {
                 console.warn('[ErrorInterceptor] 401 Unauthorized - Token refresh failed. Logging out user.');
                 this.authenticationService.logout();
                 this.toasterService.showError("Your session has expired. Please log in again.");
-                this.router.navigate(['/auth/login']);
+                this.router.navigate(['/login']);
             }
         }
     }

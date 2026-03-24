@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AuthenticationService } from '../auth.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 
@@ -17,7 +18,7 @@ export class ForgetPasswordComponent implements OnInit {
   submitting = false;
 
   /** Logo URL from environment; same as Login/Register. */
-  logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
+  logoUrl = environment.logoUrl || getDefaultLogoUrl();
 
   constructor(
     private router: Router,
@@ -38,7 +39,7 @@ export class ForgetPasswordComponent implements OnInit {
       next: (res: any) => {
         this.submitting = false;
         if (res?.success === true) {
-          this.router.navigate(['auth', 'fg-code'], { queryParams: { code: btoa(this.email) } });
+          this.router.navigate(['/fg-code'], { queryParams: { code: btoa(this.email) } });
         } else {
           this.errorMessage = res?.message ?? 'Could not send reset code.';
         }

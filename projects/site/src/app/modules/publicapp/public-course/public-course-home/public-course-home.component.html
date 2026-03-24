@@ -40,7 +40,7 @@
 
       <div class="course-section__grid">
         <article class="course-card" *ngFor="let course of item.courses; trackBy: trackByCourseId">
-          <a *ngIf="course?.canonicalUrl" class="course-card__media" [routerLink]="course.canonicalUrl">
+          <a *ngIf="course?.canonicalUrl" class="course-card__media" [routerLink]="getFastCourseRoute(course)">
             <img
               [src]="course?.titleImageUrl"
               (error)="onImgError($event)"
@@ -61,7 +61,7 @@
 
           <div class="course-card__body">
             <h3 class="course-card__title">
-              <a *ngIf="course?.canonicalUrl" [routerLink]="course.canonicalUrl">{{ course?.title }}</a>
+              <a *ngIf="course?.canonicalUrl" [routerLink]="getFastCourseRoute(course)">{{ course?.title }}</a>
               <span *ngIf="!course?.canonicalUrl">{{ course?.title }}</span>
             </h3>
 

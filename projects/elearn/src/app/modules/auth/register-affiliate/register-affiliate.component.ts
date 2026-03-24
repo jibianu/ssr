@@ -49,7 +49,7 @@ export class RegisterAffiliateComponent {
     this.authenticationService.registerAffiliate(request).pipe(first()).subscribe({
       next: () => {
         this.submitting = false;
-        this.router.navigate(['auth', 'verification'], { queryParams: { code: btoa(this.email) } });
+        this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
       },
       error: (err) => {
         this.submitting = false;
@@ -63,7 +63,7 @@ export class RegisterAffiliateComponent {
         this.errorMessage = displayMsg;
         if (isAlreadyExists) {
           this.toaster.showError(displayMsg);
-          this.router.navigate(['auth', 'login']);
+          this.router.navigate(['/login']);
         }
       }
     });

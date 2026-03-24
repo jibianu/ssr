@@ -71,8 +71,11 @@ export const hydrationProviders = [
 
         return normalizedUrl.includes('/api/page/') ||
                normalizedUrl.includes('/api/course/') ||
+               normalizedUrl.includes('/api/public/') ||
                normalizedUrl.includes('/api/category/') ||
                normalizedUrl.includes('/api/event/') ||
+               normalizedUrl.includes('/api/blog') ||
+               normalizedUrl.includes('/api/slug-resolver') ||
                normalizedUrl.includes('/page/course') ||
                normalizedUrl.includes('/page/category') ||
                normalizedUrl.includes('/page/dashboard');

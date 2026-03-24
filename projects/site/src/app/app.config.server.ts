@@ -1,4 +1,4 @@
-import { ApplicationConfig, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, APP_INITIALIZER } from '@angular/core';
 import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
@@ -14,12 +14,22 @@ import { CacheInterceptor } from './core/helpers/cache.interceptor';
 import { DeduplicationInterceptor } from './core/helpers/deduplication.interceptor';
 import { RetryInterceptor } from './core/helpers/retry.interceptor';
 import { TimeoutInterceptor } from './core/helpers/timeout.interceptor';
+import { API_URL, getApiUrl, loadApiUrl } from './core/config/api-url.config';
 
 // ✅ FIX: Server config with server rendering + client hydration
 // provideClientHydration() MUST be in both client and server configs for hydration to work
 // ✅ IMPORTANT: provideServerRendering() MUST be provided ONLY ONCE - do not use ServerModule
 export const config: ApplicationConfig = {
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadApiUrl,
+      multi: true
+    },
+    {
+      provide: API_URL,
+      useFactory: () => process.env['SSR_API_URL'] || getApiUrl()
+    },
     // ✅ Server rendering provider - MUST be provided only once (not with ServerModule)
     provideServerRendering(withRoutes(serverRoutes)),
     
@@ -46,8 +56,11 @@ export const config: ApplicationConfig = {
 
           return normalizedUrl.includes('/api/page/') ||
                  normalizedUrl.includes('/api/course/') ||
+                 normalizedUrl.includes('/api/public/') ||
                  normalizedUrl.includes('/api/category/') ||
                  normalizedUrl.includes('/api/event/') ||
+                 normalizedUrl.includes('/api/blog') ||
+                 normalizedUrl.includes('/api/slug-resolver') ||
                  normalizedUrl.includes('/page/course') ||
                  normalizedUrl.includes('/page/category') ||
                  normalizedUrl.includes('/page/dashboard');

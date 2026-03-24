@@ -1,8 +1,11 @@
 
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MetadataService } from 'src/app/shared/service/meta.service';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+import { PublicAppService } from '../publicapp.service';
 import { environment } from 'src/environments/environment';
 
 // ✅ HYDRATION: Interface definitions for type safety in @for loops
@@ -53,6 +56,13 @@ interface QuickLink {
   title: string;
 }
 
+/** Hero icon row: label + asset + route segment for `/category/:name` (matches backend category slugs). */
+interface HeroCategoryIcon {
+  readonly label: string;
+  readonly src: string;
+  readonly categorySegment: string;
+}
+
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
@@ -62,7 +72,10 @@ interface QuickLink {
     // ✅ HYDRATION: Removed ngSkipHydration to enable proper SSR hydration
     // Only browser-specific parts should skip hydration, not the entire component
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  /** Refresh top-course URL/price data periodically (ms). */
+  private static readonly HOME_TOP_COURSES_REFRESH_MS = 120000;
+  private topCoursesRefreshTimer: ReturnType<typeof setInterval> | null = null;
   // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
   private readonly metadataService: MetadataService;
   private readonly canonicalService: CanonicalService;
@@ -71,7 +84,9 @@ export class HomeComponent implements OnInit {
   constructor(
     metadataService: MetadataService,
     canonicalService: CanonicalService,
-    structuredDataService: StructuredDataService
+    structuredDataService: StructuredDataService,
+    private publicAppService: PublicAppService,
+    private cdr: ChangeDetectorRef
   ) {
     // ✅ FIX: Initialize injected services in constructor to ensure injector is available
     this.metadataService = metadataService;
@@ -79,11 +94,13 @@ export class HomeComponent implements OnInit {
     this.structuredDataService = structuredDataService;
   }
 
-  /** Elearn register URL (from environment). */
+  /** Elearn register: same-origin → `/register`; separate dev server → full origin + `/register`. */
   get registerUrl(): string {
-    const base = (environment as { elearnAppUrl?: string }).elearnAppUrl || '';
-    const url = base.trim().replace(/\/$/, '');
-    return url ? `${url}/auth/register` : '/auth/register';
+    const base = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim();
+    if (base.startsWith('http://') || base.startsWith('https://')) {
+      return `${base.replace(/\/$/, '')}/register`;
+    }
+    return '/register';
   }
 
   // ✅ HYDRATION: Data arrays for @for loops - prevents SSR mismatches
@@ -333,6 +350,15 @@ export class HomeComponent implements OnInit {
     { url: '/category/API%20Self%20Learning%20Courses', title: 'API Self Learning Courses', description: 'Over 20+ course', class: 'cour-item5' }
   ];
 
+  /** Same categories as the lower “Browse by category” row where applicable (Welding → NDT). */
+  readonly heroCategoryIcons: ReadonlyArray<HeroCategoryIcon> = [
+    { label: 'Welding', src: 'assets/welding-oilandgasclub.svg', categorySegment: 'NDT' },
+    { label: 'Process', src: 'assets/process-oilandgasclub.svg', categorySegment: 'Process' },
+    { label: 'Piping', src: 'assets/piping-oilandgasclub.svg', categorySegment: 'Piping' },
+    { label: 'Instrumentation', src: 'assets/instrumentation-oilandgasclub.svg', categorySegment: 'Instrumentation' },
+    { label: 'Structural', src: 'assets/structural-oilandgasclub.svg', categorySegment: 'Structural' }
+  ];
+
   readonly heroStats: ReadonlyArray<string> = [
     '70+ Courses',
     '250k+ Learners',
@@ -390,5 +416,186 @@ export class HomeComponent implements OnInit {
       'https://www.oilandgasclub.com',
       'https://www.oilandgasclub.com/search?q={search_term_string}'
     );
+
+    // Keep homepage design/images static, but bind each card URL to an actual published course slug.
+    this.syncTopCourseUrls();
+    this.startTopCourseAutoRefresh();
+  }
+
+  ngOnDestroy(): void {
+    if (this.topCoursesRefreshTimer) {
+      clearInterval(this.topCoursesRefreshTimer);
+      this.topCoursesRefreshTimer = null;
+    }
+  }
+
+  private syncTopCourseUrls(): void {
+    this.publicAppService
+      .getCourses({ pageNumber: 1, pageSize: 300 })
+      .pipe(catchError(() => of({ results: [] })))
+      .subscribe((res: any) => {
+        const rows: any[] = Array.isArray(res?.results) ? res.results : [];
+        if (!rows.length) return;
+
+        const slugToRoute = new Map<string, string>();
+        const slugToAmount = new Map<string, number>();
+        const titleRows: Array<{ title: string; route: string }> = [];
+
+        for (const row of rows) {
+          const route = this.toCourseRoute(row?.canonicalUrl || row?.slug || row?.url || '');
+          if (!route) continue;
+          const slug = this.normalizeSlug(route);
+          if (slug) {
+            slugToRoute.set(slug, route);
+            const amount = this.getRowAmount(row);
+            if (amount !== null) slugToAmount.set(slug, amount);
+          }
+          titleRows.push({ title: this.normalizeTitle(row?.title || ''), route });
+        }
+
+        let changed = false;
+        const used = new Set<string>();
+        for (const card of this.topCourses) {
+          const currentSlug = this.normalizeSlug(card.url);
+          const bySlug = currentSlug ? slugToRoute.get(currentSlug) : undefined;
+          const resolved = bySlug || this.findBestRouteByTitle(card.title, titleRows);
+          if (resolved && resolved !== card.url) {
+            card.url = resolved;
+            changed = true;
+          }
+          const activeSlug = this.normalizeSlug(card.url);
+          const liveAmount = slugToAmount.get(activeSlug);
+          if (liveAmount !== undefined) {
+            const livePrice = this.formatHomePrice(liveAmount);
+            if (livePrice !== card.price) {
+              card.price = livePrice;
+              changed = true;
+            }
+          }
+          if (card.url) used.add(card.url);
+        }
+
+        // Final fallback: ensure every card has a working real course route.
+        if (this.topCourses.some(c => !slugToRoute.has(this.normalizeSlug(c.url)))) {
+          const candidates = titleRows.map(r => r.route).filter(Boolean);
+          let idx = 0;
+          for (const card of this.topCourses) {
+            if (slugToRoute.has(this.normalizeSlug(card.url))) continue;
+            while (idx < candidates.length && used.has(candidates[idx])) idx++;
+            if (idx < candidates.length) {
+              card.url = candidates[idx];
+              const mappedAmount = slugToAmount.get(this.normalizeSlug(card.url));
+              if (mappedAmount !== undefined) {
+                card.price = this.formatHomePrice(mappedAmount);
+              }
+              used.add(candidates[idx]);
+              changed = true;
+              idx++;
+            }
+          }
+        }
+
+        // Also sync quick links to live course slugs (no UI/design change).
+        changed = this.syncQuickLinksToLiveCourses(titleRows, slugToRoute) || changed;
+
+        if (changed) this.cdr.markForCheck();
+      });
+  }
+
+  private startTopCourseAutoRefresh(): void {
+    // Browser-only: avoid timers during SSR render.
+    if (typeof window === 'undefined') return;
+    if (this.topCoursesRefreshTimer) return;
+    this.topCoursesRefreshTimer = setInterval(() => {
+      this.syncTopCourseUrls();
+    }, HomeComponent.HOME_TOP_COURSES_REFRESH_MS);
+  }
+
+  private toCourseRoute(raw: string): string {
+    const s = (raw || '').toString().trim();
+    if (!s) return '';
+    if (/^https?:\/\//i.test(s)) {
+      try {
+        const u = new URL(s);
+        return this.toCourseRoute(u.pathname);
+      } catch {
+        return '';
+      }
+    }
+    const normalized = s
+      .replace(/^\/+/, '')
+      .replace(/^courses?\//i, '')
+      .replace(/^course\/course\//i, '')
+      .replace(/^course\//i, '')
+      .replace(/\/+$/, '');
+    return normalized ? `/${normalized}` : '';
+  }
+
+  private normalizeSlug(route: string): string {
+    return (route || '').replace(/^\/+/, '').replace(/\/+$/, '').toLowerCase();
+  }
+
+  private normalizeTitle(text: string): string {
+    return (text || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private findBestRouteByTitle(cardTitle: string, rows: Array<{ title: string; route: string }>): string {
+    const needle = this.normalizeTitle(cardTitle);
+    if (!needle) return '';
+    const exact = rows.find(r => r.title === needle);
+    if (exact) return exact.route;
+    const contains = rows.find(r => r.title.includes(needle) || needle.includes(r.title));
+    return contains?.route || '';
+  }
+
+  private syncQuickLinksToLiveCourses(
+    rows: Array<{ title: string; route: string }>,
+    slugToRoute: Map<string, string>
+  ): boolean {
+    const hintByTitle: Record<string, string> = {
+      'Smart Plant Instrumentation Design': 'intools',
+      'Process Simulation': 'hysys',
+      'Plant Design Management System': 'pdms',
+      'Smart Plant 3D': 'sp3d',
+      'E3D': 'e3d',
+      'Heat Exchanger Design': 'htri',
+      'Fluid Flow Analysis': 'pipenet',
+      'Primavera P6': 'primavera',
+      'Structures Modelling': 'tekla',
+      'Stress Analysis': 'piping stress'
+    };
+
+    let changed = false;
+    for (const link of this.quickLinks) {
+      const currentSlug = this.normalizeSlug(link.url);
+      if (slugToRoute.has(currentSlug)) continue; // already valid
+
+      const hint = hintByTitle[link.title] || this.normalizeTitle(link.title);
+      const normalizedHint = this.normalizeTitle(hint);
+      if (!normalizedHint) continue;
+
+      const match = rows.find(r =>
+        r.title.includes(normalizedHint) || this.normalizeSlug(r.route).includes(normalizedHint.replace(/\s+/g, '-'))
+      );
+      if (match && match.route !== link.url) {
+        link.url = match.route;
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  private getRowAmount(row: any): number | null {
+    const raw = row?.amount ?? row?.finalPrice ?? row?.price;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private formatHomePrice(amount: number): string {
+    return `₹${amount.toFixed(2)}`;
   }
 }

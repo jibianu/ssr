@@ -355,7 +355,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
 
   openRegisterModal(content: any): void {
     if (!this.authenticationService.currentToken()) {
-      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
     if (this.isRegisteredForEvent) {

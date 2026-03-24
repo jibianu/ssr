@@ -23,5 +23,5 @@ export function getGoogleOAuthRedirectUri(): string {
     return configured;
   }
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${origin}/auth/google-callback`.replace(/\/+$/, '');
+  return `${origin}/google-callback`.replace(/\/+$/, '');
 }

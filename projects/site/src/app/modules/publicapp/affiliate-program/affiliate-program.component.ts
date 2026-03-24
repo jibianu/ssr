@@ -115,7 +115,10 @@ export class AffiliateProgramComponent implements OnInit {
   /** Elearn affiliate signup page URL (auth/register-affiliate). Used for "Apply to be an affiliate" / "Submit application" links. */
   getAffiliateSignupUrl(): string {
     const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
-    return elearnBase ? `${elearnBase}/auth/register-affiliate` : '/auth/register-affiliate';
+    if (elearnBase.startsWith('http://') || elearnBase.startsWith('https://')) {
+      return `${elearnBase}/register-affiliate`;
+    }
+    return '/register-affiliate';
   }
 
   /** Navigate to elearn affiliate signup page so user can register as an affiliate. */

@@ -53,6 +53,13 @@ let loadPromise: Promise<void> | null = null;
  */
 export function loadApiUrl(): () => Promise<void> {
   return () => {
+    // ✅ SSR override support: allow forcing backend URL from env.
+    if (typeof window === 'undefined' && typeof process !== 'undefined' && process.env['SSR_API_URL']) {
+      const envUrl = process.env['SSR_API_URL']!.endsWith('/') ? process.env['SSR_API_URL']! : `${process.env['SSR_API_URL']!}/`;
+      setApiUrl({ apiUrl: envUrl });
+      return Promise.resolve();
+    }
+
     // ✅ FIX: If config is already loaded, resolve immediately
     if (loadedConfig) {
       return Promise.resolve();

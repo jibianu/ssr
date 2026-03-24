@@ -127,7 +127,7 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
     if (!this.courseID) return;
     const id = String(this.courseID).trim();
     const returnUrl = `/app/student/categories/course/${id}`;
-    void this.router.navigate(['/auth/login'], { queryParams: { returnUrl } });
+    void this.router.navigate(['/login'], { queryParams: { returnUrl } });
   }
 
   ngOnInit(): void {

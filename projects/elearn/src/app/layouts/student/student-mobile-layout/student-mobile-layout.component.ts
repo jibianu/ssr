@@ -142,7 +142,7 @@ export class StudentMobileLayoutComponent implements OnInit, OnDestroy {
   logout(): void {
     this.studentSessionService.endSession().subscribe(() => {
       this.authService.logout();
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
     });
   }
 }

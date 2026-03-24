@@ -72,7 +72,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           this.loadCheckoutData();
         },
         error: () => {
-          this.router.navigate(['/auth/login'], { queryParams: { redirect: `/checkout/${this.courseId}` } });
+          this.router.navigate(['/login'], { queryParams: { redirect: `/checkout/${this.courseId}` } });
         }
       })
     );
@@ -90,7 +90,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         () => {
-          this.router.navigate(['/auth/login'], { queryParams: { redirect: `/checkout/${this.courseId}` } });
+          this.router.navigate(['/login'], { queryParams: { redirect: `/checkout/${this.courseId}` } });
         }
       )
     );

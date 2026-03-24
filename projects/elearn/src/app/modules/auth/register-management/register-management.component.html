@@ -9,9 +9,9 @@
       <h2 id="user-exists-title" class="login-alert-title">User already exists</h2>
       <p id="user-exists-message" class="login-alert-message">{{ alertMessage }}</p>
       <div class="login-alert-actions">
-        <a routerLink="/auth/login" class="login-alert-link" (click)="closeAlert()">Log in</a>
+        <a [routerLink]="['/login']" class="login-alert-link" (click)="closeAlert()">Log in</a>
         <span class="login-alert-sep">·</span>
-        <a routerLink="/auth/forget-password" class="login-alert-link" (click)="closeAlert()">Forgot password</a>
+        <a [routerLink]="['/forget-password']" class="login-alert-link" (click)="closeAlert()">Forgot password</a>
       </div>
       <button type="button" class="login-alert-btn" (click)="closeAlert()">OK</button>
     </div>
@@ -27,7 +27,7 @@
         <span class="login-header__subtitle">Management</span>
       </div>
       <p class="login-header__prompt">
-        Already have an account? <a routerLink="/auth/login" class="login-header__link">Log in</a>
+        Already have an account? <a [routerLink]="['/login']" class="login-header__link">Log in</a>
       </p>
     </header>
 
@@ -52,7 +52,7 @@
     </form>
 
     <p class="login-signup">
-      Already a member? <a routerLink="/auth/login" class="login-signup__link">Log in</a>
+      Already a member? <a [routerLink]="['/login']" class="login-signup__link">Log in</a>
     </p>
   </div>
 

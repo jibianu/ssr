@@ -48,7 +48,7 @@ export class ForgetPasswordVerificationComponent implements OnInit {
       };
       this.authenticationService.confirmforgot(obj).subscribe({
         next: () => {
-          this.router.navigate(['auth', 'login']);
+          this.router.navigate(['/login']);
         }
       });
     }

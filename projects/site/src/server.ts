@@ -8,7 +8,7 @@ import { ɵsetAngularAppEngineManifest as setAngularAppEngineManifest } from '@a
 import express from 'express';
 import { dirname, resolve, join } from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, statSync } from 'fs';
 import { createHash } from 'crypto';
 import { EventEmitter } from 'events';
 import type { Socket } from 'net';
@@ -35,6 +35,7 @@ const elearnBrowserFolder = process.env['ELEARN_BROWSER_DIST']
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+const isProd = process.env['NODE_ENV'] === 'production';
 
 // ✅ PROXY: SSR proxy disabled - using direct backend URLs from environment config
 // SSR will make direct API calls to the backend URL configured in environment.ts
@@ -62,6 +63,17 @@ function generateETag(content: string): string {
 
 // ✅ CACHING: Get cache headers based on route type
 function getCacheHeaders(path: string, etag: string): Record<string, string> {
+  if (!isProd) {
+    return {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': etag,
+      'Vary': 'Accept-Encoding, Cookie',
+      'X-Content-Type-Options': 'nosniff'
+    };
+  }
+
   const isStatic = isStaticRoute(path);
   
   if (isStatic) {
@@ -109,6 +121,15 @@ function ensureSafeRequest(req?: Partial<express.Request>): express.Request {
     if (!(req as any).connection) {
       (req as any).connection = socket;
     }
+    if (!(req as any).headers) {
+      (req as any).headers = {};
+    }
+    if (!(req as any).headers.host) {
+      (req as any).headers.host = `localhost:${process.env['PORT'] || 4200}`;
+    }
+    if (!(req as any).protocol) {
+      (req as any).protocol = 'http';
+    }
     return req as express.Request;
   }
 
@@ -135,6 +156,16 @@ function getRequestUrl(req: express.Request): string {
   return req.url || req.originalUrl || getRequestPath(req);
 }
 
+function isAssetRequest(path: string): boolean {
+  return /\.[a-z0-9]+$/i.test(path);
+}
+
+function setNoStoreHtmlHeaders(res: express.Response): void {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+}
+
 function getCacheKey(request: express.Request | undefined): string {
   const req = ensureSafeRequest(request);
   const userPart = req.headers.authorization ? 'auth' : 'guest';
@@ -143,15 +174,70 @@ function getCacheKey(request: express.Request | undefined): string {
 }
 
 function createWarmCacheRequest(route: string): express.Request {
+  const port = process.env['PORT'] || '4200';
   return ensureSafeRequest({
     method: 'GET',
     url: route,
     path: route,
     originalUrl: route,
     query: {},
-    headers: {},
+    headers: {
+      host: `localhost:${port}`,
+      'x-forwarded-proto': 'http',
+    },
   });
 }
+
+/** Elearn routes mounted at site root (same SPA as /course, /auth); see AUTH_ROUTES in elearn app. */
+function isElearnSpaRootPath(requestPath: string): boolean {
+  const p = requestPath.split('?')[0].replace(/\/$/, '') || '/';
+  const roots = new Set([
+    '/login',
+    '/register',
+    '/callback',
+    '/google-callback',
+    '/forget-password',
+    '/verification',
+    '/fg-code',
+    '/change-password',
+    '/user-unavailable',
+    '/register-company',
+    '/register-trainer',
+    '/register-affiliate',
+    '/register-management',
+  ]);
+  if (roots.has(p)) return true;
+  if (/^\/register\/[^/]+$/.test(p)) return true;
+  if (p === '/checkout' || p.startsWith('/checkout/')) return true;
+  return false;
+}
+
+// 1️⃣ Prefer Elearn hashed bundles when the file exists (unified build baseHref /).
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return next();
+  }
+  if (!existsSync(elearnBrowserFolder)) {
+    return next();
+  }
+  const p = getRequestPath(ensureSafeRequest(req));
+  if (!isAssetRequest(p)) {
+    return next();
+  }
+  const rel = p.replace(/^\//, '');
+  const candidates = [join(elearnBrowserFolder, rel), join(elearnBrowserFolder, 'browser', rel)];
+  for (const fp of candidates) {
+    try {
+      if (existsSync(fp) && statSync(fp).isFile()) {
+        res.sendFile(resolve(fp));
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return next();
+});
 
 // 1️⃣ Serve static assets
 app.use(
@@ -163,9 +249,101 @@ app.use(
   }),
 );
 
+// Legacy /course/auth/* → canonical root auth paths (/login, /register, …).
+app.get('/course/auth/:path', (req, res) => {
+  const authPath = (req.params['path'] || 'login').toString().trim() || 'login';
+  const queryIdx = req.originalUrl.indexOf('?');
+  const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+  res.redirect(301, `/${encodeURIComponent(authPath)}${query}`);
+});
+
+// Legacy /auth/* (Elearn used to be mounted here) → /login, /register, …
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return next();
+  }
+  const p = getRequestPath(ensureSafeRequest(req));
+  if (p !== '/auth' && !p.startsWith('/auth/')) {
+    return next();
+  }
+  const tail = p === '/auth' ? '' : p.slice('/auth/'.length);
+  const target = tail ? `/${tail}` : '/login';
+  const queryIdx = req.originalUrl.indexOf('?');
+  const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+  res.redirect(301, target + query);
+});
+
+// Legacy public-course URL redirect: /course/:slug -> /:slug
+app.get(/^\/course\/([^/?#]+)\/?$/, (req, res, next) => {
+  const path = req.path || '';
+  const segment = (req.params?.[0] || '').toString();
+  // Keep Elearn auth/app paths and static assets under /course untouched.
+  if (
+    /^\/course\/(?:app|auth|student|admin)(?:\/|$)/i.test(path) ||
+    /\.[a-z0-9]+$/i.test(segment)
+  ) {
+    next();
+    return;
+  }
+  const slug = segment.trim();
+  if (!slug) {
+    next();
+    return;
+  }
+  const queryIdx = req.originalUrl.indexOf('?');
+  const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+  res.redirect(301, `/${encodeURIComponent(slug)}${query}`);
+});
+
+// Legacy public-event URL redirect: /events/:slug -> /:slug
+app.get(/^\/events\/([^/?#]+)\/?$/, (req, res, next) => {
+  const path = req.path || '';
+  const segment = (req.params?.[0] || '').toString();
+  // Keep non-detail event routes (e.g. payment callbacks) and static assets untouched.
+  if (
+    /^\/events\/(?:payment)(?:\/|$)/i.test(path) ||
+    /\.[a-z0-9]+$/i.test(segment)
+  ) {
+    next();
+    return;
+  }
+  const slug = segment.trim();
+  if (!slug) {
+    next();
+    return;
+  }
+  const queryIdx = req.originalUrl.indexOf('?');
+  const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+  res.redirect(301, `/${encodeURIComponent(slug)}${query}`);
+});
+
 // 1b️⃣ Elearn (student dashboard / course player): SPA only — must run BEFORE SSR catch-all.
 // Production: baseHref /Elearn/ or /course/ (Docker unified domain) — assets under that prefix
 // Optional: build elearn with baseHref /app/ if you only mount /app (see docs/NGINX_SSR.md).
+//
+// Elearn dist/index.html ships with `<base href="/">`. Serving it under /auth or /course without
+// patching makes `styles.css` + `main.js` resolve to the site root → 404. Patch base to the mount.
+/** Memoized patched HTML per mount path (same index file on disk). */
+const elearnPatchedIndexHtml = new Map<string, string>();
+
+function patchElearnIndexBaseHref(html: string, mountPath: string): string {
+  const base = mountPath.endsWith('/') ? mountPath : `${mountPath}/`;
+  return html.replace(/<base\s+href="[^"]*"/i, `<base href="${base}"`);
+}
+
+function sendElearnSpaIndex(res: express.Response, mountPath: string, indexPath: string): void {
+  const cacheKey = `${mountPath}:${indexPath}`;
+  let html = elearnPatchedIndexHtml.get(cacheKey);
+  if (!html) {
+    const raw = readFileSync(indexPath, 'utf-8');
+    html = patchElearnIndexBaseHref(raw, mountPath);
+    elearnPatchedIndexHtml.set(cacheKey, html);
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  setNoStoreHtmlHeaders(res);
+  res.send(html);
+}
+
 function mountElearnSpaIfPresent(): void {
   const indexFile = join(elearnBrowserFolder, 'index.html');
   if (!existsSync(indexFile)) {
@@ -178,15 +356,28 @@ function mountElearnSpaIfPresent(): void {
   const staticOpts = { maxAge: '1y' as const, index: false, etag: true, lastModified: true };
   const mountSpa = (mountPath: string) => {
     app.use(mountPath, express.static(elearnBrowserFolder, staticOpts));
-    const escaped = mountPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    app.get(new RegExp(`^${escaped}(\\/.*)?$`), (_req, res) => {
-      res.sendFile(indexFile);
-    });
+    const sendSpa = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      // Keep public course detail routes SSR-rendered.
+      // Example: /course/api-570-closed-book-mock-exam-comprehensive-preparation
+      if (
+        mountPath === '/course' &&
+        /^\/course\/[^/?#]+\/?$/.test(req.path) &&
+        !/^\/course\/(?:app|auth|student|admin)(?:\/|$)/i.test(req.path)
+      ) {
+        next();
+        return;
+      }
+      sendElearnSpaIndex(res, mountPath, indexFile);
+    };
+    // Express 5 + path-to-regexp v8: named splat — RegExp routes can lose to `/{*splat}` SSR.
+    app.get(mountPath, sendSpa);
+    app.get(`${mountPath}/{*splat}`, sendSpa);
   };
   console.log(
-    `[SSR] Elearn SPA: ${elearnBrowserFolder} → /course/* (unified domain), /Elearn/*, /app/*`
+    `[SSR] Elearn SPA: ${elearnBrowserFolder} → /login, /register, /checkout, /course/*, /auth/*, /Elearn/*, /app/*`
   );
   mountSpa('/course');
+  mountSpa('/auth');
   mountSpa('/Elearn');
   mountSpa('/app');
 }
@@ -313,6 +504,30 @@ app.get('/{*splat}', async (req, res, next) => {
   // ✅ PERFORMANCE: Start performance measurement
   const safeReq = ensureSafeRequest(req);
   const requestPath = getRequestPath(safeReq);
+  if (isAssetRequest(requestPath)) {
+    res.status(404).end();
+    return;
+  }
+  // Elearn SPA at root URLs (/login, /register, /checkout, …) — unified build uses baseHref /.
+  const elearnIndexPrimary = join(elearnBrowserFolder, 'index.html');
+  const elearnIndexNested = join(elearnBrowserFolder, 'browser', 'index.html');
+  const elearnIndexFile = existsSync(elearnIndexPrimary)
+    ? elearnIndexPrimary
+    : existsSync(elearnIndexNested)
+      ? elearnIndexNested
+      : '';
+  if (elearnIndexFile && isElearnSpaRootPath(requestPath)) {
+    sendElearnSpaIndex(res, '/', elearnIndexFile);
+    return;
+  }
+  // Elearn SPA under /auth (legacy bookmarks); prefer /login etc. via redirect middleware.
+  if (
+    existsSync(elearnIndexPrimary) &&
+    (requestPath === '/auth' || requestPath.startsWith('/auth/'))
+  ) {
+    sendElearnSpaIndex(res, '/auth', elearnIndexPrimary);
+    return;
+  }
   const markId = performanceMonitor.startMeasure(
     requestPath,
     safeReq.method,
@@ -327,11 +542,13 @@ app.get('/{*splat}', async (req, res, next) => {
     
     // ✅ CACHING: Check cache first (supports both sync and async)
     let cached: { html: string; etag: string } | undefined;
-    const cacheResult = htmlCache.get(cacheKey);
-    if (cacheResult instanceof Promise) {
-      cached = await cacheResult;
-    } else {
-      cached = cacheResult;
+    if (isProd) {
+      const cacheResult = htmlCache.get(cacheKey);
+      if (cacheResult instanceof Promise) {
+        cached = await cacheResult;
+      } else {
+        cached = cacheResult;
+      }
     }
     
     // ✅ PERFORMANCE: Mark cache check end
@@ -397,10 +614,12 @@ app.get('/{*splat}', async (req, res, next) => {
       const etag = generateETag(html);
       
       // ✅ CACHING: Store in cache with appropriate TTL (supports both sync and async)
-      const ttl = isStaticRoute(requestPath) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
-      const setResult = htmlCache.set(cacheKey, { html, etag }, ttl);
-      if (setResult instanceof Promise) {
-        await setResult;
+      if (isProd) {
+        const ttl = isStaticRoute(requestPath) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
+        const setResult = htmlCache.set(cacheKey, { html, etag }, ttl);
+        if (setResult instanceof Promise) {
+          await setResult;
+        }
       }
       
       // ✅ CACHING: Set cache headers and send HTML
@@ -415,9 +634,15 @@ app.get('/{*splat}', async (req, res, next) => {
       // ✅ FIX: If SSR returns no response, fallback to index.html for client-side routing
       // This ensures deep links work correctly on refresh or direct access
       try {
+        if (isAssetRequest(requestPath)) {
+          res.status(404).end();
+          performanceMonitor.endMeasure(markId, false);
+          return;
+        }
         const indexPath = join(browserDistFolder, 'index.html');
         if (existsSync(indexPath)) {
           const html = readFileSync(indexPath, 'utf-8');
+          setNoStoreHtmlHeaders(res);
           res.status(200).send(html);
           performanceMonitor.endMeasure(markId, false);
           return;
@@ -435,9 +660,15 @@ app.get('/{*splat}', async (req, res, next) => {
     // ✅ FIX: On SSR error, try to serve index.html as fallback
     // This prevents 404 errors when Angular SSR fails but route might be valid client-side
     try {
+      if (isAssetRequest(requestPath)) {
+        res.status(404).end();
+        performanceMonitor.endMeasure(markId, false);
+        return;
+      }
       const indexPath = join(browserDistFolder, 'index.html');
       if (existsSync(indexPath)) {
         const html = readFileSync(indexPath, 'utf-8');
+        setNoStoreHtmlHeaders(res);
         res.status(200).send(html);
         performanceMonitor.endMeasure(markId, false);
         return;
@@ -456,9 +687,33 @@ app.get('/{*splat}', async (req, res, next) => {
 // This ensures Angular handles routing client-side when SSR doesn't match
 app.use('/{*splat}', (req, res) => {
   try {
+    const path = getRequestPath(ensureSafeRequest(req));
+    if (isAssetRequest(path)) {
+      res.status(404).end();
+      return;
+    }
+    const elearnIdxPrimary = join(elearnBrowserFolder, 'index.html');
+    const elearnIdxNested = join(elearnBrowserFolder, 'browser', 'index.html');
+    const elearnIdxFallback = existsSync(elearnIdxPrimary)
+      ? elearnIdxPrimary
+      : existsSync(elearnIdxNested)
+        ? elearnIdxNested
+        : '';
+    if (elearnIdxFallback && isElearnSpaRootPath(path)) {
+      sendElearnSpaIndex(res, '/', elearnIdxFallback);
+      return;
+    }
+    if (
+      existsSync(elearnIdxPrimary) &&
+      (path === '/auth' || path.startsWith('/auth/'))
+    ) {
+      sendElearnSpaIndex(res, '/auth', elearnIdxPrimary);
+      return;
+    }
     const indexPath = join(browserDistFolder, 'index.html');
     if (existsSync(indexPath)) {
       const html = readFileSync(indexPath, 'utf-8');
+      setNoStoreHtmlHeaders(res);
       res.status(200).send(html);
     } else {
       res.status(404).send('Not Found');
@@ -508,7 +763,7 @@ async function warmCache(): Promise<void> {
 
 // 3️⃣ Start server
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
-  const port = process.env['PORT'] || 4000;
+  const port = process.env['PORT'] || 4200;
   app.listen(port, async () => {
     console.log(`✅ Node Express server running at http://localhost:${port}`);
     console.log(`📂 Serving browser assets from: ${browserDistFolder}`);
@@ -516,9 +771,13 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     
     // ✅ CACHING: Warm cache after server starts
     // Delay to ensure server is ready
-    setTimeout(() => {
-      warmCache().catch(console.error);
-    }, 2000);
+    if (isProd) {
+      setTimeout(() => {
+        warmCache().catch(console.error);
+      }, 2000);
+    } else {
+      console.log('ℹ️ Dev mode: SSR page cache + warm-cache disabled');
+    }
   });
 }
 
@@ -529,3 +788,4 @@ void import(angularAppEngineManifestUrl).then(({ default: m }) => {
   setAngularAppEngineManifest(m);
   main();
 });
+

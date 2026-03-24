@@ -46,6 +46,9 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
   transition: transform 200ms ease, box-shadow 200ms ease;
   width: 100%;
   max-width: 150px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .icon-card:hover {

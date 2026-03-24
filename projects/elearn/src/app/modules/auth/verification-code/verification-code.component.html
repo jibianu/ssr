@@ -5,7 +5,7 @@
         <img [src]="logoUrl" alt="oilandgasclub" class="verification-brand__logo" width="130" height="42" fetchpriority="high">
       </a>
       <p class="verification-header__prompt">
-        Don't have an account? <a routerLink="/auth/register" class="verification-header__link">Get started free</a>
+        Don't have an account? <a [routerLink]="['/register']" class="verification-header__link">Get started free</a>
       </p>
     </header>
 

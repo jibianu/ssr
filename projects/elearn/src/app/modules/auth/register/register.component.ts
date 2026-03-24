@@ -4,6 +4,7 @@ import { first } from 'rxjs/operators';
 import { AuthenticationService } from '../auth.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { environment } from 'src/environments/environment';
+import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
 
 @Component({
@@ -20,7 +21,7 @@ export class RegisterComponent implements OnInit {
   cid = '';
 
   /** Logo URL from environment; otherwise local asset. Same as Login. */
-  logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
+  logoUrl = environment.logoUrl || getDefaultLogoUrl();
   /** True when Google OAuth (code flow) is configured; same custom button as Login. */
   googleEnabled = !!environment.oauthKey?.trim();
 
@@ -126,7 +127,7 @@ export class RegisterComponent implements OnInit {
         .pipe(first())
         .subscribe({
           next: () => {
-            this.router.navigate(['auth', 'verification'], { queryParams: { code: btoa(this.email) } });
+            this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
           },
           error: (err) => {
             const msg = err?.error?.message ?? err?.message ?? '';
@@ -135,7 +136,7 @@ export class RegisterComponent implements OnInit {
               /already exists|user already exist|(user|username|email).*exists/i.test(msg);
             if (isAlreadyExists) {
               this.toaster.showError('User already exists. Please log in.');
-              this.router.navigate(['auth', 'login']);
+              this.router.navigate(['/login']);
             } else {
               console.log('error signing up:', err);
             }

@@ -14,6 +14,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { UserValidationGuard } from './core/guards/user-validation.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { UnauthorizedComponent } from './shared/component/unauthorized/unauthorized.component';
+import { AUTH_ROUTES } from './modules/auth/auth-routing.module';
 
 const routerOptions: ExtraOptions = {
   scrollPositionRestoration: 'enabled',
@@ -23,10 +24,7 @@ const routerOptions: ExtraOptions = {
 };
 
 const routes: Routes = [
-  {
-    path: 'auth',
-    loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
-  },
+  ...AUTH_ROUTES,
   {
     path: 'checkout',
     loadChildren: () => import('./modules/payment/payment.module').then(m => m.PaymentModule)

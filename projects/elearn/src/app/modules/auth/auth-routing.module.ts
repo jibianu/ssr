@@ -6,18 +6,18 @@ import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { GoogleCallbackComponent } from './google-callback/google-callback.component';
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
 import { VerificationCodeComponent } from './verification-code/verification-code.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { ForgetPasswordVerificationComponent } from './forget-password-verification/forget-password-verification.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { UserUnavailableComponent } from './user-unavailable/user-unavailable.component';
 
-const routes: Routes = [
-  {
-    path: '', redirectTo: 'login', pathMatch: 'full'
-  },
+/**
+ * Root-level auth URLs: `/login`, `/register`, `/forget-password`, … (no `/auth` prefix).
+ * Included in `app-routing.module.ts` before the public `''` route so they win over `:slug`.
+ */
+export const AUTH_ROUTES: Routes = [
   {
     path: 'user-unavailable',
     component: UserUnavailableComponent
@@ -33,7 +33,7 @@ const routes: Routes = [
   {
     path: 'google-callback',
     component: GoogleCallbackComponent
-  }, 
+  },
   {
     path: 'verification',
     component: VerificationCodeComponent
@@ -75,9 +75,3 @@ const routes: Routes = [
     component: RegisterManagementComponent
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
-})
-export class AuthRoutingModule { }

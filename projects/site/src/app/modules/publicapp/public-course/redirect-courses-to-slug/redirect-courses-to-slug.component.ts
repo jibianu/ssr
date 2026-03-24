@@ -2,7 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 /**
- * Redirects /courses/:url and /courses/:url/:location to canonical /:url so refresh and bookmarks work without /courses/.
+ * Redirects legacy course URLs to canonical /:slug
+ * Supported:
+ * - /courses/:url
+ * - /courses/:url/:location
+ * - /course/:courseSlug
  */
 @Component({
   selector: 'app-redirect-courses-to-slug',
@@ -16,7 +20,7 @@ export class RedirectCoursesToSlugComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const url = this.route.snapshot.paramMap.get('url');
+    const url = this.route.snapshot.paramMap.get('url') || this.route.snapshot.paramMap.get('courseSlug');
     if (url) {
       this.router.navigate(['/', url], { replaceUrl: true, queryParamsHandling: 'preserve' });
     } else {

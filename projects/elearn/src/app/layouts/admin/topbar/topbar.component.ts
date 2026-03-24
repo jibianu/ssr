@@ -36,6 +36,6 @@ throw new Error('Method not implemented.');
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
   }
 }

@@ -9,6 +9,7 @@ import { StructuredDataService } from 'src/app/shared/service/structured-data.se
 import { PublicAppService } from '../../publicapp.service';
 import { AuthenticationService } from '../../../auth/auth.service';
 import { environment } from './../../../../../environments/environment';
+import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
 
 @Component({
     selector: 'app-public-course-details, app-course-content',
@@ -1446,9 +1447,9 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
           window.localStorage.setItem('returnUrl', returnUrl);
         } catch (_) {}
       }
-      const elearnBase = (environment.elearnAppUrl || '').trim().replace(/\/$/, '') || (this.isBrowser ? window.location.origin : '');
-      const loginUrl = elearnBase ? `${elearnBase}/auth/login?returnUrl=${encodeURIComponent(returnUrl)}` : `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
-      if (elearnBase && this.isBrowser) {
+      const envBase = (environment.elearnAppUrl || '').trim().replace(/\/$/, '') || (this.isBrowser ? window.location.origin : '');
+      const loginUrl = buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(returnUrl)}`, envBase);
+      if (envBase && this.isBrowser) {
         window.location.href = loginUrl;
       } else {
         this.router.navigate(['/login'], { queryParams: { returnUrl } });
@@ -1529,10 +1530,8 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
             window.localStorage.setItem('returnUrl', returnUrl);
           } catch (_) {}
         }
-        if (elearnBase) {
-          window.location.href = `${elearnBase}/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
-          return;
-        }
+        window.location.href = buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(returnUrl)}`, elearnBase);
+        return;
       }
       const checkoutUrl = elearnBase ? `${elearnBase}/checkout/${encodeURIComponent(String(cid))}` : `/checkout/${encodeURIComponent(String(cid))}`;
       this.navigateToUrl(checkoutUrl);
@@ -1550,10 +1549,8 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
               if (typeof window !== 'undefined' && window.localStorage) {
                 try { window.localStorage.setItem('returnUrl', rUrl); } catch (_) {}
               }
-              if (base) {
-                window.location.href = `${base}/auth/login?returnUrl=${encodeURIComponent(rUrl)}`;
-                return;
-              }
+              window.location.href = buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(rUrl)}`, base);
+              return;
             }
             const checkoutUrl = base ? `${base}/checkout/${encodeURIComponent(res.id)}` : `/checkout/${encodeURIComponent(res.id)}`;
             this.navigateToUrl(checkoutUrl);

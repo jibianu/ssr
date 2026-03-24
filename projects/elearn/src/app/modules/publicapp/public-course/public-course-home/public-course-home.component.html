@@ -9,7 +9,7 @@
             <a routerLink="/" class="landing-login__brand" aria-label="oilandgasclub home">
               <img [src]="logoUrl" alt="oilandgasclub" class="landing-login__logo" width="130" height="42" fetchpriority="high">
             </a>
-            <p class="landing-login__prompt">Don't have an account? <a routerLink="/auth/register" class="landing-login__link">Get started free</a></p>
+            <p class="landing-login__prompt">Don't have an account? <a href="/register" class="landing-login__link">Get started free</a></p>
           </header>
           <div class="landing-login__info">
             <h2 class="landing-login__info-title">Grow your skills with industry-recognized courses.</h2>
@@ -36,11 +36,11 @@
                 <input type="checkbox" name="remember" aria-label="Remember me">
                 <span>Remember me</span>
               </label>
-              <a routerLink="/auth/forget-password" class="landing-login__forgot">Forgot password</a>
+              <a href="/forget-password" class="landing-login__forgot">Forgot password</a>
             </div>
             <button type="submit" class="landing-login__submit">LOG IN</button>
           </form>
-          <p class="landing-login__signup">Don't have an account yet? <a routerLink="/auth/register" class="landing-login__link">Sign up</a></p>
+          <p class="landing-login__signup">Don't have an account yet? <a href="/register" class="landing-login__link">Sign up</a></p>
           <div class="landing-login__footer">
             <p class="landing-login__copy">©2026 oilandgasclub, Edutech. All Rights Reserved.</p>
             <a href="https://www.oilandgasclub.com/privacy-policy/" target="_blank" rel="noopener" class="landing-login__footer-link">Privacy Policy</a>

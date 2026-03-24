@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
+import { catchError, map } from 'rxjs/operators';
+import { API_URL } from 'src/app/core/config/api-url.config';
 
 export interface BlogCategoryDto {
   id: string;
@@ -93,9 +93,15 @@ export interface LoopMarketingContentDto {
 
 @Injectable({ providedIn: 'root' })
 export class BlogService {
-  private readonly apiUrl = environment.apiUrl + 'api/blog';
+  private readonly apiRoot: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(API_URL) apiBase: string
+  ) {
+    const base = (apiBase || '').endsWith('/') ? apiBase : `${apiBase}/`;
+    this.apiRoot = `${base}api/blog`;
+  }
 
   getBlogs(pageNumber: number = 1, pageSize: number = 10, category?: string, authorId?: string, search?: string): Observable<PagedBlogResponse> {
     let params = new HttpParams()
@@ -110,18 +116,19 @@ export class BlogService {
     if (search?.trim()) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<PagedBlogResponse>(this.apiUrl, { params });
+    return this.http.get<PagedBlogResponse>(this.apiRoot, { params });
   }
 
   getCategories(): Observable<BlogCategoryDto[]> {
-    return this.http.get<BlogCategoryDto[]>(`${this.apiUrl}/categories`).pipe(
+    return this.http.get<BlogCategoryDto[]>(`${this.apiRoot}/categories`).pipe(
       catchError(() => of([]))
     );
   }
 
   getBlogBySlug(slug: string): Observable<BlogDetailDto | null> {
     const encoded = encodeURIComponent(slug);
-    return this.http.get<BlogDetailDto>(`${this.apiUrl}/${encoded}`).pipe(
+    return this.http.get<any>(`${this.apiRoot}/${encoded}`).pipe(
+      map((raw) => this.normalizeBlogDetailDto(raw)),
       catchError(() => of(null))
     );
   }
@@ -129,7 +136,7 @@ export class BlogService {
   /** Get public author/trainer profile for "posts by author" header (display name, photo, bio, website). */
   getAuthorProfile(authorId: string): Observable<AuthorProfileDto | null> {
     if (!authorId?.trim()) return of(null);
-    return this.http.get<AuthorProfileDto>(`${this.apiUrl}/author/${encodeURIComponent(authorId.trim())}`).pipe(
+    return this.http.get<AuthorProfileDto>(`${this.apiRoot}/author/${encodeURIComponent(authorId.trim())}`).pipe(
       catchError(() => of(null))
     );
   }
@@ -140,7 +147,7 @@ export class BlogService {
     if (categoryId != null && categoryId !== '') {
       params = params.set('categoryId', categoryId);
     }
-    return this.http.get<LoopMarketingContentDto>(`${this.apiUrl}/loop-marketing/category`, { params }).pipe(
+    return this.http.get<LoopMarketingContentDto>(`${this.apiRoot}/loop-marketing/category`, { params }).pipe(
       catchError(() => of({
         title: '',
         description: '',
@@ -156,5 +163,47 @@ export class BlogService {
         learnMoreUrl: ''
       }))
     );
+  }
+
+  /** Map .NET PascalCase or partial responses to BlogDetailDto for templates + SSR. */
+  private normalizeBlogDetailDto(raw: any): BlogDetailDto | null {
+    if (raw == null || typeof raw !== 'object') {
+      return null;
+    }
+    const sectionsRaw = raw.blogSections ?? raw.BlogSections;
+    let blogSections: BlogSectionDto[] | undefined;
+    if (Array.isArray(sectionsRaw)) {
+      blogSections = sectionsRaw.map((s: any) => ({
+        id: String(s?.id ?? s?.Id ?? ''),
+        title: s?.title ?? s?.Title ?? '',
+        content: s?.content ?? s?.Content ?? '',
+        sequenceNumber: s?.sequenceNumber ?? s?.SequenceNumber
+      }));
+    }
+    const catRaw = raw.category ?? raw.Category;
+    let category: BlogCategoryDto | undefined;
+    if (catRaw && typeof catRaw === 'object') {
+      category = {
+        id: String(catRaw.id ?? catRaw.Id ?? ''),
+        name: catRaw.name ?? catRaw.Name ?? '',
+        appsName: catRaw.appsName ?? catRaw.AppsName
+      };
+    }
+    return {
+      id: String(raw.id ?? raw.Id ?? ''),
+      title: raw.title ?? raw.Title ?? '',
+      canonicalUrl: raw.canonicalUrl ?? raw.CanonicalUrl ?? '',
+      content: raw.content ?? raw.Content ?? '',
+      metaDescription: raw.metaDescription ?? raw.MetaDescription ?? '',
+      titleImgUrl: raw.titleImgUrl ?? raw.TitleImgUrl,
+      showOnDashboard: raw.showOnDashboard ?? raw.ShowOnDashboard ?? false,
+      createdOn: raw.createdOn ?? raw.CreatedOn ?? '',
+      updatedOn: raw.updatedOn ?? raw.UpdatedOn,
+      category,
+      blogSections,
+      authorId: raw.authorId ?? raw.AuthorId,
+      authorName: raw.authorName ?? raw.AuthorName,
+      authorProfilePictureUrl: raw.authorProfilePictureUrl ?? raw.AuthorProfilePictureUrl
+    };
   }
 }

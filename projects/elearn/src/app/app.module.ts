@@ -1,6 +1,7 @@
 import { SharedModule } from './shared/shared.module';
 import { LayoutsModule } from './layouts/layouts.module';
 import { AppRoutingModule } from './app-routing.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -32,6 +33,7 @@ Amplify.configure({
     NgbModule,
     HttpClientModule,
     CommonModule,
+    AuthModule,
     AppRoutingModule,
     LayoutsModule,
     BrowserAnimationsModule,

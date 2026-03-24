@@ -5,7 +5,7 @@
         <img [src]="logoUrl" alt="oilandgasclub" class="login-brand__logo" width="130" height="42" fetchpriority="high">
       </a>
       <p class="login-header__prompt">
-        Already have an account? <a routerLink="/auth/login" class="login-header__link">Log in</a>
+        Already have an account? <a [routerLink]="['/login']" class="login-header__link">Log in</a>
       </p>
     </header>
 
@@ -38,7 +38,7 @@
     </form>
 
     <p class="login-signup">
-      Already a member? <a routerLink="/auth/login" class="login-signup__link">Log in</a>
+      Already a member? <a [routerLink]="['/login']" class="login-signup__link">Log in</a>
     </p>
   </div>
 

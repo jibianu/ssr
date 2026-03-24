@@ -83,7 +83,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
   continueWithGoogle(): void {
     const clientId = environment.oauthKey?.trim();
-    const redirectUri = (environment.googleRedirectUri || `${window.location.origin}/auth/google-callback`).trim();
+    const redirectUri = (environment.googleRedirectUri || `${window.location.origin}/google-callback`).trim();
     if (!clientId || !redirectUri) return;
     const params = new URLSearchParams({
       client_id: clientId,

@@ -1462,10 +1462,9 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const canonicalSlug = this.event.canonicalUrl ?? '';
-    const fullUrl = canonicalSlug
-      ? `${environment.seoUrl}events/${canonicalSlug}`
-      : `${environment.seoUrl}events`;
+    const base = (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/?$/, '/');
+    const canonicalSlug = (this.event.canonicalUrl ?? this.event.CanonicalUrl ?? '').toString().replace(/^\/+/, '').trim();
+    const fullUrl = canonicalSlug ? `${base}${canonicalSlug}` : `${base}events`;
 
     const titleSection = this.event.eventDetails?.find(
       (detail: EventDetail) => detail.section === 'title'
@@ -1498,13 +1497,14 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       title: `${eventTitle} - Oilandgasclub`,
       description: eventDescription,
       author: 'Oilandgasclub',
-      type: 'event',
+      // Keep parity with course/blog so article:* tags are consistently emitted.
+      type: 'article',
       image: eventImage,
       imageWidth: 1200,
       imageHeight: 630,
       seoUrl: fullUrl,
-      time: this.event.startDate ?? this.event.createdOn,
-      updatedTime: this.event.updatedOn,
+      time: this.event.createdOn ?? this.event.startDate,
+      updatedTime: this.event.updatedOn ?? this.event.createdOn ?? this.event.startDate,
       category: 'Oil and Gas Events, Professional Training, Industry Events',
       canonicalUrl: fullUrl
     });
@@ -1532,9 +1532,20 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     });
 
+    this.structuredDataService.setArticle({
+      headline: eventTitle,
+      description: eventDescription,
+      url: fullUrl,
+      image: eventImage,
+      datePublished: this.event.createdOn ?? this.event.startDate,
+      dateModified: this.event.updatedOn ?? this.event.createdOn ?? this.event.startDate,
+      authorName: 'Oilandgasclub',
+      section: 'Events'
+    });
+
     const breadcrumbs = [
-      { name: 'Home', url: environment.seoUrl },
-      { name: 'Events', url: `${environment.seoUrl}events` },
+      { name: 'Home', url: base.replace(/\/$/, '') },
+      { name: 'Events', url: `${base}events` },
       { name: eventTitle, url: fullUrl }
     ];
     this.structuredDataService.setBreadcrumbs(breadcrumbs);

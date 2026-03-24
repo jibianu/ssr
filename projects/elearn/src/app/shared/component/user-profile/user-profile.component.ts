@@ -88,7 +88,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   logout(): void {
     this.closeDropdown();
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
   }
 
   goBack(): void {

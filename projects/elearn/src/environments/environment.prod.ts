@@ -14,6 +14,6 @@ export const environment = {
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
   /** Must match baseHref /Elearn/ on this build — same path Google Console redirect URI. */
-  cognitoRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/auth/callback',
-  googleRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/auth/google-callback'
+  cognitoRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/callback',
+  googleRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/google-callback'
 };

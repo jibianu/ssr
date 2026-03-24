@@ -2,31 +2,31 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
   // Root / public layout
-  { path: '', renderMode: RenderMode.Prerender },
+  { path: '', renderMode: RenderMode.Server },
 
   // ✅ CACHING: Static content pages - prerender for instant loads
-  { path: 'about-us', renderMode: RenderMode.Prerender },
-  { path: 'contact-us', renderMode: RenderMode.Prerender },
-  { path: 'mission-and-vision', renderMode: RenderMode.Prerender },
-  { path: 'terms-and-conditions', renderMode: RenderMode.Prerender },
-  { path: 'privacy-policy', renderMode: RenderMode.Prerender },
-  { path: 'refund-cancellation-policy', renderMode: RenderMode.Prerender },
-  { path: 'why-oilandgasclub', renderMode: RenderMode.Prerender },
-  { path: 'build-your-portfolio', renderMode: RenderMode.Prerender },
-  { path: 'courses-offered', renderMode: RenderMode.Prerender },
-  { path: 'corporate-training', renderMode: RenderMode.Prerender },
-  { path: 'guest-blogging', renderMode: RenderMode.Prerender },
-  { path: 'become-our-trainer', renderMode: RenderMode.Prerender },
-  { path: 'partner-us', renderMode: RenderMode.Prerender },
-  { path: 'career', renderMode: RenderMode.Prerender },
-  { path: 'membership', renderMode: RenderMode.Prerender },
-  { path: 'affiliate-program', renderMode: RenderMode.Prerender },
-  { path: 'worlds-largest-refineries', renderMode: RenderMode.Prerender },
-  { path: 'in-house-solutions', renderMode: RenderMode.Prerender },
-  { path: 'policies', renderMode: RenderMode.Prerender },
+  { path: 'about-us', renderMode: RenderMode.Server },
+  { path: 'contact-us', renderMode: RenderMode.Server },
+  { path: 'mission-and-vision', renderMode: RenderMode.Server },
+  { path: 'terms-and-conditions', renderMode: RenderMode.Server },
+  { path: 'privacy-policy', renderMode: RenderMode.Server },
+  { path: 'refund-cancellation-policy', renderMode: RenderMode.Server },
+  { path: 'why-oilandgasclub', renderMode: RenderMode.Server },
+  { path: 'build-your-portfolio', renderMode: RenderMode.Server },
+  { path: 'courses-offered', renderMode: RenderMode.Server },
+  { path: 'corporate-training', renderMode: RenderMode.Server },
+  { path: 'guest-blogging', renderMode: RenderMode.Server },
+  { path: 'become-our-trainer', renderMode: RenderMode.Server },
+  { path: 'partner-us', renderMode: RenderMode.Server },
+  { path: 'career', renderMode: RenderMode.Server },
+  { path: 'membership', renderMode: RenderMode.Server },
+  { path: 'affiliate-program', renderMode: RenderMode.Server },
+  { path: 'worlds-largest-refineries', renderMode: RenderMode.Server },
+  { path: 'in-house-solutions', renderMode: RenderMode.Server },
+  { path: 'policies', renderMode: RenderMode.Server },
 
   // Page not found
-  { path: 'page-not-found', renderMode: RenderMode.Prerender },
+  { path: 'page-not-found', renderMode: RenderMode.Server },
 
   // Dynamic routes - must be server-rendered
   { path: 'auth', renderMode: RenderMode.Server },
@@ -39,3 +39,5 @@ export const serverRoutes: ServerRoute[] = [
   // Wildcard fallback
   { path: '**', renderMode: RenderMode.Server }
 ];
+
+

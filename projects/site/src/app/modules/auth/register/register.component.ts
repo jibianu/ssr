@@ -65,7 +65,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
           next: (data) => {
             if (data) {
               this.toasterService.showSuccess('Registered successfully');
-              this.router.navigate(['/auth/login']);
+              this.router.navigate(['/login']);
               this.cdr.markForCheck(); // ✅ PERFORMANCE: Trigger change detection for OnPush after success
             }
             this.loading = false;

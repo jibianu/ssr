@@ -77,6 +77,10 @@ export class PublicCategoryComponent {
         const currentPage = +queryParams['page'] || 1;
         const normalizedSlug = this.normalizeCategorySlug(rawCategoryParam);
         const resolvedCategory = this.resolveCategoryName(rawCategoryParam, categories);
+        /** Same key the backend uses for ?categorySlug= (short paths like "piping" are resolved server-side via segment match). */
+        const categorySlugForApi = (resolvedCategory.apiSlug && resolvedCategory.apiSlug.trim().length > 0)
+          ? resolvedCategory.apiSlug.trim()
+          : normalizedSlug;
 
         if (!normalizedSlug) {
           return of({
@@ -88,7 +92,7 @@ export class PublicCategoryComponent {
         }
 
         // Use api/public/courses?categorySlug=... (same as Elearn) so backend filters by CategoryId
-        return this.publicAppService.getPublicCoursesByCategory(normalizedSlug, currentPage, this.itemsPerPage).pipe(
+        return this.publicAppService.getPublicCoursesByCategory(categorySlugForApi, currentPage, this.itemsPerPage).pipe(
           map(response => {
             const courses: CategoryCourseItem[] = (response?.results || []).map((course: any) => this.mapCourse(course));
             const displayName = resolvedCategory.displayName || this.formatCategoryTitle(rawCategoryParam);
@@ -172,12 +176,30 @@ export class PublicCategoryComponent {
     return feature?.id != null ? String(feature.id) : String(index);
   }
 
-  private resolveCategoryName(rawParam: string, categories: any[]): { filterName: string; displayName: string; categoryId?: string } {
+  private resolveCategoryName(
+    rawParam: string,
+    categories: any[]
+  ): { filterName: string; displayName: string; categoryId?: string; apiSlug?: string } {
     const normalizedParamSlug = this.normalizeCategorySlug(rawParam);
 
     if (!normalizedParamSlug) {
       return { filterName: '', displayName: '' };
     }
+
+    const slugMatchesParam = (value: string | null | undefined): boolean => {
+      if (value == null || String(value).trim() === '') {
+        return false;
+      }
+      const n = this.normalizeCategorySlug(String(value));
+      if (n === normalizedParamSlug) {
+        return true;
+      }
+      // Short URL segment (e.g. "piping") vs long category slug — mirror backend segment match
+      if (normalizedParamSlug.length >= 3) {
+        return n.split('-').some(seg => seg === normalizedParamSlug);
+      }
+      return false;
+    };
 
     let matchingCategory = (categories || []).find((category: any) => {
       const candidateValues = [
@@ -189,7 +211,7 @@ export class PublicCategoryComponent {
         category?.canonicalCategoryUrl
       ];
 
-      return candidateValues.some(value => this.normalizeCategorySlug(value) === normalizedParamSlug);
+      return candidateValues.some(value => slugMatchesParam(value));
     });
 
     // Resolve by slug alias (e.g. bgas -> oil-and-gas) so display name matches backend filter
@@ -205,17 +227,22 @@ export class PublicCategoryComponent {
       const displayName = matchingCategory?.name || matchingCategory?.categoryName || this.formatCategoryTitle(rawParam);
       const id = matchingCategory?.id ?? matchingCategory?.Id;
       const categoryId = id != null ? String(id).trim() : undefined;
+      const apiSlug =
+        this.normalizeCategorySlug(matchingCategory?.slug ?? matchingCategory?.Slug ?? '') ||
+        this.normalizeCategorySlug(displayName ?? '');
       return {
         filterName: displayName,
         displayName,
-        categoryId
+        categoryId,
+        apiSlug: apiSlug || undefined
       };
     }
 
     const fallbackDisplay = this.formatCategoryTitle(rawParam);
     return {
       filterName: fallbackDisplay,
-      displayName: fallbackDisplay
+      displayName: fallbackDisplay,
+      apiSlug: undefined
     };
   }
 

@@ -323,6 +323,11 @@ const routes: Routes = [
     path: 'category/:name',
     component: PublicCategoryComponent
   },
+  // ✅ Legacy route support: redirect /course/:slug -> /:slug
+  {
+    path: 'course/:courseSlug',
+    component: RedirectCoursesToSlugComponent
+  },
   // ✅ Checkout by courseId (unified). Auth: redirect to /login?returnUrl=/checkout/:courseId if not logged in.
   {
     path: 'checkout/:courseId',
