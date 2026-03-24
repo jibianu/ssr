@@ -16,7 +16,7 @@ import { getCacheConfig, isStaticRoute as checkStaticRoute } from './server.cach
 import { createCacheAdapter, CacheAdapter } from './server.cache.adapter';
 import { performanceMonitor } from './server.performance';
 import { cdnCacheMiddleware } from './server.cdn.middleware';
-import { enrichCsrShellHtml } from './server.seo-shell';
+import { enrichPublicCoursePageIfMissingOg } from './server.seo-shell';
 
 /** Set after `main()` runs (Angular CLI may import before listen). */
 export let reqHandler: ReturnType<typeof createNodeRequestHandler>;
@@ -561,29 +561,43 @@ app.get('/{*splat}', async (req, res, next) => {
     performanceMonitor.markCacheEnd(markId);
     
     if (cached) {
+      let html = cached.html;
+      const seo = await enrichPublicCoursePageIfMissingOg(html, requestPath, req);
+      html = seo.html;
+      const etag = generateETag(html);
+
+      if (isProd && (html !== cached.html || etag !== cached.etag)) {
+        const ttl = isStaticRoute(requestPath) ? cacheConfig.ttl.static : cacheConfig.ttl.dynamic;
+        const setResult = htmlCache.set(cacheKey, { html, etag }, ttl);
+        if (setResult instanceof Promise) {
+          await setResult;
+        }
+      }
+
       const ifNoneMatch = req.headers['if-none-match'];
-      
-      // ✅ CACHING: Handle conditional request (304 Not Modified)
-      if (ifNoneMatch === cached.etag) {
+
+      if (ifNoneMatch === etag) {
         res.status(304);
-        Object.entries(getCacheHeaders(requestPath, cached.etag)).forEach(([key, value]) => {
+        Object.entries(getCacheHeaders(requestPath, etag)).forEach(([key, value]) => {
           res.setHeader(key, value);
         });
+        setSsrDiagnosticHeader(res, 'cache');
+        if (seo.injected) {
+          res.setHeader('X-OGC-SEO-Inject', 'course');
+        }
         res.end();
-        
-        // ✅ PERFORMANCE: Record metrics for cache hit
         performanceMonitor.endMeasure(markId, true);
         return;
       }
-      
-      // ✅ CACHING: Serve cached HTML
-      Object.entries(getCacheHeaders(requestPath, cached.etag)).forEach(([key, value]) => {
+
+      Object.entries(getCacheHeaders(requestPath, etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
       setSsrDiagnosticHeader(res, 'cache');
-      res.send(cached.html);
-      
-      // ✅ PERFORMANCE: Record metrics for cache hit
+      if (seo.injected) {
+        res.setHeader('X-OGC-SEO-Inject', 'course');
+      }
+      res.send(html);
       performanceMonitor.endMeasure(markId, true);
       return;
     }
@@ -619,7 +633,10 @@ app.get('/{*splat}', async (req, res, next) => {
         writeResponseToNodeResponse(response, res);
         return;
       }
-      
+
+      const seo = await enrichPublicCoursePageIfMissingOg(html, requestPath, req);
+      html = seo.html;
+
       const etag = generateETag(html);
       
       // ✅ CACHING: Store in cache with appropriate TTL (supports both sync and async)
@@ -636,8 +653,11 @@ app.get('/{*splat}', async (req, res, next) => {
         res.setHeader(key, value);
       });
       setSsrDiagnosticHeader(res, 'render');
+      if (seo.injected) {
+        res.setHeader('X-OGC-SEO-Inject', 'course');
+      }
       res.send(html);
-      
+
       // ✅ PERFORMANCE: Record metrics for cache miss (render happened)
       performanceMonitor.endMeasure(markId, false);
     } else {
@@ -652,7 +672,7 @@ app.get('/{*splat}', async (req, res, next) => {
         const indexPath = join(browserDistFolder, 'index.html');
         if (existsSync(indexPath)) {
           let html = readFileSync(indexPath, 'utf-8');
-          const { html: enriched, injected } = await enrichCsrShellHtml(html, requestPath, req);
+          const { html: enriched, injected } = await enrichPublicCoursePageIfMissingOg(html, requestPath, req);
           html = enriched;
           setNoStoreHtmlHeaders(res);
           setSsrDiagnosticHeader(res, 'csr-fallback');
@@ -688,7 +708,7 @@ app.get('/{*splat}', async (req, res, next) => {
       const indexPath = join(browserDistFolder, 'index.html');
       if (existsSync(indexPath)) {
         let html = readFileSync(indexPath, 'utf-8');
-        const { html: enriched, injected } = await enrichCsrShellHtml(html, requestPath, req);
+        const { html: enriched, injected } = await enrichPublicCoursePageIfMissingOg(html, requestPath, req);
         html = enriched;
         setNoStoreHtmlHeaders(res);
         setSsrDiagnosticHeader(res, 'csr-fallback');
@@ -740,7 +760,7 @@ app.use('/{*splat}', async (req, res, next) => {
     const indexPath = join(browserDistFolder, 'index.html');
     if (existsSync(indexPath)) {
       let html = readFileSync(indexPath, 'utf-8');
-      const { html: enriched, injected } = await enrichCsrShellHtml(html, path, req);
+      const { html: enriched, injected } = await enrichPublicCoursePageIfMissingOg(html, path, req);
       html = enriched;
       setNoStoreHtmlHeaders(res);
       setSsrDiagnosticHeader(res, 'csr-fallback');

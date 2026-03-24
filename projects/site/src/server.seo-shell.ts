@@ -157,6 +157,25 @@ function buildMetaSnippet(title: string, description: string, image: string, can
 }
 
 /**
+ * When Angular SSR returns 200 with the CSR shell (empty app-root), `og:title` is usually missing.
+ * Enrich only if absent to avoid duplicating tags when real SSR populated the head.
+ */
+export async function enrichPublicCoursePageIfMissingOg(
+  html: string,
+  requestPath: string,
+  req: Request
+): Promise<{ html: string; injected: boolean }> {
+  const slug = extractSingleSegmentSlug(requestPath);
+  if (!slug) {
+    return { html, injected: false };
+  }
+  if (/property\s*=\s*["']og:title["']/i.test(html)) {
+    return { html, injected: false };
+  }
+  return enrichCsrShellHtml(html, requestPath, req);
+}
+
+/**
  * If `path` looks like a top-level course slug, fetch public course JSON and inject meta + title into the CSR shell.
  * @returns { html, injected } so the caller can set a diagnostic header
  */
