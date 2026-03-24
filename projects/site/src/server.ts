@@ -166,6 +166,11 @@ function setNoStoreHtmlHeaders(res: express.Response): void {
   res.setHeader('Expires', '0');
 }
 
+/** Lets you verify real SSR vs CSR shell: `curl -sI https://site/course-slug | findstr X-OGC-SSR` */
+function setSsrDiagnosticHeader(res: express.Response, value: 'render' | 'cache' | 'stream' | 'csr-fallback'): void {
+  res.setHeader('X-OGC-SSR', value);
+}
+
 function getCacheKey(request: express.Request | undefined): string {
   const req = ensureSafeRequest(request);
   const userPart = req.headers.authorization ? 'auth' : 'guest';
@@ -574,6 +579,7 @@ app.get('/{*splat}', async (req, res, next) => {
       Object.entries(getCacheHeaders(requestPath, cached.etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
+      setSsrDiagnosticHeader(res, 'cache');
       res.send(cached.html);
       
       // ✅ PERFORMANCE: Record metrics for cache hit
@@ -601,12 +607,14 @@ app.get('/{*splat}', async (req, res, next) => {
           Object.entries(getCacheHeaders(requestPath, generateETag(''))).forEach(([key, value]) => {
             res.setHeader(key, value);
           });
+          setSsrDiagnosticHeader(res, 'stream');
           writeResponseToNodeResponse(response, res);
           return;
         }
       } catch (error) {
         // If extraction fails, just send response without caching
         console.warn('Could not extract HTML for caching:', error);
+        setSsrDiagnosticHeader(res, 'stream');
         writeResponseToNodeResponse(response, res);
         return;
       }
@@ -626,6 +634,7 @@ app.get('/{*splat}', async (req, res, next) => {
       Object.entries(getCacheHeaders(requestPath, etag)).forEach(([key, value]) => {
         res.setHeader(key, value);
       });
+      setSsrDiagnosticHeader(res, 'render');
       res.send(html);
       
       // ✅ PERFORMANCE: Record metrics for cache miss (render happened)
@@ -643,6 +652,10 @@ app.get('/{*splat}', async (req, res, next) => {
         if (existsSync(indexPath)) {
           const html = readFileSync(indexPath, 'utf-8');
           setNoStoreHtmlHeaders(res);
+          setSsrDiagnosticHeader(res, 'csr-fallback');
+          console.warn(
+            `[SSR] csr-fallback for ${requestPath}: Angular engine returned no response — check SSR logs / API reachability from container`
+          );
           res.status(200).send(html);
           performanceMonitor.endMeasure(markId, false);
           return;
@@ -669,6 +682,8 @@ app.get('/{*splat}', async (req, res, next) => {
       if (existsSync(indexPath)) {
         const html = readFileSync(indexPath, 'utf-8');
         setNoStoreHtmlHeaders(res);
+        setSsrDiagnosticHeader(res, 'csr-fallback');
+        console.warn(`[SSR] csr-fallback after error for ${requestPath}:`, err);
         res.status(200).send(html);
         performanceMonitor.endMeasure(markId, false);
         return;
@@ -714,6 +729,7 @@ app.use('/{*splat}', (req, res) => {
     if (existsSync(indexPath)) {
       const html = readFileSync(indexPath, 'utf-8');
       setNoStoreHtmlHeaders(res);
+      setSsrDiagnosticHeader(res, 'csr-fallback');
       res.status(200).send(html);
     } else {
       res.status(404).send('Not Found');

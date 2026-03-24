@@ -15,6 +15,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=4000
+# SSR must reach the .NET API from inside the container (not localhost on the host). Set at deploy time, e.g.:
+#   docker run -e SSR_API_URL=https://api.yourdomain.com/ ...
+# If unset, server falls back to environment baked into the unified build.
 
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules

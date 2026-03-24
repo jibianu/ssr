@@ -24,6 +24,51 @@ npm run serve:ssr
 
 Verify SEO: open a course/blog URL → **View Page Source** → body should contain real text, not only `<app-root></app-root>`.
 
+## Troubleshooting: “SSR not working” / empty `<app-root>` in View Source
+
+That HTML shell means the browser got the **client-only** `index.html`, not a server-rendered page. Common causes:
+
+### 1. Nginx (or CDN) is **not** proxying to Node (most common)
+
+If the public site uses something like:
+
+```nginx
+root /var/www/site/browser;
+location / { try_files $uri $uri/ /index.html; }
+```
+
+then **every URL** returns static `index.html` → empty `<app-root>` until JavaScript runs. **Angular SSR never executes.**
+
+**Fix:** For `location /`, use **`proxy_pass`** to the Node process that runs `node dist/site/server/server.mjs` (Docker exposes this on port **4000** by default). Do **not** serve `dist/site/browser` directly for HTML routes.
+
+### 2. Node runs but SSR falls back to CSR
+
+The Express server falls back to `index.html` when the Angular SSR engine returns no response or throws (e.g. API unreachable from the container, bootstrap error). Check **container logs** for `SSR Error:` or `csr-fallback`.
+
+**Fix:** From inside the container, the app must reach your API. Set **`SSR_API_URL`** (or the URL in `environment.unified.site.prod.ts`) to a hostname the **container** can resolve (often your public API URL or `host.docker.internal`, **not** `https://localhost:52287` on the host).
+
+### 3. Wrong process in Docker
+
+The frontend image must run **`CMD ["node", "dist/site/server/server.mjs"]`** (see repo `Dockerfile`). If the container only runs `nginx` or a static file server, you get CSR only.
+
+### Quick check: response header
+
+When traffic hits the real Node SSR server, HTML responses include:
+
+- `X-OGC-SSR: render` — fresh SSR  
+- `X-OGC-SSR: cache` — SSR HTML from cache  
+- `X-OGC-SSR: stream` — SSR streamed (no body cache)  
+- `X-OGC-SSR: csr-fallback` — **CSR shell** (same as empty `app-root` in source)
+
+Example:
+
+```bash
+curl -sI "https://oilandgasclub.com/your-course-slug" | grep -i x-ogc-ssr
+```
+
+- **No header** → response is **not** from this Node server (static hosting or another tier).  
+- **`csr-fallback`** → Node is up but SSR failed; inspect logs and API URL from the container.
+
 ## Nginx example
 
 ```nginx
