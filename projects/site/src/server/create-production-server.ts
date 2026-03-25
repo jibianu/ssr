@@ -21,6 +21,7 @@ import {
 } from './ssr-handler/elearn-spa';
 import { registerSsrCatchAll, warmHtmlCache, type SsrCatchAllDeps } from './ssr-handler/ssr-catch-all';
 import { resolveBrowserDistFolder } from './utils/dist-paths';
+import { registerSeoBackendProxy } from './seo-backend-proxy';
 
 export interface CreateProductionServerOptions {
   /** Directory containing `server.mjs` (Angular SSR entry). Use `dirname(fileURLToPath(import.meta.url))` from `server.ts` only. */
@@ -69,6 +70,9 @@ export function createProductionServer(
   app.use(securityHeadersMiddleware);
   app.use(requestTimingMiddleware);
   app.use(compression({ threshold: 1024 }));
+
+  // --- SEO: sitemap + robots from .NET (before static + SSR; Angular must not own these routes) ---
+  registerSeoBackendProxy(app);
 
   // --- Elearn hashed assets (before site static) ---
   registerElearnStaticAssetShortcut(app, elearnBrowserFolder);

@@ -25,6 +25,17 @@ export interface AppConfig {
 let loadedConfig: AppConfig | null = null;
 
 /**
+ * Ensures trailing slash so `${base}api/...` and `${base}page/...` concatenate correctly (SSR + browser).
+ */
+export function normalizeApiUrlBase(raw: string): string {
+  const u = raw.trim();
+  if (!u) {
+    return u;
+  }
+  return u.endsWith('/') ? u : `${u}/`;
+}
+
+/**
  * Gets the loaded configuration (or default if not loaded yet)
  */
 export function getApiUrl(): string {
@@ -55,8 +66,7 @@ export function loadApiUrl(): () => Promise<void> {
   return () => {
     // ✅ SSR override support: allow forcing backend URL from env.
     if (typeof window === 'undefined' && typeof process !== 'undefined' && process.env['SSR_API_URL']) {
-      const envUrl = process.env['SSR_API_URL']!.endsWith('/') ? process.env['SSR_API_URL']! : `${process.env['SSR_API_URL']!}/`;
-      setApiUrl({ apiUrl: envUrl });
+      setApiUrl({ apiUrl: normalizeApiUrlBase(process.env['SSR_API_URL']!) });
       return Promise.resolve();
     }
 

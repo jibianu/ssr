@@ -15,7 +15,7 @@ import { DeduplicationInterceptor } from './core/helpers/deduplication.intercept
 import { RetryInterceptor } from './core/helpers/retry.interceptor';
 import { TimeoutInterceptor } from './core/helpers/timeout.interceptor';
 import { ApiUrlAuditInterceptor } from './core/helpers/api-url-audit.interceptor';
-import { API_URL, getApiUrl, loadApiUrl } from './core/config/api-url.config';
+import { API_URL, getApiUrl, loadApiUrl, normalizeApiUrlBase } from './core/config/api-url.config';
 
 // ✅ FIX: Server config with server rendering + client hydration
 // provideClientHydration() MUST be in both client and server configs for hydration to work
@@ -29,7 +29,13 @@ export const config: ApplicationConfig = {
     },
     {
       provide: API_URL,
-      useFactory: () => process.env['SSR_API_URL'] || getApiUrl()
+      useFactory: () => {
+        const fromEnv = typeof process !== 'undefined' ? process.env['SSR_API_URL'] : undefined;
+        if (fromEnv?.trim()) {
+          return normalizeApiUrlBase(fromEnv);
+        }
+        return getApiUrl();
+      }
     },
     // ✅ Server rendering provider - MUST be provided only once (not with ServerModule)
     provideServerRendering(withRoutes(serverRoutes)),
