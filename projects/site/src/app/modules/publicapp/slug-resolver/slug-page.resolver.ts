@@ -18,9 +18,10 @@ export interface SlugPageData {
 }
 
 export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<SlugPageData> => {
-  const slug = route.parent?.paramMap.get('slug') ?? route.paramMap.get('slug') ?? '';
-  const slugSvc = inject(SlugResolverService);
+  const rawParam = route.parent?.paramMap.get('slug') ?? route.paramMap.get('slug') ?? '';
   const publicApp = inject(PublicAppService);
+  const slug = publicApp.normalizeSlugRouteParam(rawParam) || rawParam.trim();
+  const slugSvc = inject(SlugResolverService);
   const admin = inject(AdminAppService);
   const blogSvc = inject(BlogService);
 
@@ -68,12 +69,23 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
         );
       }
 
-      const courseSlugToFetch =
+      const rawCourseSlug =
         meta?.type === 'course' && meta.slug?.trim() && meta.slug.trim() !== slug.trim()
           ? meta.slug.trim()
           : slug.trim();
+      const courseSlugToFetch =
+        publicApp.normalizePublicCourseSlug(rawCourseSlug) ||
+        publicApp.normalizeSlugRouteParam(rawCourseSlug) ||
+        rawCourseSlug;
 
-      return publicApp.getCourseByCanonicalURL(courseSlugToFetch, { refresh: false }).pipe(
+      // SSR: GET /basic then one full GET if needed (no duplicate /basic→full inside PublicAppService).
+      return publicApp.getCourseBasicByCanonicalURL(courseSlugToFetch).pipe(
+        switchMap((basic) => {
+          if (basic) {
+            return of(basic);
+          }
+          return publicApp.getCourseByCanonicalURL(courseSlugToFetch, { refresh: false });
+        }),
         map((course) =>
           course
             ? { slug, type: 'course' as const, course }

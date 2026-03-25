@@ -14,6 +14,7 @@ import { CacheInterceptor } from './core/helpers/cache.interceptor';
 import { DeduplicationInterceptor } from './core/helpers/deduplication.interceptor';
 import { RetryInterceptor } from './core/helpers/retry.interceptor';
 import { TimeoutInterceptor } from './core/helpers/timeout.interceptor';
+import { ApiUrlAuditInterceptor } from './core/helpers/api-url-audit.interceptor';
 import { API_URL, getApiUrl, loadApiUrl } from './core/config/api-url.config';
 
 // ✅ FIX: Server config with server rendering + client hydration
@@ -81,6 +82,7 @@ export const config: ApplicationConfig = {
     { provide: HTTP_INTERCEPTORS, useClass: DeduplicationInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: TimeoutInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ApiUrlAuditInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: RetryInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }

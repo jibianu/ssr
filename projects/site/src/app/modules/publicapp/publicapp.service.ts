@@ -18,6 +18,16 @@ export class PublicAppService {
     private categoriesCache$: Observable<Category[]> | null = null;
     private dashboardCategoriesCache$: Observable<any> | null = null;
     private eventsCache$: Observable<any> | null = null;
+
+    /**
+     * Replays the last successful `getCourseByCanonicalURL(..., { refresh: false })` pipeline per slug
+     * so resolvers + components + revisits share one HTTP round-trip instead of rebuilding cold Observables.
+     */
+    private readonly courseByCanonicalObsCache = new Map<string, Observable<any>>();
+    private static readonly COURSE_CANONICAL_CACHE_CAP = 48;
+    private readonly courseBasicObsCache = new Map<string, Observable<any>>();
+    private readonly courseContentObsCache = new Map<string, Observable<any>>();
+    private readonly courseExtraObsCache = new Map<string, Observable<any>>();
     
     // ✅ FIX: Use constructor injection instead of field initializer to prevent injector errors in SSR
     // Field initializers with inject() can fail if injector is destroyed during navigation
@@ -130,7 +140,7 @@ export class PublicAppService {
 
     // ✅ Backend has only page/course/course/{slug}; when slug is a GUID it returns course by ID.
     getCourseById(id): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}page/course/course/${encodeURIComponent(id)}`).pipe(
+        return this.http.get<any>(`${this.apiUrl}${this.buildPublicCourseHttpPath(String(id))}`).pipe(
             shareReplay({ bufferSize: 1, refCount: true }),
             catchError(error => {
                 console.error(`Error fetching course ${id}:`, error);
@@ -147,14 +157,14 @@ export class PublicAppService {
         metaDescription: string;
         titleImageUrl: string;
     }): Observable<any> {
-        return this.http.put<any>(`${this.apiUrl}page/course/course/${courseId}`, body);
+        return this.http.put<any>(`${this.apiUrl}${this.buildPublicCourseHttpPath(String(courseId))}`, body);
     }
 
     /** Upload course title image for landing page; returns the image URL to set in course details. */
     uploadCourseTitleImage(courseId: string, file: File): Observable<{ url?: string; Url?: string }> {
         const formData = new FormData();
         formData.append('file', file, file.name);
-        return this.http.post<{ url?: string; Url?: string }>(`${this.apiUrl}page/course/course/${courseId}/title-image`, formData);
+        return this.http.post<{ url?: string; Url?: string }>(`${this.apiUrl}${this.buildPublicCourseHttpPath(String(courseId), '/title-image')}`, formData);
     }
 
     /** Returns proxy URL for S3 promo videos (avoids CORS); returns original URL for other hosts. */
@@ -169,11 +179,212 @@ export class PublicAppService {
     // ✅ PERFORMANCE: Cache by canonical URL - used in route resolvers and components
     // options.refresh: when true, appends ?_refresh=timestamp so public page gets fresh data (About, FAQ, Trainers) after Edit landing page saves
     getCourseByCanonicalURL(url: string, options?: { refresh?: boolean }): Observable<any> {
-        // ✅ FIX: Normalize URL - remove leading slashes and any 'course/course/' or 'course/' prefixes
-        let normalizedUrl = (url || '').trim();
+        const normalizedUrl = this.normalizeCourseSlugForApi(url);
 
-        // ✅ SAFETY: Never treat static asset filenames as course slugs.
-        // This prevents accidental calls like: getCourseByCanonicalURL("publicapp.module-XXXX.js")
+        if (!normalizedUrl) {
+            console.error('⚠️ Empty course URL after normalization');
+            return of(null);
+        }
+
+        const useCache = !options?.refresh;
+        const cacheKey = useCache ? normalizedUrl.toLowerCase() : null;
+        if (cacheKey) {
+            const hit = this.courseByCanonicalObsCache.get(cacheKey);
+            if (hit) {
+                return hit;
+            }
+        }
+
+        const apiPath = this.buildPublicCourseHttpPath(normalizedUrl);
+        const fullUrl = options?.refresh
+            ? `${this.apiUrl}${apiPath}?_refresh=${Date.now()}`
+            : `${this.apiUrl}${apiPath}`;
+
+        if (!this.isServer && typeof ngDevMode !== 'undefined' && ngDevMode) {
+            console.log(`[PublicAppService] GET course by canonical: ${fullUrl}`);
+        }
+
+        // No custom headers: avoids CORS preflight (OPTIONS) on cross-origin course GETs.
+        const request$ = this.http.get<any>(fullUrl).pipe(
+            timeout(60000),
+            retry({
+                count: 1,
+                delay: (error: any, retryCount: number) => {
+                    const isTimeoutError =
+                        error?.name === 'TimeoutError' ||
+                        error?.name === 'Timeout' ||
+                        error?.status === 408 ||
+                        error?.message?.includes('timeout');
+
+                    if (isTimeoutError) {
+                        console.warn(`⏱️ Timeout detected - skipping retry to avoid further delays`);
+                        return throwError(() => error);
+                    }
+
+                    if (error?.status && error.status >= 400 && error.status < 500) {
+                        return throwError(() => error);
+                    }
+
+                    if (!this.isServer && typeof ngDevMode !== 'undefined' && ngDevMode) {
+                        console.log(`🔄 Retrying request (attempt ${retryCount + 1}/2) after ${1000 * retryCount}ms...`);
+                    }
+                    return of(null).pipe(delay(1000 * retryCount));
+                }
+            }),
+            shareReplay({ bufferSize: 1, refCount: true }),
+            catchError(error => {
+                if (cacheKey) {
+                    this.courseByCanonicalObsCache.delete(cacheKey);
+                }
+
+                const isNetworkError = !error.status || error.status === 0 || error.message?.includes('fetch failed');
+                const isTimeoutError = error.name === 'TimeoutError' || error.status === 408;
+
+                if (isNetworkError) {
+                    console.error(`🔴 Network Error: Unable to connect to API server at ${fullUrl}`);
+                } else if (isTimeoutError) {
+                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
+                } else {
+                    console.error(`❌ Error fetching course by URL "${url}" (normalized: "${normalizedUrl}"). API path: ${apiPath}`, error);
+                }
+
+                return of(null);
+            })
+        );
+
+        if (cacheKey) {
+            while (this.courseByCanonicalObsCache.size >= PublicAppService.COURSE_CANONICAL_CACHE_CAP) {
+                const oldest = this.courseByCanonicalObsCache.keys().next().value;
+                if (oldest === undefined) {
+                    break;
+                }
+                this.courseByCanonicalObsCache.delete(oldest);
+            }
+            this.courseByCanonicalObsCache.set(cacheKey, request$);
+        }
+
+        return request$;
+    }
+
+    /** Fast payload for first render: GET page/course/course/{slug}/basic */
+    getCourseBasicByCanonicalURL(url: string): Observable<any> {
+        const normalized = this.normalizeCourseSlugForApi(url);
+        if (!normalized) return of(null);
+        const key = normalized.toLowerCase();
+        const hit = this.courseBasicObsCache.get(key);
+        if (hit) return hit;
+
+        const fullUrl = `${this.apiUrl}${this.buildPublicCourseHttpPath(normalized, '/basic')}`;
+        const request$ = this.http.get<any>(fullUrl).pipe(
+            timeout(30000),
+            // 404 = course not found (or missing /basic on very old servers). Do not chain to full GET here —
+            // slug-page.resolver / loadCourseBasic performs a single full fetch when needed (avoids triple 404s).
+            catchError((err) => {
+                const status = err?.status ?? err?.statusCode;
+                if (status === 404) {
+                    return of(null);
+                }
+                return throwError(() => err);
+            }),
+            shareReplay({ bufferSize: 1, refCount: true }),
+            catchError(() => {
+                this.courseBasicObsCache.delete(key);
+                return of(null);
+            })
+        );
+        while (this.courseBasicObsCache.size >= PublicAppService.COURSE_CANONICAL_CACHE_CAP) {
+            const oldest = this.courseBasicObsCache.keys().next().value;
+            if (oldest === undefined) break;
+            this.courseBasicObsCache.delete(oldest);
+        }
+        this.courseBasicObsCache.set(key, request$);
+        return request$;
+    }
+
+    /** Curriculum-only payload: GET page/course/course/{slug}/content */
+    getCourseContentByCanonicalURL(url: string): Observable<{ courseContents: any[] } | null> {
+        const normalized = this.normalizeCourseSlugForApi(url);
+        if (!normalized) return of(null);
+        const key = normalized.toLowerCase();
+        const hit = this.courseContentObsCache.get(key);
+        if (hit) return hit as any;
+
+        const fullUrl = `${this.apiUrl}${this.buildPublicCourseHttpPath(normalized, '/content')}`;
+        const request$ = this.http.get<any>(fullUrl).pipe(
+            timeout(60000),
+            map(res => ({ courseContents: res?.courseContents ?? res?.CourseContents ?? [] })),
+            shareReplay({ bufferSize: 1, refCount: true }),
+            catchError(() => {
+                this.courseContentObsCache.delete(key);
+                return of(null);
+            })
+        );
+        while (this.courseContentObsCache.size >= PublicAppService.COURSE_CANONICAL_CACHE_CAP) {
+            const oldest = this.courseContentObsCache.keys().next().value;
+            if (oldest === undefined) break;
+            this.courseContentObsCache.delete(oldest);
+        }
+        this.courseContentObsCache.set(key, request$);
+        return request$ as any;
+    }
+
+    /** Extras payload: GET page/course/course/{slug}/extra */
+    getCourseExtraByCanonicalURL(url: string): Observable<any | null> {
+        const normalized = this.normalizeCourseSlugForApi(url);
+        if (!normalized) return of(null);
+        const key = normalized.toLowerCase();
+        const hit = this.courseExtraObsCache.get(key);
+        if (hit) return hit;
+
+        const fullUrl = `${this.apiUrl}${this.buildPublicCourseHttpPath(normalized, '/extra')}`;
+        const request$ = this.http.get<any>(fullUrl).pipe(
+            timeout(60000),
+            shareReplay({ bufferSize: 1, refCount: true }),
+            catchError(() => {
+                this.courseExtraObsCache.delete(key);
+                return of(null);
+            })
+        );
+        while (this.courseExtraObsCache.size >= PublicAppService.COURSE_CANONICAL_CACHE_CAP) {
+            const oldest = this.courseExtraObsCache.keys().next().value;
+            if (oldest === undefined) break;
+            this.courseExtraObsCache.delete(oldest);
+        }
+        this.courseExtraObsCache.set(key, request$);
+        return request$;
+    }
+
+    /**
+     * Route param from `/:slug` — decode, trim slashes, collapse hyphens, lowercase.
+     * Keeps most characters (blog/event safe); fixes leading "-" typos.
+     */
+    normalizeSlugRouteParam(raw: string): string {
+        let s = (raw || '').trim();
+        try {
+            s = decodeURIComponent(s);
+        } catch {
+            // ignore
+        }
+        s = s.replace(/^\/+/, '').replace(/[?#].*$/, '');
+        s = s.replace(/-+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
+        return s;
+    }
+
+    /**
+     * Course list/detail API slug — same rules as backend NormalizeSlug for public course URLs.
+     */
+    normalizePublicCourseSlug(url: string): string {
+        return this.normalizeCourseSlugForApi(url || '');
+    }
+
+    /** ASP.NET: [Route("page/course")] + [HttpGet("course/{slug}")] => page/course/course/{slug} */
+    private buildPublicCourseHttpPath(slug: string, suffix = ''): string {
+        const n = this.normalizeCourseSlugForApi(slug);
+        return `page/course/course/${encodeURIComponent(n)}${suffix}`;
+    }
+
+    private normalizeCourseSlugForApi(url: string): string {
+        let normalizedUrl = (url || '').trim();
         const rawLower = normalizedUrl.toLowerCase();
         const looksLikeAsset =
             rawLower.endsWith('.js') ||
@@ -184,105 +395,44 @@ export class PublicAppService {
             rawLower.startsWith('assets/') ||
             rawLower.startsWith('/assets/');
         if (looksLikeAsset) {
-            if (!this.isServer) {
-                console.warn('[PublicAppService] Ignoring asset-like slug passed to getCourseByCanonicalURL:', url);
-            }
-            return of(null);
+            return '';
         }
-        
-        // Remove leading slashes first
         normalizedUrl = normalizedUrl.replace(/^\/+/, '');
-        
-        // Remove 'course/course/' prefix if present (more specific first)
+        if (normalizedUrl.startsWith('course/course/')) normalizedUrl = normalizedUrl.replace(/^course\/course\//, '');
+        else if (normalizedUrl.startsWith('course/')) normalizedUrl = normalizedUrl.replace(/^course\//, '');
+        normalizedUrl = normalizedUrl.replace(/\/+$/, '');
+
+        // Normalize legacy/malformed canonical values such as:
+        // "coating--%26-painting-cbt-part-2-" => "coating-painting-cbt-part-2"
+        try {
+            normalizedUrl = decodeURIComponent(normalizedUrl);
+        } catch {
+            // Keep original value if decoding fails.
+        }
+        normalizedUrl = normalizedUrl
+            .replace(/[?#].*$/, '')
+            .replace(/&/g, '-')
+            .replace(/[^a-zA-Z0-9-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .toLowerCase();
+
+        return normalizedUrl;
+    }
+
+    /** Clears cached Observables for a slug or id (after landing-page save / publish). */
+    invalidateCourseByCanonicalUrlCache(rawUrl: string): void {
+        let normalizedUrl = (rawUrl || '').trim().replace(/^\/+/, '');
         if (normalizedUrl.startsWith('course/course/')) {
             normalizedUrl = normalizedUrl.replace(/^course\/course\//, '');
         } else if (normalizedUrl.startsWith('course/')) {
             normalizedUrl = normalizedUrl.replace(/^course\//, '');
         }
-        
-        // Remove any trailing slashes
         normalizedUrl = normalizedUrl.replace(/\/+$/, '');
-        
         if (!normalizedUrl) {
-            console.error('⚠️ Empty course URL after normalization');
-            return of(null);
+            return;
         }
-        
-        const apiPath = `page/course/course/${encodeURIComponent(normalizedUrl)}`;
-        const fullUrl = options?.refresh
-            ? `${this.apiUrl}${apiPath}?_refresh=${Date.now()}`
-            : `${this.apiUrl}${apiPath}`;
-        
-        // ✅ Direct backend connection (no proxy)
-        // ✅ IMPORTANT: This should only be called ONCE per course page navigation
-        // shareReplay ensures duplicate concurrent requests share the same response
-        console.log(`🔍 API Call: ${fullUrl}`);
-        console.log(`   (original URL: "${url}", normalized: "${normalizedUrl}")`);
-        console.log(`   ⚠️ This should only appear ONCE per course page load`);
-        
-        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
-        // Reduced from 120s to 60s - if backend needs more time, it should be optimized
-        const headers = new HttpHeaders().set('X-Timeout', '60000');
-        
-        return this.http.get<any>(fullUrl, { headers }).pipe(
-            timeout(60000), // 60 seconds timeout for course API calls (reduced from 120s)
-            retry({
-                count: 1, // Reduced retries: only 1 retry (was 2) to avoid long waits
-                delay: (error: any, retryCount: number) => {
-                    // Don't retry timeout errors (408) - they indicate backend is too slow/hanging
-                    const isTimeoutError = error?.name === 'TimeoutError' || 
-                                         error?.name === 'Timeout' || 
-                                         error?.status === 408 ||
-                                         error?.message?.includes('timeout');
-                    
-                    if (isTimeoutError) {
-                        console.warn(`⏱️ Timeout detected - skipping retry to avoid further delays`);
-                        return throwError(() => error);
-                    }
-                    
-                    // Don't retry client errors (4xx) - like 404, 401, etc.
-                    if (error?.status && error.status >= 400 && error.status < 500) {
-                        return throwError(() => error);
-                    }
-                    
-                    // Exponential backoff: 1s for network errors only
-                    console.log(`🔄 Retrying request (attempt ${retryCount + 1}/2) after ${1000 * retryCount}ms...`);
-                    return of(null).pipe(delay(1000 * retryCount));
-                }
-            }),
-            shareReplay({ bufferSize: 1, refCount: true }),
-            catchError(error => {
-                // Better error handling for network/fetch failures
-                const isNetworkError = !error.status || error.status === 0 || error.message?.includes('fetch failed');
-                const isTimeoutError = error.name === 'TimeoutError' || error.status === 408;
-                
-                if (isNetworkError) {
-                    console.error(`🔴 Network Error: Unable to connect to API server at ${fullUrl}`);
-                    console.error(`   - Check if the API server is running`);
-                    console.error(`   - Check network connectivity`);
-                    console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
-                } else if (isTimeoutError) {
-                    console.error(`⏱️ Timeout Error: Request to ${fullUrl} timed out after 60 seconds`);
-                    console.error(`   - Original URL: "${url}", Normalized: "${normalizedUrl}"`);
-                    console.error(`   - Possible causes:`);
-                    console.error(`     1. Backend is processing slowly or hanging`);
-                    console.error(`     2. Backend endpoint might be stuck/infinite loop`);
-                    console.error(`     3. Database query is taking too long`);
-                    console.error(`     4. Network connectivity issues`);
-                    console.error(`   - Actions:`);
-                    console.error(`     • Check backend logs for errors or slow queries`);
-                    console.error(`     • Test endpoint directly in browser: ${fullUrl}`);
-                    console.error(`     • Verify backend is responsive (try root URL: ${this.apiUrl})`);
-                    console.error(`     • Check database performance if applicable`);
-                    console.error(`     • Consider optimizing backend endpoint if it consistently times out`);
-                } else {
-                    console.error(`❌ Error fetching course by URL "${url}" (normalized: "${normalizedUrl}"). API path: ${apiPath}`, error);
-                }
-                
-                // Return null on error to prevent breaking the app
-                return of(null);
-            })
-        );
+        this.courseByCanonicalObsCache.delete(normalizedUrl.toLowerCase());
     }
 
     getDashboardCourses(): Observable<any> {
@@ -461,18 +611,15 @@ export class PublicAppService {
             return of(null);
         }
         
-        const apiPath = `page/course/course/${normalizedCourseUrl}/location/${normalizedLocation}`;
+        const apiPath = `${this.buildPublicCourseHttpPath(normalizedCourseUrl)}/location/${encodeURIComponent(normalizedLocation)}`;
         const fullUrl = `${this.apiUrl}${apiPath}`;
         
         // ✅ Direct backend connection (no proxy)
         console.log(`🔍 API Call: ${fullUrl}`);
         console.log(`   (original courseUrl: "${courseUrl}", locationUrl: "${locationUrl}", normalized: "${normalizedCourseUrl}" / "${normalizedLocation}")`);
         
-        // ✅ Add longer timeout for course API calls (60 seconds) via custom header
-        // Reduced from 120s to 60s - if backend needs more time, it should be optimized
-        const headers = new HttpHeaders().set('X-Timeout', '60000');
-        
-        return this.http.get<any>(fullUrl, { headers }).pipe(
+        // No custom headers: avoids CORS preflight on cross-origin GETs (see TimeoutInterceptor for 60s).
+        return this.http.get<any>(fullUrl).pipe(
             timeout(60000), // 60 seconds timeout for course API calls (reduced from 120s)
             retry({
                 count: 1, // Reduced retries: only 1 retry (was 2) to avoid long waits

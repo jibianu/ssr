@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { combineLatest } from 'rxjs';
@@ -53,7 +54,8 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private publicAppService: PublicAppService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     const categories$ = this.publicAppService.getCategories().pipe(
       catchError(() => of([]))
@@ -158,12 +160,38 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
     // Observable is already set up in constructor - template uses async pipe
   }
 
+  /** Warm course detail cache on hover/click so navigation often hits shareReplay. */
+  prefetchCourseDetail(item: CourseListItem | null | undefined): void {
+    if (!isPlatformBrowser(this.platformId) || !item) {
+      return;
+    }
+    const raw = (item.canonicalUrl || '').toString().trim().replace(/^\/+/, '').replace(/^courses\//, '');
+    if (!raw) {
+      return;
+    }
+    this.publicAppService.getCourseByCanonicalURL(raw, { refresh: false }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
+  }
+
   private normalizeCourseUrl(url: string | null | undefined): string {
-    if (!url) return '';
-    let normalized = String(url).replace(/^\/+/, '').replace(/^courses\//, '');
-    if (normalized.startsWith('course/course/')) normalized = normalized.replace(/^course\/course\//, '');
-    else if (normalized.startsWith('course/')) normalized = normalized.replace(/^course\//, '');
-    return normalized ? '/' + normalized : '';
+    const n =
+      this.publicAppService.normalizePublicCourseSlug(url || '') ||
+      this.publicAppService.normalizeSlugRouteParam(String(url || ''));
+    return n ? `/${n}` : '';
+  }
+
+  /** Same as home: SPA navigation to /:slug (avoids full document reload from raw href). */
+  getFastCourseRoute(item: CourseListItem | null | undefined): string[] {
+    const canonical = (item?.canonicalUrl || '').toString().trim();
+    const slug =
+      this.publicAppService.normalizePublicCourseSlug(canonical) ||
+      this.publicAppService.normalizeSlugRouteParam(canonical.replace(/^\/+/, ''));
+    if (!slug) {
+      return ['/list'];
+    }
+    return ['/', slug];
   }
 
   // PERFORMANCE: Add trackBy for ngFor optimization

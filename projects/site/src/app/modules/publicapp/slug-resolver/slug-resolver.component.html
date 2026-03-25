@@ -1,5 +1,19 @@
 @if (loading()) {
-  <div class="container py-4"><p class="text-muted">Loading...</p></div>
+  <div class="container py-4 slug-resolver-skeleton" aria-busy="true">
+    <span class="visually-hidden">Loading page…</span>
+    <div class="slug-resolver-skeleton__hero"></div>
+    <div class="slug-resolver-skeleton__line"></div>
+    <div class="slug-resolver-skeleton__line slug-resolver-skeleton__line--short"></div>
+    <div class="slug-resolver-skeleton__grid">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="slug-resolver-skeleton__card">
+          <div class="slug-resolver-skeleton__thumb"></div>
+          <div class="slug-resolver-skeleton__line"></div>
+          <div class="slug-resolver-skeleton__line slug-resolver-skeleton__line--short"></div>
+        </div>
+      }
+    </div>
+  </div>
 } @else if (notFound()) {
   <div class="container py-4"><p class="text-muted">Page not found.</p></div>
 } @else if (type() === 'course' && course(); as c) {

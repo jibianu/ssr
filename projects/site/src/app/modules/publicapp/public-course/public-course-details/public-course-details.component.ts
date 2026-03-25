@@ -10,6 +10,7 @@ import { PublicAppService } from '../../publicapp.service';
 import { AuthenticationService } from '../../../auth/auth.service';
 import { environment } from './../../../../../environments/environment';
 import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
+import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
 
 @Component({
     selector: 'app-public-course-details, app-course-content',
@@ -161,6 +162,8 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   /** After successful free enroll on this page, show Resume without waiting for bulk. */
   sidebarEnrolledOverride = false;
   private lastEnrollmentCheckCourseId: string | null = null;
+  private contentLoaded = false;
+  private extraLoaded = false;
 
   ngOnInit(): void {
     const getSlug = () =>
@@ -172,17 +175,54 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
       ?? null;
     const getLocation = () => this.route.snapshot.paramMap.get('location') ?? this.route.snapshot.parent?.paramMap?.get('location') ?? null;
 
+    /** SSR hydration: @Input may not replay before ngOnInit; route resolver data is the source of truth. */
+    const slugPage = this.findSlugPageDataInAncestors();
+    const courseFromRoute =
+      slugPage?.type === 'course' && slugPage.course != null ? slugPage.course : null;
+
+    if (courseFromRoute && !this.resolvedCourse) {
+      if (this.isBrowser && typeof ngDevMode !== 'undefined' && ngDevMode) {
+        console.time('[perf] course from route data');
+      }
+      const slugHint = getSlug() ?? slugPage?.slug ?? '';
+      this.applyCoursePayload(courseFromRoute, slugHint, true);
+      if (this.isBrowser && typeof ngDevMode !== 'undefined' && ngDevMode) {
+        console.timeEnd('[perf] course from route data');
+      }
+      this.changeDetectorRef.markForCheck();
+      const querySub = this.route.queryParamMap.subscribe(q => {
+        this.isEmbedMode = q.get('embed') === '1';
+        this.isEnrolledFromEmbed = this.isEmbedMode && (q.get('enrolled') === '1' || q.get('enrolled') === 'true');
+        if (this.isBrowser && this.courseId) {
+          this.refreshEnrollmentStatus();
+        }
+        this.changeDetectorRef.markForCheck();
+      });
+      this.subscription.add(querySub);
+      if (this.isBrowser) this.initializeCountdown();
+      if (this.isBrowser) {
+        const slugToLoad = (slugHint || '').toString().trim() || (getSlug() ?? '');
+        setTimeout(() => this.loadProgressiveCourseParts(slugToLoad), 0);
+      }
+      return;
+    }
+
     if (this.resolvedCourse) {
       this.applyResolvedCourse();
       if (this.isBrowser) this.initializeCountdown();
       this.changeDetectorRef.markForCheck();
+      if (this.isBrowser) {
+        const slugToLoad = (getSlug() ?? this.courseSlug ?? '').toString().trim();
+        setTimeout(() => this.loadProgressiveCourseParts(slugToLoad), 0);
+      }
       return;
     }
 
     const run = () => {
       // When parent (CourseShell) provides resolvedCourse, do not fetch by slug – parent will pass new data on navigation (ngOnChanges). Avoids race where stale API response overwrites correct course after search.
       if (this.resolvedCourse) return;
-      this.loadCourse(getSlug(), getLocation());
+      // Progressive load: basic first (fast), then content + extra after first paint.
+      this.loadCourseBasic(getSlug(), getLocation());
     };
     run();
     this.subscription.add(this.route.params.subscribe(() => run()));
@@ -199,18 +239,149 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     if (this.isBrowser) this.initializeCountdown();
   }
 
-  /** Apply course data from CourseShell (resolver); canonical URL is /:slug (no /courses/). */
-  private applyResolvedCourse(): void {
-    const data = this.resolvedCourse;
-    if (!data) return;
+  private loadProgressiveCourseParts(slug: string | null): void {
+    const s = (slug ?? '').toString().trim();
+    if (!s) return;
+    if (!this.contentLoaded) {
+      this.contentLoaded = true;
+      this.publicAppService.getCourseContentByCanonicalURL(s).subscribe({
+        next: (res) => {
+          if (!res || !this.courseDetails) return;
+          const contents = res.courseContents ?? [];
+          (this.courseDetails as any).courseContents = contents;
+          (this.courseDetails as any).CourseContents = contents;
+          if (this.course) {
+            (this.course as any).courseContents = contents;
+            (this.course as any).CourseContents = contents;
+          }
+          this.changeDetectorRef.markForCheck();
+        },
+        error: () => {}
+      });
+    }
+    if (!this.extraLoaded) {
+      this.extraLoaded = true;
+      this.publicAppService.getCourseExtraByCanonicalURL(s).subscribe({
+        next: (res) => {
+          if (!res || !this.courseDetails) return;
+          Object.assign(this.courseDetails, res);
+          if (this.course) {
+            Object.assign(this.course, res);
+          }
+          this.normalizeCourseDetailResponse(this.courseDetails);
+          this.changeDetectorRef.markForCheck();
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  private loadCourseBasic(slug: string | null, location: string | null): void {
+    if (!slug) {
+      this.loadError = 'Course URL not found';
+      return;
+    }
+    const slugNorm =
+      this.publicAppService.normalizePublicCourseSlug(slug) ||
+      this.publicAppService.normalizeSlugRouteParam(slug) ||
+      slug.trim();
+    if (!slugNorm) {
+      this.loadError = 'Course URL not found';
+      return;
+    }
+    if (this.isLoading) return;
+    this.isLoading = true;
+    this.isLoaded = false;
+    this.loadError = null;
+    this.course = null;
+    this.courseDetails = null;
+    this._courseFeaturesWarningLogged = false;
+    this.resetSidebarEnrollmentState();
+    this.contentLoaded = false;
+    this.extraLoaded = false;
+    this.changeDetectorRef.markForCheck();
+
+    const requestedSlug = this.normalizeSlugForStaleGuard(slugNorm);
+    if (location) {
+      // Location route still uses full endpoint (rare); progressive endpoints don't cover location variants yet.
+      this.loadCourse(slugNorm, location, { refresh: false });
+      return;
+    }
+    this.publicAppService.getCourseBasicByCanonicalURL(slugNorm).subscribe({
+      next: (data) => {
+        if (!data) {
+          // Single full fetch when /basic has no row (slug-page resolver may have already tried full).
+          this.isLoading = false;
+          this.changeDetectorRef.markForCheck();
+          this.loadCourse(slugNorm, location, { refresh: false });
+          return;
+        }
+        const rawCurrent = (
+          this.courseSlug ??
+          this.route.snapshot.paramMap.get('courseSlug') ??
+          this.route.snapshot.parent?.paramMap.get('slug') ??
+          this.route.snapshot.parent?.paramMap.get('courseSlug') ??
+          ''
+        ).toString().trim();
+        const currentSlug = this.normalizeSlugForStaleGuard(rawCurrent);
+        if (currentSlug && requestedSlug !== currentSlug) {
+          this.isLoading = false;
+          this.changeDetectorRef.markForCheck();
+          return;
+        }
+        this.applyCoursePayload(data, slugNorm, true);
+        this.isLoaded = true;
+        this.isLoading = false;
+        if (this.isBrowser) this.initializeCountdown();
+        this.changeDetectorRef.markForCheck();
+        if (this.isBrowser) {
+          setTimeout(() => this.loadProgressiveCourseParts(slugNorm), 0);
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.changeDetectorRef.markForCheck();
+        this.loadCourse(slugNorm, location, { refresh: false });
+      }
+    });
+  }
+
+  /** Walks ActivatedRoute parents to read `slugPage` from SlugResolverModule (SSR + client). */
+  private findSlugPageDataInAncestors(): SlugPageData | undefined {
+    let r: ActivatedRoute | null = this.route;
+    while (r) {
+      const d = r.snapshot.data['slugPage'] as SlugPageData | undefined;
+      if (d) {
+        return d;
+      }
+      r = r.parent;
+    }
+    return undefined;
+  }
+
+  /** Shared by @Input resolvedCourse and route resolver `slugPage.course` (hydration-safe). */
+  private applyCoursePayload(data: any, canonicalSlugHint: string, noCoursesPrefix: boolean): void {
+    if (!data) {
+      return;
+    }
     this.normalizeCourseDetailResponse(data);
     this.course = data;
     this.courseDetails = data;
     this.expandedCurriculumIndex = 0;
-    const slug = (this.courseSlug ?? (data.canonicalUrl ?? data.CanonicalUrl ?? '')).toString().trim();
-    this.setComponentProperties(data, null, slug, true);
+    const slug = (canonicalSlugHint ?? this.courseSlug ?? (data.canonicalUrl ?? data.CanonicalUrl ?? '')).toString().trim();
+    this.setComponentProperties(data, null, slug, noCoursesPrefix);
     this.isLoaded = true;
     this.isLoading = false;
+  }
+
+  /** Apply course data from CourseShell (resolver); canonical URL is /:slug (no /courses/). */
+  private applyResolvedCourse(): void {
+    const data = this.resolvedCourse;
+    if (!data) {
+      return;
+    }
+    const slug = (this.courseSlug ?? (data.canonicalUrl ?? data.CanonicalUrl ?? '')).toString().trim();
+    this.applyCoursePayload(data, slug, true);
   }
 
   /** When parent (CourseShell) passes new resolvedCourse/courseSlug after navigation (e.g. topbar search), re-apply so page reloads. */
@@ -279,9 +450,18 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.changeDetectorRef.markForCheck();
   }
 
+  /** Aligns route param ↔ API slug when comparing stale responses (fixes leading "-" before replaceUrl redirect). */
+  private normalizeSlugForStaleGuard(raw: string): string {
+    const n =
+      this.publicAppService.normalizePublicCourseSlug(raw) ||
+      this.publicAppService.normalizeSlugRouteParam(raw) ||
+      raw.trim();
+    return n.toLowerCase();
+  }
+
   // ✅ Manual course loading - ONLY triggered by user interaction (button click)
   // NO automatic calls on page load
-  loadCourse(slug: string | null, location: string | null): void {
+  loadCourse(slug: string | null, location: string | null, opts?: { refresh?: boolean }): void {
     if (!slug) {
       this.loadError = 'Course URL not found';
       return;
@@ -301,14 +481,21 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.resetSidebarEnrollmentState();
     this.changeDetectorRef.markForCheck();
 
-    // ✅ Use refresh so we get fresh About, FAQ, Trainers after Edit landing page saves (avoids stale cache)
-    const courseObservable = location 
+    const forceRefresh = opts?.refresh === true;
+    // Default refresh: false — matches route resolver + in-memory cache (same URL as SSR). Use refresh: true only after landing-page save.
+    const courseObservable = location
       ? this.publicAppService.getCourseByCanonicalLocationURL(slug, location)
-      : this.publicAppService.getCourseByCanonicalURL(slug, { refresh: true });
+      : this.publicAppService.getCourseByCanonicalURL(slug, { refresh: forceRefresh });
 
-    const requestedSlug = slug.trim().toLowerCase();
+    const requestedSlug = this.normalizeSlugForStaleGuard(slug);
+    if (this.isBrowser && typeof ngDevMode !== 'undefined' && ngDevMode) {
+      console.time(`[perf] GET course ${requestedSlug}`);
+    }
     courseObservable.subscribe({
       next: (data) => {
+        if (this.isBrowser && typeof ngDevMode !== 'undefined' && ngDevMode) {
+          console.timeEnd(`[perf] GET course ${requestedSlug}`);
+        }
         if (!data) {
           this.loadError = 'Course not found. In Elearn admin: set the course Canonical URL (Edit panel) and ensure the course is Published.';
           this.isLoading = false;
@@ -316,7 +503,14 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
           return;
         }
         // Ignore stale response: user may have navigated to another course (e.g. from search) before this request completed.
-        const currentSlug = (this.courseSlug ?? this.route.snapshot.paramMap.get('courseSlug') ?? this.route.snapshot.parent?.paramMap?.get('courseSlug') ?? '').toString().trim().toLowerCase();
+        const rawCurrent = (
+          this.courseSlug ??
+          this.route.snapshot.paramMap.get('courseSlug') ??
+          this.route.snapshot.parent?.paramMap.get('slug') ??
+          this.route.snapshot.parent?.paramMap.get('courseSlug') ??
+          ''
+        ).toString().trim();
+        const currentSlug = this.normalizeSlugForStaleGuard(rawCurrent);
         if (currentSlug && requestedSlug !== currentSlug) {
           this.isLoading = false;
           this.changeDetectorRef.markForCheck();
@@ -362,6 +556,9 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         this.changeDetectorRef.markForCheck();
       },
       error: (error) => {
+        if (this.isBrowser && typeof ngDevMode !== 'undefined' && ngDevMode) {
+          console.timeEnd(`[perf] GET course ${requestedSlug}`);
+        }
         console.error('Error loading course:', error);
         const status = error?.status ?? error?.statusCode;
         this.loadError = status === 404
@@ -560,12 +757,28 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     return `${originNoTrailingSlash}/${s.replace(/^\//, '')}`;
   }
 
+  private normalizeCanonicalSlugToken(raw: string): string {
+    return (raw || '')
+      .toString()
+      .trim()
+      .replace(/^https?:\/\/[^/]+/i, '')
+      .replace(/[?#].*$/, '')
+      .replace(/^\/+/, '')
+      .replace(/^page\//i, '')
+      .replace(/^(course\/)+/i, '')
+      .replace(/[^a-zA-Z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+  }
+
   setComponentProperties(courseDetails: any, location: string | null, canonicalSlugOverride?: string, noCoursesPrefix = true) {
     const canonicalUrl = canonicalSlugOverride ?? (location ?
       `${courseDetails.canonicalUrl}-${location.toLowerCase()}` :
       (courseDetails.canonicalUrl ?? courseDetails.slug ?? courseDetails.Slug ?? ''));
     const base = environment.seoUrl.replace(/\/?$/, '');
-    const fullUrl = noCoursesPrefix ? `${base}/${canonicalUrl.replace(/^\//, '')}` : `${base}/courses/${canonicalUrl.replace(/^\//, '')}`;
+    const canonicalSlug = this.normalizeCanonicalSlugToken(canonicalUrl);
+    const fullUrl = canonicalSlug ? `${base}/course/${canonicalSlug}` : `${base}/course`;
 
     this.courseDetails = courseDetails;
     this.courseId = this.courseDetails.id ?? this.courseDetails.Id;
@@ -841,7 +1054,10 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
       next: () => {
         this.saveSuccess = true;
         this.isEditingCourseDetails = false;
-        this.loadCourse(this.courseId, null);
+        this.publicAppService.invalidateCourseByCanonicalUrlCache(this.courseId);
+        this.publicAppService.invalidateCourseByCanonicalUrlCache(this.editForm.canonicalUrl);
+        this.publicAppService.invalidateCourseByCanonicalUrlCache(this.courseSlug);
+        this.loadCourse(this.courseId, null, { refresh: true });
         this.changeDetectorRef.markForCheck();
       },
       error: (err) => {

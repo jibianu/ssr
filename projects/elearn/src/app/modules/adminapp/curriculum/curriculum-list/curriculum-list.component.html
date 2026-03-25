@@ -789,11 +789,34 @@
         <div class="edit-landing-accordion__body collapse" [class.show]="landingAccordionOpen === 'basic'">
           <div class="form-group mb-2">
             <label class="form-label">Course Title *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.title" placeholder="Course title" [readonly]="landingEditLoadInProgress">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.title" (ngModelChange)="onLandingTitleChange()" placeholder="Course title" [readonly]="landingEditLoadInProgress">
           </div>
           <div class="form-group mb-2">
             <label class="form-label">Canonical URL *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="landingEditForm.canonicalUrl" placeholder="e.g. course-slug" [readonly]="landingEditLoadInProgress">
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              [(ngModel)]="landingEditForm.canonicalUrl"
+              (blur)="onCanonicalBlur()"
+              [class.is-invalid]="canonicalValidationError"
+              placeholder="e.g. api-571-practice-exam"
+              [readonly]="landingEditLoadInProgress || canonicalReadOnlyMode"
+            >
+            <div class="d-flex align-items-center justify-content-between mt-1">
+              <small class="text-muted">Preview: {{ canonicalFullPreviewUrl }}</small>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                (click)="enableCanonicalEdit()"
+                [disabled]="landingEditLoadInProgress || canonicalIsEditable"
+                title="Unlock canonical field"
+              >
+                Edit
+              </button>
+            </div>
+            <small class="text-danger d-block mt-1" *ngIf="canonicalValidationError">{{ canonicalValidationError }}</small>
+            <small class="text-warning d-block mt-1" *ngIf="!canonicalValidationError && canonicalValidationWarning">{{ canonicalValidationWarning }}</small>
+            <small class="text-muted d-block mt-1">We store slug only and publish canonical as {{ canonicalBaseUrl }}:slug</small>
           </div>
           <div class="form-group mb-2">
             <label class="form-label">Category *</label>

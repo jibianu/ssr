@@ -34,7 +34,7 @@
 
     <div class="course-grid">
       <article class="course-card" *ngFor="let item of data.courses; trackBy: trackByCourseId">
-        <a class="course-card__media" [href]="item?.canonicalUrl">
+        <a class="course-card__media" [routerLink]="getFastCourseRoute(item)">
           <img
             [src]="item?.titleImageUrl"
             (error)="onImgError($event)"
@@ -46,7 +46,7 @@
 
         <div class="course-card__body">
           <h2 class="course-card__title">
-            <a [href]="item?.canonicalUrl">{{ item?.title }}</a>
+            <a [routerLink]="getFastCourseRoute(item)">{{ item?.title }}</a>
           </h2>
 
           <ul class="course-card__highlights" *ngIf="item?.courseFeatures?.length">
@@ -59,7 +59,7 @@
         </div>
 
         <footer class="course-card__footer">
-          <a class="course-card__cta" [href]="item?.canonicalUrl">
+          <a class="course-card__cta" [routerLink]="getFastCourseRoute(item)">
             <span class="course-card__cta-text">
               <i class="fa fa-shopping-cart" aria-hidden="true"></i>
               Buy

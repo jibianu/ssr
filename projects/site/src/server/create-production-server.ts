@@ -1,0 +1,276 @@
+/**
+ * Express application factory: middleware, static assets, Elearn SPA, ops routes, SSR catch-all.
+ */
+
+import type { Express } from 'express';
+import express from 'express';
+import compression from 'compression';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import type { AngularNodeAppEngine } from '@angular/ssr/node';
+import { getCacheConfig } from '../server.cache.config';
+import { createCacheAdapter, type CacheAdapter } from '../server.cache.adapter';
+import { performanceMonitor } from '../server.performance';
+import { cdnCacheMiddleware } from './middleware/cdn.middleware';
+import { securityHeadersMiddleware } from './middleware/security-headers.middleware';
+import { requestTimingMiddleware } from './middleware/request-timing.middleware';
+import {
+  mountElearnSpaIfPresent,
+  registerElearnStaticAssetShortcut,
+  resolveElearnBrowserFolder,
+} from './ssr-handler/elearn-spa';
+import { registerSsrCatchAll, warmHtmlCache, type SsrCatchAllDeps } from './ssr-handler/ssr-catch-all';
+import { resolveBrowserDistFolder } from './utils/dist-paths';
+
+export interface CreateProductionServerOptions {
+  /** Directory containing `server.mjs` (Angular SSR entry). Use `dirname(fileURLToPath(import.meta.url))` from `server.ts` only. */
+  serverDistFolder: string;
+}
+
+export interface ProductionServerResult {
+  app: Express;
+  angularApp: AngularNodeAppEngine;
+  browserDistFolder: string;
+  elearnBrowserFolder: string;
+  htmlCache: CacheAdapter;
+  isProd: boolean;
+  warmCache: () => Promise<void>;
+}
+
+export function createProductionServer(
+  angularApp: AngularNodeAppEngine,
+  options: CreateProductionServerOptions
+): ProductionServerResult {
+  const serverDistFolder = options.serverDistFolder;
+  const browserDistFolder = resolveBrowserDistFolder(serverDistFolder);
+  const elearnBrowserFolder = resolveElearnBrowserFolder(serverDistFolder);
+
+  const indexPath = join(browserDistFolder, 'index.html');
+  if (!existsSync(indexPath)) {
+    console.error(
+      `[SSR] index.html not found at ${indexPath}. ` +
+        `Run \`ng build site\` from frontend/oilandgasclub, or set BROWSER_DIST_FOLDER to your browser output. ` +
+        `cwd=${process.cwd()} serverDist=${serverDistFolder}`
+    );
+  }
+
+  const app = express();
+  const isProd = process.env['NODE_ENV'] === 'production';
+  const cacheConfig = getCacheConfig();
+  const htmlCache = createCacheAdapter({
+    type: cacheConfig.type,
+    redisUrl: cacheConfig.redis?.url,
+    redisKeyPrefix: cacheConfig.redis?.keyPrefix,
+    memoryConfig: cacheConfig.memory,
+  });
+
+  // --- Global middleware (order matters) ---
+  app.disable('x-powered-by');
+  app.use(securityHeadersMiddleware);
+  app.use(requestTimingMiddleware);
+  app.use(compression({ threshold: 1024 }));
+
+  // --- Elearn hashed assets (before site static) ---
+  registerElearnStaticAssetShortcut(app, elearnBrowserFolder);
+
+  // --- Site browser build: long-cache immutable filenames ---
+  app.use(
+    express.static(browserDistFolder, {
+      maxAge: '1y',
+      index: false,
+      etag: true,
+      lastModified: true,
+      immutable: true,
+      setHeaders(res) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      },
+    })
+  );
+
+  // --- Legacy redirects (SEO / bookmarks) ---
+  app.get('/course/auth/:path', (req, res) => {
+    const authPath = (req.params['path'] || 'login').toString().trim() || 'login';
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, `/${encodeURIComponent(authPath)}${query}`);
+  });
+
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return next();
+    }
+    const p = req.path || '';
+    if (p !== '/auth' && !p.startsWith('/auth/')) {
+      return next();
+    }
+    const tail = p === '/auth' ? '' : p.slice('/auth/'.length);
+    const target = tail ? `/${tail}` : '/login';
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, target + query);
+  });
+
+  app.get(/^\/course\/([^/?#]+)\/?$/, (req, res, next) => {
+    const path = req.path || '';
+    const segment = (req.params?.[0] || '').toString();
+    if (
+      /^\/course\/(?:app|auth|student|admin)(?:\/|$)/i.test(path) ||
+      /\.[a-z0-9]+$/i.test(segment)
+    ) {
+      next();
+      return;
+    }
+    const slug = segment.trim();
+    if (!slug) {
+      next();
+      return;
+    }
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, `/${encodeURIComponent(slug)}${query}`);
+  });
+
+  app.get(/^\/events\/([^/?#]+)\/?$/, (req, res, next) => {
+    const path = req.path || '';
+    const segment = (req.params?.[0] || '').toString();
+    if (/^\/events\/(?:payment)(?:\/|$)/i.test(path) || /\.[a-z0-9]+$/i.test(segment)) {
+      next();
+      return;
+    }
+    const slug = segment.trim();
+    if (!slug) {
+      next();
+      return;
+    }
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, `/${encodeURIComponent(slug)}${query}`);
+  });
+
+  // --- Elearn SPA mounts (never SSR) ---
+  mountElearnSpaIfPresent(app, elearnBrowserFolder);
+
+  // --- Health (load balancers) ---
+  app.get('/health', (_req, res) => {
+    res.status(200).json({
+      status: 'ok',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  // --- Ops: cache + performance ---
+  app.get('/cache-stats', async (req, res) => {
+    const stats = htmlCache.getStats();
+    const hitRate = stats.hits + stats.misses > 0 ? (stats.hits / (stats.hits + stats.misses)) * 100 : 0;
+    let keyCount = stats.keys;
+    if (cacheConfig.type === 'redis') {
+      try {
+        const keys = await htmlCache.keys();
+        keyCount = keys.length;
+      } catch (error) {
+        console.warn('Failed to get Redis key count:', error);
+      }
+    }
+    res.json({
+      cacheType: cacheConfig.type,
+      keys: keyCount,
+      hits: stats.hits,
+      misses: stats.misses,
+      hitRate: `${hitRate.toFixed(2)}%`,
+      ksize: `${(stats.ksize / 1024).toFixed(2)} KB`,
+      vsize: `${(stats.vsize / 1024 / 1024).toFixed(2)} MB`,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.post('/cache/invalidate', express.json(), async (req, res) => {
+    const { pattern, purgeCDN } = req.body as { pattern?: string; purgeCDN?: boolean };
+    if (!pattern) {
+      return res.status(400).json({ error: 'Pattern is required' });
+    }
+    try {
+      const keys = await htmlCache.keys();
+      const matchingKeys = keys.filter((key: string) => key.includes(pattern));
+      for (const key of matchingKeys) {
+        const result = htmlCache.del(key);
+        if (result instanceof Promise) {
+          await result;
+        }
+      }
+      let cdnPurged = false;
+      if (purgeCDN === true) {
+        const { purgeCDNCache } = await import('./middleware/cdn.middleware');
+        const cdnProvider = (process.env['CDN_TYPE'] || 'cloudflare') as 'cloudflare' | 'cloudfront' | 'fastly';
+        cdnPurged = await purgeCDNCache(`page:${pattern}`, cdnProvider);
+      }
+      return res.json({
+        success: true,
+        invalidated: matchingKeys.length,
+        keys: matchingKeys,
+        cdnPurged,
+        message: `Invalidated ${matchingKeys.length} cache entries matching "${pattern}"${cdnPurged ? ' (CDN cache also purged)' : ''}`,
+      });
+    } catch (error) {
+      console.error('Cache invalidation error:', error);
+      return res.status(500).json({ error: 'Failed to invalidate cache' });
+    }
+  });
+
+  app.post('/cache/clear', async (_req, res) => {
+    try {
+      const result = htmlCache.flushAll();
+      if (result instanceof Promise) {
+        await result;
+      }
+      res.json({ success: true, message: 'All cache cleared' });
+    } catch (error) {
+      console.error('Cache clear error:', error);
+      res.status(500).json({ error: 'Failed to clear cache' });
+    }
+  });
+
+  app.get('/performance-stats', (req, res) => {
+    const timeRange = parseInt((req.query.minutes as string) || '60', 10);
+    res.json({
+      performance: performanceMonitor.getStats(timeRange),
+      system: performanceMonitor.getSystemMetrics(),
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.get('/performance-metrics', (req, res) => {
+    const limit = parseInt((req.query.limit as string) || '100', 10);
+    const metrics = performanceMonitor.getRecentMetrics(limit);
+    res.json({
+      metrics,
+      count: metrics.length,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.use(cdnCacheMiddleware);
+
+  const ssrDeps: SsrCatchAllDeps = {
+    angularApp,
+    browserDistFolder,
+    elearnBrowserFolder,
+    htmlCache,
+    cacheConfig,
+    isProd,
+  };
+
+  registerSsrCatchAll(app, ssrDeps);
+
+  const warmCache = () => warmHtmlCache(ssrDeps);
+
+  return {
+    app,
+    angularApp,
+    browserDistFolder,
+    elearnBrowserFolder,
+    htmlCache,
+    isProd,
+    warmCache,
+  };
+}

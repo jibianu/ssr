@@ -277,11 +277,10 @@ export class PublicCategoryComponent {
   }
 
   private normalizeCourseUrl(url: string | null | undefined): string {
-    if (!url) return '';
-    let normalized = String(url).replace(/^\/+/, '').replace(/^courses\//, '');
-    if (normalized.startsWith('course/course/')) normalized = normalized.replace(/^course\/course\//, '');
-    else if (normalized.startsWith('course/')) normalized = normalized.replace(/^course\//, '');
-    return normalized ? `/${normalized}` : '';
+    const n =
+      this.publicAppService.normalizePublicCourseSlug(url || '') ||
+      this.publicAppService.normalizeSlugRouteParam(String(url || ''));
+    return n ? `/${n}` : '';
   }
 
   private mapCourse(course: any): CategoryCourseItem {

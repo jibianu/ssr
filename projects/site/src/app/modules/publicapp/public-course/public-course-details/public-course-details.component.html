@@ -548,19 +548,24 @@
     </div>
   </section>
 
-  <!-- ✅ Related Courses - Full Width Section -->
-  <!-- ✅ Related courses using lightweight endpoint (getRelatedCourses) -->
-  <!-- Uses /api/related-courses?category=xyz endpoint (minimal data only) -->
-  <!-- NOT individual /api/course/{slug} calls - prevents multiple course API requests -->
-  <div class="related-courses-wrapper" *ngIf="course && (courseCategoryId || categoryName)">
-    <div class="related-courses-inner">
-      <app-public-related-courses
-        [categoryId]="courseCategoryId"
-        [categoryName]="categoryName"
-        [courseId]="courseId">
-      </app-public-related-courses>
-    </div>
-  </div>
+  <!-- Related courses: deferred until near viewport so main course GET + render are not competing with by-category API -->
+  @if (course && (courseCategoryId || categoryName)) {
+    @defer (on viewport) {
+      <div class="related-courses-wrapper">
+        <div class="related-courses-inner">
+          <app-public-related-courses
+            [categoryId]="courseCategoryId"
+            [categoryName]="categoryName"
+            [courseId]="courseId">
+          </app-public-related-courses>
+        </div>
+      </div>
+    } @placeholder {
+      <div class="related-courses-wrapper related-courses-wrapper--deferred" aria-hidden="true">
+        <div class="related-courses-inner" style="min-height: 120px;"></div>
+      </div>
+    }
+  }
 
   <!-- Promo video overlay: click thumbnail to play -->
   <div class="promo-video-overlay" *ngIf="showPromoVideoModal && courseDetails?.promoVideoUrl" (click)="closePromoVideo()" role="dialog" aria-label="Promo video" aria-modal="true">

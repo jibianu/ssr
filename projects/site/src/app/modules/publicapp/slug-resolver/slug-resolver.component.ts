@@ -60,6 +60,19 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const rawParam0 =
+      this.route.parent?.snapshot.paramMap.get('slug') ?? this.route.snapshot.paramMap.get('slug') ?? '';
+    const canon0 = this.publicAppService.normalizeSlugRouteParam(rawParam0);
+    if (
+      canon0 &&
+      rawParam0 &&
+      canon0 !== rawParam0.replace(/^\/+/, '') &&
+      isPlatformBrowser(this.platformId)
+    ) {
+      void this.router.navigate(['/', canon0], { replaceUrl: true, queryParamsHandling: 'preserve' });
+      return;
+    }
+
     const slugParam$ = this.route.parent
       ? this.route.parent.paramMap.pipe(map((p) => ({ slug: p.get('slug') || '' })))
       : this.route.paramMap.pipe(map((p) => ({ slug: p.get('slug') || '' })));
@@ -67,7 +80,8 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     slugParam$.pipe(
       takeUntil(this.destroy$),
       switchMap((params) => {
-        const slug = params.slug || '';
+        const raw = params.slug || '';
+        const slug = this.publicAppService.normalizeSlugRouteParam(raw) || raw.trim();
         if (!slug) {
           this.notFound.set(true);
           this.loading.set(false);
@@ -95,7 +109,8 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
           }
           this.type.set('course');
           this.resolved.set({ type: 'course', slug: fallbackSlug });
-          return this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false }).pipe(
+          return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
+            switchMap((basic) => basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })),
             catchError(() => {
               this.notFound.set(true);
               this.loading.set(false);
@@ -106,7 +121,8 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         this.resolved.set(res);
         this.type.set(res.type);
         if (res.type === 'course') {
-          return this.publicAppService.getCourseByCanonicalURL(res.slug, { refresh: false }).pipe(
+          return this.publicAppService.getCourseBasicByCanonicalURL(res.slug).pipe(
+            switchMap((basic) => basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(res.slug, { refresh: false })),
             catchError(() => {
               this.notFound.set(true);
               return of(null);

@@ -123,6 +123,12 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
   landingCategories: any[] = [];
   landingIframeKey = 0;
   landingSaveInProgress = false;
+  /** Canonical is locked by default; user must click Edit to change. */
+  canonicalReadOnlyMode = true;
+  /** True only after user clicks Edit (existing course). */
+  canonicalIsEditable = false;
+  canonicalValidationError: string | null = null;
+  canonicalValidationWarning: string | null = null;
   titleImageUploading = false;
   titleImageUploadError: string | null = null;
   titleImageRemoveInProgress = false;
@@ -661,11 +667,139 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
     const cat = course.category || course.Category;
     const categoryId = (cat && (cat.id || cat.Id)) ? (cat.id || cat.Id) : (course.categoryId || course.CategoryId || '');
     this.landingEditForm.title = course.title ?? course.Title ?? '';
-    this.landingEditForm.canonicalUrl = course.slug ?? course.Slug ?? '';
+    const existing = (course.slug ?? course.Slug ?? '').toString().trim();
+    // Create/new behavior: if no slug yet, auto-generate from title once.
+    if (!existing) {
+      this.landingEditForm.canonicalUrl = this.generateSlug(this.landingEditForm.title);
+      this.canonicalReadOnlyMode = true;
+      this.canonicalIsEditable = false;
+    } else {
+      // Edit behavior: show existing slug (normalized), keep locked until user clicks Edit.
+      this.landingEditForm.canonicalUrl = this.normalizeCanonicalUrl(existing, '');
+      this.canonicalReadOnlyMode = true;
+      this.canonicalIsEditable = false;
+    }
+    this.validateCanonicalField(false);
     this.landingEditForm.imageLink = course.imageLink ?? course.ImageLink ?? '';
     this.landingEditForm.promoVideoUrl = course.promoVideoUrl ?? course.PromoVideoUrl ?? '';
     this.landingEditForm.metaDescription = course.description ?? course.Description ?? '';
     this.landingEditForm.categoryId = typeof categoryId === 'string' ? categoryId : (categoryId ? String(categoryId) : '');
+  }
+
+  /** SEO canonical base shown in admin (full URL preview). */
+  get canonicalBaseUrl(): string {
+    const configured = (environment as any).seoUrl || (environment as any).publicCourseSiteUrl;
+    const origin = (typeof configured === 'string' && configured.trim() !== '')
+      ? configured.trim()
+      : (typeof window !== 'undefined' ? window.location.origin : 'https://oilandgasclub.com');
+    return `${origin.replace(/\/+$/, '')}/course/`;
+  }
+
+  /** Full canonical URL preview: https://domain/course/:slug */
+  get canonicalFullPreviewUrl(): string {
+    const slug = this.normalizeCanonicalUrl(
+      this.landingEditForm.canonicalUrl,
+      this.buildSlugFromTitle(this.landingEditForm.title)
+    );
+    return `${this.canonicalBaseUrl}${slug}`;
+  }
+
+  private buildSlugFromTitle(title: string): string {
+    return (title || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, '-')
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  /** Slug generator requested (title -> canonical token). */
+  generateSlug(title: string): string {
+    return (title || '')
+      .toString()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  normalizeCanonicalUrl(input: string, slug: string): string {
+    let value = (input || '').toString().trim();
+    let normalizedSlug = (slug || '').toString().trim().toLowerCase();
+    if (normalizedSlug) {
+      normalizedSlug = this.buildSlugFromTitle(normalizedSlug);
+    }
+
+    value = value.replace(/^https?:\/\/[^/]+/i, '');
+    value = value.replace(/[?#].*$/, '');
+    value = value.replace(/^\/+/, '').replace(/\/+$/, '');
+    value = value.replace(/^(page\/)+/i, '');
+    value = value.replace(/(course\/)+/gi, 'course/');
+
+    if (/^course\//i.test(value)) {
+      value = value.replace(/^course\//i, '');
+    }
+
+    const extracted = this.buildSlugFromTitle(value);
+    // Keep admin-entered canonical when provided; use title slug only as fallback.
+    return extracted || normalizedSlug;
+  }
+
+  onLandingTitleChange(): void {
+    // Never regenerate if the course already has a canonical slug saved,
+    // unless slug was empty (create/new) AND user has not manually edited.
+    if (this.canonicalIsEditable) {
+      this.validateCanonicalField(false);
+      return;
+    }
+    const current = (this.landingEditForm.canonicalUrl || '').toString().trim();
+    if (!current) {
+      this.landingEditForm.canonicalUrl = this.generateSlug(this.landingEditForm.title);
+    }
+    this.validateCanonicalField(false);
+  }
+
+  enableCanonicalEdit(): void {
+    this.canonicalIsEditable = true;
+    this.canonicalReadOnlyMode = false;
+    this.canonicalValidationWarning = 'Changing URL may affect SEO and existing links.';
+    this.cdr.markForCheck();
+  }
+
+  onCanonicalBlur(): void {
+    const titleSlug = this.buildSlugFromTitle(this.landingEditForm.title);
+    // Normalize whatever user typed into a safe token (do not force-match title on edit).
+    this.landingEditForm.canonicalUrl = this.normalizeCanonicalUrl(this.landingEditForm.canonicalUrl, titleSlug);
+    this.validateCanonicalField(false);
+    this.cdr.markForCheck();
+  }
+
+  private validateCanonicalField(strictSlugMatch: boolean): void {
+    const raw = (this.landingEditForm.canonicalUrl || '').toString().trim();
+    const titleSlug = this.buildSlugFromTitle(this.landingEditForm.title);
+    const normalized = this.normalizeCanonicalUrl(raw, '');
+    this.canonicalValidationError = null;
+    this.canonicalValidationWarning = null;
+
+    if (!normalized) {
+      this.canonicalValidationError = 'Canonical URL is required.';
+      return;
+    }
+    if (/\/?page\//i.test(raw)) {
+      this.canonicalValidationError = 'Canonical must not contain /page/.';
+      return;
+    }
+    if (/course\/course/i.test(raw)) {
+      this.canonicalValidationError = 'Canonical must not contain duplicate course/course.';
+      return;
+    }
+    if (strictSlugMatch && titleSlug && normalized !== titleSlug) {
+      this.canonicalValidationWarning = `Canonical differs from title slug ("${titleSlug}"). This is allowed, but it may affect SEO.`;
+      return;
+    }
   }
 
   /** Show edit panel, fetch course data so existing page data loads and is editable. */
@@ -764,11 +898,21 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
 
   saveLandingCourse(): void {
     if (!this.courseId || this.landingSaveInProgress) return;
+    this.onCanonicalBlur();
+    if (this.canonicalValidationError) {
+      this.toasterService.showError(this.canonicalValidationError);
+      return;
+    }
     this.landingSaveInProgress = true;
     this.cdr.markForCheck();
+    const normalizedCanonical = this.normalizeCanonicalUrl(
+      this.landingEditForm.canonicalUrl,
+      this.buildSlugFromTitle(this.landingEditForm.title)
+    );
+    this.landingEditForm.canonicalUrl = normalizedCanonical;
     const payload = {
       title: this.landingEditForm.title?.trim() ?? '',
-      canonicalUrl: this.landingEditForm.canonicalUrl?.trim() ?? '',
+      canonicalUrl: normalizedCanonical,
       categoryId: this.landingEditForm.categoryId ?? '',
       metaDescription: this.landingEditForm.metaDescription?.trim() ?? '',
       titleImageUrl: this.landingEditForm.imageLink?.trim() ?? '',
@@ -812,9 +956,14 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
         if (input) input.value = '';
         if (url) {
           this.landingEditForm.imageLink = url;
+          const normalizedCanonical = this.normalizeCanonicalUrl(
+            this.landingEditForm.canonicalUrl,
+            this.buildSlugFromTitle(this.landingEditForm.title)
+          );
+          this.landingEditForm.canonicalUrl = normalizedCanonical;
           this.subscription.add(this.appService.updateCourseFromLanding(this.courseId, {
             title: this.landingEditForm.title?.trim() ?? '',
-            canonicalUrl: this.landingEditForm.canonicalUrl?.trim() ?? '',
+            canonicalUrl: normalizedCanonical,
             categoryId: this.landingEditForm.categoryId ?? '',
             metaDescription: this.landingEditForm.metaDescription?.trim() ?? '',
             titleImageUrl: url,
@@ -866,9 +1015,14 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
         if (input) input.value = '';
         if (url) {
           this.landingEditForm.promoVideoUrl = url;
+          const normalizedCanonical = this.normalizeCanonicalUrl(
+            this.landingEditForm.canonicalUrl,
+            this.buildSlugFromTitle(this.landingEditForm.title)
+          );
+          this.landingEditForm.canonicalUrl = normalizedCanonical;
           this.subscription.add(this.appService.updateCourseFromLanding(this.courseId, {
             title: this.landingEditForm.title?.trim() ?? '',
-            canonicalUrl: this.landingEditForm.canonicalUrl?.trim() ?? '',
+            canonicalUrl: normalizedCanonical,
             categoryId: this.landingEditForm.categoryId ?? '',
             metaDescription: this.landingEditForm.metaDescription?.trim() ?? '',
             titleImageUrl: this.landingEditForm.imageLink?.trim() ?? '',
@@ -1165,9 +1319,14 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
     const summaryText = first ? (first.summary ?? first.Summary ?? '') : '';
     this.landingEditForm.metaDescription = summaryText;
     if (!this.courseId || this.landingSaveInProgress) return;
+    const normalizedCanonical = this.normalizeCanonicalUrl(
+      this.landingEditForm.canonicalUrl,
+      this.buildSlugFromTitle(this.landingEditForm.title)
+    );
+    this.landingEditForm.canonicalUrl = normalizedCanonical;
     this.subscription.add(this.appService.updateCourseFromLanding(this.courseId, {
       title: this.landingEditForm.title,
-      canonicalUrl: this.landingEditForm.canonicalUrl,
+      canonicalUrl: normalizedCanonical,
       categoryId: this.landingEditForm.categoryId,
       metaDescription: summaryText,
       titleImageUrl: this.landingEditForm.imageLink,

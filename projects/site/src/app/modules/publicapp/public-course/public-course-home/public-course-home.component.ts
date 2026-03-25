@@ -242,11 +242,10 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
   // ✅ Canonical course URL: /:slug (no /courses/ prefix)
   private normalizeCourseUrl(url: string | null | undefined): string {
-    if (!url) return '';
-    let normalized = url.replace(/^\/+/, '').replace(/^courses\//, '');
-    if (normalized.startsWith('course/course/')) normalized = normalized.replace(/^course\/course\//, '');
-    else if (normalized.startsWith('course/')) normalized = normalized.replace(/^course\//, '');
-    return normalized ? `/${normalized}` : '';
+    const n =
+      this.publicAppService.normalizePublicCourseSlug(url || '') ||
+      this.publicAppService.normalizeSlugRouteParam(String(url || ''));
+    return n ? `/${n}` : '';
   }
 
   /**
@@ -255,9 +254,26 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
    */
   getFastCourseRoute(course: HomeCourse | null | undefined): string[] {
     const canonical = (course?.canonicalUrl || '').toString().trim();
-    const slug = canonical.replace(/^\/+/, '');
+    const slug =
+      this.publicAppService.normalizePublicCourseSlug(canonical) ||
+      this.publicAppService.normalizeSlugRouteParam(canonical.replace(/^\/+/, ''));
     if (!slug) return ['/courses'];
     return ['/', slug];
+  }
+
+  /** Warm PublicAppService course cache on hover so navigation often hits shareReplay instead of cold HTTP. */
+  prefetchCourseDetail(course: HomeCourse | null | undefined): void {
+    if (!isPlatformBrowser(this.platformId) || !course) {
+      return;
+    }
+    const raw = (course.canonicalUrl || '').toString().trim().replace(/^\/+/, '').replace(/^courses\//, '');
+    if (!raw) {
+      return;
+    }
+    this.publicAppService.getCourseByCanonicalURL(raw, { refresh: false }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
   }
 
   // ✅ FILTER: Normalize category name for case-insensitive comparison

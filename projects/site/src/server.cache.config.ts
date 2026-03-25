@@ -36,8 +36,8 @@ export function getCacheConfig(): CacheConfig {
       // ✅ OPTIMIZED: Increased TTL for better cache hit rates
       // Static routes: 24 hours (can be longer as content rarely changes)
       static: parseInt(process.env['CACHE_TTL_STATIC'] || '86400', 10),    // 24 hours (was: 3600)
-      // Dynamic routes: 5 minutes (balance freshness vs performance)
-      dynamic: parseInt(process.env['CACHE_TTL_DYNAMIC'] || '300', 10)   // 5 minutes (was: 60)
+      // Dynamic HTML: default 10 minutes (override with CACHE_TTL_DYNAMIC)
+      dynamic: parseInt(process.env['CACHE_TTL_DYNAMIC'] || '600', 10)
     },
     redis: {
       url: redisUrl,

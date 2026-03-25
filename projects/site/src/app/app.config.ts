@@ -11,6 +11,7 @@ import { CacheInterceptor } from "./core/helpers/cache.interceptor";
 import { DeduplicationInterceptor } from "./core/helpers/deduplication.interceptor";
 import { RetryInterceptor } from "./core/helpers/retry.interceptor";
 import { TimeoutInterceptor } from "./core/helpers/timeout.interceptor";
+import { ApiUrlAuditInterceptor } from "./core/helpers/api-url-audit.interceptor";
 import { API_URL, loadApiUrl, getApiUrl } from "./core/config/api-url.config";
 
 const commonProviders = [
@@ -46,6 +47,7 @@ const commonProviders = [
   { provide: HTTP_INTERCEPTORS, useClass: DeduplicationInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: TimeoutInterceptor, multi: true },
+  { provide: HTTP_INTERCEPTORS, useClass: ApiUrlAuditInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: RetryInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
