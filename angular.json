@@ -22,7 +22,12 @@
             },
             "polyfills": ["@angular/localize/init", "projects/site/src/polyfills.ts"],
             "tsConfig": "projects/site/tsconfig.app.json",
-            "assets": ["projects/site/src/favicon.ico", "projects/site/src/assets", { "glob": "**/*", "input": "projects/site/public", "output": "/" }],
+            "assets": [
+              "projects/site/src/favicon.ico",
+              "projects/site/src/assets",
+              { "glob": "robots.txt", "input": "projects/site/src", "output": "/" },
+              { "glob": "**/*", "input": "projects/site/public", "output": "/" }
+            ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.css",
               "projects/site/src/styles.scss",

@@ -1,5 +1,5 @@
 /**
- * Proxies /sitemap.xml and /robots.txt to the .NET API host so Angular SSR never handles these routes.
+ * Proxies /sitemap.xml to the .NET API host. /robots.txt is served as a static file from the browser build.
  * Set SSR_API_URL or PUBLIC_API_URL to the API origin (strip trailing /api if present).
  *
  * Uses Node http/https (not fetch): ASP.NET Core often redirects HTTP→HTTPS; fetch() then fails on
@@ -126,9 +126,6 @@ export function registerSeoBackendProxy(app: Express): void {
     app.get('/sitemap.xml', (_req, res) => {
       res.status(503).type('text/plain').send(msg);
     });
-    app.get('/robots.txt', (_req, res) => {
-      res.status(503).type('text/plain').send(msg);
-    });
     return;
   }
 
@@ -158,6 +155,5 @@ export function registerSeoBackendProxy(app: Express): void {
     };
 
   app.get('/sitemap.xml', proxyGet('/sitemap.xml'));
-  app.get('/robots.txt', proxyGet('/robots.txt'));
-  console.log(`[SEO] /sitemap.xml and /robots.txt → ${origin}`);
+  console.log(`[SEO] /sitemap.xml → ${origin} (robots.txt from static build)`);
 }

@@ -159,11 +159,15 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
         title: this.courseDetails.title,
         description: this.courseDetails.metaDescription,
         author: this.courseDetails.createdByUser?.firstname + ' ' + (this.courseDetails?.createdByUser?.lastname || ''),
+        type: 'article',
         image: this.courseDetails.titleImageUrl,
+        imageWidth: 1200,
+        imageHeight: 630,
         time: this.courseDetails.createdOn,
         updatedTime: this.courseDetails.updatedOn,
         category: this.categoryName,
-        seoUrl: fullCanonical
+        seoUrl: fullCanonical,
+        canonicalUrl: fullCanonical
       });
     }
     this.canonicalService.setCanonicalURL(fullCanonical);
@@ -183,19 +187,26 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
         let canonicalUrl = (`${this.courseUrl} ${this.locationUrl}`).split(' ').join('-');
         this.categoryName = (this.courseDetails && this.courseDetails.category) ? this.courseDetails.category.name : '';
         this.image = this.courseDetails.titleImageUrl;
+        const locationSeoBase = environment.seoUrl.replace(/\/?$/, '');
+        const locationFullUrl = `${locationSeoBase}/${canonicalUrl}`;
         if (this.metadataService) {
           this.metadataService.updateMetadata({
             title: this.courseDetails.title,
             description: this.courseDetails.metaDescription,
-            author: this.courseDetails.createdByUser?.firstname + this.courseDetails?.createdByUser?.lastname,
+            author:
+              `${this.courseDetails.createdByUser?.firstname ?? ''} ${this.courseDetails?.createdByUser?.lastname ?? ''}`.trim(),
+            type: 'article',
             image: this.courseDetails.titleImageUrl,
+            imageWidth: 1200,
+            imageHeight: 630,
             time: this.courseDetails.createdOn,
             updatedTime: this.courseDetails.updatedOn,
             category: this.categoryName,
-            seoUrl: environment.seoUrl + canonicalUrl
+            seoUrl: locationFullUrl,
+            canonicalUrl: locationFullUrl
           });
         }
-        this.canonicalService.setCanonicalURL(environment.seoUrl + canonicalUrl);
+        this.canonicalService.setCanonicalURL(locationFullUrl);
       }
     }));
   }

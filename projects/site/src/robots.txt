@@ -1,8 +1,8 @@
 User-agent: *
-Disallow: /admin
-Disallow: /login
-Disallow: /register
-Disallow: /cart
-Disallow: /checkout
+Allow: /
 
-Sitemap: https://www.oilandgasclub.com/sitemap.xml
+Disallow: /app
+Disallow: /course/payment
+Disallow: /course/checkout
+
+Sitemap: https://oilandgasclub.com/sitemap.xml

@@ -8,9 +8,6 @@ import { PublicCourseListComponent } from './public-course-list/public-course-li
 import { PublicCourseDetailsComponent } from './public-course-details/public-course-details.component';
 import { PublicCategoryComponent } from './public-category/public-category.component';
 import { PublicRelatedCoursesComponent } from './public-related-courses/public-related-courses.component';
-import { CanonicalService } from './../../../shared/service/canonical.service';
-import { MetadataService } from './../../../shared/service/meta.service';
-
 @NgModule({
   declarations: [PublicCourseHomeComponent, PublicCourseListComponent, PublicCourseDetailsComponent, PublicCategoryComponent, PublicRelatedCoursesComponent],
   imports: [
@@ -18,7 +15,6 @@ import { MetadataService } from './../../../shared/service/meta.service';
     PublicCourseRoutingModule,
     SharedModule
   ],
-  providers: [CanonicalService, MetadataService],
   exports: [PublicCourseDetailsComponent]
 })
 export class PublicCourseModule { }
