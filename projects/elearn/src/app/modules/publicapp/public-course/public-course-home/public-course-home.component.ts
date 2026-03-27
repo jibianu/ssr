@@ -5,6 +5,7 @@ import { first } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { AuthenticationService, ROLE_LANDING_ROUTES } from '../../../auth/auth.service';
 import { environment } from 'src/environments/environment';
+import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
 
 @Component({
     selector: 'app-public-course-home',
@@ -83,7 +84,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
   continueWithGoogle(): void {
     const clientId = environment.oauthKey?.trim();
-    const redirectUri = (environment.googleRedirectUri || `${window.location.origin}/google-callback`).trim();
+    const redirectUri = getGoogleOAuthRedirectUri();
     if (!clientId || !redirectUri) return;
     const params = new URLSearchParams({
       client_id: clientId,

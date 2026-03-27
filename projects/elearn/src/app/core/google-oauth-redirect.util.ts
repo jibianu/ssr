@@ -4,7 +4,7 @@ import { environment } from 'src/environments/environment';
  * Google OAuth redirect_uri (code flow). Must exactly match
  * "Authorized redirect URIs" for the Web client in Google Cloud Console.
  *
- * Resolves from &lt;base href&gt; first so it matches the deployed app path
+ * Resolves from <base href> first so it matches the deployed app path
  * (/course/, /Elearn/, or /) even if environment.googleRedirectUri is stale.
  */
 export function getGoogleOAuthRedirectUri(): string {
@@ -12,7 +12,7 @@ export function getGoogleOAuthRedirectUri(): string {
     const href = document.querySelector('base')?.href;
     if (href) {
       try {
-        return new URL('auth/google-callback', href).href.replace(/\/+$/, '');
+        return new URL('google-callback', href).href.replace(/\/+$/, '');
       } catch {
         /* use fallbacks */
       }
