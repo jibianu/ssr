@@ -135,13 +135,35 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
 
       performanceMonitor.markRenderStart(markId);
 
-      const response = await angularApp.handle(safeReq);
+      let response = await angularApp.handle(safeReq);
 
       if (!response) {
         console.warn(`[SSR] Angular engine returned no response for ${requestPath}`);
         await sendBrowserCsrShell(res, browserDistFolder, requestPath, req, 'csr-fallback');
         performanceMonitor.endMeasure(markId, false);
         return;
+      }
+
+      // Safety net for production SEO: if streamed SSR HTML misses OG tags,
+      // enrich it using existing course-shell enrichment logic before sending.
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (/text\/html/i.test(contentType) && typeof response.clone === 'function') {
+          const html = await response.clone().text();
+          if (!/property\s*=\s*["']og:title["']/i.test(html)) {
+            const enriched = await enrichPublicCoursePageIfMissingOg(html, requestPath, req);
+            if (enriched.injected && enriched.html !== html) {
+              const headers = new Headers(response.headers);
+              response = new Response(enriched.html, {
+                status: response.status,
+                statusText: response.statusText,
+                headers,
+              });
+            }
+          }
+        }
+      } catch (enrichErr) {
+        console.warn('[SSR] stream enrichment check failed:', enrichErr);
       }
 
       applyStreamHtmlHeaders(res, requestPath, isProd);
