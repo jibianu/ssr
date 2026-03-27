@@ -36,6 +36,26 @@ export function normalizeApiUrlBase(raw: string): string {
 }
 
 /**
+ * Protect hosted environments from accidentally using localhost API URLs from config.json.
+ * On non-localhost origins, prefer environment.apiUrl when config points to localhost/127.0.0.1.
+ */
+function sanitizeApiUrlForRuntime(candidateRaw: string, fallbackRaw: string): string {
+  const candidate = normalizeApiUrlBase(candidateRaw || '');
+  const fallback = normalizeApiUrlBase(fallbackRaw || '');
+  const currentHost =
+    typeof window !== 'undefined' ? (window.location.hostname || '').toLowerCase() : '';
+  const isHostedBrowser = !!currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1';
+  const pointsToLocalhost = /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(candidate);
+
+  if (isHostedBrowser && pointsToLocalhost && fallback) {
+    console.warn(`⚠️ Ignoring localhost apiUrl from config.json on hosted origin (${currentHost}). Using fallback: ${fallback}`);
+    return fallback;
+  }
+
+  return candidate || fallback;
+}
+
+/**
  * Gets the loaded configuration (or default if not loaded yet)
  */
 export function getApiUrl(): string {
@@ -174,7 +194,7 @@ export function loadApiUrl(): () => Promise<void> {
           }
           
           // Ensure apiUrl ends with /
-          const apiUrl = config.apiUrl.endsWith('/') ? config.apiUrl : config.apiUrl + '/';
+          const apiUrl = sanitizeApiUrlForRuntime(config.apiUrl, defaultConfig.apiUrl);
           
           const finalConfig: AppConfig = { apiUrl };
           
