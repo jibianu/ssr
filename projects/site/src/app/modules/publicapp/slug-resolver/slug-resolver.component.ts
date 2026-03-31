@@ -8,6 +8,7 @@ import { SlugResolverService, SlugResolverResponse } from './slug-resolver.servi
 import { SlugPageData } from './slug-page.resolver';
 import { PublicAppService } from '../publicapp.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
+import { BlogService } from '../blog/blog.service';
 import { PublicCourseModule } from '../public-course/public-course.module';
 import { BlogDetailComponent } from '../blog/blog-detail/blog-detail.component';
 import { PublicEventModule } from '../public-event/public-event.module';
@@ -26,6 +27,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   private slugResolver = inject(SlugResolverService);
   private publicAppService = inject(PublicAppService);
   private adminService = inject(AdminAppService);
+  private blogService = inject(BlogService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
@@ -150,13 +152,30 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
             })
           );
         }
+        if (res.type === 'blog') {
+          return this.blogService.getBlogBySlug(res.slug).pipe(
+            switchMap((blog) => {
+              if (!blog) {
+                this.notFound.set(true);
+                return of(null);
+              }
+              this.blogPrefetch.set(blog);
+              return of(true);
+            }),
+            catchError(() => {
+              this.notFound.set(true);
+              return of(null);
+            })
+          );
+        }
         this.loading.set(false);
         return of(true);
       })
     ).subscribe(result => {
-      if (result === null && this.type() !== 'blog') {
+      if (result === null) {
         this.loading.set(false);
         if (this.notFound()) this.navigateToNotFound();
+        this.cdr.markForCheck();
         return;
       }
       if (this.type() === 'course' && result && typeof result === 'object') {

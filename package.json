@@ -24,7 +24,7 @@
     "build:ssr": "ng build site --configuration production",
     "serve:ssr": "node dist/site/server/server.mjs",
     "preview:ssr": "npm run build:ssr && npm run serve:ssr",
-    "dev:ssr": "ng build elearn --configuration unified && npm run build:ssr && node scripts/serve-ssr-dev.mjs",
+    "dev:ssr": "ng build elearn --configuration unified-local && npm run build:ssr && node scripts/serve-ssr-dev.mjs",
     "dev:ssr:watch": "ng serve site --ssr --port 4200"
   },
   "private": true,

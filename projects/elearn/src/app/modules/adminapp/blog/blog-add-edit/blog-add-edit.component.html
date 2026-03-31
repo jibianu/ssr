@@ -110,9 +110,55 @@
             <option *ngFor="let c of categories" [value]="c.id || c.Id">{{ c.name || c.Name }}</option>
           </select>
         </div>
-        <div class="mb-3">
-          <label class="form-label"><i class="fa fa-image"></i> Blog Featured Image URL <span class="required">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="titleImgUrl" name="titleImgUrl" placeholder="https://... or leave blank to add later" (ngModelChange)="markContentEdited()">
+        <div class="mb-3 featured-image-field">
+          <label class="form-label"><i class="fa fa-image"></i> Blog featured image (header)</label>
+          <p class="form-text mb-2">
+            Recommended: <strong>1200×630px</strong> (social preview). Max upload: <strong>5 MB</strong>. Formats: JPG/PNG/WebP/GIF.
+          </p>
+          <div class="featured-image-row">
+            <div class="featured-image-preview-wrap" *ngIf="titleImgUrl && !featuredImageBroken">
+              <img
+                [src]="titleImgUrl"
+                alt="Featured image preview"
+                class="featured-image-preview"
+                (error)="featuredImageBroken = true">
+            </div>
+            <div class="featured-image-preview-wrap featured-image-preview-wrap--broken" *ngIf="titleImgUrl && featuredImageBroken">
+              <span class="text-muted small">Preview unavailable</span>
+            </div>
+            <div class="featured-image-actions flex-grow-1">
+              <input
+                #featuredFileInput
+                type="file"
+                class="d-none"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                (change)="onFeaturedFileSelected($event)">
+              <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                <button
+                  type="button"
+                  class="btn btn-featured-upload btn-sm"
+                  (click)="featuredFileInput.click()"
+                  [disabled]="featuredImageUploading || featuredImageDeleting">
+                  <i class="fa" [ngClass]="(featuredImageUploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt')"></i>
+                  {{ featuredImageUploading ? 'Uploading…' : 'Upload image' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  *ngIf="titleImgUrl"
+                  (click)="deleteFeaturedImage()"
+                  [disabled]="featuredImageUploading || featuredImageDeleting">
+                  <i class="fa" [ngClass]="featuredImageDeleting ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                  {{ featuredImageDeleting ? 'Deleting…' : 'Delete' }}
+                </button>
+              </div>
+              <label class="form-label small mb-1">Image URL</label>
+              <input
+                type="text"
+                class="form-control" [(ngModel)]="titleImgUrl" name="titleImgUrl" placeholder="https://... (filled after upload)"
+                (ngModelChange)="onFeaturedUrlChange($event)">
+            </div>
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label"><i class="fa fa-align-left"></i> Meta Description</label>
@@ -190,10 +236,13 @@
       </div>
     </div>
 
-    <!-- Form Actions (Submit for Review is only in the Review sidebar) -->
-    <div class="form-actions mt-4">
-      <button type="button" class="btn btn-outline-secondary" (click)="cancel()"><i class="fa fa-times"></i> Cancel</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving">
+    <!-- Form Actions: fixed to bottom of viewport (see blog-add-edit.component.scss) -->
+    <div class="form-actions form-actions--fixed">
+      <button type="button" class="btn btn-outline-secondary btn-form-add-section" (click)="addSectionFromBottom()">
+        <i class="fa fa-plus"></i> Add Section
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-form-cancel" (click)="cancel()"><i class="fa fa-times"></i> Cancel</button>
+      <button type="submit" class="btn btn-form-submit" [disabled]="saving">
         <i class="fa" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
         {{ saving ? (id ? 'Saving...' : 'Saving...') : (txtRoute === 'trainer' ? (id ? 'Save Draft' : 'Save Draft') : (id ? 'Update' : 'Publish')) }}
       </button>
@@ -218,17 +267,27 @@
       </button>
       <p class="review-sidebar__hint" *ngIf="canSubmitForReviewFromPanel">Submit this blog for admin review. Admin can then approve or reject.</p>
     </section>
-    <!-- Approve / Reject: only on admin page when blog is pending review. -->
-    <section class="review-sidebar__section" *ngIf="isBlogPendingReview && txtRoute === 'admin'">
-      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--success" (click)="onBlogReviewApproveFromPanel(modal)" [disabled]="reviewActionInProgress" title="Approve blog">
-        <i class="fa fa-check" aria-hidden="true"></i>
-        <span *ngIf="!reviewActionInProgress">Approve</span>
-        <span *ngIf="reviewActionInProgress">Processing…</span>
-      </button>
-      <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--danger" (click)="onBlogReviewRejectFromPanel(modal)" [disabled]="reviewActionInProgress" title="Reject with feedback">
-        <i class="fa fa-times" aria-hidden="true"></i> Reject
-      </button>
-      <p class="review-sidebar__hint">Approve to accept this blog (then publish from Blog List). Reject to send feedback to the trainer.</p>
+    <!-- Admin: Publish draft, or Approve/Reject when pending review (public site only shows Published). -->
+    <section class="review-sidebar__section" *ngIf="txtRoute === 'admin' && id && (blogStatus === 0 || blogStatus === 1)">
+      <ng-container *ngIf="blogStatus === 0">
+        <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--success" (click)="onBlogReviewApproveFromPanel(modal)" [disabled]="reviewActionInProgress" title="Publish on public site">
+          <i class="fa fa-globe" aria-hidden="true"></i>
+          <span *ngIf="!reviewActionInProgress">Publish</span>
+          <span *ngIf="reviewActionInProgress">Publishing…</span>
+        </button>
+        <p class="review-sidebar__hint">Publish to make this post visible on the public website.</p>
+      </ng-container>
+      <ng-container *ngIf="blogStatus === 1">
+        <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--success" (click)="onBlogReviewApproveFromPanel(modal)" [disabled]="reviewActionInProgress" title="Approve and publish">
+          <i class="fa fa-check" aria-hidden="true"></i>
+          <span *ngIf="!reviewActionInProgress">Approve</span>
+          <span *ngIf="reviewActionInProgress">Processing…</span>
+        </button>
+        <button type="button" class="review-sidebar__action-btn review-sidebar__action-btn--danger" (click)="onBlogReviewRejectFromPanel(modal)" [disabled]="reviewActionInProgress" title="Reject with feedback">
+          <i class="fa fa-times" aria-hidden="true"></i> Reject
+        </button>
+        <p class="review-sidebar__hint">Approve to publish on the public site, or reject with feedback for the author.</p>
+      </ng-container>
     </section>
     <section class="review-sidebar__section" *ngIf="showSubmitForReviewSection && !canSubmitForReviewFromPanel && submitForReviewHint && txtRoute !== 'admin'">
       <p class="review-sidebar__hint review-sidebar__hint--muted">{{ submitForReviewHint }}</p>

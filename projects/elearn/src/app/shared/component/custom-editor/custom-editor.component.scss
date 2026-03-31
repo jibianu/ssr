@@ -172,29 +172,6 @@
   u { text-decoration: underline; }
   s, strike { text-decoration: line-through; }
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    font-size: 14px;
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background-color: #f2f2f2;
-      font-weight: bold;
-    }
-
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    tr:hover { background-color: #f5f5f5; }
-  }
-
   h1, h2, h3, h4, h5, h6 {
     margin: 12px 0 8px 0;
     font-weight: 600;
@@ -325,6 +302,60 @@
   font-weight: 500;
   &:hover {
     color: #5568d3 !important;
+  }
+}
+
+// Pasted / inserted tables: same encapsulation issue — without ::ng-deep, <table> in contenteditable has no borders
+:host ::ng-deep .editor-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  font-size: 14px;
+  border: 2px solid #6366f1;
+  box-shadow: 0 4px 18px rgba(102, 126, 234, 0.22);
+
+  th,
+  td {
+    border: 1px solid #c7d2fe;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  /* Header cells */
+  th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-weight: 600;
+    border-color: rgba(255, 255, 255, 0.35);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Data rows — soft violet / indigo zebra */
+  tbody tr:nth-child(odd) td {
+    background-color: #faf5ff;
+  }
+
+  tbody tr:nth-child(even) td {
+    background-color: #eef2ff;
+  }
+
+  tbody tr:hover td {
+    background-color: #e0e7ff !important;
+    transition: background-color 0.12s ease;
+  }
+
+  /* Tables with no <th>: treat first row as header */
+  &:not(:has(th)) tbody tr:first-child td {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-weight: 600;
+    border-color: rgba(255, 255, 255, 0.35);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
+
+  &:not(:has(th)) tbody tr:first-child:hover td {
+    filter: brightness(1.06);
   }
 }
 
@@ -462,10 +493,117 @@
   }
 }
 
+// Insert table popup (compact)
+.table-insert-popup {
+  position: fixed !important;
+  z-index: 10001 !important;
+  width: 300px;
+  max-width: 92vw;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+
+  .table-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+
+    h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      font-size: 16px;
+      &:hover { background: rgba(255, 255, 255, 0.3); }
+    }
+  }
+
+  .table-popup-body {
+    padding: 16px;
+    background: #fafbfc;
+
+    .form-group {
+      margin-bottom: 12px;
+      &:last-child { margin-bottom: 0; }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  .table-popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid #e9ecef;
+    background: #fff;
+
+    .btn-cancel {
+      padding: 8px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .btn-apply {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 500;
+    }
+  }
+}
+
 @media print {
   .custom-editor-wrapper {
     border: none;
     box-shadow: none;
+  }
+
+  .table-insert-popup,
+  .link-builder-popup {
+    display: none !important;
   }
 
   .editor-toolbar {

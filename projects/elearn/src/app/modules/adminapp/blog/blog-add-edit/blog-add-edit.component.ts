@@ -7,7 +7,8 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DOCUMENT } from '@angular/common';
 import { Inject } from '@angular/core';
 import { Observable, firstValueFrom, of, Subscription } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, finalize } from 'rxjs/operators';
+import { resolveAdminAppSegment } from '../../../../core/helpers/app-url.helper';
 import { BlogRejectModalComponent } from '../blog-reject-modal/blog-reject-modal.component';
 import { SubmitForReviewModalComponent } from '../../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
 import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
@@ -63,6 +64,13 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
   reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
   reviewActionInProgress = false;
 
+  /** Featured/header image upload in progress. */
+  featuredImageUploading = false;
+  /** Featured/header image delete in progress (S3 + DB). */
+  featuredImageDeleting = false;
+  /** Hide preview when URL fails to load (broken link). */
+  featuredImageBroken = false;
+
   /** Image upload for custom editor (same API as curriculum upload). */
   uploadImageFn = (file: File) =>
     firstValueFrom(
@@ -98,16 +106,11 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
 
   /** Derive app segment (admin | trainer | management) from current URL so post-save navigates to the same area. */
   private getAppSegmentFromRoute(): string {
-    const url = this.router.url;
-    const segments = url.split('/').filter(Boolean);
-    const appIndex = segments.indexOf('app');
-    if (appIndex >= 0 && segments.length > appIndex + 1) {
-      const segment = segments[appIndex + 1];
-      if (segment === 'admin' || segment === 'trainer' || segment === 'management') {
-        return segment;
-      }
+    const fromRouter = resolveAdminAppSegment(this.router.url || '');
+    if (fromRouter !== 'admin') {
+      return fromRouter;
     }
-    return this.document.location.href.includes('management') ? 'management' : (this.document.location.href.includes('trainer') ? 'trainer' : 'admin');
+    return resolveAdminAppSegment(this.document.location?.pathname || '');
   }
 
   ngOnInit(): void {
@@ -128,6 +131,7 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
           this.metaDescription = b?.metaDescription ?? b?.MetaDescription ?? '';
           this.categoryId = (b?.categoryId ?? b?.CategoryId ?? '') ? String(b.categoryId || b.CategoryId) : '';
           this.titleImgUrl = b?.titleImgUrl ?? b?.TitleImgUrl ?? '';
+          this.featuredImageBroken = false;
           this.showOnDashboard = b?.showOnDashboard ?? b?.ShowOnDashboard ?? false;
           const sections = b?.blogSections ?? b?.BlogSections ?? [];
           this.blogSections = (Array.isArray(sections) ? sections : []).map((s: any, i: number) => ({
@@ -145,7 +149,7 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
           this.updateWordCount();
           this.saveContentSnapshot();
           this.sharedService.blogReviewContext.next({ blogId: this.id, status: this.blogStatus ?? 0 });
-          if (this.txtRoute === 'admin' && this.id && this.blogStatus === 1) {
+          if (this.txtRoute === 'admin' && this.id && (this.blogStatus === 0 || this.blogStatus === 1)) {
             this.sharedService.topbarBlogReviewActions.next({ blogId: this.id });
           }
         },
@@ -243,6 +247,108 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
   markContentEdited(): void {
     this.contentEditDetected = true;
     this.cdr.markForCheck();
+  }
+
+  onFeaturedUrlChange(_value: string): void {
+    this.featuredImageBroken = false;
+    this.markContentEdited();
+  }
+
+  onFeaturedFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.toasterService.showError('Please choose an image file (JPEG, PNG, WebP, or GIF).');
+      return;
+    }
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.toasterService.showError('Image must be 5 MB or smaller.');
+      return;
+    }
+    this.featuredImageUploading = true;
+    this.featuredImageBroken = false;
+    this.appService.uploadImage(file).pipe(
+      finalize(() => {
+        this.featuredImageUploading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (res: any) => {
+        const url = res?.url ?? res?.Url ?? res?.documentPath ?? '';
+        if (url) {
+          this.titleImgUrl = typeof url === 'string' ? url : String(url);
+          this.markContentEdited();
+        } else {
+          this.toasterService.showError('Upload finished but no image URL was returned.');
+        }
+      },
+      error: () => this.toasterService.showError('Failed to upload image. Check your connection and try again.')
+    });
+  }
+
+  /**
+   * Clear header image: save null TitleImgUrl to DB first (so removal always works even if S3 delete fails).
+   * S3 delete is best-effort (may fail without DeleteImage permission or for non-bucket URLs).
+   */
+  deleteFeaturedImage(): void {
+    const urlToDelete = (this.titleImgUrl || '').trim();
+    if (!urlToDelete) {
+      this.featuredImageBroken = false;
+      return;
+    }
+    if (this.featuredImageUploading || this.featuredImageDeleting) return;
+
+    this.featuredImageDeleting = true;
+    this.cdr.markForCheck();
+
+    const clearUi = () => {
+      this.titleImgUrl = '';
+      this.featuredImageBroken = false;
+      this.markContentEdited();
+    };
+
+    const finishDeleting = () => {
+      this.featuredImageDeleting = false;
+      this.cdr.markForCheck();
+    };
+
+    /** Best-effort S3 removal — must not block UI/DB success. */
+    const tryDeleteFromStorage = () => {
+      this.appService.deleteImage(urlToDelete).pipe(catchError(() => of(null))).subscribe();
+    };
+
+    // Draft not saved yet: only clear local state; still try storage delete for uploaded URLs.
+    if (!this.id) {
+      clearUi();
+      tryDeleteFromStorage();
+      this.toasterService.showSuccess('Image removed.');
+      finishDeleting();
+      return;
+    }
+
+    const body = this.buildSaveBody();
+    if (!body) {
+      this.toasterService.showError('Title, URL slug and Category are required.');
+      finishDeleting();
+      return;
+    }
+    body.titleImgUrl = null;
+    this.appService.updateBlog(this.id, body as any).subscribe({
+      next: () => {
+        clearUi();
+        this.toasterService.showSuccess('Header image removed.');
+        this.saveContentSnapshot();
+        tryDeleteFromStorage();
+        finishDeleting();
+      },
+      error: () => {
+        this.toasterService.showError('Failed to remove image from blog. Please try again.');
+        finishDeleting();
+      }
+    });
   }
 
   onContentChange(): void {
@@ -363,6 +469,17 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
   addSection(): void {
     const nextSeq = this.blogSections.length + 1;
     this.blogSections.push({ title: '', content: '', sequenceNumber: nextSeq });
+  }
+
+  addSectionFromBottom(): void {
+    this.addSection();
+    this.markContentEdited();
+    // Let Angular render the new section, then scroll near the bottom of the list.
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    }, 50);
   }
 
   removeSection(index: number): void {

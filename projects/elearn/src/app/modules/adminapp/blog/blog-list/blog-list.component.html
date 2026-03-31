@@ -108,6 +108,15 @@
             </td>
             <td class="list-table-modern__td list-table-modern__td--action" (click)="$event.stopPropagation()">
               <div class="list-table-modern__actions">
+                <button
+                  *ngIf="showPublishInList && canPublishFromList(item)"
+                  type="button"
+                  class="list-table-modern__btn list-table-modern__btn--success"
+                  (click)="publishBlog(item)"
+                  title="Publish"
+                  [attr.aria-label]="'Publish: ' + item.title">
+                  <i class="fa fa-globe" aria-hidden="true"></i>
+                </button>
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteBlog(item)" title="Delete" [disabled]="item.isDeleted"><i class="fa fa-trash"></i></button>
               </div>
             </td>

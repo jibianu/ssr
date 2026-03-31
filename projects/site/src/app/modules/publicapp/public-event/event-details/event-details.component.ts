@@ -26,6 +26,7 @@ import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { MetadataService } from 'src/app/shared/service/meta.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
 import { PaymentCardComponent } from '../payments/payment-card.component';
+import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
 
 interface EventDetail {
   section: string;
@@ -157,9 +158,14 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
 
-    // ✅ Subscribe to route data (from resolver); skip when resolvedEventInput was set (slug-resolver)
+    // ✅ Subscribe to route data: legacy `event` resolver or `slugPage` from SlugResolverModule (SSR + hydration).
     this.subscription.add(
       this.route.data.subscribe((data) => {
+        const slugPage = data?.['slugPage'] as SlugPageData | undefined;
+        if (slugPage?.type === 'event' && slugPage.eventData) {
+          this.applyResolvedEvent(slugPage.eventData);
+          return;
+        }
         const resolvedEvent = data?.['event'] ?? null;
         if (resolvedEvent) this.applyResolvedEvent(resolvedEvent);
       })
@@ -235,6 +241,12 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // SSR hydration: @Input may not replay before ngOnInit; mirror public-course-details slugPage lookup.
+    const slugPage = this.findSlugPageDataInAncestors();
+    if (slugPage?.type === 'event' && slugPage.eventData && !this.eventId) {
+      this.applyResolvedEvent(slugPage.eventData);
+    }
+
     this.eventUserForm = this.formBuilder.group({
       firstName: ['', Validators.required],
       surname: ['', Validators.required],
@@ -271,6 +283,19 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isBrowser) {
       setTimeout(() => this.updateTestimonialControls(), 0);
     }
+  }
+
+  /** Walks ActivatedRoute parents to read `slugPage` from SlugResolverModule (SSR + client hydration). */
+  private findSlugPageDataInAncestors(): SlugPageData | undefined {
+    let r: ActivatedRoute | null = this.route;
+    while (r) {
+      const d = r.snapshot.data['slugPage'] as SlugPageData | undefined;
+      if (d) {
+        return d;
+      }
+      r = r.parent;
+    }
+    return undefined;
   }
 
   ngAfterViewInit(): void {

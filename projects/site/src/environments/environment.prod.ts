@@ -1,3 +1,8 @@
+/**
+ * Production build default (`ng build site --configuration production`).
+ * `apiUrl` is baked into the bundle and used as fallback when `config.json` is missing
+ * or when it points to localhost while the site runs on a public hostname (see sanitizeApiUrlForRuntime).
+ */
 export const environment = {
   production: true,
   apiUrl: 'https://coursebackend.oilandgasclub.com/',

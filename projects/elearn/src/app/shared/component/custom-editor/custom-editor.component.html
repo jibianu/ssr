@@ -59,6 +59,34 @@
       <button type="button" class="toolbar-btn" (click)="insertImage()" [disabled]="disabled || readonly" title="Insert Image">
         <i class="fa fa-image"></i>
       </button>
+      <button
+        type="button"
+        class="toolbar-btn"
+        (mousedown)="$event.preventDefault(); openTablePopup()"
+        [disabled]="disabled || readonly"
+        title="Insert Table">
+        <i class="fa fa-table"></i>
+      </button>
+      <button
+        type="button"
+        class="toolbar-btn"
+        *ngIf="isCaretInTable"
+        (mousedown)="$event.preventDefault()"
+        (click)="addTableRowAfter()"
+        [disabled]="disabled || readonly"
+        title="Add row below">
+        <i class="fa fa-plus"></i>
+      </button>
+      <button
+        type="button"
+        class="toolbar-btn"
+        *ngIf="isCaretInTable"
+        (mousedown)="$event.preventDefault()"
+        (click)="addTableColumnAfter()"
+        [disabled]="disabled || readonly"
+        title="Add column after">
+        <i class="fa fa-columns"></i>
+      </button>
       <button type="button" class="toolbar-btn" (click)="clearFormatting()" [disabled]="disabled || readonly" title="Clear Formatting">
         <i class="fa fa-eraser"></i>
       </button>
@@ -70,6 +98,33 @@
       </button>
     </div>
     <input type="file" #imageInput accept="image/*" style="display: none" (change)="onImageFileSelected($event)" />
+  </div>
+
+  <!-- Insert table: rows/columns -->
+  <div
+    class="table-insert-popup"
+    *ngIf="showTablePopup"
+    [style.top.px]="tablePopupPosition.top"
+    [style.left.px]="tablePopupPosition.left"
+    (click)="$event.stopPropagation()">
+    <div class="table-popup-header">
+      <h4><i class="fa fa-table"></i> Insert table</h4>
+      <button type="button" class="close-btn" (click)="cancelTablePopup()" title="Close"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="table-popup-body">
+      <div class="form-group">
+        <label>Rows</label>
+        <input type="number" class="form-control" [(ngModel)]="tableRows" min="1" max="50" />
+      </div>
+      <div class="form-group">
+        <label>Columns</label>
+        <input type="number" class="form-control" [(ngModel)]="tableCols" min="1" max="50" />
+      </div>
+    </div>
+    <div class="table-popup-footer">
+      <button type="button" class="btn-cancel" (click)="cancelTablePopup()">Cancel</button>
+      <button type="button" class="btn-apply" (click)="applyTableInsert()"><i class="fa fa-table"></i> Insert</button>
+    </div>
   </div>
 
   <!-- Link Builder Popup (same as pre-merge blog) -->
@@ -184,6 +239,7 @@
     (blur)="onBlur()"
     (keyup)="onKeyUp()"
     (mouseup)="onMouseUp()"
+    (paste)="onPaste($event)"
     [class.focused]="_isFocused"
     [class.empty]="getPlainText().trim().length === 0">
   </div>

@@ -2,7 +2,8 @@
 .blog-add-edit.mainClass {
   max-width: 1200px;
   margin: 0 auto;
-  padding-bottom: 80px;
+  /* Space so last form fields are not hidden behind fixed action bar */
+  padding-bottom: 96px;
 }
 
 .blog-form-wrapper {
@@ -125,6 +126,67 @@
   padding: 24px;
 }
 
+.featured-image-field {
+  .featured-image-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .featured-image-preview-wrap {
+    flex: 0 0 auto;
+    width: 220px;
+    min-height: 96px;
+    max-height: 140px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    &--broken {
+      padding: 12px;
+    }
+  }
+
+  .featured-image-preview {
+    width: 100%;
+    height: 100%;
+    max-height: 140px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .featured-image-actions {
+    min-width: 200px;
+  }
+
+  /** App brand orange — high specificity so Bootstrap / layout link styles do not win */
+  .btn.btn-featured-upload.btn-sm {
+    color: #fff !important;
+    background-color: var(--app-primary, #f57722) !important;
+    border: 1px solid var(--app-primary, #f57722) !important;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+      color: #fff !important;
+      background-color: var(--app-primary-light, #ff9d2a) !important;
+      border-color: var(--app-primary-light, #ff9d2a) !important;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 0.2rem rgba(245, 119, 34, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.65;
+    }
+  }
+}
+
 .form-actions {
   display: flex;
   gap: 12px;
@@ -133,6 +195,74 @@
 
 .form-actions .btn i {
   margin-right: 6px;
+}
+
+/* Sticky bottom bar: Cancel + Update / Publish (matches admin main-content offset on desktop) */
+.form-actions--fixed {
+  position: fixed;
+  z-index: 1020;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 !important;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.08);
+}
+
+@media (min-width: 768px) {
+  .form-actions--fixed {
+    /* Align with admin layout `.main-content` (sidebar ~250px) */
+    left: 250px;
+  }
+}
+
+.btn-form-add-section {
+  margin-right: auto; /* keep on the left within the fixed bar */
+  font-weight: 600;
+  border-color: var(--app-primary, #f57722) !important;
+  color: var(--app-primary, #f57722) !important;
+
+  &:hover:not(:disabled) {
+    background: var(--app-primary-bg, rgba(245, 119, 34, 0.08)) !important;
+    border-color: var(--app-primary, #f57722) !important;
+    color: var(--app-primary, #f57722) !important;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba(245, 119, 34, 0.25);
+  }
+}
+
+.btn-form-cancel {
+  min-width: 100px;
+}
+
+.btn-form-submit {
+  color: #fff !important;
+  background-color: var(--app-primary, #f57722) !important;
+  border: 1px solid var(--app-primary, #f57722) !important;
+  font-weight: 600;
+  min-width: 120px;
+
+  &:hover:not(:disabled) {
+    color: #fff !important;
+    background-color: var(--app-primary-light, #ff9d2a) !important;
+    border-color: var(--app-primary-light, #ff9d2a) !important;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba(245, 119, 34, 0.35);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+  }
 }
 
 /* Content Originality & AI Detection Summary */

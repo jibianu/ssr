@@ -175,13 +175,76 @@ export class AdminAppService {
             params: { pageNumber: String(pageNumber), pageSize: String(pageSize) }
         });
     }
-    /** Admin: approve blog. POST /api/admin/blog/review/{id}/approve */
+    /**
+     * Admin: publish/approve blog.
+     * 1) POST /api/admin/blog/{id}/publish
+     * 2) POST /api/admin/blog/review/{id}/approve
+     * 3) GET blog + PUT /api/admin/blog/{id}?publish=true (uses the same route as Save — works when POST subpaths are not routed)
+     */
     approveBlog(id: string, approvalNote?: string): Observable<void> {
-        return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/approve`, { approvalNote: approvalNote ?? '' });
+        const body = { approvalNote: approvalNote ?? '' };
+        const primary = this.apiUrl + `api/admin/blog/` + id + `/publish`;
+        return this.http.post<void>(primary, body).pipe(
+            catchError((err) => {
+                if (err?.status === 404) {
+                    return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/approve`, body);
+                }
+                return throwError(() => err);
+            }),
+            catchError((err) => {
+                if (err?.status === 404) {
+                    return this.publishBlogViaPut(id);
+                }
+                return throwError(() => err);
+            })
+        );
     }
-    /** Admin: reject blog with reason. POST /api/admin/blog/review/{id}/reject */
+
+    /** When dedicated approve endpoints 404, re-save via PUT ?publish=true (backend runs ApproveBlogAsync). */
+    private publishBlogViaPut(id: string): Observable<void> {
+        return this.getAdminBlogById(id).pipe(
+            switchMap((b) => {
+                const payload = this.mapAdminBlogToCreateOrUpdatePayload(b);
+                const url = `${this.apiUrl}api/admin/blog/${encodeURIComponent(id)}?publish=true`;
+                return this.http.put<any>(url, payload);
+            }),
+            map(() => undefined)
+        );
+    }
+
+    private mapAdminBlogToCreateOrUpdatePayload(b: any): any {
+        const sectionsRaw = b?.blogSections ?? b?.BlogSections ?? [];
+        const sections = Array.isArray(sectionsRaw)
+            ? sectionsRaw.map((s: any, i: number) => ({
+                id: s.id ?? s.Id,
+                title: s.title ?? s.Title ?? '',
+                content: s.content ?? s.Content ?? '',
+                sequenceNumber: s.sequenceNumber ?? s.SequenceNumber ?? (i + 1)
+            }))
+            : [];
+        return {
+            title: b?.title ?? b?.Title ?? '',
+            canonicalUrl: b?.canonicalUrl ?? b?.CanonicalUrl ?? '',
+            content: b?.content ?? b?.Content ?? '',
+            metaDescription: b?.metaDescription ?? b?.MetaDescription ?? '',
+            titleImgUrl: b?.titleImgUrl ?? b?.TitleImgUrl ?? '',
+            showOnDashboard: b?.showOnDashboard ?? b?.ShowOnDashboard ?? false,
+            categoryId: b?.categoryId ?? b?.CategoryId ?? '',
+            blogSections: sections
+        };
+    }
+    /** Admin: reject blog with reason. POST /api/admin/blog/{id}/reject, fallback to review path. */
     rejectBlog(id: string, rejectionReason: string): Observable<void> {
-        return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/reject`, { rejectionReason: rejectionReason || '' });
+        const body = { rejectionReason: rejectionReason || '' };
+        const primary = this.apiUrl + `api/admin/blog/` + id + `/reject`;
+        return this.http.post<void>(primary, body).pipe(
+            catchError((err) => {
+                if (err?.status === 404) {
+                    return this.http.post<void>(this.apiUrl + `api/admin/blog/review/` + id + `/reject`, body);
+                }
+                return throwError(() => err);
+            })
+        );
     }
     /** Normalize review history from API (handles camelCase/PascalCase and wrapped { data } / { results }). */
     private normalizeReviewHistory(raw: any): { eventType: number; eventDate: string; message: string | null }[] {
@@ -456,7 +519,11 @@ export class AdminAppService {
     }
 
     deleteImage(imageUrl: string): Observable<any> {
-        return this.http.post(this.apiUrl + `api/CurriculumVideoLecture/DeleteImage`, { imageUrl });
+        // PascalCase + camelCase so model binding works regardless of JSON settings
+        return this.http.post(this.apiUrl + `api/CurriculumVideoLecture/DeleteImage`, {
+            imageUrl,
+            ImageUrl: imageUrl
+        });
     }
     /** Upload file to backend; backend uploads to S3. Always send file in POST to avoid CORS (no direct PUT to S3 from browser). */
     uploadDocumnet(file: File, docType): Observable<any> {

@@ -85,8 +85,8 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   });
 
   ngOnInit(): void {
-    // SSR / embedded: resolver data lives on the same ActivatedRoute as SlugResolverComponent.
-    const slugPage = this.route.snapshot.data['slugPage'] as SlugPageData | undefined;
+    // SSR hydration: @Input may not replay before ngOnInit; walk ancestors like public-course-details.
+    const slugPage = this.findSlugPageDataInAncestors();
     if (slugPage?.type === 'blog' && slugPage.blog != null) {
       this.applyBlogData(slugPage.blog as BlogDetailDto);
       this.initBlogDetailBrowserOnly();
@@ -134,6 +134,19 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.cancelTocScrollSpyRaf();
+  }
+
+  /** Walks ActivatedRoute parents to read `slugPage` from SlugResolverModule (SSR + client hydration). */
+  private findSlugPageDataInAncestors(): SlugPageData | undefined {
+    let r: ActivatedRoute | null = this.route;
+    while (r) {
+      const d = r.snapshot.data['slugPage'] as SlugPageData | undefined;
+      if (d) {
+        return d;
+      }
+      r = r.parent;
+    }
+    return undefined;
   }
 
   private applyBlogData(data: BlogDetailDto | null): void {

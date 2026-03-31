@@ -1,8 +1,11 @@
 /**
- * Development Environment Configuration
- * 
- * This file is used when running: ng serve or ng build (without --configuration production)
- * For production builds, see: environment.prod.ts
+ * Development environment (ng serve / non-production build).
+ *
+ * API URL: only this `apiUrl` is used in dev — `assets/config.json` is not fetched
+ * (`loadApiUrl` in api-url.config.ts skips the fetch when `!environment.production`).
+ *
+ * Production builds use `environment.prod.ts` (or unified) and may load `config.json`;
+ * localhost in `config.json` is ignored on non-localhost hosts in favor of the prod `apiUrl`.
  */
 export const environment = {
   production: false,

@@ -137,6 +137,18 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false
+            },
+            "unified-local": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/elearn/src/environments/environment.ts",
+                  "with": "projects/elearn/src/environments/environment.unified.local.ts"
+                }
+              ],
+              "baseHref": "/",
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false
             }
           },
           "defaultConfiguration": "production"

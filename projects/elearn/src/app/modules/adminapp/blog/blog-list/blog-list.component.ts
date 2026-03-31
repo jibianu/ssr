@@ -11,6 +11,7 @@ import { ToasterService } from '../../../../shared/component/toaster/toaster.ser
 import { SearchBlogComponent } from '../../../../shared/modals/search-blog/search-blog.component';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
+import { resolveAdminAppSegment } from '../../../../core/helpers/app-url.helper';
 
 @Component({
   selector: 'app-blog-list',
@@ -55,8 +56,7 @@ export class BlogListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sharedService.certificateName.next('Blog List');
-    const href = this.document.location.href;
-    this.txtRoute = href.includes('/trainer/') ? 'trainer' : href.includes('management') ? 'management' : 'admin';
+    this.txtRoute = resolveAdminAppSegment(this.document.location?.pathname || '');
     /** Show Filter button in topbar only for admin/management, not for trainer. */
     this.sharedService.showBlogListToolbar.next(this.txtRoute !== 'trainer');
     this.sub.add(
@@ -268,6 +268,44 @@ export class BlogListComponent implements OnInit, OnDestroy {
     if (s === 2) return 'Published';
     if (s === 3) return 'Rejected';
     return 'Draft';
+  }
+
+  /** Admin / management: show Publish in list for Draft or Pending Review. */
+  get showPublishInList(): boolean {
+    return this.txtRoute === 'admin' || this.txtRoute === 'management';
+  }
+
+  canPublishFromList(item: any): boolean {
+    if (!item || item.isDeleted) return false;
+    const s = item.status ?? 0;
+    return s === 0 || s === 1;
+  }
+
+  publishBlog(item: any): void {
+    const ref = this.modalService.open(ConfirmationModalComponent);
+    ref.componentInstance.title = 'Publish blog';
+    ref.componentInstance.descText =
+      (item?.status ?? 0) === 1
+        ? 'Approve this post and make it live on the public site?'
+        : 'This post is still a draft. Publish it now and make it live on the public site?';
+    ref.componentInstance.confirmStyle = 'primary';
+    ref.componentInstance.confirmLabel = 'Publish';
+    ref.result.then(
+      (result) => {
+        if (result === 'ok') {
+          this.sub.add(
+            this.appService.approveBlog(item.id).subscribe({
+              next: () => {
+                this.toasterService.showSuccess('Blog published.');
+                this.fetchBlogs();
+              },
+              error: () => this.toasterService.showError('Failed to publish blog.')
+            })
+          );
+        }
+      },
+      () => {}
+    );
   }
 
   deleteBlog(item: any): void {
