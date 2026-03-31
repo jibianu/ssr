@@ -241,6 +241,16 @@
       <button type="button" class="btn btn-outline-secondary btn-form-add-section" (click)="addSectionFromBottom()">
         <i class="fa fa-plus"></i> Add Section
       </button>
+      <button
+        *ngIf="id"
+        type="button"
+        class="btn btn-outline-danger btn-form-delete-blog"
+        (click)="confirmDeleteBlog()"
+        [disabled]="saving || deleting"
+        title="Delete this blog">
+        <i class="fa" [ngClass]="deleting ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+        {{ deleting ? 'Deleting…' : 'Delete blog' }}
+      </button>
       <button type="button" class="btn btn-outline-secondary btn-form-cancel" (click)="cancel()"><i class="fa fa-times"></i> Cancel</button>
       <button type="submit" class="btn btn-form-submit" [disabled]="saving">
         <i class="fa" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>

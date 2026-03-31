@@ -93,6 +93,12 @@ export class SharedService {
   blogReviewApproveClick$ = new Subject<void>();
   /** Emit when Reject is clicked in topbar (blog edit page opens modal and handles). */
   blogReviewRejectClick$ = new Subject<void>();
+  /** Blog edit (topbar) actions: publish/unpublish/delete (blog add-edit handles API). */
+  blogTopbarPublishClick$ = new Subject<void>();
+  blogTopbarUnpublishClick$ = new Subject<void>();
+  blogTopbarDeleteClick$ = new Subject<void>();
+  /** Disable blog topbar actions while API is in progress. */
+  blogTopbarBusy$ = new BehaviorSubject<boolean>(false);
   /** Emit when Approve is clicked in topbar (course edit page – curriculum list handles). */
   courseReviewApproveClick$ = new Subject<void>();
   /** Emit when Reject is clicked in topbar (course edit page opens reject modal and handles). */

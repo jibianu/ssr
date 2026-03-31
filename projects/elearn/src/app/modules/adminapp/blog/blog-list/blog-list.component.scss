@@ -85,12 +85,12 @@
   box-shadow: 0 1px 0 #e0d8eb;
 }
 
-/* Tighter action column (single Delete button) */
+/* Action column (publish/unpublish/delete) */
 .list-table-modern__table .list-table-modern__th--action,
 .list-table-modern__table .list-table-modern__td--action {
-  width: 80px;
-  min-width: 80px;
-  max-width: 80px;
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
 }
 
 /* Row: clickable, same hover tone */

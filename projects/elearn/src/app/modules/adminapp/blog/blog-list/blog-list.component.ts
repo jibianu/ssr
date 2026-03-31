@@ -281,6 +281,12 @@ export class BlogListComponent implements OnInit, OnDestroy {
     return s === 0 || s === 1;
   }
 
+  canUnpublishFromList(item: any): boolean {
+    if (!item || item.isDeleted) return false;
+    const s = item.status ?? 0;
+    return s === 2;
+  }
+
   publishBlog(item: any): void {
     const ref = this.modalService.open(ConfirmationModalComponent);
     ref.componentInstance.title = 'Publish blog';
@@ -308,6 +314,30 @@ export class BlogListComponent implements OnInit, OnDestroy {
     );
   }
 
+  unpublishBlog(item: any): void {
+    const ref = this.modalService.open(ConfirmationModalComponent);
+    ref.componentInstance.title = 'Unpublish blog';
+    ref.componentInstance.descText = 'Remove this post from the public site and move it back to Draft?';
+    ref.componentInstance.confirmStyle = 'danger';
+    ref.componentInstance.confirmLabel = 'Unpublish';
+    ref.result.then(
+      (result) => {
+        if (result === 'ok') {
+          this.sub.add(
+            this.appService.unpublishBlog(item.id).subscribe({
+              next: () => {
+                this.toasterService.showSuccess('Blog unpublished.');
+                this.fetchBlogs();
+              },
+              error: () => this.toasterService.showError('Failed to unpublish blog.')
+            })
+          );
+        }
+      },
+      () => {}
+    );
+  }
+
   deleteBlog(item: any): void {
     const ref = this.modalService.open(ConfirmationModalComponent);
     ref.componentInstance.title = 'Delete Blog';
@@ -321,7 +351,10 @@ export class BlogListComponent implements OnInit, OnDestroy {
             this.appService.deleteBlog(item.id).subscribe({
               next: () => {
                 this.toasterService.showSuccess('Blog deleted.');
-                this.fetchBlogs();
+                // Backend does soft-delete; in the UI we remove it immediately to match user expectation.
+                const id = String(item?.id ?? '');
+                this.allBlogs = (this.allBlogs || []).filter((b) => String(b?.id ?? '') !== id);
+                this.applyFilters();
               },
               error: () => this.toasterService.showError('Failed to delete blog.')
             })

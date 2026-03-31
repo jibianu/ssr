@@ -117,6 +117,15 @@
                   [attr.aria-label]="'Publish: ' + item.title">
                   <i class="fa fa-globe" aria-hidden="true"></i>
                 </button>
+                <button
+                  *ngIf="showPublishInList && canUnpublishFromList(item)"
+                  type="button"
+                  class="list-table-modern__btn list-table-modern__btn--warning"
+                  (click)="unpublishBlog(item)"
+                  title="Unpublish"
+                  [attr.aria-label]="'Unpublish: ' + item.title">
+                  <i class="fa fa-ban" aria-hidden="true"></i>
+                </button>
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteBlog(item)" title="Delete" [disabled]="item.isDeleted"><i class="fa fa-trash"></i></button>
               </div>
             </td>

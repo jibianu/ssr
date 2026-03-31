@@ -102,21 +102,66 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       switchMap(res => {
         if (res === undefined) return of(null);
         if (res === null) {
-          // Fallback: slug resolver table may miss some older course slugs.
+          // Fallback: slug resolver table may miss some older blog/event/course slugs.
           const fallbackSlug = this.slug();
           if (!fallbackSlug) {
             this.notFound.set(true);
             this.loading.set(false);
             return of(null);
           }
-          this.type.set('course');
-          this.resolved.set({ type: 'course', slug: fallbackSlug });
-          return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
-            switchMap((basic) => basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })),
+          return this.blogService.getBlogBySlug(fallbackSlug).pipe(
+            switchMap((blog) => {
+              if (blog) {
+                this.type.set('blog');
+                this.resolved.set({ type: 'blog', slug: fallbackSlug });
+                this.blogPrefetch.set(blog);
+                return of(true);
+              }
+              return this.adminService.getEventByCanonicalURL(fallbackSlug).pipe(
+                switchMap((event: any) => {
+                  if (event?.id) {
+                    this.type.set('event');
+                    this.resolved.set({ type: 'event', slug: fallbackSlug });
+                    return this.publicAppService.getUpcomingEvents(event.id).pipe(
+                      catchError(() => of([])),
+                      switchMap((upcoming: any[]) => {
+                        this.eventData.set({ ...event, upcomingEvents: upcoming || [] });
+                        return of(true);
+                      })
+                    );
+                  }
+                  this.type.set('course');
+                  this.resolved.set({ type: 'course', slug: fallbackSlug });
+                  return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
+                    switchMap((basic) =>
+                      basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })
+                    )
+                  );
+                }),
+                catchError(() => {
+                  this.type.set('course');
+                  this.resolved.set({ type: 'course', slug: fallbackSlug });
+                  return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
+                    switchMap((basic) =>
+                      basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })
+                    )
+                  );
+                })
+              );
+            }),
             catchError(() => {
-              this.notFound.set(true);
-              this.loading.set(false);
-              return of(null);
+              this.type.set('course');
+              this.resolved.set({ type: 'course', slug: fallbackSlug });
+              return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
+                switchMap((basic) =>
+                  basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })
+                ),
+                catchError(() => {
+                  this.notFound.set(true);
+                  this.loading.set(false);
+                  return of(null);
+                })
+              );
             })
           );
         }

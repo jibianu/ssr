@@ -20,7 +20,7 @@ import { PublicCourseHomeComponent } from './public-course/public-course-home/pu
 import { PublicCategoryComponent } from './public-course/public-category/public-category.component';
 import { PublicCourseListComponent } from './public-course/public-course-list/public-course-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
-import { WorldsLargestRefineriesComponent } from './worlds-largest-refineries/worlds-largest-refineries.component';
+//import { WorldsLargestRefineriesComponent } from './worlds-largest-refineries/worlds-largest-refineries.component';
 import { TermsAndConditionComponent } from './terms-and-condition/terms-and-condition.component';
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
@@ -250,18 +250,20 @@ const routes: Routes = [
       }
     } as RouteSeoData
   },
-  { 
-    path: 'worlds-largest-refineries', 
-    component: WorldsLargestRefineriesComponent,
-    data: {
-      seo: {
-        title: 'World\'s Largest Refineries - Oilandgasclub | Industry Insights',
-        description: 'Explore the world\'s largest refineries and their impact on the global oil and gas industry. Educational content and industry analysis.',
-        keywords: 'largest refineries, oil and gas industry, refinery analysis, global energy',
-        type: 'article'
-      }
-    } as RouteSeoData
-  },
+  // { 
+  //   path: 'worlds-largest-refineries', 
+  //   component: WorldsLargestRefineriesComponent,
+  //   data: {
+  //     seo: {
+  //       title: 'World\'s Largest Refineries - Oilandgasclub | Industry Insights',
+  //       description: 'Explore the world\'s largest refineries and their impact on the global oil and gas industry. Educational content and industry analysis.',
+  //       keywords: 'largest refineries, oil and gas industry, refinery analysis, global energy',
+  //       type: 'article'
+  //     }
+  //   } as RouteSeoData
+  // },
+  // ✅ Aliases: old/typo marketing slugs → canonical blog slug (admin canonicalUrl: "worlds-largest-refineries")
+  { path: 'worlds-largest-refineries-new', redirectTo: 'worlds-largest-refineries', pathMatch: 'full' },
   { 
     path: 'terms-and-conditions', 
     component: TermsAndConditionComponent,

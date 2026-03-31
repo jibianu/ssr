@@ -165,6 +165,33 @@ export class AdminAppService {
     deleteBlog(id: string): Observable<void> {
         return this.http.delete<void>(this.apiUrl + `api/admin/blog/` + id);
     }
+    /**
+     * Admin/management: unpublish blog (Published -> Draft).
+     * 1) POST /api/admin/blog/{id}/unpublish
+     * 2) GET blog + PUT /api/admin/blog/{id}?unpublish=true (gateway-safe)
+     */
+    unpublishBlog(id: string): Observable<void> {
+        const primary = this.apiUrl + `api/admin/blog/` + id + `/unpublish`;
+        return this.http.post<void>(primary, {}).pipe(
+            catchError((err) => {
+                if (err?.status === 404) {
+                    return this.unpublishBlogViaPut(id);
+                }
+                return throwError(() => err);
+            })
+        );
+    }
+
+    private unpublishBlogViaPut(id: string): Observable<void> {
+        return this.getAdminBlogById(id).pipe(
+            switchMap((b) => {
+                const payload = this.mapAdminBlogToCreateOrUpdatePayload(b);
+                const url = `${this.apiUrl}api/admin/blog/${encodeURIComponent(id)}?unpublish=true`;
+                return this.http.put<any>(url, payload);
+            }),
+            map(() => undefined)
+        );
+    }
     /** Trainer: submit blog for admin review. POST /api/admin/blog/{id}/submit-for-review */
     submitBlogForReview(id: string, message?: string): Observable<void> {
         return this.http.post<void>(this.apiUrl + `api/admin/blog/` + id + `/submit-for-review`, { message: message ?? '' });

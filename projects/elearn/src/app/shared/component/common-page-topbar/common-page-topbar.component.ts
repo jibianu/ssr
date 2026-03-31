@@ -57,6 +57,12 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   showBlogReviewButton = false;
   /** Show Submit for Review in topbar when on blog edit and status is not Pending (trainer can submit). */
   showBlogSubmitForReviewButton = false;
+  /** Blog edit actions shown in topbar (publish/unpublish/delete). */
+  showBlogPublishAction = false;
+  showBlogUnpublishAction = false;
+  showBlogDeleteAction = false;
+  blogTopbarBusy = false;
+  private blogStatus: number | null = null;
   /** Show Review button when event context is set (event edit with event loaded); opens event review sidebar. */
   showEventReviewButton = false;
   logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
@@ -253,6 +259,18 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
       this.sharedService.blogReviewContext.subscribe((ctx) => {
         this.showBlogReviewButton = !!ctx;
         this.showBlogSubmitForReviewButton = !!(ctx && ctx.status !== 1);
+        this.blogStatus = ctx ? Number(ctx.status) : null;
+        const url = this.router.url || '';
+        const isAdminOrManagement = url.includes('/admin/') || url.includes('/management/');
+        this.showBlogPublishAction = !!(ctx && isAdminOrManagement && (ctx.status === 0 || ctx.status === 1));
+        this.showBlogUnpublishAction = !!(ctx && isAdminOrManagement && ctx.status === 2);
+        this.showBlogDeleteAction = !!ctx;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.blogTopbarBusy$.subscribe((busy) => {
+        this.blogTopbarBusy = !!busy;
         this.cdr.markForCheck();
       })
     );
@@ -316,6 +334,21 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   /** Open blog review sidebar (blog add-edit handles and shows Submit for Review / Approve / Reject + history). */
   onBlogReviewPanelClick(): void {
     this.sharedService.blogReviewPanelClick$.next();
+  }
+
+  onBlogPublishClick(): void {
+    if (this.blogTopbarBusy) return;
+    this.sharedService.blogTopbarPublishClick$.next();
+  }
+
+  onBlogUnpublishClick(): void {
+    if (this.blogTopbarBusy) return;
+    this.sharedService.blogTopbarUnpublishClick$.next();
+  }
+
+  onBlogDeleteClick(): void {
+    if (this.blogTopbarBusy) return;
+    this.sharedService.blogTopbarDeleteClick$.next();
   }
 
   onBlogSubmitForReviewClick(): void {

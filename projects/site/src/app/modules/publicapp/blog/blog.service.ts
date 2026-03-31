@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, of, from } from 'rxjs';
+import { catchError, map, concatMap, first } from 'rxjs/operators';
 import { API_URL } from 'src/app/core/config/api-url.config';
 
 export interface BlogCategoryDto {
@@ -126,10 +126,36 @@ export class BlogService {
   }
 
   getBlogBySlug(slug: string): Observable<BlogDetailDto | null> {
-    const encoded = encodeURIComponent(slug);
-    return this.http.get<any>(`${this.apiRoot}/${encoded}`).pipe(
-      map((raw) => this.normalizeBlogDetailDto(raw)),
-      catchError(() => of(null))
+    const raw = (slug ?? '').toString().trim();
+    if (!raw) return of(null);
+
+    const noLead = raw.replace(/^\/+/, '');
+    const noTrail = noLead.replace(/\/+$/, '');
+    const candidates = Array.from(
+      new Set(
+        [
+          raw,
+          noLead,
+          noTrail,
+          `/${noLead}`,
+          `/${noTrail}`,
+          raw.toLowerCase(),
+          noLead.toLowerCase(),
+          noTrail.toLowerCase()
+        ].map((s) => (s ?? '').toString().trim()).filter(Boolean)
+      )
+    );
+
+    // Some backends store canonicalUrl with/without leading '/', or case-normalize it.
+    // Try a few variants before returning null.
+    return from(candidates).pipe(
+      concatMap((s) =>
+        this.http.get<any>(`${this.apiRoot}/${encodeURIComponent(s)}`).pipe(
+          map((res) => this.normalizeBlogDetailDto(res)),
+          catchError(() => of(null))
+        )
+      ),
+      first((b) => b != null, null)
     );
   }
 

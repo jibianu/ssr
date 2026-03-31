@@ -20,7 +20,7 @@ const RESERVED_SINGLE_SEGMENT = new Set(
     'courses-offered',
     'why-oilandgasclub',
     'build-your-portfolio',
-    'worlds-largest-refineries',
+    //'worlds-largest-refineries',
     'in-house-solutions',
     'policies',
     'mission-and-vision',

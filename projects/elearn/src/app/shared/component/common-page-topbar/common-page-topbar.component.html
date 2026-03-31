@@ -66,6 +66,39 @@
       <ng-container *ngIf="showBlogReviewButton">
         <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onBlogReviewPanelClick()" title="Open review panel"><i class="fa fa-clipboard"></i> Review</button>
       </ng-container>
+      <ng-container *ngIf="showBlogPublishAction">
+        <button
+          type="button"
+          class="common-topbar__action-btn common-topbar__action-btn--success"
+          (click)="onBlogPublishClick()"
+          [disabled]="blogTopbarBusy"
+          title="Publish">
+          <i class="fa" [ngClass]="blogTopbarBusy ? 'fa-spinner fa-spin' : 'fa-globe'" aria-hidden="true"></i>
+          Publish
+        </button>
+      </ng-container>
+      <ng-container *ngIf="showBlogUnpublishAction">
+        <button
+          type="button"
+          class="common-topbar__action-btn common-topbar__action-btn--pending"
+          (click)="onBlogUnpublishClick()"
+          [disabled]="blogTopbarBusy"
+          title="Unpublish">
+          <i class="fa" [ngClass]="blogTopbarBusy ? 'fa-spinner fa-spin' : 'fa-ban'" aria-hidden="true"></i>
+          Unpublish
+        </button>
+      </ng-container>
+      <ng-container *ngIf="showBlogDeleteAction">
+        <button
+          type="button"
+          class="common-topbar__action-btn common-topbar__action-btn--danger"
+          (click)="onBlogDeleteClick()"
+          [disabled]="blogTopbarBusy"
+          title="Delete">
+          <i class="fa" [ngClass]="blogTopbarBusy ? 'fa-spinner fa-spin' : 'fa-trash'" aria-hidden="true"></i>
+          Delete
+        </button>
+      </ng-container>
       <ng-container *ngIf="showEventReviewButton">
         <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onEventReviewPanelClick(); $event.stopPropagation()" title="Open review panel" tabindex="0"><i class="fa fa-clipboard"></i> Review</button>
       </ng-container>

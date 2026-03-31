@@ -12,6 +12,7 @@ import { resolveAdminAppSegment } from '../../../../core/helpers/app-url.helper'
 import { BlogRejectModalComponent } from '../blog-reject-modal/blog-reject-modal.component';
 import { SubmitForReviewModalComponent } from '../../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
 import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
+import { ConfirmationModalComponent } from '../../../../shared/component/confirmation-modal/confirmation-modal.component';
 
 export interface BlogSectionModel {
   id?: string;
@@ -68,6 +69,10 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
   featuredImageUploading = false;
   /** Featured/header image delete in progress (S3 + DB). */
   featuredImageDeleting = false;
+  /** Soft-delete entire blog in progress. */
+  deleting = false;
+  /** Header (topbar) publish/unpublish/delete in progress. */
+  headerActionInProgress = false;
   /** Hide preview when URL fails to load (broken link). */
   featuredImageBroken = false;
 
@@ -163,6 +168,15 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
       );
       this.sub.add(
         this.sharedService.blogSubmitForReviewClick$.subscribe(() => this.submitForReview())
+      );
+      this.sub.add(
+        this.sharedService.blogTopbarPublishClick$.subscribe(() => this.publishFromTopbar())
+      );
+      this.sub.add(
+        this.sharedService.blogTopbarUnpublishClick$.subscribe(() => this.unpublishFromTopbar())
+      );
+      this.sub.add(
+        this.sharedService.blogTopbarDeleteClick$.subscribe(() => this.confirmDeleteBlog())
       );
       this.sub.add(
         this.sharedService.blogReviewApproveClick$.subscribe(() => {
@@ -767,5 +781,119 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
 
   cancel(): void {
     this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+  }
+
+  /** Delete this blog (soft-delete on server), then return to the list. */
+  confirmDeleteBlog(): void {
+    if (!this.id || this.deleting) return;
+    const ref = this.modalService.open(ConfirmationModalComponent);
+    ref.componentInstance.title = 'Delete Blog';
+    ref.componentInstance.descText =
+      'Are you sure you want to delete this blog? It will be removed from the site.';
+    ref.componentInstance.confirmStyle = 'danger';
+    ref.componentInstance.confirmLabel = 'Delete';
+    ref.result.then(
+      (result) => {
+        if (result !== 'ok' || !this.id) return;
+        this.deleting = true;
+        this.sharedService.blogTopbarBusy$.next(true);
+        this.cdr.markForCheck();
+        this.sub.add(
+          this.appService.deleteBlog(this.id).subscribe({
+            next: () => {
+              this.toasterService.showSuccess('Blog deleted.');
+              this.sharedService.blogTopbarBusy$.next(false);
+              this.router.navigate(['/app', this.txtRoute, 'blog', 'list']);
+            },
+            error: () => {
+              this.toasterService.showError('Failed to delete blog.');
+              this.deleting = false;
+              this.sharedService.blogTopbarBusy$.next(false);
+              this.cdr.markForCheck();
+            }
+          })
+        );
+      },
+      () => {}
+    );
+  }
+
+  /** Publish blog (admin/management only) – mirrors Blog List behavior. */
+  private publishFromTopbar(): void {
+    if (!this.id || this.headerActionInProgress) return;
+    const ref = this.modalService.open(ConfirmationModalComponent);
+    ref.componentInstance.title = 'Publish blog';
+    ref.componentInstance.descText =
+      (this.blogStatus ?? 0) === 1
+        ? 'Approve this post and make it live on the public site?'
+        : 'This post is still a draft. Publish it now and make it live on the public site?';
+    ref.componentInstance.confirmStyle = 'primary';
+    ref.componentInstance.confirmLabel = 'Publish';
+    ref.result.then(
+      (result) => {
+        if (result !== 'ok' || !this.id) return;
+        this.headerActionInProgress = true;
+        this.sharedService.blogTopbarBusy$.next(true);
+        this.cdr.markForCheck();
+        this.sub.add(
+          this.appService.approveBlog(this.id).subscribe({
+            next: () => {
+              this.toasterService.showSuccess('Blog published.');
+              this.blogStatus = 2;
+              this.sharedService.blogReviewContext.next({ blogId: this.id!, status: 2 });
+              this.loadReviewHistory();
+              this.headerActionInProgress = false;
+              this.sharedService.blogTopbarBusy$.next(false);
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.toasterService.showError('Failed to publish blog.');
+              this.headerActionInProgress = false;
+              this.sharedService.blogTopbarBusy$.next(false);
+              this.cdr.markForCheck();
+            }
+          })
+        );
+      },
+      () => {}
+    );
+  }
+
+  /** Unpublish blog (admin/management only): Published → Draft. */
+  private unpublishFromTopbar(): void {
+    if (!this.id || this.headerActionInProgress) return;
+    const ref = this.modalService.open(ConfirmationModalComponent);
+    ref.componentInstance.title = 'Unpublish blog';
+    ref.componentInstance.descText = 'Remove this post from the public site and move it back to Draft?';
+    ref.componentInstance.confirmStyle = 'danger';
+    ref.componentInstance.confirmLabel = 'Unpublish';
+    ref.result.then(
+      (result) => {
+        if (result !== 'ok' || !this.id) return;
+        this.headerActionInProgress = true;
+        this.sharedService.blogTopbarBusy$.next(true);
+        this.cdr.markForCheck();
+        this.sub.add(
+          this.appService.unpublishBlog(this.id).subscribe({
+            next: () => {
+              this.toasterService.showSuccess('Blog unpublished.');
+              this.blogStatus = 0;
+              this.sharedService.blogReviewContext.next({ blogId: this.id!, status: 0 });
+              this.loadReviewHistory();
+              this.headerActionInProgress = false;
+              this.sharedService.blogTopbarBusy$.next(false);
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.toasterService.showError('Failed to unpublish blog.');
+              this.headerActionInProgress = false;
+              this.sharedService.blogTopbarBusy$.next(false);
+              this.cdr.markForCheck();
+            }
+          })
+        );
+      },
+      () => {}
+    );
   }
 }

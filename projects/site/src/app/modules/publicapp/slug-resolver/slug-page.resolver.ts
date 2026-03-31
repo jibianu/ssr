@@ -34,6 +34,47 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
   return slugSvc.resolve(slug).pipe(
     catchError(() => of(null)),
     switchMap((meta) => {
+      // Fallback: slug-resolver table may miss some older blog/event slugs.
+      // Try blog first (cheap) to ensure canonical blog URLs still render + SSR.
+      if (!meta) {
+        return blogSvc.getBlogBySlug(slug).pipe(
+          switchMap((b) => {
+            if (b) {
+              return of({ slug, type: 'blog' as const, blog: b });
+            }
+            return admin.getEventByCanonicalURL(slug).pipe(
+              switchMap((event: { id?: string } | null) => {
+                if (!event?.id) {
+                  return of(null);
+                }
+                return publicApp.getUpcomingEvents(event.id).pipe(
+                  map((upcoming: unknown[]) => ({
+                    slug,
+                    type: 'event' as const,
+                    eventData: { ...event, upcomingEvents: upcoming || [] }
+                  })),
+                  catchError(() =>
+                    of({
+                      slug,
+                      type: 'event' as const,
+                      eventData: { ...event, upcomingEvents: [] }
+                    })
+                  )
+                );
+              }),
+              catchError(() => of(null))
+            );
+          }),
+          catchError(() => of(null)),
+          switchMap((fallbackResolved) => {
+            if (fallbackResolved) {
+              return of(fallbackResolved);
+            }
+            // Still unknown → treat as course below.
+            return of({ slug, type: 'course' as const } as SlugPageData);
+          })
+        );
+      }
       if (meta?.type === 'blog') {
         const blogSlug = (meta.slug || slug).trim();
         return blogSvc.getBlogBySlug(blogSlug).pipe(
