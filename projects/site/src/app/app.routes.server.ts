@@ -21,7 +21,6 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'career', renderMode: RenderMode.Server },
   { path: 'membership', renderMode: RenderMode.Server },
   { path: 'affiliate-program', renderMode: RenderMode.Server },
-  // { path: 'worlds-largest-refineries', renderMode: RenderMode.Server },
   { path: 'in-house-solutions', renderMode: RenderMode.Server },
   { path: 'policies', renderMode: RenderMode.Server },
 

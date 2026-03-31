@@ -20,7 +20,6 @@ const RESERVED_SINGLE_SEGMENT = new Set(
     'courses-offered',
     'why-oilandgasclub',
     'build-your-portfolio',
-    //'worlds-largest-refineries',
     'in-house-solutions',
     'policies',
     'mission-and-vision',
@@ -66,6 +65,10 @@ function getPublicApiBase(): string {
     .trim();
   return u.endsWith('/') ? u : `${u}/`;
 }
+
+type SlugType = 'course' | 'blog' | 'event';
+type SlugResolveEntry = { resolved: { type: SlugType; slug: string } | null; exp: number };
+const slugResolveCache = new Map<string, SlugResolveEntry>();
 
 function extractSingleSegmentSlug(path: string): string | null {
   const clean = path.split('?')[0].split('#')[0].replace(/\/$/, '') || '';
@@ -130,6 +133,109 @@ async function fetchPublicCourseBySlug(slug: string): Promise<Record<string, unk
   }
 }
 
+async function resolveSlugType(slug: string): Promise<{ type: SlugType; slug: string } | null> {
+  const key = (slug || '').trim().toLowerCase();
+  if (!key) return null;
+
+  const now = Date.now();
+  const cached = slugResolveCache.get(key);
+  if (cached && cached.exp > now) {
+    return cached.resolved;
+  }
+
+  const base = getPublicApiBase();
+  const url = `${base}api/slug-resolver/${encodeURIComponent(slug.trim())}`;
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 5000);
+    const res = await fetch(url, { signal: ac.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(t);
+    if (!res.ok) {
+      slugResolveCache.set(key, { resolved: null, exp: now + CACHE_MISS_MS });
+      return null;
+    }
+    const data = (await res.json()) as { type?: unknown; Type?: unknown; slug?: unknown; Slug?: unknown };
+    const typeRaw = (data?.type ?? data?.Type ?? '').toString().trim().toLowerCase();
+    if (typeRaw !== 'course' && typeRaw !== 'blog' && typeRaw !== 'event') {
+      slugResolveCache.set(key, { resolved: null, exp: now + CACHE_MISS_MS });
+      return null;
+    }
+    const slugRaw = (data?.slug ?? data?.Slug ?? slug).toString().trim() || slug.trim();
+    const normalizedSlug = slugRaw
+      .replace(/[?#].*$/, '')
+      .replace(/^\/+/, '')
+      .replace(/&/g, '-')
+      .replace(/[^a-zA-Z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    const resolved = { type: typeRaw as SlugType, slug: normalizedSlug };
+    slugResolveCache.set(key, { resolved, exp: now + CACHE_OK_MS });
+    return resolved;
+  } catch {
+    slugResolveCache.set(key, { resolved: null, exp: now + CACHE_MISS_MS });
+    return null;
+  }
+}
+
+async function fetchPublicBlogBySlug(slug: string): Promise<Record<string, unknown> | null> {
+  const now = Date.now();
+  const key = `blog:${slug.toLowerCase()}`;
+  const cached = courseFetchCache.get(key);
+  if (cached && cached.exp > now) {
+    return cached.course;
+  }
+
+  const base = getPublicApiBase();
+  const url = `${base}api/blog/${encodeURIComponent(slug)}`;
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 8000);
+    const res = await fetch(url, { signal: ac.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(t);
+    if (!res.ok) {
+      courseFetchCache.set(key, { course: null, exp: now + CACHE_MISS_MS });
+      return null;
+    }
+    const data = (await res.json()) as Record<string, unknown>;
+    courseFetchCache.set(key, { course: data, exp: now + CACHE_OK_MS });
+    return data;
+  } catch {
+    courseFetchCache.set(key, { course: null, exp: now + CACHE_MISS_MS });
+    return null;
+  }
+}
+
+async function fetchPublicEventBySlug(slug: string): Promise<Record<string, unknown> | null> {
+  const now = Date.now();
+  const key = `event:${slug.toLowerCase()}`;
+  const cached = courseFetchCache.get(key);
+  if (cached && cached.exp > now) {
+    return cached.course;
+  }
+
+  const base = getPublicApiBase();
+  // Public canonical event detail.
+  const url = `${base}api/events/event/${encodeURIComponent(slug)}`;
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 8000);
+    const res = await fetch(url, { signal: ac.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(t);
+    if (!res.ok) {
+      courseFetchCache.set(key, { course: null, exp: now + CACHE_MISS_MS });
+      return null;
+    }
+    const data = (await res.json()) as Record<string, unknown>;
+    courseFetchCache.set(key, { course: data, exp: now + CACHE_OK_MS });
+    return data;
+  } catch {
+    courseFetchCache.set(key, { course: null, exp: now + CACHE_MISS_MS });
+    return null;
+  }
+}
+
 function absoluteImage(origin: string, raw: string): string {
   const s = (raw ?? '').toString().trim();
   if (!s) return `${origin}/assets/images/og-image.jpg`;
@@ -137,7 +243,7 @@ function absoluteImage(origin: string, raw: string): string {
   return `${origin}/${s.replace(/^\//, '')}`;
 }
 
-function buildMetaSnippet(title: string, description: string, image: string, canonical: string): string {
+function buildMetaSnippet(title: string, description: string, image: string, canonical: string, ogType: string): string {
   const esc = escapeHtmlAttr;
   const desc = description.slice(0, 500);
   return `
@@ -145,7 +251,7 @@ function buildMetaSnippet(title: string, description: string, image: string, can
   <meta name="description" content="${esc(desc)}" />
   <meta property="og:title" content="${esc(title)}" />
   <meta property="og:description" content="${esc(desc)}" />
-  <meta property="og:type" content="article" />
+  <meta property="og:type" content="${esc(ogType)}" />
   <meta property="og:url" content="${esc(canonical)}" />
   <meta property="og:image" content="${esc(image)}" />
   <meta property="og:site_name" content="oilandgasclub" />
@@ -165,6 +271,33 @@ export async function enrichPublicCoursePageIfMissingOg(
   requestPath: string,
   req: Request
 ): Promise<{ html: string; injected: boolean }> {
+  // Static listing pages (inject only if missing OG).
+  const pathOnly = (requestPath || '').split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
+  if ((pathOnly === '/blog' || pathOnly === '/events' || pathOnly === '/courses') && !/property\s*=\s*["']og:title["']/i.test(html)) {
+    const { origin, canonical } = pageOriginAndUrl(req, pathOnly);
+    const title =
+      pathOnly === '/blog'
+        ? 'Blog | Oilandgasclub'
+        : pathOnly === '/events'
+          ? 'Events | Oilandgasclub'
+          : 'Courses | Oilandgasclub';
+    const description =
+      pathOnly === '/blog'
+        ? 'Read the latest oil and gas industry blogs, insights, and learning resources on Oilandgasclub.'
+        : pathOnly === '/events'
+          ? 'Explore upcoming oil and gas events, training sessions, and professional workshops on Oilandgasclub.'
+          : 'Browse oil and gas courses and certification prep programs on Oilandgasclub.';
+    const image = `${origin}/assets/images/og-image.jpg`;
+    const metaBlock = buildMetaSnippet(title, description, image, canonical, 'website');
+    let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtmlText(title)}</title>`);
+    const headClose = /<\/head>/i;
+    if (headClose.test(out)) {
+      out = out.replace(headClose, `${metaBlock}\n</head>`);
+      return { html: out, injected: true };
+    }
+    return { html, injected: false };
+  }
+
   const slug = extractSingleSegmentSlug(requestPath);
   if (!slug) {
     return { html, injected: false };
@@ -172,7 +305,54 @@ export async function enrichPublicCoursePageIfMissingOg(
   if (/property\s*=\s*["']og:title["']/i.test(html)) {
     return { html, injected: false };
   }
-  return enrichCsrShellHtml(html, requestPath, req);
+
+  // Universal slug: resolve type first so we can enrich blog/event too.
+  const resolved = await resolveSlugType(slug);
+  if (!resolved) {
+    return { html, injected: false };
+  }
+
+  if (resolved.type === 'course') {
+    return enrichCsrShellHtml(html, `/${resolved.slug}`, req);
+  }
+
+  if (resolved.type === 'blog') {
+    const blog = await fetchPublicBlogBySlug(resolved.slug);
+    if (!blog) return { html, injected: false };
+    const title = (blog['title'] ?? blog['Title'] ?? 'Blog').toString().trim() || 'Blog';
+    const rawDesc = (blog['metaDescription'] ?? blog['MetaDescription'] ?? blog['description'] ?? blog['Description'] ?? '').toString().trim();
+    const description = rawDesc || `${title} — Oilandgasclub blog.`;
+    const { origin, canonical } = pageOriginAndUrl(req, `/${resolved.slug}`);
+    const rawImg = (blog['titleImgUrl'] ?? blog['TitleImgUrl'] ?? blog['titleImageUrl'] ?? blog['TitleImageUrl'] ?? '').toString().trim();
+    const image = absoluteImage(origin, rawImg);
+    const metaBlock = buildMetaSnippet(title, description, image, canonical, 'article');
+    let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtmlText(title)} | Oilandgasclub</title>`);
+    const headClose = /<\/head>/i;
+    if (headClose.test(out)) {
+      out = out.replace(headClose, `${metaBlock}\n</head>`);
+    }
+    return { html: out, injected: true };
+  }
+
+  if (resolved.type === 'event') {
+    const ev = await fetchPublicEventBySlug(resolved.slug);
+    if (!ev) return { html, injected: false };
+    const title = (ev['title'] ?? ev['Title'] ?? 'Event').toString().trim() || 'Event';
+    const rawDesc = (ev['metaDescription'] ?? ev['MetaDescription'] ?? ev['description'] ?? ev['Description'] ?? '').toString().trim();
+    const description = rawDesc || `${title} — Oilandgasclub event.`;
+    const { origin, canonical } = pageOriginAndUrl(req, `/${resolved.slug}`);
+    const rawImg = (ev['titleImgUrl'] ?? ev['TitleImgUrl'] ?? ev['titleImageUrl'] ?? ev['TitleImageUrl'] ?? ev['bannerImage'] ?? ev['BannerImage'] ?? '').toString().trim();
+    const image = absoluteImage(origin, rawImg);
+    const metaBlock = buildMetaSnippet(title, description, image, canonical, 'article');
+    let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtmlText(title)} | Oilandgasclub</title>`);
+    const headClose = /<\/head>/i;
+    if (headClose.test(out)) {
+      out = out.replace(headClose, `${metaBlock}\n</head>`);
+    }
+    return { html: out, injected: true };
+  }
+
+  return { html, injected: false };
 }
 
 /**
@@ -214,7 +394,7 @@ export async function enrichCsrShellHtml(
     .trim();
   const image = absoluteImage(origin, rawImg);
 
-  const metaBlock = buildMetaSnippet(title, description, image, canonical);
+  const metaBlock = buildMetaSnippet(title, description, image, canonical, 'article');
   let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtmlText(title)} | Oilandgasclub</title>`);
   const headClose = /<\/head>/i;
   if (headClose.test(out)) {

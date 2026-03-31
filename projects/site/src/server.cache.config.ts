@@ -73,7 +73,6 @@ export const STATIC_ROUTES = [
   '/career',
   '/membership',
   '/affiliate-program',
-  //'/worlds-largest-refineries',
   '/in-house-solutions',
   '/policies'
 ];

@@ -20,7 +20,6 @@ import { CorporateTrainingComponent } from './corporate-training/corporate-train
 import { CoursesOfferedComponent } from './courses-offered/courses-offered.component';
 import { WhyOilandgasclubComponent } from './why-oilandgasclub/why-oilandgasclub.component';
 import { BuildYourPortfolioComponent } from './build-your-portfolio/build-your-portfolio.component';
-//import { WorldsLargestRefineriesComponent } from './worlds-largest-refineries/worlds-largest-refineries.component';
 import { TermsAndConditionComponent } from './terms-and-condition/terms-and-condition.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
