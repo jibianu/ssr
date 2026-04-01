@@ -29,7 +29,11 @@ export class UtmService {
       const utmMedium = params.get('utm_medium')?.trim() || undefined;
       const utmCampaign = params.get('utm_campaign')?.trim() || undefined;
       const campaignCode = params.get('cmp')?.trim() || undefined;
-      const affiliateCode = params.get('aff')?.trim() || undefined;
+      // Marketing site uses ?ref=OIL… for affiliates; some links use ?aff=
+      const affiliateCode =
+        params.get('aff')?.trim() ||
+        params.get('ref')?.trim() ||
+        undefined;
       if (utmSource || utmMedium || utmCampaign || campaignCode || affiliateCode) {
         sessionStorage.setItem(
           STORAGE_KEY,

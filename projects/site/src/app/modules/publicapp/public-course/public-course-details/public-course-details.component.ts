@@ -1811,7 +1811,21 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         window.location.href = buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(returnUrl)}`, elearnBase);
         return;
       }
-      const checkoutUrl = elearnBase ? `${elearnBase}/checkout/${encodeURIComponent(String(cid))}` : `/checkout/${encodeURIComponent(String(cid))}`;
+      const ref =
+        (this.affiliateRefCode || '').trim() ||
+        (this.isBrowser
+          ? (() => {
+              try {
+                return (localStorage.getItem(PublicCourseDetailsComponent.AFFILIATE_REF_KEY) || '').trim();
+              } catch {
+                return '';
+              }
+            })()
+          : '');
+      const refQs = ref ? `?ref=${encodeURIComponent(ref)}` : '';
+      const checkoutUrl = elearnBase
+        ? `${elearnBase}/checkout/${encodeURIComponent(String(cid))}${refQs}`
+        : `/checkout/${encodeURIComponent(String(cid))}${refQs}`;
       this.navigateToUrl(checkoutUrl);
       return;
     }
@@ -1830,7 +1844,21 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
               window.location.href = buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(rUrl)}`, base);
               return;
             }
-            const checkoutUrl = base ? `${base}/checkout/${encodeURIComponent(res.id)}` : `/checkout/${encodeURIComponent(res.id)}`;
+            const ref =
+              (this.affiliateRefCode || '').trim() ||
+              (this.isBrowser
+                ? (() => {
+                    try {
+                      return (localStorage.getItem(PublicCourseDetailsComponent.AFFILIATE_REF_KEY) || '').trim();
+                    } catch {
+                      return '';
+                    }
+                  })()
+                : '');
+            const refQs = ref ? `?ref=${encodeURIComponent(ref)}` : '';
+            const checkoutUrl = base
+              ? `${base}/checkout/${encodeURIComponent(res.id)}${refQs}`
+              : `/checkout/${encodeURIComponent(res.id)}${refQs}`;
             this.navigateToUrl(checkoutUrl);
           } else {
             console.warn('Buy button: Could not resolve course ID from slug');

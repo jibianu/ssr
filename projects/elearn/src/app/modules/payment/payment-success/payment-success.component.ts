@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { StripePaymentService } from '../../../services/stripe-payment.service';
 import { StudentDashboardApiService } from '../../student/student-dashboard-api.service';
@@ -32,6 +31,12 @@ export class PaymentSuccessComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Free course: backend enrolled before redirect; session_id is not a real Stripe session.
+    if (this.sessionId === 'free' && this.entityId) {
+      this.router.navigate(['/app/student/course', this.entityId]);
+      return;
+    }
+
     // Event: Payment Element return – confirm event registration then go to event detail.
     if (this.entityType === 'event' && this.entityId) {
       const paymentIntentId = sessionStorage.getItem('paymentIntentId_' + this.entityId);
@@ -81,30 +86,20 @@ export class PaymentSuccessComponent implements OnInit {
       return;
     }
     const data = { entityId: this.entityId, sessionId: this.sessionId };
+    // verifyPayment enrolls via backend; do not call addEnrollCourse again (duplicate → error → wrong redirect).
     this.subscription.add(
-      this.appService.verifyPayment(this.sessionId, data)
-        .pipe(
-          switchMap((res1: any) =>
-            this.appService.getCourseById(this.entityId).pipe(
-              switchMap((res2: any) => {
-                const userId = res2?.loggedInUserId;
-                const obj = {
-                  courseId: this.entityId,
-                  userId,
-                  startDate: new Date(),
-                  endDate: new Date(),
-                  noOfUsers: 1,
-                  isSelected: true
-                };
-                return this.appService.addEnrollCourse(obj);
-              })
-            )
-          )
-        )
-        .subscribe({
-          next: () => this.router.navigate(['/app/student/course', this.entityId]),
-          error: () => this.router.navigate(['/app/student/courses'])
-        })
+      this.appService.verifyPayment(this.sessionId, data).subscribe({
+        next: () => {
+          this.appService.getCourseByCourseID(this.entityId, true).subscribe({
+            next: (course: any) => {
+              if (course) localStorage.setItem('course', JSON.stringify(course));
+              this.router.navigate(['/app/student/course', this.entityId]);
+            },
+            error: () => this.router.navigate(['/app/student/course', this.entityId])
+          });
+        },
+        error: () => this.router.navigate(['/app/student/courses'])
+      })
     );
   }
 

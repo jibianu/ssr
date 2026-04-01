@@ -112,6 +112,21 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return slug ? { publicSlug: slug } : {};
   }
 
+  /** Affiliate code for revenue share: UTM store (?ref= / ?aff=), localStorage from marketing site, or checkout URL. */
+  private affiliateCodeForOrder(): string | undefined {
+    const utm = this.utmService.getStoredUtm();
+    if (utm.affiliateCode?.trim()) return utm.affiliateCode.trim();
+    try {
+      const ls = typeof localStorage !== 'undefined' ? localStorage.getItem('affiliate_ref') : null;
+      if (ls?.trim()) return ls.trim();
+    } catch {
+      /* ignore */
+    }
+    const ref = this.route.snapshot.queryParamMap.get('ref')?.trim();
+    if (ref) return ref;
+    return this.route.snapshot.queryParamMap.get('aff')?.trim() || undefined;
+  }
+
   /** Call this when user clicks "Proceed to payment" so optional coupon is included. */
   createIntentAndMountPayment(): void {
     if (this.data?.course?.discountedPrice == null) return;
@@ -124,7 +139,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       utmMedium: utm.utmMedium,
       utmCampaign: utm.utmCampaign,
       campaignCode: utm.campaignCode,
-      affiliateCode: utm.affiliateCode,
+      affiliateCode: this.affiliateCodeForOrder() ?? utm.affiliateCode,
       couponCode: this.couponCode?.trim() || undefined
     };
     this.creatingIntent = true;
