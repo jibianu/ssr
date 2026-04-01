@@ -65,6 +65,8 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   private blogStatus: number | null = null;
   /** Show Review button when event context is set (event edit with event loaded); opens event review sidebar. */
   showEventReviewButton = false;
+  /** Admin: show Allow course button on Affiliates page. */
+  showAffiliateAllowCoursesButton = false;
   logoUrl = environment.logoUrl || '/assets/img/oilandgas_club.svg';
   homeRoute = '/app/student/courses';
   userEmail = '';
@@ -183,6 +185,12 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.sub.add(
       this.sharedService.showEventListToolbar.subscribe((show) => {
         this.showEventListToolbar = show;
+        this.cdr.markForCheck();
+      })
+    );
+    this.sub.add(
+      this.sharedService.showAffiliateAllowCoursesButton.subscribe((show) => {
+        this.showAffiliateAllowCoursesButton = !!show;
         this.cdr.markForCheck();
       })
     );
@@ -402,6 +410,11 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
 
   onCourseListAddCourseClick(): void {
     this.sharedService.courseListAddCourseClick$.next();
+  }
+
+  onAffiliateAllowCoursesClick(): void {
+    // Navigate to dedicated admin page
+    this.router.navigate(['/app/admin/affiliates/allow-courses']);
   }
 
   onBlogReviewApproveClick(): void {

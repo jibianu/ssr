@@ -169,6 +169,31 @@
         </div>
       </section>
 
+      <!-- Allowed courses (admin decides what affiliate can promote) -->
+      <section class="impact-detail-section">
+        <h3 class="impact-detail-section__title">Allowed courses (editable)</h3>
+        <p class="impact-card__meta">Select which courses this affiliate is allowed to promote. If you click “Allow all”, they can promote any published course.</p>
+        <div class="allowed-courses">
+          <div class="allowed-courses__toolbar">
+            <button type="button" class="impact-btn impact-btn--outline impact-btn--sm" (click)="allowAllCourses()" [disabled]="commissionSaving">Allow all</button>
+            <button type="button" class="impact-btn impact-btn--primary impact-btn--sm" (click)="saveAllowedCourses()" [disabled]="commissionSaving || !allowedCoursesDirty">Save allowed courses</button>
+            <span class="allowed-courses__loading" *ngIf="loadingCourses">Loading courses…</span>
+          </div>
+          <div class="allowed-courses__list" *ngIf="allCourses?.length">
+            <label class="allowed-courses__item" *ngFor="let c of allCourses">
+              <input
+                type="checkbox"
+                [checked]="isCourseAllowed(c.id)"
+                (change)="toggleCourseAllowed(c.id, $any($event.target).checked)"
+                [disabled]="commissionSaving"
+              />
+              <span class="allowed-courses__title">{{ c.title }}</span>
+            </label>
+          </div>
+          <p class="impact-card__meta" *ngIf="!loadingCourses && (!allCourses || allCourses.length === 0)">No published courses found.</p>
+        </div>
+      </section>
+
       <!-- Extended profile -->
       <section class="impact-detail-section">
         <h3 class="impact-detail-section__title">Extended profile</h3>

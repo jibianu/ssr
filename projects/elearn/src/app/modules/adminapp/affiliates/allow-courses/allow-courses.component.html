@@ -1,0 +1,41 @@
+<div class="allow-courses">
+  <header class="allow-courses__header">
+    <div>
+      <h1 class="allow-courses__title">Allow courses for affiliate</h1>
+      <p class="allow-courses__subtitle">Admin can select which courses an affiliate is allowed to promote. If none selected, all published courses are allowed.</p>
+    </div>
+    <button type="button" class="allow-courses__refresh" (click)="load()" [disabled]="loading">Refresh</button>
+  </header>
+
+  <div class="allow-courses__controls">
+    <label class="allow-courses__label">Affiliate</label>
+    <select class="allow-courses__select" [(ngModel)]="selectedAffiliateId" (ngModelChange)="onAffiliateChange()" [disabled]="loading">
+      <option [value]="ALL_USERS_ID">All users</option>
+    </select>
+
+    <div class="allow-courses__actions">
+      <button type="button" class="allow-courses__btn allow-courses__btn--outline" (click)="allowAll()" [disabled]="saving || loading">Allow all</button>
+      <button type="button" class="allow-courses__btn allow-courses__btn--primary" (click)="save()" [disabled]="saving || loading || !dirty">
+        {{ saving ? 'Saving…' : 'Save' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="allow-courses__body" *ngIf="!loading">
+    <div class="allow-courses__empty" *ngIf="!courses.length">No published courses found.</div>
+    <div class="allow-courses__list" *ngIf="courses.length">
+      <label class="allow-courses__item" *ngFor="let c of courses">
+        <input
+          type="checkbox"
+          [checked]="isAllowed(c.id)"
+          (change)="toggle(c.id, $any($event.target).checked)"
+          [disabled]="saving"
+        />
+        <span class="allow-courses__course">{{ c.title }}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="allow-courses__loading" *ngIf="loading">Loading…</div>
+</div>
+

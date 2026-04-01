@@ -4375,14 +4375,15 @@ select.add-course__select:not(.add-course__select--placeholder) {
   margin-bottom: 0.75rem !important;
 }
 
-/* Single-page layout: same as admin profile (Trainer, Company, Management) – full size, topbar + sidebar; scrollbar at dead end right */
+/* Single-page layout: same as admin profile (Trainer, Company, Management) – full size, topbar + sidebar; scrollbar at dead end right.
+   Padding matches fixed .common-topbar (56px); old 156px left a large blank gap below the header. */
 .app-single-layout {
   width: 100%;
   height: 100vh;
   max-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: calc(156px + 0.5rem);
+  padding-top: calc(56px + 0.5rem);
   background: #f1f5f9;
   box-sizing: border-box;
   overflow: hidden;
@@ -4408,7 +4409,7 @@ select.add-course__select:not(.add-course__select--placeholder) {
 
 @media (min-width: 992px) {
   .app-single-layout {
-    padding-top: calc(156px + 0.5rem);
+    padding-top: calc(56px + 0.5rem);
   }
 }
 

@@ -536,13 +536,13 @@ img {
   position: relative;
   background-color:#FFFFFF;
   overflow: hidden;
-  height: 400px;
 }
 
 .article-img img {
   width: 100%;
+  height: auto;
   object-fit: cover;
-  height: 75vh;
+  display: block;
 }
 
 .text-ellipse{

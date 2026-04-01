@@ -8,8 +8,10 @@
     <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="isBlockTypeAllowed('assignment')" (click)="addBlock('assignment')">Assignment</button>
   </div>
 
-  <!-- Block-specific toolbar navbar (shows only for active block type) -->
-  <div class="lesson-editor__navbar" *ngIf="isAuthorMode && (blockSelection.activeBlock | async) as active">
+  <!-- Block-specific toolbar navbar (shows only for active block type).
+       Avoid `*ngIf="a && (obs|async) as x"` — breaks embedded view / factory in some prod builds. -->
+  <ng-container *ngIf="isAuthorMode">
+    <div class="lesson-editor__navbar" *ngIf="blockSelection.activeBlock | async as active">
     <!-- Text block toolbar -->
     <div class="lesson-editor__navbar-toolbar" *ngIf="active.blockType === 'text'" (mousedown)="$event.preventDefault()">
       <select class="lesson-editor__navbar-select" (change)="onFormatBlock($event)" (mousedown)="$event.preventDefault()">
@@ -47,7 +49,8 @@
     <div class="lesson-editor__navbar-toolbar lesson-editor__navbar-toolbar--muted" *ngIf="active.blockType === 'assignment'">
       <span class="small text-muted">Assignment block selected – edit details below</span>
     </div>
-  </div>
+    </div>
+  </ng-container>
 
   <!-- Blocks (no min-height when empty in author mode – removes blocker space) -->
   <div class="lesson-editor__blocks" [class.lesson-editor__blocks--empty]="blocks.length === 0" (click)="onBlocksAreaClick($event)">

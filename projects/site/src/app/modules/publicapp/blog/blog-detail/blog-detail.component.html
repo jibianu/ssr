@@ -6,6 +6,14 @@
     <p class="text-muted">Blog post not found.</p>
     <a routerLink="/blog" class="btn btn-primary">Back to Blog</a>
   } @else if (blog(); as b) {
+    <!-- Mobile: compact header like Medium -->
+    <div class="blog-mobile-header">
+      <a routerLink="/blog" class="blog-mobile-header__back" aria-label="Back to Blog">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      </a>
+      <div class="blog-mobile-header__title" [title]="displayTitle()">{{ displayTitle() }}</div>
+    </div>
+
     <div class="blog-container">
       <div class="blog-main m-15px-tb">
         <article class="article">
@@ -216,6 +224,19 @@
           </div>
         </div>
         </aside>
+    </div>
+
+    <!-- Mobile sticky bottom actions -->
+    <div class="blog-mobile-bottom-bar" aria-label="Blog actions">
+      <button type="button" class="blog-mobile-bottom-bar__btn" (click)="toggleLike()" [class.is-active]="isLiked()" aria-label="Like">
+        <i class="fa" [ngClass]="isLiked() ? 'fa-heart' : 'fa-heart-o'" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="blog-mobile-bottom-bar__btn" (click)="toggleBookmark()" [class.is-active]="isBookmarked()" aria-label="Bookmark">
+        <i class="fa" [ngClass]="isBookmarked() ? 'fa-bookmark' : 'fa-bookmark-o'" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="blog-mobile-bottom-bar__btn" (click)="shareUrl()" aria-label="Share">
+        <i class="fa fa-share-alt" aria-hidden="true"></i>
+      </button>
     </div>
   }
   </div>

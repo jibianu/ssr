@@ -43,6 +43,8 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   blog = signal<BlogDetailDto | null>(null);
   loading = signal(true);
   notFound = signal(false);
+  isLiked = signal(false);
+  isBookmarked = signal(false);
   showSubscribePopup = signal(false);
   newsletterEmail = '';
   isSubscribingSidebar = false;
@@ -85,6 +87,9 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   });
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.releaseBodyScrollLocksIfAny();
+    }
     // SSR hydration: @Input may not replay before ngOnInit; walk ancestors like public-course-details.
     const slugPage = this.findSlugPageDataInAncestors();
     if (slugPage?.type === 'blog' && slugPage.blog != null) {
@@ -133,7 +138,32 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.releaseBodyScrollLocksIfAny();
+    }
     this.cancelTocScrollSpyRaf();
+  }
+
+  /**
+   * Safety net: if any global UI (mobile menu/popup) left body locked (position:fixed),
+   * release it so the page can scroll again.
+   */
+  private releaseBodyScrollLocksIfAny(): void {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    const body = document.body;
+    if (!body) return;
+    const wasFixed = (body.style.position || '') === 'fixed';
+    const top = body.style.top || '';
+    body.style.position = '';
+    body.style.top = '';
+    body.style.width = '';
+    body.style.overflow = '';
+    if (wasFixed && top) {
+      const n = parseInt(top, 10);
+      if (!Number.isNaN(n)) {
+        window.scrollTo(0, n * -1);
+      }
+    }
   }
 
   /** Walks ActivatedRoute parents to read `slugPage` from SlugResolverModule (SSR + client hydration). */
@@ -155,6 +185,7 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
     this.loading.set(false);
     this.activeSection.set('');
     this.applySeoForBlog(data);
+    this.syncReactionsFromStorage(data);
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
         this.updateSidebarPosition();
@@ -174,6 +205,42 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private reactionKey(kind: 'like' | 'bookmark', blogId: string): string {
+    return `blog_${kind}_${blogId}`;
+  }
+
+  private syncReactionsFromStorage(data: BlogDetailDto | null): void {
+    if (!isPlatformBrowser(this.platformId) || typeof localStorage === 'undefined') return;
+    const id = (data?.id || '').toString();
+    if (!id) {
+      this.isLiked.set(false);
+      this.isBookmarked.set(false);
+      return;
+    }
+    this.isLiked.set(localStorage.getItem(this.reactionKey('like', id)) === 'true');
+    this.isBookmarked.set(localStorage.getItem(this.reactionKey('bookmark', id)) === 'true');
+  }
+
+  toggleLike(): void {
+    const b = this.blog();
+    if (!b?.id) return;
+    const next = !this.isLiked();
+    this.isLiked.set(next);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.reactionKey('like', String(b.id)), String(next));
+    }
+  }
+
+  toggleBookmark(): void {
+    const b = this.blog();
+    if (!b?.id) return;
+    const next = !this.isBookmarked();
+    this.isBookmarked.set(next);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.reactionKey('bookmark', String(b.id)), String(next));
+    }
   }
 
   private applySeoForBlog(data: BlogDetailDto | null): void {
@@ -308,7 +375,18 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
     const anchor = document.querySelector(
       `ul.blog-toc__list a.toc-link[href="#${sectionId}"]`
     ) as HTMLElement | null;
-    anchor?.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    if (!anchor) return;
+    const list = anchor.closest('ul.blog-toc__list--scroll') as HTMLElement | null;
+    if (!list) return;
+    // Never use scrollIntoView on the anchor: on mobile the TOC is below the article and
+    // the browser will scroll the *page* to bring the link into view → jumpy scroll near
+    // loop-marketing blocks. Only adjust scrollTop inside the TOC list.
+    if (list.scrollHeight <= list.clientHeight + 1) return;
+    const listRect = list.getBoundingClientRect();
+    const anchorRect = anchor.getBoundingClientRect();
+    const delta =
+      anchorRect.top - listRect.top - list.clientHeight / 2 + anchorRect.height / 2;
+    list.scrollTop += delta;
   }
 
   /**

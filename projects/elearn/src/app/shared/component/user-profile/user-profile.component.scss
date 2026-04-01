@@ -1,4 +1,18 @@
 /* Profile page – refined design: soft avatar panel, outlined inputs, orange accents */
+/* Student / course shell sets router-outlet + * { height:100%; overflow:hidden } which clips long forms.
+   Scroll on this host so Social links / Contact number stay reachable (scrollbar on main column). */
+:host {
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  scrollbar-gutter: stable;
+}
+
 $orange: #FF5722;
 $orange-dark: #E64A19;
 $orange-light: rgba(255, 87, 34, 0.08);
@@ -65,29 +79,29 @@ $bg-avatar-panel-end: #ffefe8;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
-/* Embedded card: same as admin – scrollable body + fixed Update/Cancel at bottom */
+/* Embedded card: height follows form content; parent .profile-page__content--embedded scrolls.
+   (flex:1 + overflow:hidden on .profile-card would clip fields below the viewport on desktop.) */
 .profile-card--embedded {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 .profile-form--embedded {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 .profile-form--embedded .profile-form__body {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
 }
@@ -344,6 +358,81 @@ $bg-avatar-panel-end: #ffefe8;
   font-size: 0.9375rem;
   color: $text-muted;
   font-weight: 500;
+}
+
+/* Replaces “Update your account details” — always-visible guidance + CTA */
+.profile-page__header--intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
+  animation: profileIntroFadeIn 0.4s ease-out;
+}
+
+@keyframes profileIntroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-page__intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.profile-page__intro-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 1.35rem;
+  color: #ea580c;
+}
+
+.profile-page__intro-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  font-weight: 500;
+  color: #334155;
+}
+
+.profile-page__intro-cta {
+  flex-shrink: 0;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.profile-page--embedded .profile-page__header--intro {
+  margin-bottom: 20px;
+}
+
+@media (max-width: 576px) {
+  .profile-page__header--intro {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .profile-page__intro-cta {
+    align-self: stretch;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Card – grows with content so Update/Cancel are visible when scrolling */
@@ -639,11 +728,13 @@ $bg-avatar-panel-end: #ffefe8;
 
   .profile-form {
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
+  /* Do not stretch full form height — avoids a tall peach “placeholder” strip beside fields */
   .profile-form__avatar-section {
     flex: 0 0 260px;
+    align-self: flex-start;
     border-radius: 16px 0 0 16px;
     border-bottom: none;
     border-right: 1px solid $border;
@@ -661,9 +752,10 @@ $bg-avatar-panel-end: #ffefe8;
     min-width: 0;
   }
 
-  /* Embedded: body = avatar + fields side by side, same as admin */
+  /* Embedded: body = avatar + fields side by side; row height follows fields, outer column scrolls */
   .profile-form--embedded .profile-form__body {
     flex-direction: row;
+    align-items: flex-start;
   }
 
   .profile-form--embedded .profile-form__avatar-section {

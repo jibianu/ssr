@@ -38,11 +38,12 @@ export class RegisterAffiliateComponent {
       return;
     }
     this.submitting = true;
-    const defaultUserName = this.usernameFromEmail(this.email) || this.email;
+    const defaultName = this.usernameFromEmail(this.email) || this.email;
     const request = {
-      FirstName: this.email,
-      LastName: this.email,
-      UserName: defaultUserName,
+      // Backend requires UserName to be an email for affiliate signup.
+      FirstName: defaultName,
+      LastName: defaultName,
+      UserName: this.email,
       Email: this.email,
       Password: this.password
     };

@@ -56,7 +56,12 @@
         </button>
       </div>
     </div>
-    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerListToolbar || showTrainerDashboardToolbar || showBlogListToolbar || showEventListToolbar || topbarPrimaryAction || showBlogReviewButton || showEventReviewButton">
+    <div class="common-topbar__actions" *ngIf="showAddCategoryButton || showUserMappingButton || showCourseListToolbar || showTrainerListToolbar || showTrainerDashboardToolbar || showBlogListToolbar || showEventListToolbar || topbarPrimaryAction || showBlogReviewButton || showEventReviewButton || showAffiliateAllowCoursesButton">
+      <ng-container *ngIf="showAffiliateAllowCoursesButton">
+        <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onAffiliateAllowCoursesClick()">
+          <i class="fa fa-check-square-o"></i> Allow course
+        </button>
+      </ng-container>
       <ng-container *ngIf="showBlogListToolbar">
         <button type="button" class="common-topbar__action-btn common-topbar__action-btn--outline" (click)="onBlogListFilterClick()"><i class="fa fa-filter"></i> Filter</button>
       </ng-container>

@@ -90,10 +90,6 @@ export class AffiliateOnboardingComponent implements OnInit {
       next: (p) => {
         this.profile = p;
         this.loading = false;
-        if (p.profileCompleted) {
-          this.router.navigate(['/app/affiliate/dashboard']);
-          return;
-        }
         this.businessCategory = p.businessCategory ?? '';
         this.entityType = p.entityType ?? 'Individual';
         this.accountDisplayName = p.accountDisplayName ?? '';
@@ -105,6 +101,8 @@ export class AffiliateOnboardingComponent implements OnInit {
         this.zip = p.zip ?? '';
         this.timezone = p.timezone ?? '(GMT+05:30) India Standard Time';
         this.currency = p.currency ?? 'INR';
+        // If user already accepted previously (or profile is completed), keep it checked so edits can be saved.
+        this.acceptAgreement = !!p.agreementAcceptedAt || !!p.profileCompleted;
         this.promotionLinks = (p.promotionLinks ?? []).map(l => ({
           channelType: l.channelType,
           platform: l.platform,

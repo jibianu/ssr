@@ -49,6 +49,16 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     private toaster: ToasterService
   ) {}
 
+  private errorMessage(err: any, fallback: string): string {
+    return (
+      err?.error?.message ??
+      err?.error?.Message ??
+      (Array.isArray(err?.error?.Messages) ? err.error.Messages[0] : null) ??
+      err?.message ??
+      fallback
+    );
+  }
+
   /** Normalize affiliate links so that in dev they point to localhost:4200, and in prod use the real domain. */
   private normalizeLink(link: string | null | undefined): string {
     if (!link) {
@@ -95,7 +105,10 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
           this.loadProfile();
         }
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        this.loading = false;
+        this.toaster.showError(this.errorMessage(err, 'Failed to load dashboard.'));
+      }
     });
   }
 
@@ -106,8 +119,9 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
         this.snapshot = data;
         this.loadingSnapshot = false;
       },
-      error: () => {
+      error: (err) => {
         this.loadingSnapshot = false;
+        this.toaster.showError(this.errorMessage(err, 'Failed to load snapshot.'));
       }
     });
   }
@@ -127,7 +141,10 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
         this.profile = data;
         this.loadingProfile = false;
       },
-      error: () => { this.loadingProfile = false; }
+      error: (err) => {
+        this.loadingProfile = false;
+        this.toaster.showError(this.errorMessage(err, 'Failed to load profile.'));
+      }
     });
   }
 
@@ -138,7 +155,10 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
         this.coursesForLinks = list ?? [];
         this.loadingCourses = false;
       },
-      error: () => { this.loadingCourses = false; }
+      error: (err) => {
+        this.loadingCourses = false;
+        this.toaster.showError(this.errorMessage(err, 'Failed to load courses.'));
+      }
     });
   }
 
@@ -171,16 +191,21 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
 
   saveCompleteApplication(): void {
     if (!this.dashboard) return;
+    const linkedIn = (this.completeLinkedIn ?? '').trim();
     this.completeSubmitting = true;
     this.completeSuccess = false;
-    this.affiliateService.updateApplication(this.completePhone, this.completeLinkedIn, this.completeReason).pipe(first()).subscribe({
+    this.affiliateService.updateApplication(this.completePhone, linkedIn || '', this.completeReason).pipe(first()).subscribe({
       next: () => {
         this.completeSubmitting = false;
         this.completeSuccess = true;
+        this.toaster.showSuccess('Saved successfully. You are under review. After Oilandgasclub approve you can promote the course. You can contact support.');
         this.loadDashboard();
         setTimeout(() => (this.completeSuccess = false), 3000);
       },
-      error: () => { this.completeSubmitting = false; }
+      error: (err) => {
+        this.completeSubmitting = false;
+        this.toaster.showError(this.errorMessage(err, 'Failed to save. Please check inputs and try again.'));
+      }
     });
   }
 

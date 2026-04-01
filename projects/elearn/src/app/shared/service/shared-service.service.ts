@@ -106,6 +106,11 @@ export class SharedService {
   /** Emit when profile image changes so sidebar/topbar can update. */
   profileImageUrl$ = new Subject<string | null>();
 
+  /** Show "Allow course" button in topbar (Admin Affiliates page). */
+  showAffiliateAllowCoursesButton = new BehaviorSubject<boolean>(false);
+  /** Emit when "Allow course" button is clicked in topbar (Admin Affiliates page handles). */
+  affiliateAllowCoursesClick$ = new Subject<void>();
+
   emitProfileImageUrl(url: string | null): void {
     this.profileImageUrl$.next(url);
   }

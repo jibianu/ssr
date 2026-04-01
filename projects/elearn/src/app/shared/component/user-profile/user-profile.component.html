@@ -66,8 +66,12 @@
     <!-- Embedded: inside Student/Trainer/Company/Management layout – content only, layout provides topbar/sidebar -->
     <div *ngIf="embeddedMode" class="profile-page profile-page--embedded">
       <div class="profile-page__main profile-page__main--embedded">
-        <header class="profile-page__header">
-          <p class="profile-page__subtitle">Update your account details</p>
+        <header class="profile-page__header profile-page__header--intro" role="region" aria-label="Profile guidance">
+          <div class="profile-page__intro">
+            <i class="fa fa-info-circle profile-page__intro-icon" aria-hidden="true"></i>
+            <p class="profile-page__intro-text">{{ profileIntroMessage }}</p>
+          </div>
+          <button type="button" class="btn btn--primary profile-page__intro-cta" (click)="scrollProfileFormIntoView()">Update Now</button>
         </header>
         <div class="profile-page__content profile-page__content--embedded">
           <div class="profile-card profile-card--embedded">
@@ -232,8 +236,12 @@
 
       <!-- Main content (with margin when sidebar visible) -->
       <div class="profile-page__main">
-        <header class="profile-page__header">
-          <p class="profile-page__subtitle">Update your account details</p>
+        <header class="profile-page__header profile-page__header--intro" role="region" aria-label="Profile guidance">
+          <div class="profile-page__intro">
+            <i class="fa fa-info-circle profile-page__intro-icon" aria-hidden="true"></i>
+            <p class="profile-page__intro-text">{{ profileIntroMessage }}</p>
+          </div>
+          <button type="button" class="btn btn--primary profile-page__intro-cta" (click)="scrollProfileFormIntoView()">Update Now</button>
         </header>
 
         <div class="profile-page__content">

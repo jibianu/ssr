@@ -1,8 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminAffiliatesComponent } from './admin-affiliates.component';
+import { AllowCoursesComponent } from './allow-courses/allow-courses.component';
 
 const routes: Routes = [
+  { path: 'allow-courses', component: AllowCoursesComponent },
   { path: '', component: AdminAffiliatesComponent },
 ];
 

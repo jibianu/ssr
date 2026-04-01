@@ -46,6 +46,17 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   get embeddedMode(): boolean {
     return this.embedded || (this.router.url?.startsWith('/app/student') ?? false);
   }
+
+  /**
+   * Header guidance: students see certificate accuracy; trainers and other roles see communication-only copy.
+   */
+  get profileIntroMessage(): string {
+    if (this.roleId === Role.Student) {
+      return 'Keep your profile updated, including your contact number and LinkedIn details, so we can communicate better and generate your certificates accurately.';
+    }
+    return 'Keep your profile updated, including your contact number and LinkedIn details, so we can communicate better.';
+  }
+
   /** Sidebar: menu items by role (same as shared navbar); show sidebar for Admin, Trainer, Company, Management, Affiliate. */
   menuItems: NavbarMenuItem[] = [];
   hideSideNav = false;
@@ -97,6 +108,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   toggleSideNav(): void {
     this.hideSideNav = !this.hideSideNav;
+  }
+
+  /** Scroll the account-details card into view (Update Now). */
+  scrollProfileFormIntoView(): void {
+    const card = (this.elementRef.nativeElement as HTMLElement).querySelector('.profile-card');
+    (card as HTMLElement | null)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   ngOnInit(): void {

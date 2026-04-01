@@ -23,6 +23,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
   error = '';
   private subscription = new Subscription();
 
+  /** Affiliate ref from course link (?ref=OILXXXXX). Stored by course details page. */
+  private static readonly AFFILIATE_REF_KEY = 'affiliate_ref';
+  private static readonly AFFILIATE_REF_COURSE_KEY = 'affiliate_ref_course';
+
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
@@ -58,8 +62,21 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck(); // ✅ PERFORMANCE: Trigger change detection for OnPush
     
     // ✅ PERFORMANCE: Add subscription to cleanup on destroy
+    const value: any = { ...(this.registerForm.value || {}) };
+    // Attach affiliate attribution if present (no UI needed).
+    try {
+      const code = localStorage.getItem(RegisterComponent.AFFILIATE_REF_KEY);
+      if (code && typeof code === 'string' && code.trim()) {
+        value.AffiliateCode = code.trim();
+      }
+      const courseId = localStorage.getItem(RegisterComponent.AFFILIATE_REF_COURSE_KEY);
+      if (courseId && typeof courseId === 'string' && courseId.trim()) {
+        value.AffiliateCourseId = courseId.trim();
+      }
+    } catch (_) {}
+
     this.subscription.add(
-      this.authenticationService.register(this.registerForm.value)
+      this.authenticationService.register(value)
         .pipe(first())
         .subscribe({
           next: (data) => {

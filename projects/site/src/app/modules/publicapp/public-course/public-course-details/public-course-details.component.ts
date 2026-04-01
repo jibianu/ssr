@@ -11,6 +11,7 @@ import { AuthenticationService } from '../../../auth/auth.service';
 import { environment } from './../../../../../environments/environment';
 import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
 import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'app-public-course-details, app-course-content',
@@ -111,6 +112,11 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   private readonly changeDetectorRef: ChangeDetectorRef;
   private readonly authService: AuthenticationService;
   private subscription = new Subscription();
+  /** Affiliate ref from ?ref=OILXXXXX */
+  private affiliateRefCode: string | null = null;
+  private static readonly AFFILIATE_REF_KEY = 'affiliate_ref';
+  private static readonly AFFILIATE_REF_COURSE_KEY = 'affiliate_ref_course';
+  private static readonly AFFILIATE_REF_DAYS = 30;
 
   /** Shown when free enroll API fails */
   enrollError: string | null = null;
@@ -136,7 +142,8 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     structuredDataService: StructuredDataService,
     publicAppService: PublicAppService,
     changeDetectorRef: ChangeDetectorRef,
-    authService: AuthenticationService
+    authService: AuthenticationService,
+    private http: HttpClient
   ) {
     // ✅ FIX: Initialize injected services in constructor to ensure injector is available
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -166,6 +173,17 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   private extraLoaded = false;
 
   ngOnInit(): void {
+    // Affiliate tracking: store ?ref and record click (no auth required)
+    const qpSub = this.route.queryParamMap.subscribe((q) => {
+      const ref = (q.get('ref') || '').trim();
+      if (ref) {
+        this.affiliateRefCode = ref;
+        this.setAffiliateRef(ref);
+        this.trackAffiliateClick(ref);
+      }
+    });
+    this.subscription.add(qpSub);
+
     const getSlug = () =>
       this.courseSlug
       ?? this.route.snapshot.paramMap.get('courseSlug')
@@ -368,10 +386,38 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.course = data;
     this.courseDetails = data;
     this.expandedCurriculumIndex = 0;
+    // If this visit has an affiliate ref, store the courseId for attribution on signup.
+    if (this.affiliateRefCode && this.courseDetails?.id) {
+      try {
+        localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_COURSE_KEY, String(this.courseDetails.id));
+        const expires = new Date();
+        expires.setDate(expires.getDate() + PublicCourseDetailsComponent.AFFILIATE_REF_DAYS);
+        localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_COURSE_KEY + '_exp', expires.toISOString());
+      } catch (_) {}
+    }
     const slug = (canonicalSlugHint ?? this.courseSlug ?? (data.canonicalUrl ?? data.CanonicalUrl ?? '')).toString().trim();
     this.setComponentProperties(data, null, slug, noCoursesPrefix);
     this.isLoaded = true;
     this.isLoading = false;
+  }
+
+  private setAffiliateRef(code: string): void {
+    try {
+      localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_KEY, code);
+      const expires = new Date();
+      expires.setDate(expires.getDate() + PublicCourseDetailsComponent.AFFILIATE_REF_DAYS);
+      localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_KEY + '_exp', expires.toISOString());
+      document.cookie = `${PublicCourseDetailsComponent.AFFILIATE_REF_KEY}=${encodeURIComponent(code)}; path=/; max-age=${PublicCourseDetailsComponent.AFFILIATE_REF_DAYS * 24 * 60 * 60}; SameSite=Lax`;
+    } catch (_) {}
+  }
+
+  private trackAffiliateClick(code: string): void {
+    const apiBase = ((environment as any).apiUrl || '').toString().replace(/\/$/, '');
+    if (!apiBase) return;
+    // No auth, no UI impact; ignore errors
+    this.subscription.add(
+      this.http.post<void>(`${apiBase}/api/affiliate/track-click`, { affiliateCode: code }).subscribe({ next: () => {}, error: () => {} })
+    );
   }
 
   /** Apply course data from CourseShell (resolver); canonical URL is /:slug (no /courses/). */
@@ -1752,7 +1798,8 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     const c = this.course ?? this.courseDetails;
     const cid = this.courseId || (c?.id ?? c?.Id);
     const elearnBase = (environment.elearnAppUrl || '').trim().replace(/\/$/, '');
-    const returnUrl = cid ? `/app/student/course/${String(cid)}` : '';
+    // For PAID courses, returnUrl must be the checkout page (otherwise user bypasses payment after login).
+    const returnUrl = cid ? `/checkout/${String(cid)}` : '';
     if (cid) {
       this.authService.ensureTokensLoaded();
       if (!this.authService.hasValidAccessToken() && !this.authService.getIdToken()) {
@@ -1774,7 +1821,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         next: (res) => {
           if (res?.id) {
             const base = (environment.elearnAppUrl || '').trim().replace(/\/$/, '');
-            const rUrl = `/app/student/course/${res.id}`;
+            const rUrl = `/checkout/${res.id}`;
             this.authService.ensureTokensLoaded();
             if (!this.authService.hasJwtForAuthenticatedApi()) {
               if (typeof window !== 'undefined' && window.localStorage) {

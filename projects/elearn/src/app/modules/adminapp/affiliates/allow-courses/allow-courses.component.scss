@@ -1,0 +1,136 @@
+$gray-50: #f8fafc;
+$gray-100: #f1f5f9;
+$gray-200: #e2e8f0;
+$gray-500: #64748b;
+$gray-700: #334155;
+$gray-900: #0f172a;
+$primary: #2563eb;
+$primary-dark: #1d4ed8;
+
+.allow-courses {
+  padding: 0 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.allow-courses__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.allow-courses__title {
+  margin: 0 0 6px 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: $gray-900;
+}
+
+.allow-courses__subtitle {
+  margin: 0;
+  color: $gray-500;
+  font-size: 0.95rem;
+}
+
+.allow-courses__refresh {
+  border: 1px solid $gray-200;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.allow-courses__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: $gray-50;
+  border: 1px solid $gray-200;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.allow-courses__label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.allow-courses__select {
+  min-width: 320px;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $gray-200;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.allow-courses__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.allow-courses__btn {
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+}
+
+.allow-courses__btn--outline {
+  background: transparent;
+  color: $primary;
+  border: 1px solid $primary;
+}
+
+.allow-courses__btn--primary {
+  background: $primary;
+  color: #fff;
+  &:hover { background: $primary-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.allow-courses__body {
+  margin-top: 14px;
+}
+
+.allow-courses__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px 14px;
+  max-height: 520px;
+  overflow: auto;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid $gray-200;
+  border-radius: 12px;
+}
+
+.allow-courses__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  cursor: pointer;
+  input { margin-top: 3px; }
+}
+
+.allow-courses__course {
+  color: $gray-700;
+  line-height: 1.25rem;
+}
+
+.allow-courses__empty,
+.allow-courses__loading {
+  padding: 20px 12px;
+  color: $gray-500;
+}
+

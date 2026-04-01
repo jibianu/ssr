@@ -3,15 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedService } from '../../../shared/service/shared-service.service';
 import { ToasterService } from '../../../shared/component/toaster/toaster.service';
+import { AdminAppService } from '../adminapp.service';
 import {
   AdminAffiliateApiService,
   AdminAffiliateListItem,
   AdminAffiliateDetail,
   AdminAffiliateCourseCommission,
+  AdminAffiliateCourseOption,
 } from './admin-affiliate-api.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { environment } from '../../../../environments/environment';
 import { first } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-affiliates',
@@ -35,22 +38,42 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
   editCourseCommissions: { courseId: string; courseTitle: string; commissionPercent: number }[] = [];
   commissionSaving = false;
   courseCommissionsDirty = false;
+  /** Admin-selectable allowlist of promotable courses. */
+  allCourses: AdminAffiliateCourseOption[] = [];
+  loadingCourses = false;
+  allowedCourseIds = new Set<string>();
+  allowedCoursesDirty = false;
+  private sub = new Subscription();
 
   constructor(
     private api: AdminAffiliateApiService,
     private sharedService: SharedService,
     private toaster: ToasterService,
-    private modal: NgbModal
+    private modal: NgbModal,
+    private adminAppService: AdminAppService
   ) {}
 
   ngOnInit(): void {
     this.sharedService.certificateName.next('Affiliates');
     this.load();
+    this.enableAllowCoursesTopbarButton();
   }
 
   ngOnDestroy(): void {
     this.sharedService.certificateName.next('');
+    this.sharedService.showAffiliateAllowCoursesButton.next(false);
+    this.sub.unsubscribe();
   }
+
+  private enableAllowCoursesTopbarButton(): void {
+    // This permission endpoint returns true for Admin/Management; keeps the intent explicit.
+    this.adminAppService.GetPermissionByAction('CourseList').pipe(first()).subscribe({
+      next: (allowed) => this.sharedService.showAffiliateAllowCoursesButton.next(!!allowed),
+      error: () => this.sharedService.showAffiliateAllowCoursesButton.next(false),
+    });
+  }
+
+  // Topbar button navigates to /app/admin/affiliates/allow-courses (handled in topbar).
 
   load(): void {
     this.loading = true;
@@ -137,6 +160,8 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
     this.detailModal = null;
     this.detailAffiliateId = item.id;
     this.detailLoading = true;
+    this.allowedCoursesDirty = false;
+    this.allowedCourseIds = new Set<string>();
     this.api.getDetails(item.id).pipe(first()).subscribe({
       next: (detail) => {
         this.detailModal = detail;
@@ -146,16 +171,36 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
           courseTitle: c.courseTitle,
           commissionPercent: c.commissionPercent,
         }));
+        // Init allowlist set from API if present; fallback to "all allowed" (empty set means no restriction).
+        const ids = detail.allowedCourseIds ?? [];
+        this.allowedCourseIds = new Set<string>(ids.map((x) => String(x)));
+        this.allowedCoursesDirty = false;
         this.courseCommissionsDirty = false;
         this.detailLoading = false;
         if (this.detailTpl) {
           this.modal.open(this.detailTpl, { size: 'xl', scrollable: true });
         }
+        this.loadCoursesIfNeeded();
       },
       error: () => {
         this.detailLoading = false;
         this.toaster.showError('Failed to load details.');
       },
+    });
+  }
+
+  private loadCoursesIfNeeded(): void {
+    if (this.loadingCourses || this.allCourses.length) return;
+    this.loadingCourses = true;
+    this.api.getPublishedCoursesForSelection().pipe(first()).subscribe({
+      next: (list) => {
+        this.allCourses = list ?? [];
+        this.loadingCourses = false;
+      },
+      error: () => {
+        this.loadingCourses = false;
+        this.allCourses = [];
+      }
     });
   }
 
@@ -202,6 +247,41 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
         this.commissionSaving = false;
         this.toaster.showError('Failed to save per-course commission.');
       },
+    });
+  }
+
+  isCourseAllowed(courseId: string): boolean {
+    // Empty set means "no restriction" (all allowed) unless admin starts editing.
+    if (!this.allowedCourseIds.size && !this.allowedCoursesDirty) return true;
+    return this.allowedCourseIds.has(courseId);
+  }
+
+  toggleCourseAllowed(courseId: string, checked: boolean): void {
+    if (checked) this.allowedCourseIds.add(courseId);
+    else this.allowedCourseIds.delete(courseId);
+    this.allowedCoursesDirty = true;
+  }
+
+  allowAllCourses(): void {
+    // Represent "all" by clearing set and marking dirty.
+    this.allowedCourseIds.clear();
+    this.allowedCoursesDirty = true;
+  }
+
+  saveAllowedCourses(): void {
+    if (!this.detailAffiliateId || this.commissionSaving || !this.allowedCoursesDirty) return;
+    this.commissionSaving = true;
+    const ids = Array.from(this.allowedCourseIds);
+    this.api.updateCommission(this.detailAffiliateId, { allowedCourseIds: ids }).pipe(first()).subscribe({
+      next: () => {
+        this.commissionSaving = false;
+        this.allowedCoursesDirty = false;
+        this.toaster.showSuccess('Allowed courses saved.');
+      },
+      error: () => {
+        this.commissionSaving = false;
+        this.toaster.showError('Failed to save allowed courses.');
+      }
     });
   }
 }

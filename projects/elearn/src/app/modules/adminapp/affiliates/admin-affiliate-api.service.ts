@@ -4,6 +4,11 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
+export interface AdminAffiliateCourseOption {
+  id: string;
+  title: string;
+}
+
 export interface AdminAffiliateListItem {
   id: string;
   name: string;
@@ -49,11 +54,15 @@ export interface AdminAffiliateDetail extends AdminAffiliateListItem {
   currency: string;
   promotionLinks: AdminAffiliatePromotionLink[];
   courseCommissions: AdminAffiliateCourseCommission[];
+  /** Optional allowlist for which courses affiliate can promote (if backend supports). */
+  allowedCourseIds?: string[];
 }
 
 export interface UpdateAffiliateCommissionRequest {
   commissionRate?: number;
   courseCommissions?: { courseId: string; commissionPercent: number }[];
+  /** Optional allowlist for which courses affiliate can promote (if backend supports). */
+  allowedCourseIds?: string[];
 }
 
 export interface AdminReferralItem {
@@ -74,6 +83,7 @@ export interface ApproveAffiliateResponse {
 @Injectable({ providedIn: 'root' })
 export class AdminAffiliateApiService {
   private readonly baseUrl = `${(environment.apiUrl || '').replace(/\/$/, '')}/api/admin/affiliate`;
+  private readonly apiUrl = `${(environment.apiUrl || '').replace(/\/$/, '')}/`;
 
   constructor(private http: HttpClient) {}
 
@@ -125,6 +135,10 @@ export class AdminAffiliateApiService {
       courseTitle: c?.courseTitle ?? c?.CourseTitle ?? '',
       commissionPercent: Number(c?.commissionPercent ?? c?.CommissionPercent ?? 0),
     }));
+    const allowedCourseIdsRaw = r?.allowedCourseIds ?? r?.AllowedCourseIds ?? null;
+    const allowedCourseIds = Array.isArray(allowedCourseIdsRaw)
+      ? allowedCourseIdsRaw.map((x: any) => String(x))
+      : undefined;
     return {
       ...item,
       linkedInProfile: r?.linkedInProfile ?? r?.LinkedInProfile ?? '',
@@ -145,6 +159,7 @@ export class AdminAffiliateApiService {
       currency: r?.currency ?? r?.Currency ?? '',
       promotionLinks: links,
       courseCommissions,
+      allowedCourseIds,
     };
   }
 
@@ -158,5 +173,26 @@ export class AdminAffiliateApiService {
 
   markPaid(id: string): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/${id}/mark-paid`, {});
+  }
+
+  /** Admin helper: list published courses for allowlist selection. */
+  getPublishedCoursesForSelection(pageSize: number = 500): Observable<AdminAffiliateCourseOption[]> {
+    const params: any = {
+      pageNumber: '1',
+      pageSize: String(pageSize),
+      'Filter.IsPublished': 'true',
+      'Sort.PropertyName': 'Title',
+      'Sort.IsAscending': 'true'
+    };
+    return this.http.get<any>(`${this.apiUrl}api/course`, { params }).pipe(
+      map((res) => {
+        const rows = res?.results ?? res?.Results ?? res ?? [];
+        if (!Array.isArray(rows)) return [];
+        return rows.map((c: any) => ({
+          id: String(c?.id ?? c?.Id ?? ''),
+          title: String(c?.title ?? c?.Title ?? '')
+        })).filter((x: AdminAffiliateCourseOption) => !!x.id && !!x.title);
+      })
+    );
   }
 }

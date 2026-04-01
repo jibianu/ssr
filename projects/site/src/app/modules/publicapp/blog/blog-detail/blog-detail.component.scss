@@ -41,14 +41,18 @@
   margin-top: 1.5rem;
   overflow: visible;
   align-content: stretch;
-  grid-auto-flow: column;
-  justify-content: center;
-  justify-items: center;
+  /* Avoid forcing column auto-flow; it can squeeze mobile widths */
+  grid-auto-flow: row;
+  /* Do not center children; it breaks mobile widths */
+  justify-content: stretch;
+  justify-items: stretch;
+  width: 100%;
 }
 
 .blog-main {
   min-width: 0;
   overflow: visible;
+  width: 100%;
 }
 
 /* Same as original blog: main column vertical margin */
@@ -93,6 +97,7 @@
     top: auto;
     width: 100%;
     max-width: 100%;
+    justify-self: stretch;
   }
 
   .blog-aside {
@@ -109,6 +114,136 @@
   .blog-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    justify-items: stretch;
+    justify-content: stretch;
+    grid-auto-flow: row;
+  }
+}
+
+/* Mobile header + sticky bottom actions (Medium/Udemy style) */
+.blog-mobile-header {
+  display: none;
+}
+.blog-mobile-bottom-bar {
+  display: none;
+}
+
+@media (max-width: 576px) {
+  .blog-detail-page {
+    /* space for sticky bottom actions */
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .blog-detail-page .container {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 1.5rem;
+  }
+
+  /* Show compact sticky header */
+  .blog-mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .blog-mobile-header__back {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+    text-decoration: none;
+    background: #fff;
+    flex: 0 0 auto;
+  }
+
+  .blog-mobile-header__title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+  }
+
+  /* Make banner image feel like a hero */
+  .article-img {
+    margin-bottom: 1rem;
+    border-radius: 14px;
+  }
+
+  .article {
+    padding: 1rem;
+    border-radius: 14px;
+    box-shadow: 0 8px 26px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+  }
+
+  /* Hide the big title on mobile; we show it in the sticky header */
+  .article-title .post-title {
+    display: none;
+  }
+
+  .post-body {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  /* Sticky bottom actions */
+  .blog-mobile-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: sticky;
+    bottom: 0;
+    z-index: 60;
+    margin-top: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 14px;
+    padding: 10px 6px;
+    box-shadow: 0 -8px 26px rgba(15, 23, 42, 0.12);
+  }
+
+  .blog-mobile-bottom-bar__btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #fff;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .blog-mobile-bottom-bar__btn.is-active {
+    border-color: rgba(233, 76, 86, 0.5);
+    color: #e94c56;
+    background: rgba(233, 76, 86, 0.08);
+  }
+
+  /* Avoid nested scrolling areas on mobile (can feel like "page can't scroll") */
+  .blog-toc__list--scroll {
+    max-height: none;
+    overflow: visible;
   }
 }
 
@@ -829,6 +964,8 @@
   border: 1px solid #E8E8D3;
   border-radius: 8px;
   font-family: 'Inter', 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  /* Reduce scroll anchoring jumps when this block enters/leaves the viewport */
+  overflow-anchor: none;
 }
 
 /* White card: soft drop shadow, rounded corners */
