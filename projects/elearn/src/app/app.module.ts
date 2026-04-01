@@ -4,6 +4,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
+import { AppEntryRedirectComponent } from './core/components/app-entry-redirect/app-entry-redirect.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -26,7 +27,8 @@ Amplify.configure({
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    AppEntryRedirectComponent
   ],
   imports: [
     BrowserModule,

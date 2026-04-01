@@ -8,6 +8,10 @@ import { StripePaymentService } from '../../../services/stripe-payment.service';
 import { UtmService } from '../../../services/utm.service';
 import { AuthenticationService } from '../../auth/auth.service';
 import { resolveCourseId, resolveCourseSlug } from 'src/app/core/helpers/course-id.helper';
+import {
+  getAbsoluteAppBaseUrlForStripeReturn,
+  resolveToAbsoluteAppUrl
+} from 'src/app/core/helpers/app-url.helper';
 
 @Component({
   selector: 'app-checkout',
@@ -62,7 +66,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.appService.startPurchase(this.courseId).subscribe({
         next: (res) => {
           if (res?.redirectUrl && (res.status === 'already_enrolled' || res.status === 'enrolled')) {
-            window.location.href = res.redirectUrl.startsWith('http') ? res.redirectUrl : (window.location.origin + res.redirectUrl);
+            window.location.href = resolveToAbsoluteAppUrl(res.redirectUrl);
             return;
           }
           if (res?.status === 'payment_required') {
@@ -166,12 +170,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Return URL for payment success – use current origin so user stays on same host. */
+  /** Return URL for payment success – must include SPA mount path (e.g. /course) on unified domain. */
   private getReturnUrl(): string {
-    const base = (typeof window !== 'undefined' && window.location?.origin)
-      ? window.location.origin
-      : ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
-    return `${base.replace(/\/$/, '')}/app/payment/success?entityId=${this.courseId}`;
+    if (typeof window !== 'undefined') {
+      return `${getAbsoluteAppBaseUrlForStripeReturn()}/app/payment/success?entityId=${this.courseId}`;
+    }
+    const fallback = ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
+    return `${fallback}/app/payment/success?entityId=${this.courseId}`;
   }
 
   private async initStripe(): Promise<void> {
@@ -216,10 +221,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.paying = true;
     this.loadError = null;
 
-    const base = (typeof window !== 'undefined' && window.location?.origin)
-      ? window.location.origin.replace(/\/$/, '')
-      : ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
-    const successUrl = `${base}/app/payment/success?entityId=${this.courseId}`;
+    const successUrl =
+      typeof window !== 'undefined'
+        ? `${getAbsoluteAppBaseUrlForStripeReturn()}/app/payment/success?entityId=${this.courseId}`
+        : `${((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '')}/app/payment/success?entityId=${this.courseId}`;
 
     const { error } = await this.stripe.confirmPayment({
       elements: this.elements,

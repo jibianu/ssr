@@ -33,7 +33,7 @@ export class PaymentSuccessComponent implements OnInit {
   ngOnInit(): void {
     // Free course: backend enrolled before redirect; session_id is not a real Stripe session.
     if (this.sessionId === 'free' && this.entityId) {
-      this.router.navigate(['/app/student/course', this.entityId]);
+      this.router.navigate(['/app/student/details/curriculum-list', this.entityId]);
       return;
     }
 
@@ -55,16 +55,16 @@ export class PaymentSuccessComponent implements OnInit {
       return;
     }
 
-    // Course: Payment Element return – ensure enrollment, set course in localStorage, then go to course (curriculum page).
+    // Course: Payment Element return – ensure enrollment, set course in localStorage, then go to curriculum page.
     if (this.entityId && !this.sessionId) {
       const paymentIntentId = sessionStorage.getItem('paymentIntentId_' + this.entityId);
       const goToCourse = () => {
         this.appService.getCourseByCourseID(this.entityId, true).subscribe({
           next: (course: any) => {
             if (course) localStorage.setItem('course', JSON.stringify(course));
-            this.router.navigate(['/app/student/course', this.entityId]);
+            this.router.navigate(['/app/student/details/curriculum-list', this.entityId]);
           },
-          error: () => this.router.navigate(['/app/student/course', this.entityId])
+          error: () => this.router.navigate(['/app/student/details/curriculum-list', this.entityId])
         });
       };
       if (paymentIntentId) {
@@ -93,9 +93,9 @@ export class PaymentSuccessComponent implements OnInit {
           this.appService.getCourseByCourseID(this.entityId, true).subscribe({
             next: (course: any) => {
               if (course) localStorage.setItem('course', JSON.stringify(course));
-              this.router.navigate(['/app/student/course', this.entityId]);
+              this.router.navigate(['/app/student/details/curriculum-list', this.entityId]);
             },
-            error: () => this.router.navigate(['/app/student/course', this.entityId])
+            error: () => this.router.navigate(['/app/student/details/curriculum-list', this.entityId])
           });
         },
         error: () => this.router.navigate(['/app/student/courses'])

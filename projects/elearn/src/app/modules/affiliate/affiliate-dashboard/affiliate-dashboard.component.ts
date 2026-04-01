@@ -59,21 +59,26 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Normalize affiliate links so that in dev they point to localhost:4200, and in prod use the real domain. */
+  /**
+   * Normalize affiliate links so they are **always** public-marketing URLs.
+   *
+   * Reason: affiliates promote the public site (`environment.publicCourseSiteUrl`, e.g. `http://localhost:4200`
+   * or `https://oilandgasclub.com`). Enrollment + attribution still works because the public site forwards `ref`
+   * into the checkout flow.
+   */
   private normalizeLink(link: string | null | undefined): string {
-    if (!link) {
-      return '';
+    if (!link) return '';
+    const base = (environment as { publicCourseSiteUrl?: string }).publicCourseSiteUrl?.trim().replace(/\/+$/, '');
+    const fallbackBase = typeof window !== 'undefined' ? window.location.origin.replace(/\/+$/, '') : '';
+    const publicBase = base || fallbackBase;
+    try {
+      const url = new URL(link);
+      return `${publicBase}${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      // If backend ever returns a relative path, treat it as such.
+      const path = link.startsWith('/') ? link : `/${link}`;
+      return `${publicBase}${path}`;
     }
-    if (!environment.production) {
-      try {
-        const url = new URL(link);
-        // Rebuild URL with current origin (e.g. http://localhost:4200)
-        return `${window.location.origin}${url.pathname}${url.search}${url.hash}`;
-      } catch {
-        return link;
-      }
-    }
-    return link;
   }
 
   ngOnInit(): void {

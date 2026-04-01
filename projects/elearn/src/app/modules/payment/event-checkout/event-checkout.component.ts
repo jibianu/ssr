@@ -5,6 +5,7 @@ import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from '../../auth/auth.service';
 import { StudentDashboardApiService } from '../../student/student-dashboard-api.service';
+import { getAbsoluteAppBaseUrlForStripeReturn } from 'src/app/core/helpers/app-url.helper';
 
 @Component({
   selector: 'app-event-checkout',
@@ -138,9 +139,10 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   }
 
   private getEventSuccessUrl(): string {
-    const base = (typeof window !== 'undefined' && window.location?.origin)
-      ? window.location.origin.replace(/\/$/, '')
-      : ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
+    const base =
+      typeof window !== 'undefined'
+        ? getAbsoluteAppBaseUrlForStripeReturn()
+        : ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
     return `${base}/app/payment/success?entityId=${this.eventId}&entityType=event`;
   }
 
@@ -194,7 +196,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     if (error) {
       this.loadError = error.message || 'Payment could not be completed.';
     } else {
-      this.router.navigateByUrl(successUrl);
+      this.router.navigateByUrl(`/app/payment/success?entityId=${this.eventId}&entityType=event`);
     }
   }
 

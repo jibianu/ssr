@@ -15,6 +15,7 @@ import { UserValidationGuard } from './core/guards/user-validation.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { UnauthorizedComponent } from './shared/component/unauthorized/unauthorized.component';
 import { AUTH_ROUTES } from './modules/auth/auth-routing.module';
+import { AppEntryRedirectComponent } from './core/components/app-entry-redirect/app-entry-redirect.component';
 
 const routerOptions: ExtraOptions = {
   scrollPositionRestoration: 'enabled',
@@ -46,6 +47,11 @@ const routes: Routes = [
     path: 'app',
     canActivate: [AuthGuard, UserValidationGuard],
     children: [
+    {
+      path: '',
+      pathMatch: 'full',
+      component: AppEntryRedirectComponent,
+    },
     {
       path: 'admin',
       component: AdminLayoutComponent,

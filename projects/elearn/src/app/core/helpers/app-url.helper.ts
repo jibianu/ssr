@@ -46,3 +46,38 @@ export function getElearnAppBaseUrl(): string {
   }
   return '';
 }
+
+/**
+ * Absolute base of the deployed SPA for Stripe `return_url` (includes path prefix, e.g. `https://host/course`).
+ * On oilandgasclub.com the learn app is under `/course/`; using `window.location.origin` alone sends users to
+ * `https://host/app/...` (marketing shell) so payment success never runs and enrollment is skipped.
+ */
+export function getAbsoluteAppBaseUrlForStripeReturn(): string {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+  const baseHref = document.querySelector('base')?.getAttribute('href')?.trim();
+  if (baseHref) {
+    try {
+      const u = new URL(baseHref, window.location.href);
+      return u.href.replace(/\/+$/, '');
+    } catch {
+      /* use origin */
+    }
+  }
+  return window.location.origin.replace(/\/+$/, '');
+}
+
+/** Turn a path like `/app/payment/success?...` into a full URL using the same prefix as the SPA. */
+export function resolveToAbsoluteAppUrl(redirectPathOrUrl: string): string {
+  const s = (redirectPathOrUrl ?? '').trim();
+  if (!s) {
+    return getAbsoluteAppBaseUrlForStripeReturn();
+  }
+  if (/^https?:\/\//i.test(s)) {
+    return s;
+  }
+  const base = getAbsoluteAppBaseUrlForStripeReturn();
+  const path = s.startsWith('/') ? s : `/${s}`;
+  return `${base}${path}`;
+}

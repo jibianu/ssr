@@ -16,6 +16,8 @@ const routerOptions: ExtraOptions = {
 };
 
 export const routes: Routes = [
+    /** Bare /app or /app/ → public home (avoid login shell when Stripe/backend pointed at 4200 by mistake). */
+    { path: 'app', pathMatch: 'full', redirectTo: '' },
     // ✅ ADMIN ROUTES: Admin routes with AdminLayoutComponent (no footer)
     {
         path: 'app',
