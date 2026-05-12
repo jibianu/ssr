@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { AuthenticationService } from 'src/app/modules/auth/auth.service';
-import { Subscription } from 'rxjs';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { Category } from 'src/app/modules/adminapp/category/category.model';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
@@ -62,36 +62,64 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Load courses for all categories; one section per category, 4 courses per row */
+  /**
+   * Load all public-listing courses in few paginated calls (API caps pageSize at 100),
+   * then group by category — avoids one GET per category plus one price GET per course.
+   */
+  private fetchAllPublicListingCourses() {
+    const pageSize = 100;
+    const baseParams = {
+      'Filter.ForPublicListing': true,
+      pageSize,
+      'Sort.PropertyName': 'Title',
+      'Sort.IsAscending': 'true'
+    };
+    return this.appService.getCourses({ ...baseParams, pageNumber: 1 }).pipe(
+      switchMap((first) => {
+        const total = first?.totalNumberOfRecords ?? 0;
+        const firstResults = first?.results ?? [];
+        const totalPages = Math.max(1, Math.ceil(total / pageSize));
+        if (totalPages <= 1) {
+          return of(firstResults);
+        }
+        const extra = [];
+        for (let p = 2; p <= totalPages; p++) {
+          extra.push(
+            this.appService.getCourses({ ...baseParams, pageNumber: p }).pipe(map((r) => r?.results ?? []))
+          );
+        }
+        return forkJoin(extra).pipe(map((batches) => firstResults.concat(...batches)));
+      })
+    );
+  }
+
+  /** Load courses for all categories; one section per category, up to 12 courses per row */
   fetchCoursesByCategory(): void {
     const list = this.categories || [];
     if (list.length === 0) {
       this.categoriesWithCourses = [];
       return;
     }
-    // Same catalog rules as public site GET api/public/courses (ForPublicListing: Published + ShowOnPublicListing).
-    const requests = list.map((cat) =>
-      this.appService.getCourses({
-        'Filter.CategoryId': cat.id,
-        'Filter.ForPublicListing': true,
-        pageSize: 12,
-        pageNumber: 1,
-        'Sort.PropertyName': 'Title',
-        'Sort.IsAscending': 'true'
-      })
-    );
     this.subscription.add(
-      forkJoin(requests).subscribe(
-        (results) => {
-          const blocks = list.map((cat, i) => {
-            const courses = (results[i]?.results || []).map((c) => ({
+      this.fetchAllPublicListingCourses().subscribe({
+        next: (allCourses) => {
+          const byCat = new Map<string, any[]>();
+          for (const c of allCourses || []) {
+            const catId = String((c as any)?.category?.id ?? (c as any)?.category?.Id ?? '').trim();
+            if (!catId) continue;
+            if (!byCat.has(catId)) byCat.set(catId, []);
+            byCat.get(catId)!.push(c);
+          }
+          const blocks = list.map((cat) => {
+            const catKey = String(cat.id);
+            const raw = byCat.get(catKey) ?? [];
+            const courses = raw.slice(0, 12).map((c) => ({
               ...c,
               id: resolveCourseId(c) || (c?.id ?? c?.Id),
               bgColor: this.getRandomColor()
             }));
             return { category: cat, courses };
           });
-          // Only show categories that have at least one course; Process category first
           const withCourses = blocks.filter((b) => b.courses?.length > 0);
           this.categoriesWithCourses = withCourses.sort((a, b) => {
             const nameA = (a.category?.name || '').toString().toLowerCase();
@@ -100,24 +128,11 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
             if (nameB === 'process') return 1;
             return 0;
           });
-          this.enrichCoursesWithPrices(this.categoriesWithCourses);
           this.fetchEnrollmentStatusBulk();
         },
-        (error) => console.log(error)
-      )
+        error: (error) => console.log(error)
+      })
     );
-  }
-
-  /** Pick the active price (StartDate <= now <= EndDate), or first if none active. Same logic as backend CourseProfile. */
-  private getActivePriceRow(prices: any[]): any {
-    if (!prices?.length) return null;
-    const now = new Date();
-    const active = prices.find((p) => {
-      const start = p.startDate ? new Date(p.startDate) : null;
-      const end = p.endDate ? new Date(p.endDate) : null;
-      return start && end && start <= now && end >= now;
-    });
-    return active ?? prices[0];
   }
 
   /** Course id for routing/API (maps Id → id via shared helper). */
@@ -173,32 +188,6 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     this.router.navigate(['/app/student/course', id]);
   }
 
-  /** Attach price (originalPrice, discountedPrice) to each course from getCoursePrices API */
-  private enrichCoursesWithPrices(blocks: CategoryWithCourses[]): void {
-    const flatCourses = blocks.flatMap((b) => b.courses);
-    if (flatCourses.length === 0) return;
-    const priceRequests = flatCourses.map((c) => this.appService.getCoursePrices(resolveCourseId(c) || c.id));
-    this.subscription.add(
-      forkJoin(priceRequests).subscribe(
-        (pricesList) => {
-          flatCourses.forEach((course, j) => {
-            const priceRow = this.getActivePriceRow(pricesList[j]);
-            if (priceRow) {
-              const now = new Date();
-              const start = priceRow.startDate ? new Date(priceRow.startDate) : null;
-              const end = priceRow.endDate ? new Date(priceRow.endDate) : null;
-              const isActiveDiscount = start && end && start <= now && end >= now;
-              course.originalPrice = priceRow.originalPrice;
-              course.discountedPrice = isActiveDiscount ? priceRow.discountedPrice : priceRow.originalPrice;
-              course.coursePriceResponse = priceRow;
-            }
-          });
-        },
-        () => {}
-      )
-    );
-  }
-
   /** Buy: if not logged in, redirect to login with returnUrl=/app/student/course/:id; after login user lands on course or checkout. If logged in, go to course details page. */
   goToCheckout(item: any): void {
     const id = this.courseIdOf(item);
@@ -216,7 +205,13 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
   }
 
   getDisplayOriginalPrice(item: any): number | null {
-    const orig = item?.originalPrice ?? item?.coursePriceResponse?.originalPrice ?? item?.coursePrices?.[0]?.originalPrice ?? null;
+    const orig =
+      item?.originalAmount ??
+      item?.OriginalAmount ??
+      item?.originalPrice ??
+      item?.coursePriceResponse?.originalPrice ??
+      item?.coursePrices?.[0]?.originalPrice ??
+      null;
     const offer = this.getOfferPrice(item);
     if (orig == null || offer == null) return null;
     const o = Number(orig);
@@ -224,8 +219,15 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     return o > f ? o : null;
   }
 
+  /** Listing API includes amount (final display price); optional originalAmount when backend sends strike-through list price. */
   getOfferPrice(item: any): number {
-    const v = item?.discountedPrice ?? item?.coursePriceResponse?.discountedPrice ?? item?.coursePrices?.[0]?.discountedPrice ?? 0;
+    const v =
+      item?.discountedPrice ??
+      item?.coursePriceResponse?.discountedPrice ??
+      item?.coursePrices?.[0]?.discountedPrice ??
+      item?.amount ??
+      item?.Amount ??
+      0;
     return Number(v) || 0;
   }
 

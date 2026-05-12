@@ -35,6 +35,10 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
   /** Throttle: save watch progress at most every 15 seconds. */
   private lastSavedSeconds = -1;
   private readonly progressSaveIntervalSeconds = 15;
+  /** Prevent repeated autoplay attempts on multiple canplay events. */
+  private didAutoplay = false;
+  /** Prevent reloading the same lesson video multiple times. */
+  private lastLoadedCurriculumId: string | null = null;
 
   constructor(
     private appService: AdminAppService,
@@ -45,6 +49,8 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['curriculumId'] && this.curriculumId) {
+      if (this.lastLoadedCurriculumId === this.curriculumId) return;
+      this.lastLoadedCurriculumId = this.curriculumId;
       this.loadVideo();
     } else if (!this.curriculumId) {
       this.reset();
@@ -68,7 +74,9 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
 
   onVideoCanPlay(event: Event): void {
     const video = event.target as HTMLVideoElement;
+    if (this.didAutoplay) return;
     if (video && typeof video.play === 'function') {
+      this.didAutoplay = true;
       video.play().catch(() => {});
     }
     this.showSwipeHintIfMobile();
@@ -131,6 +139,7 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
     this.videoSrc = null;
     this.videoProvider = null;
     this.lastSavedSeconds = -1;
+    this.didAutoplay = false;
     const id = this.curriculumId;
     this.subscription.add(
       this.appService.getCurriculumVideoByCurriculumId(id).subscribe({
@@ -183,6 +192,7 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
     this.durationMinutes = null;
     this.videoSrc = null;
     this.videoProvider = null;
+    this.didAutoplay = false;
   }
 
   /** When no video is available or load fails, exit focus mode and go to curriculum page after a short delay. */

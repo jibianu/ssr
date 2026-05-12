@@ -20,10 +20,10 @@
 
   <div class="dashboard__cards">
     <div class="dashboard__card" *ngFor="let card of [
-      { label: 'Courses Purchased', value: summary?.coursesPurchased, icon: 'fa fa-shopping-cart', iconClass: 'dashboard__card-icon--created' },
-      { label: 'Courses In Progress', value: summary?.coursesInProgress, icon: 'fa fa-spinner', iconClass: 'dashboard__card-icon--edited' },
-      { label: 'Courses Completed', value: summary?.coursesCompleted, icon: 'fa fa-check-circle', iconClass: 'dashboard__card-icon--purchases' },
-      { label: 'Certificates Earned', value: summary?.certificatesEarned, icon: 'fa fa-certificate', iconClass: 'dashboard__card-icon--revenue' }
+      { label: 'Courses Purchased', value: summary?.coursesPurchased, allTime: summary?.coursesPurchasedAllTime, icon: 'fa fa-shopping-cart', iconClass: 'dashboard__card-icon--created' },
+      { label: 'Courses In Progress', value: summary?.coursesInProgress, allTime: summary?.coursesInProgressAllTime, icon: 'fa fa-spinner', iconClass: 'dashboard__card-icon--edited' },
+      { label: 'Courses Completed', value: summary?.coursesCompleted, allTime: summary?.coursesCompletedAllTime, icon: 'fa fa-check-circle', iconClass: 'dashboard__card-icon--purchases' },
+      { label: 'Certificates Earned', value: summary?.certificatesEarned, allTime: summary?.certificatesEarnedAllTime, icon: 'fa fa-certificate', iconClass: 'dashboard__card-icon--revenue' }
     ]">
       <div class="dashboard__card-inner" *ngIf="loadingSummary">
         <div class="dashboard__skeleton dashboard__skeleton--value"></div>
@@ -31,9 +31,10 @@
       </div>
       <div class="dashboard__card-inner" *ngIf="!loadingSummary && summary">
         <span class="dashboard__card-icon" [ngClass]="card.iconClass"><i [class]="card.icon"></i></span>
-        <span class="dashboard__card-value">{{ card.value }}</span>
+        <span class="dashboard__card-value">{{ card.allTime != null ? card.allTime : card.value }}</span>
         <span class="dashboard__card-label">{{ card.label }}</span>
-        <span class="dashboard__card-sub">{{ rangeSubtitle }}</span>
+        <span class="dashboard__card-sub" *ngIf="card.allTime != null">{{ rangeSubtitle }}: {{ card.value }}</span>
+        <span class="dashboard__card-sub" *ngIf="card.allTime == null">{{ rangeSubtitle }}</span>
       </div>
     </div>
     <!-- Time in app & days active (session tracking) -->

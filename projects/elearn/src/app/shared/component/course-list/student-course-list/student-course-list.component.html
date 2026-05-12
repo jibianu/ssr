@@ -5,14 +5,13 @@
   </h4>
 
   <!--Role  Section start-->
-  <div class="dropdown">
-    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-      aria-haspopup="true" aria-expanded="false">
+  <div class="dropdown" ngbDropdown #catDd="ngbDropdown" placement="bottom-end">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" ngbDropdownToggle>
       {{selectedCategory}}
     </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-      <span class="dropdown-item" *ngFor="let item of categories"
-        (click)="getCourseByCategory(item)">{{item.name}}</span>
+    <div class="dropdown-menu" ngbDropdownMenu aria-labelledby="dropdownMenuButton">
+      <button type="button" class="dropdown-item" *ngFor="let item of categories"
+        (click)="getCourseByCategory(item); catDd.close()">{{item.name}}</button>
     </div>
   </div>
 

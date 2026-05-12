@@ -349,31 +349,55 @@ $sb-radius-sm: 10px;
   z-index: 900;
 }
 
+/* Main column scrolls here so the scrollbar appears at the content edge (reliable on desktop). */
 .student-layout__content {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
+
+  /* Global styles.scss sets webkit scrollbars to 3px – widen only in this scroll area so the bar is visible. */
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+/* Routed view: natural height; parent .student-layout__content scrolls (must come before --player overrides). */
+.student-layout__content router-outlet + *,
+.student-layout__content ::ng-deep router-outlet + * {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 0;
+  overflow: visible;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 }
 
 .student-layout__content--player {
   padding: 0;
-}
-
-.student-layout__content--player router-outlet + *,
-.student-layout__content--player ::ng-deep router-outlet + * {
-  flex: 1;
-  min-height: 0;
   overflow: hidden;
 }
 
-.student-layout__content router-outlet + *,
-.student-layout__content ::ng-deep router-outlet + * {
-  display: block;
+/* Video focus: fill viewport segment; inner page handles scroll (must follow default routed rules). */
+.student-layout__content--player router-outlet + *,
+.student-layout__content--player ::ng-deep router-outlet + * {
   flex: 1 1 0;
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 }

@@ -9,6 +9,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
+    /** Prevent redirect-to-login loops when backend is flaky. */
+    private lastLoginRedirectAt = 0;
+    private readonly loginRedirectCooldownMs = 5000;
+
     constructor(
         private authenticationService: AuthenticationService,
         private router: Router,
@@ -36,6 +40,17 @@ export class ErrorInterceptor implements HttpInterceptor {
                 if (isGetInfo || isPublicPage) {
                     return throwError(() => err);
                 }
+                // If we are already on an auth route, don't re-navigate (prevents flicker/loop).
+                if (isAuthShellRoute) {
+                    return EMPTY;
+                }
+                // Debounce redirects to avoid full-page "blinking" when multiple requests 401 together.
+                const now = Date.now();
+                if (now - this.lastLoginRedirectAt < this.loginRedirectCooldownMs) {
+                    return EMPTY;
+                }
+                this.lastLoginRedirectAt = now;
+
                 const isShowError = !request.url.toLowerCase().includes('payment/checkout');
                 if (isShowError) {
                     this.toasterService.showError('Session expired or invalid. Please log in again.');

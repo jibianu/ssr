@@ -2,7 +2,7 @@ import { RetakeQuestionComponent } from './../../shared/modals/retake-question/r
 import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef, Renderer2, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { CurriculamStatus, QuestionType, Role } from 'src/app/shared/models/role';
 import { CommonServiceService } from 'src/app/shared/service/common-service.service';
@@ -12,6 +12,7 @@ import { AuthenticationService } from 'src/app/modules/auth/auth.service';
 import { PlayerStateService } from 'src/app/core/services/player-state.service';
 import { AnalyticsService } from 'src/app/core/services/analytics.service';
 import { CurriculumSidebarService } from 'src/app/core/services/curriculum-sidebar.service';
+import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-curriculum-details',
@@ -23,6 +24,7 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
   curriculumDetails: any = {};
   curriculumId: string;
   subscription: Subscription = new Subscription();
+  private readonly destroy$ = new Subject<void>();
   role: any;
   redirectTo: string;
   questionType: any;
@@ -90,33 +92,46 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
     }
     this.questionType = QuestionType.CurriculumQA;
 
-    this.activatedRoute
-      .params
-      .subscribe(params => {
-        if (params.curriculumId) {
-          console.log(params);
-          this.curriculumId = params.curriculumId;
-          console.log('curriculumId' + this.curriculumId);
-          this.curriculumDetails = JSON.parse(localStorage.getItem('curriculum'));
-          const role = +sessionStorage.getItem('Role');
-          if (role === Role.Student || role === Role.Company) { this.analyticsService.recordEvent('LessonOpen', 'Curriculum', this.curriculumId, JSON.stringify({ curriculumId: this.curriculumId })); }
-          const d = JSON.parse(localStorage.getItem("course"));
-          // debugger
-          this.Curriculams=JSON.parse(localStorage.getItem("curriculams"));
-          this.checkNextCurriculam(this.curriculumId);
-          if (d && d.title) {
-            this.courseName = d.title;
-          }
-          this.showHideTab();
-          // No 100ms delay: progress is set in showHideTab; only fetch question count when Quiz tab is shown
-          if (this.showQuestionTab) {
+    // IMPORTANT: Avoid duplicate re-initialization for the same curriculumId
+    // (router may emit params repeatedly in some edge cases; also prevents leaks on recreate).
+    this.activatedRoute.params
+      .pipe(
+        takeUntil(this.destroy$),
+        map((params) => (params as any)?.curriculumId as string | undefined),
+        distinctUntilChanged()
+      )
+      .subscribe((id) => {
+        if (!id) return;
+        this.curriculumId = id;
+
+        this.curriculumDetails = JSON.parse(localStorage.getItem('curriculum'));
+        const role = +sessionStorage.getItem('Role');
+        if (role === Role.Student || role === Role.Company) {
+          this.analyticsService.recordEvent(
+            'LessonOpen',
+            'Curriculum',
+            this.curriculumId,
+            JSON.stringify({ curriculumId: this.curriculumId })
+          );
+        }
+
+        const d = JSON.parse(localStorage.getItem('course'));
+        this.Curriculams = JSON.parse(localStorage.getItem('curriculams'));
+        this.checkNextCurriculam(this.curriculumId);
+        if (d && d.title) {
+          this.courseName = d.title;
+        }
+        this.showHideTab();
+
+        // Only fetch question count when Quiz tab is shown.
+        if (this.showQuestionTab) {
+          this.subscription.add(
             this.appService.getQuestionsByCurriculumId(this.curriculumId).subscribe((res: any) => {
               this.questionLength = res?.length ?? 0;
-            });
-          }
+            })
+          );
         }
       });
-    console.log("Curricullam page")
   }
 
   navigateToNext(id){
@@ -212,6 +227,8 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.curriculumSidebar.close();
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.subscription) {
       this.subscription.unsubscribe();
     }

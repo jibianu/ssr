@@ -9,12 +9,26 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
+    /**
+     * Heartbeat/event/session calls must not toggle the fullscreen spinner —
+     * they run on a timer and when the backend is down (ECONNREFUSED) they linger for seconds.
+     */
+    private static readonly silentBackgroundUrlPatterns = [
+        '/api/analytics/',
+        '/api/student/session/',
+        'savecurriculumwatchprogress',
+    ];
+
+    /** Concurrency-safe overlay: overlapping requests shared one debounced spinner. */
+    private static spinnerRefCount = 0;
+    private static pendingSpinnerDelayTimer: ReturnType<typeof setTimeout> | null = null;
+    private static spinnerOverlayVisible = false;
+
     private readonly excludedEndpoints = [
         'Course',
         'Dashboard'
     ];
     
-    private spinnerTimeout: any;
     private readonly isBrowser: boolean;
 
     constructor(
@@ -28,14 +42,8 @@ export class JwtInterceptor implements HttpInterceptor {
     }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        // Debounce spinner: only show after 300ms delay
-        if (this.shouldShowSpinner(request.url)) {
-            this.spinnerTimeout = setTimeout(() => {
-                if (this.isBrowser) {
-                    this.spinner.show();
-                }
-            }, 300);
-        }
+        const showSpinner = this.shouldShowSpinner(request.url);
+        this.acquireSpinner(showSpinner);
 
         let refreshAttempted = false;
         const modifiedRequest = this.addAuthHeader(request);
@@ -93,19 +101,45 @@ export class JwtInterceptor implements HttpInterceptor {
                 return throwError(() => error);
             }),
             finalize(() => {
-                // Clear timeout if request completes before showing spinner
-                if (this.spinnerTimeout) {
-                    clearTimeout(this.spinnerTimeout);
-                    this.spinnerTimeout = null;
-                } else if (this.isBrowser) {
-                    // Only hide if spinner was shown
-                    this.spinner.hide();
-                }
+                this.releaseSpinner(showSpinner);
             })
         );
     }
 
+    private acquireSpinner(showSpinner: boolean): void {
+        if (!showSpinner) return;
+        JwtInterceptor.spinnerRefCount++;
+        if (JwtInterceptor.spinnerRefCount !== 1) return;
+        JwtInterceptor.pendingSpinnerDelayTimer = setTimeout(() => {
+            JwtInterceptor.pendingSpinnerDelayTimer = null;
+            if (JwtInterceptor.spinnerRefCount > 0 && this.isBrowser) {
+                this.spinner.show();
+                JwtInterceptor.spinnerOverlayVisible = true;
+            }
+        }, 300);
+    }
+
+    private releaseSpinner(showSpinner: boolean): void {
+        if (!showSpinner) return;
+        JwtInterceptor.spinnerRefCount = Math.max(0, JwtInterceptor.spinnerRefCount - 1);
+        if (JwtInterceptor.spinnerRefCount > 0) return;
+
+        if (JwtInterceptor.pendingSpinnerDelayTimer != null) {
+            clearTimeout(JwtInterceptor.pendingSpinnerDelayTimer);
+            JwtInterceptor.pendingSpinnerDelayTimer = null;
+            return;
+        }
+        if (JwtInterceptor.spinnerOverlayVisible && this.isBrowser) {
+            this.spinner.hide();
+            JwtInterceptor.spinnerOverlayVisible = false;
+        }
+    }
+
     private shouldShowSpinner(url: string): boolean {
+        const u = url.toLowerCase();
+        if (JwtInterceptor.silentBackgroundUrlPatterns.some((p) => u.includes(p))) {
+            return false;
+        }
         return !this.excludedEndpoints.some(endpoint => url.includes(endpoint));
     }
 

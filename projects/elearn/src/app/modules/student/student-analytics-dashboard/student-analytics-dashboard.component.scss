@@ -1,24 +1,12 @@
 @use '../../../shared/component/dashboard/dashboard-shared.scss';
 
-/* Ensure this view is the scroll container so content below (e.g. Recent learning activity) is reachable. */
+/* Scroll happens on .student-layout__content; host only sizes to dashboard content. */
 :host {
   display: block;
-  flex: 1 1 0;
+  width: 100%;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Mobile: hide scrollbar so no visible vertical scroll bar; scrolling still works. */
-@media (max-width: 991px) {
-  :host {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
+  overflow: visible;
 }
 
 .dashboard__card-icon--created {

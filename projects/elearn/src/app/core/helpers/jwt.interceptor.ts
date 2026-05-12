@@ -10,6 +10,22 @@ import { finalize } from 'rxjs/operators';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
+    /**
+     * Periodic / fire-and-forget calls should not toggle the global fullscreen spinner.
+     * Otherwise heartbeat + analytics events cause visible "blinking" every few seconds.
+     */
+    private static isSilentBackgroundUrl(url: string): boolean {
+        const u = url.toLowerCase();
+        return (
+            u.includes('/api/analytics/') ||
+            u.includes('/api/student/session/') ||
+            u.includes('savecurriculumwatchprogress')
+        );
+    }
+
+    /** Overlay show/hide per request causes flicker when several calls overlap — use a refcount instead. */
+    private static fullscreenSpinnerRefs = 0;
+
     constructor(
         private authenticationService: AuthenticationService,
         private spinner: NgxSpinnerService,
@@ -20,8 +36,13 @@ export class JwtInterceptor implements HttpInterceptor {
         const token = this.authenticationService.currentToken();
         let uploadimage = false;
         const isDashboardRequest = /api\/(admin|company|management|student|trainer)\/dashboard/.test(request.url);
-        if (!isDashboardRequest) {
-            this.spinner.show();
+        const showSpinner =
+            !isDashboardRequest && !JwtInterceptor.isSilentBackgroundUrl(request.url);
+        if (showSpinner) {
+            JwtInterceptor.fullscreenSpinnerRefs++;
+            if (JwtInterceptor.fullscreenSpinnerRefs === 1) {
+                this.spinner.show();
+            }
         }
         if (token) {
             if (request.url.includes('api/CurriculumVideoLecture/UploadImage') || request.url.includes('api/CurriculumVideoLecture/UploadVideo')) {
@@ -43,8 +64,14 @@ export class JwtInterceptor implements HttpInterceptor {
 
         return next.handle(request).pipe(
             finalize(() => {
-                if (!isDashboardRequest) {
-                    this.spinner.hide();
+                if (showSpinner) {
+                    JwtInterceptor.fullscreenSpinnerRefs = Math.max(
+                        0,
+                        JwtInterceptor.fullscreenSpinnerRefs - 1
+                    );
+                    if (JwtInterceptor.fullscreenSpinnerRefs === 0) {
+                        this.spinner.hide();
+                    }
                 }
                 if(this.modalService.hasOpenModals() && !uploadimage){
                     // this.modalService.dismissAll();

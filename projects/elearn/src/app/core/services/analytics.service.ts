@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -20,7 +20,10 @@ export class AnalyticsService {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private lastActivityAt = 0;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private ngZone: NgZone
+  ) {
     this.sessionId = sessionStorage.getItem(SESSION_STORAGE_KEY);
   }
 
@@ -32,6 +35,8 @@ export class AnalyticsService {
           this.sessionId = res.sessionId;
           sessionStorage.setItem(SESSION_STORAGE_KEY, res.sessionId);
           this.lastActivityAt = Date.now();
+          // Avoid duplicate listeners when layout re-inits (student desktop/mobile/layout swap).
+          this.stopActivityListeners();
           this.startActivityListeners();
           this.startHeartbeat();
         }
@@ -75,7 +80,9 @@ export class AnalyticsService {
     if (!id) return;
     const body: { sessionId: string; activeSeconds?: number } = { sessionId: id };
     if (activeSeconds != null) body.activeSeconds = activeSeconds;
-    this.http.post(`${this.baseUrl}/heartbeat`, body).pipe(catchError(() => of(null))).subscribe();
+    this.ngZone.runOutsideAngular(() => {
+      this.http.post(`${this.baseUrl}/heartbeat`, body).pipe(catchError(() => of(null))).subscribe();
+    });
   }
 
   /** Record an event (CourseOpen, LessonOpen, VideoProgress, LessonCompleted, etc.). */
@@ -86,7 +93,9 @@ export class AnalyticsService {
     if (entityType) body.entityType = entityType;
     if (entityId) body.entityId = entityId;
     if (payload) body.payload = payload;
-    this.http.post(`${this.baseUrl}/event`, body).pipe(catchError(() => of(null))).subscribe();
+    this.ngZone.runOutsideAngular(() => {
+      this.http.post(`${this.baseUrl}/event`, body).pipe(catchError(() => of(null))).subscribe();
+    });
   }
 
   getCurrentSessionId(): string | null {
@@ -113,11 +122,16 @@ export class AnalyticsService {
 
   private startHeartbeat(): void {
     this.stopHeartbeat();
-    this.heartbeatTimer = setInterval(() => {
-      const now = Date.now();
-      const active = now - this.lastActivityAt < ACTIVE_THRESHOLD_MS;
-      this.sendHeartbeat(active ? HEARTBEAT_INTERVAL_MS / 1000 : undefined);
-    }, HEARTBEAT_INTERVAL_MS);
+    if (typeof setInterval === 'undefined') {
+      return;
+    }
+    this.ngZone.runOutsideAngular(() => {
+      this.heartbeatTimer = setInterval(() => {
+        const now = Date.now();
+        const active = now - this.lastActivityAt < ACTIVE_THRESHOLD_MS;
+        this.sendHeartbeat(active ? HEARTBEAT_INTERVAL_MS / 1000 : undefined);
+      }, HEARTBEAT_INTERVAL_MS);
+    });
   }
 
   private stopHeartbeat(): void {

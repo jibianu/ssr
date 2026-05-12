@@ -12,12 +12,19 @@ export class AuthGuard {
     ) { }
 
     canActivate(_route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean> {
+        const currentUrl = this.router.url?.split('?')[0] ?? '';
+        const isAuthShellRoute =
+            /^\/(login|register|callback|google-callback|forget-password|verification|fg-code|change-password|user-unavailable)(?:\/|$|\?)/.test(currentUrl) ||
+            /^\/register\//.test(currentUrl) ||
+            /^\/register-/.test(currentUrl);
         const currentUser = this.authenticationService.currentUser();
         if (currentUser) {
             return true;
         }
         const token = this.authenticationService.currentToken();
         if (!token) {
+            // Avoid navigation loops if guard runs while already on login route.
+            if (isAuthShellRoute) return false;
             this.router.navigate(['/login'], { queryParams: { redirect: state.url } });
             return false;
         }
@@ -26,6 +33,7 @@ export class AuthGuard {
             first(),
             map(() => !!this.authenticationService.currentUser()),
             catchError(() => {
+                if (isAuthShellRoute) return of(false);
                 this.router.navigate(['/login'], { queryParams: { redirect: state.url } });
                 return of(false);
             })

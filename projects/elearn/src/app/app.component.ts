@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, NavigationError, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthenticationService } from './modules/auth/auth.service';
 import { AffiliateService } from './modules/affiliate/affiliate.service';
@@ -24,6 +24,29 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Dev-only: detect hard reload loops (app bootstrapping repeatedly).
+    try {
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        const key = 'debug.appBoot';
+        const now = Date.now();
+        const prev = Number(sessionStorage.getItem(key) || '0');
+        sessionStorage.setItem(key, String(now));
+        if (prev && now - prev < 15000) {
+          console.warn('[Elearn] App booted again within 15s (likely hard reload loop).', {
+            deltaMs: now - prev,
+            href: typeof window !== 'undefined' ? window.location.href : '',
+          });
+        } else {
+          console.debug('[Elearn] App boot.', {
+            href: typeof window !== 'undefined' ? window.location.href : '',
+          });
+        }
+        window.addEventListener('beforeunload', () => console.warn('[Elearn] beforeunload fired', window.location.href));
+        window.addEventListener('error', (e) => console.error('[Elearn] window.error', e));
+        window.addEventListener('unhandledrejection', (e) => console.error('[Elearn] unhandledrejection', e));
+      }
+    } catch (_) {}
+
     // Restore session on refresh: if we have token but no currentUser cookie, fetch user so we stay signed in
     if (this.auth.currentToken() && !this.auth.currentUser()) {
       this.auth.getUserInfo().subscribe({
@@ -36,10 +59,17 @@ export class AppComponent implements OnInit {
     this.utmService.captureFromUrl();
     this.recordAffiliateClickFromUrl(this.router.url);
     this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe(() => {
-        this.utmService.captureFromUrl(this.router.url);
-        this.recordAffiliateClickFromUrl(this.router.url);
+      .pipe(filter((e) => e instanceof NavigationStart || e instanceof NavigationEnd || e instanceof NavigationError))
+      .subscribe((e) => {
+        if (typeof ngDevMode === 'undefined' || ngDevMode) {
+          if (e instanceof NavigationStart) console.debug('[Elearn] NavigationStart', e.url);
+          if (e instanceof NavigationEnd) console.debug('[Elearn] NavigationEnd', e.urlAfterRedirects);
+          if (e instanceof NavigationError) console.error('[Elearn] NavigationError', e.url, e.error);
+        }
+        if (e instanceof NavigationEnd) {
+          this.utmService.captureFromUrl(this.router.url);
+          this.recordAffiliateClickFromUrl(this.router.url);
+        }
       });
   }
 

@@ -72,12 +72,21 @@ export class ErrorInterceptor implements HttpInterceptor {
      */
     private shouldShowErrorToaster(error: HttpErrorResponse, request: HttpRequest<any>): boolean {
         const isNetworkError = !error.status || error.status === 0;
-        
+        const url = request.url.toLowerCase();
+        const isTelemetry =
+            url.includes('/api/analytics/') ||
+            url.includes('/api/student/session/') ||
+            url.includes('savecurriculumwatchprogress');
+
+        // Analytics heartbeat/events fail loudly when backend is down — suppress user-facing toaster.
+        if (isTelemetry && isNetworkError) {
+            return false;
+        }
+
         // ✅ Don't show toaster for network errors on GET requests that are handled gracefully
         // Services like getCourses() already catch errors and return empty arrays
         if (isNetworkError && request.method === 'GET') {
             // Check if this is a course/category listing request that handles errors gracefully
-            const url = request.url.toLowerCase();
             const isGracefulError = url.includes('/page/course') || 
                                    url.includes('/page/category') ||
                                    url.includes('/api/public/') ||

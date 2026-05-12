@@ -9,6 +9,10 @@ export interface StudentDashboardSummary {
   coursesInProgress: number;
   coursesCompleted: number;
   certificatesEarned: number;
+  coursesPurchasedAllTime: number;
+  coursesInProgressAllTime: number;
+  coursesCompletedAllTime: number;
+  certificatesEarnedAllTime: number;
 }
 
 export interface StudentDashboardChartPoint {
@@ -155,6 +159,10 @@ export class StudentDashboardApiService {
         coursesInProgress: r?.coursesInProgress ?? r?.CoursesInProgress ?? 0,
         coursesCompleted: r?.coursesCompleted ?? r?.CoursesCompleted ?? 0,
         certificatesEarned: r?.certificatesEarned ?? r?.CertificatesEarned ?? 0,
+        coursesPurchasedAllTime: r?.coursesPurchasedAllTime ?? r?.CoursesPurchasedAllTime ?? 0,
+        coursesInProgressAllTime: r?.coursesInProgressAllTime ?? r?.CoursesInProgressAllTime ?? 0,
+        coursesCompletedAllTime: r?.coursesCompletedAllTime ?? r?.CoursesCompletedAllTime ?? 0,
+        certificatesEarnedAllTime: r?.certificatesEarnedAllTime ?? r?.CertificatesEarnedAllTime ?? 0,
       }))
     );
   }
