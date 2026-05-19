@@ -438,3 +438,15 @@ $app-orange-border: #fdba74;
     gap: 16px;
   }
 }
+
+.explore-section-heading {
+  margin: 2rem 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+}
+
+.explore-section-heading:first-of-type {
+  margin-top: 0.75rem;
+}

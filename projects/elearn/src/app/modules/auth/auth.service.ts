@@ -1,7 +1,8 @@
 import { environment } from './../../../environments/environment';
+import { normalizeRoleLandingRoute } from './../../core/helpers/app-url.helper';
 import { CookieService } from './../../core/services/cookie.service';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 
@@ -26,7 +27,8 @@ export const ROLE_LANDING_ROUTES: Record<number, string> = {
 /** Landing route after login. RoleId 6 = Affiliate (one user one role). */
 export function getLandingRoute(res: PostLoginResponse): string | null {
     const roleId = res?.roleId ?? 0;
-    return ROLE_LANDING_ROUTES[roleId] ?? null;
+    const route = ROLE_LANDING_ROUTES[roleId];
+    return route ? normalizeRoleLandingRoute(route) : null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -172,6 +174,129 @@ export class AuthenticationService {
 
     registerCompany(obj) {
         return this.http.post<any>(this.apiUrl + `api/account/registercompany`, obj)
+    }
+
+    /** Public: GET api/company/check-subdomain/{subdomain} → { available: boolean } */
+    checkCompanySubdomainAvailable(subdomain: string) {
+        const encoded = encodeURIComponent(subdomain.trim());
+        return this.http.get<{ available: boolean }>(`${this.apiUrl}api/company/check-subdomain/${encoded}`);
+    }
+
+    getCompanySsoPublicConfig(subdomain: string) {
+        const enc = encodeURIComponent((subdomain || '').trim());
+        return this.http.get<Record<string, unknown>>(`${this.apiUrl}api/sso/company/${enc}`);
+    }
+
+    initCompanySsoLogin(body: { subdomain: string; redirectUri: string; state?: string }) {
+        return this.http.post<{ authorizeUrl: string }>(`${this.apiUrl}api/sso/login`, body);
+    }
+
+    completeCompanySsoCallback(body: { subdomain: string; code: string; redirectUri: string }) {
+        return this.http.post<any>(`${this.apiUrl}api/sso/callback`, body).pipe(
+            map(res => {
+                const isSuccess = res?.isSuccess ?? res?.IsSuccess;
+                const tokenValue = res?.token ?? res?.Token;
+                if (isSuccess && tokenValue != null && tokenValue !== '') {
+                    const tokenStr = typeof tokenValue === 'string' ? tokenValue : String(tokenValue);
+                    this.token = tokenStr;
+                    this.cookieService.setCookie('token', JSON.stringify(tokenStr), 1);
+                }
+                return res;
+            })
+        );
+    }
+
+    getCompanySsoSettings() {
+        return this.http.get<Record<string, unknown>>(`${this.apiUrl}api/company/sso/settings`);
+    }
+
+    saveCompanySsoSettings(body: Record<string, unknown>) {
+        return this.http.post<{ saved: boolean }>(`${this.apiUrl}api/company/sso/save`, body);
+    }
+
+    listCompanyUsers(params: HttpParams) {
+        return this.http.get<Record<string, unknown>>(`${this.apiUrl}api/company/users`, { params });
+    }
+
+    getCompanyUser(id: string) {
+        return this.http.get<Record<string, unknown>>(`${this.apiUrl}api/company/users/${encodeURIComponent(id)}`);
+    }
+
+    createCompanyUser(body: Record<string, unknown>) {
+        return this.http.post<Record<string, unknown>>(`${this.apiUrl}api/company/users`, body);
+    }
+
+    inviteCompanyUser(body: Record<string, unknown>) {
+        return this.http.post<Record<string, unknown>>(`${this.apiUrl}api/company/users/invite`, body);
+    }
+
+    updateCompanyUser(id: string, body: Record<string, unknown>) {
+        return this.http.put<Record<string, unknown>>(`${this.apiUrl}api/company/users/${encodeURIComponent(id)}`, body);
+    }
+
+    deleteCompanyUser(id: string) {
+        return this.http.delete<Record<string, unknown>>(`${this.apiUrl}api/company/users/${encodeURIComponent(id)}`);
+    }
+
+    importCompanyUsersCsv(formData: FormData) {
+        return this.http.post<Record<string, unknown>>(`${this.apiUrl}api/company/users/import`, formData);
+    }
+
+    exportCompanyUsersCsv(params: HttpParams) {
+        return this.http.get(`${this.apiUrl}api/company/users/export/csv`, { params, responseType: 'blob' as const });
+    }
+
+    resetCompanyUserPassword(id: string, body: { newPassword: string }) {
+        return this.http.post<Record<string, unknown>>(`${this.apiUrl}api/company/users/${encodeURIComponent(id)}/reset-password`, body);
+    }
+
+    listCompanyTrainers(params: HttpParams) {
+        return this.http.get<Record<string, unknown>>(`${this.apiUrl}api/company/trainers`, { params });
+    }
+
+    getCompanyTrainer(id: string) {
+        return this.http.get<Record<string, unknown>>(`${this.apiUrl}api/company/trainers/${encodeURIComponent(id)}`);
+    }
+
+    createCompanyTrainer(body: Record<string, unknown>) {
+        return this.http.post<Record<string, unknown>>(`${this.apiUrl}api/company/trainers`, body);
+    }
+
+    inviteCompanyTrainer(body: Record<string, unknown>) {
+        return this.http.post<Record<string, unknown>>(`${this.apiUrl}api/company/trainers/invite`, body);
+    }
+
+    updateCompanyTrainer(id: string, body: Record<string, unknown>) {
+        return this.http.put<Record<string, unknown>>(`${this.apiUrl}api/company/trainers/${encodeURIComponent(id)}`, body);
+    }
+
+    deleteCompanyTrainer(id: string) {
+        return this.http.delete<Record<string, unknown>>(`${this.apiUrl}api/company/trainers/${encodeURIComponent(id)}`);
+    }
+
+    exportCompanyTrainersCsv(params: HttpParams) {
+        return this.http.get(`${this.apiUrl}api/company/trainers/export/csv`, { params, responseType: 'blob' as const });
+    }
+
+    /** Company admin: pending content permission requests from trainers in this organization. */
+    listCompanyContentPermissionRequests(status = 0) {
+        return this.http.get<unknown[]>(`${this.apiUrl}api/company/content-permission-requests`, {
+            params: { status: String(status) }
+        });
+    }
+
+    approveCompanyContentPermissionRequest(id: string) {
+        return this.http.post<Record<string, unknown>>(
+            `${this.apiUrl}api/company/content-permission-requests/${encodeURIComponent(id)}/approve`,
+            {}
+        );
+    }
+
+    rejectCompanyContentPermissionRequest(id: string) {
+        return this.http.post<Record<string, unknown>>(
+            `${this.apiUrl}api/company/content-permission-requests/${encodeURIComponent(id)}/reject`,
+            {}
+        );
     }
 
     registerTrainer(obj) {

@@ -18,5 +18,8 @@ export const environment = {
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
   cognitoRedirectUri: 'https://oilandgasclub.com/callback',
-  googleRedirectUri: 'https://oilandgasclub.com/google-callback'
+  googleRedirectUri: 'https://oilandgasclub.com/google-callback',
+  companyPortalHost: 'oilandgasclub.com' as string | undefined,
+  /** /login on tenant → https://{subdomain}.oilandgasclub.com/login */
+  companyPortalLoginPath: '/login'
 };

@@ -1,6 +1,5 @@
 <div class="explore-page-scroll">
 <div class="learning-categories">
-  <!-- Hero: Edutec Explore -->
   <section class="explore-hero">
     <span class="explore-hero__badge">Explore</span>
     <h1 class="explore-hero__title">
@@ -9,54 +8,71 @@
     <p class="explore-hero__subtitle">Discover industry-recognized programs and advance your career with expert-led courses.</p>
   </section>
 
-  <!-- One row = one category; courses in 4-per-row grid -->
-  <div class="category-row" *ngFor="let block of categoriesWithCourses">
-    <div class="category-row__header">
-      <div class="category-row__titles">
-        <h3 class="category-row__name">{{ block.category.name }}</h3>
-        <p class="category-row__subtitle">Explore expert-led programs curated for this category.</p>
-      </div>
-      <a class="category-row__see-all" href="javascript:void(0)" (click)="goToCategoryCourses(block.category)">
-        See all <i class="fa fa-arrow-right" aria-hidden="true"></i>
-      </a>
-    </div>
-    <div class="category-row__courses">
-      <!-- Programmatic navigate + normalized id (id/Id) so “View course” and card header always open marketing URL. -->
-      <article class="category-course-card" *ngFor="let item of block.courses">
-        <a href="javascript:void(0)" class="category-course-card__link" (click)="viewCourseDetails($event, item)">
-          <div class="card-header">
-            <span class="course-category-tag">{{ item?.category?.name }}</span>
-          </div>
-          <div class="card-content">
-            <h4 class="course-title">{{ item.title | slice:0:50 }}{{ item.title?.length > 50 ? '...' : '' }}</h4>
-          </div>
-        </a>
-        <div class="card-content card-content--actions">
-          <!-- Enrolled: show Resume only -->
-          <div class="card-actions" *ngIf="isEnrolled(item.id)">
-            <button type="button" class="btn-resume" (click)="fnResume(item)">
-              <i class="fa fa-play" aria-hidden="true"></i> Resume
-            </button>
-          </div>
-          <!-- Not enrolled: price + Enroll (free) or Buy (paid) -->
-          <ng-container *ngIf="!isEnrolled(item.id)">
-            <div class="card-price-block">
-              <span class="price-actual" *ngIf="getDisplayOriginalPrice(item) as orig">{{ orig | currency:currencyCode:'symbol':'1.2-2' }}</span>
-              <span class="price-offer">{{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}</span>
-            </div>
-            <div class="card-actions">
-              <button type="button" class="btn-buy" (click)="goToCheckout(item)" *ngIf="getOfferPrice(item) > 0">
-                <i class="fa fa-shopping-cart"></i> Buy {{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}
-              </button>
-              <button type="button" class="btn-enroll" (click)="goToCheckout(item)" *ngIf="getOfferPrice(item) === 0">
-                Enroll
-              </button>
-            </div>
-          </ng-container>
-          <a href="javascript:void(0)" class="card-cta card-cta--secondary" (click)="viewCourseDetails($event, item)">View course</a>
+  <ng-template #categoryRow let-block="block" let-mode="mode">
+    <div class="category-row">
+      <div class="category-row__header">
+        <div class="category-row__titles">
+          <h3 class="category-row__name">{{ exploreRowTitle(block, mode) }}</h3>
+          <p class="category-row__subtitle" *ngIf="mode === 'tenant'">Courses from your organization in this category.</p>
+          <p class="category-row__subtitle" *ngIf="mode === 'marketplace'">Marketplace courses from Oilandgas Club.</p>
+          <p class="category-row__subtitle" *ngIf="mode === 'legacy'">Explore expert-led programs curated for this category.</p>
         </div>
-      </article>
+        <a class="category-row__see-all" href="javascript:void(0)" (click)="goToCategoryCourses(block.category, mode === 'tenant')">
+          See all <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+      <div class="category-row__courses">
+        <article class="category-course-card" *ngFor="let item of block.courses">
+          <a href="javascript:void(0)" class="category-course-card__link" (click)="viewCourseDetails($event, item)">
+            <div class="card-header">
+              <span class="course-category-tag">{{ exploreCardTag(item, mode) }}</span>
+            </div>
+            <div class="card-content">
+              <h4 class="course-title">{{ item.title | slice:0:50 }}{{ item.title?.length > 50 ? '...' : '' }}</h4>
+            </div>
+          </a>
+          <div class="card-content card-content--actions">
+            <div class="card-actions" *ngIf="isEnrolled(item.id)">
+              <button type="button" class="btn-resume" (click)="fnResume(item)">
+                <i class="fa fa-play" aria-hidden="true"></i> Resume
+              </button>
+            </div>
+            <ng-container *ngIf="!isEnrolled(item.id)">
+              <div class="card-price-block">
+                <span class="price-actual" *ngIf="getDisplayOriginalPrice(item) as orig">{{ orig | currency:currencyCode:'symbol':'1.2-2' }}</span>
+                <span class="price-offer">{{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="card-actions">
+                <button type="button" class="btn-buy" (click)="goToCheckout(item)" *ngIf="getOfferPrice(item) > 0">
+                  <i class="fa fa-shopping-cart"></i> Buy {{ getOfferPrice(item) | currency:currencyCode:'symbol':'1.2-2' }}
+                </button>
+                <button type="button" class="btn-enroll" (click)="goToCheckout(item)" *ngIf="getOfferPrice(item) === 0">
+                  Enroll
+                </button>
+              </div>
+            </ng-container>
+            <a href="javascript:void(0)" class="card-cta card-cta--secondary" (click)="viewCourseDetails($event, item)">View course</a>
+          </div>
+        </article>
+      </div>
     </div>
-  </div>
+  </ng-template>
+
+  <ng-container *ngIf="splitExploreLayout">
+    <h2 class="explore-section-heading" *ngIf="tenantCategoriesWithCourses.length">Your organization</h2>
+    <ng-container *ngFor="let block of tenantCategoriesWithCourses">
+      <ng-container *ngTemplateOutlet="categoryRow; context: { block: block, mode: 'tenant' }"></ng-container>
+    </ng-container>
+    <h2 class="explore-section-heading" *ngIf="marketplaceCategoriesWithCourses.length">Marketplace</h2>
+    <ng-container *ngFor="let block of marketplaceCategoriesWithCourses">
+      <ng-container *ngTemplateOutlet="categoryRow; context: { block: block, mode: 'marketplace' }"></ng-container>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="!splitExploreLayout">
+    <ng-container *ngFor="let block of categoriesWithCourses">
+      <ng-container *ngTemplateOutlet="categoryRow; context: { block: block, mode: 'legacy' }"></ng-container>
+    </ng-container>
+  </ng-container>
 </div>
 </div>

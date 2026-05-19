@@ -13,6 +13,13 @@ import { getElearnAppBaseUrl } from 'src/app/core/helpers/app-url.helper';
 import { resolveCourseId } from 'src/app/core/helpers/course-id.helper';
 import { navigateExploreCourseMarketingPage } from 'src/app/core/helpers/explore-course-nav.helper';
 import { environment } from 'src/environments/environment';
+import { isCompanyTenantLoginHost } from 'src/app/core/company-portal-host.util';
+import {
+  resolveViewerTenantCompanyId$,
+  sortExploreCoursesTenantFirst
+} from 'src/app/core/helpers/explore-tenant-course-sort.helper';
+
+const EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY = 2;
 
 @Component({
     selector: 'app-category-courses',
@@ -86,15 +93,26 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
       'Sort.IsAscending': 'true'
     };
     if (this.role == Role.Company || this.role == Role.Student) {
-      // Mirror public marketing catalog (same as GET api/public/courses?categorySlug=…)
-      obj['Filter.ForPublicListing'] = true;
       obj['Filter.IsProgressInfo'] = true;
     }
+    const orgOnly =
+      this.activateRoute.snapshot.queryParamMap.get('org') === '1' &&
+      typeof window !== 'undefined' &&
+      isCompanyTenantLoginHost(window.location.hostname) &&
+      !!this.authService.currentToken();
+    if (orgOnly) {
+      obj['Filter.ExploreCatalogFilter'] = EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY;
+    }
     this.subscription.add(
-      this.appService.getCourses(obj).pipe(
-        map((response) => {
-          this.courses = response.results;
-          this.count = response.totalNumberOfRecords;
+      forkJoin({
+        tenantId: resolveViewerTenantCompanyId$(this.authService),
+        response: this.appService.getCourses(obj)
+      }).pipe(
+        map(({ tenantId, response }) => {
+          const raw = response?.results ?? [];
+          const sorted = sortExploreCoursesTenantFirst(raw, tenantId);
+          this.courses = sorted;
+          this.count = response?.totalNumberOfRecords ?? 0;
           if (!this.categoryName && this.courses?.length > 0 && this.courses[0]?.category?.name) {
             this.categoryName = this.courses[0].category.name;
           }

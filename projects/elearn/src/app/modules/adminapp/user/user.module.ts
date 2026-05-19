@@ -10,6 +10,8 @@ import { SharedModule } from 'src/app/shared/shared.module';
 import { StudentListComponent } from './student-list/student-list.component';
 import { TrainerListComponent } from './trainer-list/trainer-list.component';
 import { CompanyListComponent } from './company-list/company-list.component';
+import { AdminCompanyStudentsDrawerComponent } from './company-list/admin-company-students-drawer.component';
+import { AdminCompanyTrainersDrawerComponent } from './company-list/admin-company-trainers-drawer.component';
 import { ManagementListComponent } from './management-list/management-list.component';
 import { SendNotificationComponent } from './send-notification/send-notification.component';
 import { NotificationListComponent } from './notification-list/notification-list.component';
@@ -18,7 +20,7 @@ import { ContentPermissionRequestsComponent } from './content-permission-request
 import { UserProfileComponent } from './user-profile/user-profile.component';
 
 @NgModule({
-  declarations: [UserListComponent, AddUserComponent, StudentListComponent, TrainerListComponent, CompanyListComponent, ManagementListComponent, SendNotificationComponent, NotificationListComponent, NotificationHistoryComponent, ContentPermissionRequestsComponent, UserProfileComponent],
+  declarations: [UserListComponent, AddUserComponent, StudentListComponent, TrainerListComponent, CompanyListComponent, AdminCompanyStudentsDrawerComponent, AdminCompanyTrainersDrawerComponent, ManagementListComponent, SendNotificationComponent, NotificationListComponent, NotificationHistoryComponent, ContentPermissionRequestsComponent, UserProfileComponent],
   imports: [
     CommonModule,
     UserRoutingModule,

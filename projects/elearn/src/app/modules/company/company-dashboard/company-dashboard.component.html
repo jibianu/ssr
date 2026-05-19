@@ -1,102 +1,170 @@
-<div class="card rounded-lg">
-  <!-- Card Header -->
+<div class="card rounded-lg company-dash">
   <div class="card-header border-bottom-0 p-0 navBackground">
-
-    <!-- Side Navbar -->
-    <ul class="nav nav-lb-tab" id="tab" role="tablist" style=" justify-content: center;">
+    <ul class="nav nav-lb-tab" id="tab" role="tablist">
       <li class="nav-item ml-0" role="presentation">
         <a class="nav-link active" id="course-tab" data-toggle="pill" href="#course" role="tab" aria-controls="course"
-          aria-selected="true" (click)="tab='c'">Licensed Courses </a>
+          aria-selected="true" (click)="tab = 'c'">Licensed Courses</a>
       </li>
       <li class="nav-item ml-0" role="presentation">
-        <a class="nav-link " id="course-tab" data-toggle="pill" href="#students" role="tab" aria-controls="course"
-          aria-selected="true" (click)="tab='s'">Students List </a>
+        <a class="nav-link" id="students-tab" data-toggle="pill" href="#students" role="tab" aria-controls="students"
+          aria-selected="false" (click)="tab = 's'">Students List</a>
       </li>
     </ul>
   </div>
   <div>
-    <!-- Tab content -->
     <div class="tab-content" id="tabContent">
       <div class="tab-pane fade active show" id="course" role="tabpanel" aria-labelledby="course-tab">
+        <div *ngIf="tab === 'c'" class="company-courses-tab">
+          <div class="company-courses-tab__toolbar px-3 pt-3 pb-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <input
+                type="search"
+                class="form-control company-courses-tab__search"
+                placeholder="Search courses…"
+                [(ngModel)]="searchTitle"
+                (keyup.enter)="runCourseSearch()"
+              />
+              <button type="button" class="btn btn-primary btn-sm" (click)="runCourseSearch()">Search</button>
+            </div>
+            <p class="text-muted small mb-0 mt-2">
+              Courses created by your company’s trainers appear here. Use the flag to publish to your organization; trash to delete; ring to set setup progress.
+              <strong>Pending review</strong> means the trainer submitted for approval — click <strong>Approve</strong> to publish for students.
+            </p>
+          </div>
 
-        <div class="card-header bodyHeader" *ngIf="tab=='c'">
-          <div class="d-flex">
-            <h4 class="mb-0 pl-4">
-              Licensed Courses
-            </h4>
+          <div class="course-list mainClass list-page-with-pagination list-table-modern company-course-list">
+            <div class="list-page__table-wrap list-table-modern__wrap">
+              <div *ngIf="coursesLoading" class="p-4 text-center text-muted">Loading courses…</div>
+              <div class="list-table-modern__table-responsive" *ngIf="!coursesLoading">
+                <table class="list-table-modern__table">
+                  <thead>
+                    <tr>
+                      <th class="list-table-modern__th">
+                        <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Title')">
+                          Title
+                          <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+                        </a>
+                      </th>
+                      <th class="list-table-modern__th">
+                        <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Category')">
+                          Category
+                          <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+                        </a>
+                      </th>
+                      <th class="list-table-modern__th">Price</th>
+                      <th class="list-table-modern__th">Author</th>
+                      <th class="list-table-modern__th">Created</th>
+                      <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="!course?.length" class="list-table-modern__row">
+                      <td colspan="6" class="list-table-modern__empty">
+                        No company courses found. If a trainer just created one, refresh — or ensure their account is linked to your company portal.
+                      </td>
+                    </tr>
+                    <tr *ngFor="let item of course; trackBy: trackByCourseId" class="list-table-modern__row">
+                      <td class="list-table-modern__td list-table-modern__td--ellipsis">
+                        <a
+                          class="list-table-modern__link"
+                          (click)="gotToCurriculumList(item)"
+                          [routerLink]="['/app/company/details/curriculum-list', item.id]"
+                          [attr.title]="item?.title || ''"
+                          >{{ item.title }}</a
+                        >
+                        <span
+                          *ngIf="isPendingReview(item)"
+                          class="course-list__badge course-list__badge--pending-review"
+                          title="Trainer requested review — Approve to publish for students"
+                          >Pending review</span
+                        >
+                      </td>
+                      <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item?.category?.name }}</td>
+                      <td class="list-table-modern__td">{{ item?.price }}</td>
+                      <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item?.createdByUser?.email || '--' }}</td>
+                      <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn | date: 'short' }}</td>
+                      <td class="list-table-modern__td list-table-modern__td--action">
+                        <div class="list-table-modern__actions">
+                          <button
+                            *ngIf="isPendingReview(item)"
+                            type="button"
+                            class="btn btn-sm btn-success mr-1 mb-1"
+                            (click)="approveReview(item)"
+                            title="Approve and publish for company students"
+                          >
+                            Approve
+                          </button>
+                          <button type="button" class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip" title="Delete course" (click)="deleteCourse(item.id)">
+                            <i class="fa fa-trash"></i><span class="course-list__tooltip-text">Delete course</span>
+                          </button>
+                          <button
+                            *ngIf="!item.isPublished"
+                            type="button"
+                            class="list-table-modern__btn list-table-modern__btn--danger course-list__action-tooltip"
+                            (click)="openPublishUnpublishModal(item)"
+                          >
+                            <i class="fa fa-flag"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Not published for students — click to publish (company portal).</span>
+                          </button>
+                          <button
+                            *ngIf="item.isPublished"
+                            type="button"
+                            class="list-table-modern__btn list-table-modern__btn--success course-list__action-tooltip"
+                            (click)="openPublishUnpublishModal(item)"
+                          >
+                            <i class="fa fa-flag-o"></i><span class="course-list__tooltip-text course-list__tooltip-text--wide">Published for your organization. Click to change visibility.</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="course-list__progress-ring-wrap course-list__action-tooltip"
+                            (click)="changeProgress(item.id, getCourseProgress(item))"
+                            [attr.title]="'Set course creation progress (' + getCourseProgress(item) + '%)'"
+                          >
+                            <span class="course-list__progress-ring">
+                              <svg class="course-list__progress-ring-svg" viewBox="0 0 36 36">
+                                <path class="course-list__progress-ring-bg" pathLength="100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path
+                                  class="course-list__progress-ring-fill"
+                                  pathLength="100"
+                                  [attr.stroke-dasharray]="getCourseProgress(item) + ' ' + (100 - getCourseProgress(item))"
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                              </svg>
+                              <span class="course-list__progress-ring-pct">{{ getCourseProgress(item) }}%</span>
+                            </span>
+                            <span class="course-list__tooltip-text">Progress {{ getCourseProgress(item) }}% – Click to change</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <app-common-pagination
+              class="list-page__pagination"
+              [pageNumber]="page"
+              [pageSize]="tableSize"
+              [totalCount]="count ?? 0"
+              [pageSizeOptions]="tableSizes"
+              (pageChange)="pageChanged($event)"
+              (pageSizeChange)="onPageSizeChange($event)"
+            >
+            </app-common-pagination>
           </div>
         </div>
+      </div>
 
-        <div class="table-responsive border-0 customDesign">
-          <table class="table mb-0" style="width: 100%;">
-            <thead>
-              <tr>
-                <th style="width:75%">
-                  <a href="javascript:void(0)" (click)="sortByHeading('Title')">Title
-                    <span *ngIf="sortBy == 'Title'" class="fa"
-                      [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
-                  </a>
-                </th>
-                <th >
-                  <a href="javascript:void(0)" (click)="sortByHeading('Category')">Category
-                    <span *ngIf="sortBy == 'Category'" class="fa"
-                      [ngClass]="{  'fa-caret-down' : isAsc,  'fa-caret-up' : !isAsc}"></span>
-                  </a>
-                </th>
-                <!-- <th scope="col" style="width:15%">
-										Author
-									  </th>
-									  <th scope="col" style="width:15%">
-										Created Date
-									  </th> -->
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                *ngFor="let item of course | paginate : { itemsPerPage : tableSize,currentPage : page,totalItems : count };">
-                <td><a (click)="gotToCurriculumList(item)"
-                    [routerLink]="['/app/company/details/curriculum-list',item.id]">{{item.title}}</a></td>
-                <td>{{item?.category?.name}}</td>
-                <!-- <td>
-										  {{item?.createdByUser?.firstName }} {{item?.createdByUser?.lastName}}
-										</td>
-										<td>
-										  {{item?.createdOn | date: 'short'}}
-										</td> -->
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="d-flex bd-highlight mb-3">
-            <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
-            <div class="ml-auto p-2 bd-highlight">
-              <select (change)="onTableSizeChange($event)" class="custom-select">
-                <option *ngFor="let size of tableSizes" [ngValue]="size">
-                  {{ size }}
-                </option>
-              </select>
+      <div class="tab-pane fade" id="students" role="tabpanel" aria-labelledby="students-tab">
+        <div class="card-header bodyHeader company-dash__students-header">
+          <div class="d-flex align-items-center flex-wrap">
+            <h4 class="mb-0 pl-4 company-dash__students-title">Students List</h4>
+            <div class="p-2 ml-auto">
+              <a class="p-2 btn btn-outline-custom" (click)="InviteUser()">Invite User</a>
             </div>
           </div>
         </div>
-
+        <app-student-dashboard *ngIf="tab === 's'"></app-student-dashboard>
       </div>
-      <div class="tab-pane fade " id="students" role="tabpanel" aria-labelledby="course-tab">
-        <!-- <div class="text-right">
-          <button (click)="InviteUser()" class="btn btn-primary btn-sm mb-2"> Invite User</button></div>
-        <app-student-dashboard *ngIf="tab=='s'"></app-student-dashboard>
-      </div> -->
-	  <div class="card-header bodyHeader">
-		<div class="d-flex">
-		  <h4 class="mb-0 pl-4">
-			Students List
-		  </h4>		  
-		  <div class=" p-2 ml-auto">
-			<a class="p-2 btn btn-outline-custom"  (click)="InviteUser()">Invite User</a>
-		  </div>
-		</div>
-	  </div>
-	  <app-student-dashboard *ngIf="tab=='s'"></app-student-dashboard>
     </div>
   </div>
-
 </div>

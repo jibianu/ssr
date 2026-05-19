@@ -4,7 +4,12 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://localhost:52287/',
+  /** HTTP port matches `Elearn.Serverless` launchSettings (`http://localhost:52288`). HTTPS is `https://localhost:52287` — do not use `http` on 52287. */
+  apiUrl: 'http://localhost:52288/',
+  /** When set, after successful company registration the browser goes to: https://{subdomain}.{companyPortalHost}{companyPortalLoginPath} (e.g. https://acme-corp.oilandgasclub.com/login). Leave empty in local dev to stay on email verification in-app. */
+  companyPortalHost: '' as string | undefined,
+  /** Path on the tenant host (leading slash). Production: /login → https://{subdomain}.oilandgasclub.com/login */
+  companyPortalLoginPath: '/login',
   /** Base URL of the site app (public course landing). When localhost, Elearn uses native course page (no iframe). */
   publicCourseSiteUrl: 'http://localhost:4200',
   /** Dev only: if true, embed public site (4200) inside Elearn; uses course slug in URL (needs `npm run start:site`). */

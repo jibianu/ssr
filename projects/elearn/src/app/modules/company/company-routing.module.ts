@@ -16,9 +16,19 @@ import { StudentCourseDetailsComponent } from '../student/student-course-details
 import { StudentCurriculumQuestionsComponent } from '../student/student-curriculum-details/student-curriculum-questions/student-curriculum-questions.component';
 import { StudentCurriculumListComponent } from '../student/student-curriculum-list/student-curriculum-list.component';
 import { ComapanyDashboardComponent } from './company-dashboard/comapny-dashboard.component';
+import { SsoSettingsComponent } from './sso-settings/sso-settings.component';
+import { CompanyUsersComponent } from './company-users/company-users.component';
+import { CompanyTrainersComponent } from './company-trainers/company-trainers.component';
+import { CompanyBillingDashboardComponent } from './company-billing/company-billing-dashboard.component';
+import { CompanyBlogReviewComponent } from './company-blog-review/company-blog-review.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: 'settings/sso', component: SsoSettingsComponent, data: { roles: [Role.Company] } },
+  { path: 'users', component: CompanyUsersComponent, data: { roles: [Role.Company] } },
+  { path: 'trainers', component: CompanyTrainersComponent, data: { roles: [Role.Company] } },
+  { path: 'billing', component: CompanyBillingDashboardComponent, data: { roles: [Role.Company] } },
+  { path: 'blog', component: CompanyBlogReviewComponent, data: { roles: [Role.Company] } },
   { path: 'dashboard', loadChildren: () => import('./company-analytics-dashboard/company-analytics-dashboard.module').then(m => m.CompanyAnalyticsDashboardModule) },
   { path: 'courses', component: ComapanyDashboardComponent },
   {

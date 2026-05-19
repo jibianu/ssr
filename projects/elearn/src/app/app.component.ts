@@ -55,6 +55,12 @@ export class AppComponent implements OnInit {
         },
       });
     }
+    // Legacy bookmark: /app/app/admin/... → /app/admin/...
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/app/app/')) {
+      const fixed = window.location.pathname.replace(/\/app\/app\//g, '/app/');
+      this.router.navigateByUrl(fixed + window.location.search + window.location.hash, { replaceUrl: true });
+    }
+
     // Capture UTM params from URL so they are available at checkout (revenue share attribution)
     this.utmService.captureFromUrl();
     this.recordAffiliateClickFromUrl(this.router.url);

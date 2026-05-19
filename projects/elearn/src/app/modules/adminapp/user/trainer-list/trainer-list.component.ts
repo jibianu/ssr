@@ -174,6 +174,9 @@ export class TrainerListComponent implements OnInit, OnDestroy {
         obj['Filter.PendingPermissionContentType'] = this.filterPendingPermissionContentType.trim();
       }
     }
+    if (!this.isManagementContext) {
+      obj['Filter.ExcludeLinkedCompanyTrainers'] = 'true';
+    }
     const apiCall = this.isManagementContext
       ? this.appService.getAssignedTrainersForManagement(obj)
       : this.appService.GetPermissionByAction('Users.GetTrainers').pipe(

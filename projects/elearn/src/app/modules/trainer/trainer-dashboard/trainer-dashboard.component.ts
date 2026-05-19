@@ -159,7 +159,11 @@ export class TrainerDashboardComponent implements OnInit, OnDestroy {
             });
           }
         },
-        error: () => this.toasterService.showError('Something went wrong'),
+        error: (err: { error?: { message?: string; Message?: string } }) => {
+          const msg =
+            err?.error?.message ?? err?.error?.Message ?? 'Something went wrong';
+          this.toasterService.showError(msg);
+        },
       })
     );
   }

@@ -1,4 +1,4 @@
-import { environment } from './../../../environments/environment';
+import { getApiBaseUrl } from './api-base-url.helper';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { AuthenticationService } from './../../modules/auth/auth.service';
@@ -35,7 +35,7 @@ export class JwtInterceptor implements HttpInterceptor {
         // add authorization header with jwt token if available
         const token = this.authenticationService.currentToken();
         let uploadimage = false;
-        const isDashboardRequest = /api\/(admin|company|management|student|trainer)\/dashboard/.test(request.url);
+        const isDashboardRequest = /api\/(admin|company|management|student|trainer)\/(dashboard|billing)/.test(request.url);
         const showSpinner =
             !isDashboardRequest && !JwtInterceptor.isSilentBackgroundUrl(request.url);
         if (showSpinner) {
@@ -49,7 +49,12 @@ export class JwtInterceptor implements HttpInterceptor {
                 uploadimage = true;
             }
             // Apply to full API URL or relative /api paths (e.g. when using proxy)
-            const isApiRequest = !environment.apiUrl || request.url.startsWith(environment.apiUrl) || request.url.startsWith('/api');
+            const apiBase = getApiBaseUrl();
+            const isApiRequest =
+                request.url.includes('/api/') ||
+                request.url.startsWith('/api') ||
+                !apiBase ||
+                request.url.startsWith(apiBase);
             if (isApiRequest) {
                 const bearerToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
                 const headers: Record<string, string> = {

@@ -1,8 +1,10 @@
 import { ChatComponent } from './../../shared/component/chat/chat.component';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { AdminBillingDashboardComponent } from './billing/admin-billing-dashboard.component';
 
 const routes: Routes = [
+  { path: 'billing', component: AdminBillingDashboardComponent },
   { path: 'dashboard', loadChildren: () => import('./dashboard/admin-dashboard.module').then(m => m.AdminDashboardModule) },
   { path: 'revenue', loadChildren: () => import('./revenue/admin-revenue.module').then(m => m.AdminRevenueModule) },
   { path: 'analytics', loadChildren: () => import('./analytics/admin-analytics.module').then(m => m.AdminAnalyticsModule) },

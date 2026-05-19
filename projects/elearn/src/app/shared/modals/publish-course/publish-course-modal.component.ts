@@ -24,6 +24,9 @@ export class PublishCourseModalComponent implements OnInit, OnChanges {
   /** Checkbox: show on Public marketing course page */
   showOnPublic = false;
 
+  /** When true, save via company-tenant API (organization LMS; public marketing not used). */
+  @Input() companyTenant = false;
+
   isPublishing = false;
   isSuccess = false;
   errorMessage: string | null = null;
@@ -38,19 +41,27 @@ export class PublishCourseModalComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isPublished'] || changes['showOnPublicListing'] || changes['courseId']) {
+    if (changes['isPublished'] || changes['showOnPublicListing'] || changes['courseId'] || changes['companyTenant']) {
       this.initCheckboxes();
     }
   }
 
   initCheckboxes(): void {
     this.showOnLms = this.isPublished;
+    if (this.companyTenant) {
+      this.showOnPublic = false;
+      return;
+    }
     // When LMS is on, default Public to on (publish = both). Only show Public unchecked when it was explicitly false and we're not changing behavior on open.
     this.showOnPublic = this.showOnLms ? true : (this.showOnPublicListing === true);
   }
 
   /** When LMS is checked, also check Public (publish to both). When LMS is unchecked, uncheck Public (Public requires LMS). */
   onLmsChange(checked: boolean): void {
+    if (this.companyTenant) {
+      this.showOnPublic = false;
+      return;
+    }
     if (checked) {
       this.showOnPublic = true;
     } else {
@@ -77,7 +88,11 @@ export class PublishCourseModalComponent implements OnInit, OnChanges {
     if (!this.courseId || this.isPublishing) return;
     this.isPublishing = true;
     this.errorMessage = null;
-    this.appService.setCourseVisibility(this.courseId, this.showOnLms, this.showOnPublic).subscribe({
+    const showPublic = this.companyTenant ? false : this.showOnPublic;
+    const req$ = this.companyTenant
+      ? this.appService.setCompanyCourseVisibility(this.courseId, { showOnLms: this.showOnLms, showOnPublic: showPublic })
+      : this.appService.setCourseVisibility(this.courseId, this.showOnLms, this.showOnPublic);
+    req$.subscribe({
       next: () => {
         this.isPublishing = false;
         this.isSuccess = true;

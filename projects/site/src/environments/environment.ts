@@ -10,7 +10,7 @@
 export const environment = {
   production: false,
   // Backend origin (trailing slash). Routes are absolute from this root: api/..., page/course/..., not only /api.
-  apiUrl: 'https://localhost:52287/',
+    apiUrl: 'http://localhost:52288/',
   // Elearn app URL (merged e-learning) – dev runs on port 4201
   elearnAppUrl: 'http://localhost:4201',
   seoUrl: 'https://oilandgasclub.com/',

@@ -1,6 +1,5 @@
 import { UserProfileComponent } from './shared/component/user-profile/user-profile.component';
 import { Role } from './shared/models/role';
-import { CommonComponent } from './layouts/common/common.component';
 import { StudentLayoutSwitcherComponent } from './layouts/student/layout-switcher/layout-switcher.component';
 import { PublicLayoutComponent } from './layouts/public/public-layout.component';
 import { AdminLayoutComponent } from './layouts/admin/admin-layout.component';
@@ -24,16 +23,82 @@ const routerOptions: ExtraOptions = {
   preloadingStrategy: PreloadAllModules,
 };
 
+const AUTH_SHELL_GUARDS = [AuthGuard, UserValidationGuard];
+
+/** Authenticated area routes (admin, company, student, …). */
+const APP_SHELL_CHILDREN: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    component: AppEntryRedirectComponent,
+  },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [RoleGuard],
+    loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule),
+    data: { roles: [Role.Admin] }
+  },
+  {
+    path: 'student',
+    component: StudentLayoutSwitcherComponent,
+    canActivate: [RoleGuard],
+    loadChildren: () => import('./modules/student/student.module').then(m => m.StudentModule),
+    data: { roles: [Role.Student] }
+  },
+  {
+    path: 'trainer',
+    component: TrainerLayoutComponent,
+    canActivate: [RoleGuard],
+    loadChildren: () => import('./modules/trainer/trainer.module').then(m => m.TrainerModule),
+    data: { roles: [Role.Trainer] }
+  },
+  {
+    path: 'affiliate',
+    component: AffiliateLayoutComponent,
+    canActivate: [AuthGuard, UserValidationGuard],
+    loadChildren: () => import('./modules/affiliate/affiliate.module').then(m => m.AffiliateModule)
+  },
+  {
+    path: 'company',
+    component: CompanyLayoutComponent,
+    canActivate: [RoleGuard],
+    loadChildren: () => import('./modules/company/company.module').then(m => m.CompanyModule),
+    data: { roles: [Role.Company] }
+  },
+  {
+    path: 'management',
+    component: ManagementLayoutComponent,
+    canActivate: [RoleGuard],
+    loadChildren: () => import('./modules/management/management.module').then(m => m.ManagementModule),
+    data: { roles: [Role.Manager] }
+  },
+  {
+    path: 'payment',
+    loadChildren: () => import('./modules/payment/payment.module').then(m => m.PaymentModule),
+  },
+  {
+    path: 'profile',
+    component: UserProfileComponent,
+  },
+];
+
+const shellWithGuards: Routes = APP_SHELL_CHILDREN.map((route) => ({
+  ...route,
+  canActivate: [...AUTH_SHELL_GUARDS, ...(route.canActivate ?? [])],
+}));
+
+/**
+ * Register shell routes at root (unified `<base href="/app/">` → `/app/admin/...`)
+ * and under `app` (standalone `<base href="/">` → `/app/admin/...`).
+ */
 const routes: Routes = [
+  { path: 'super-admin/billing', redirectTo: 'admin/billing', pathMatch: 'full' },
+  { path: 'affiliate/dashboard', redirectTo: 'affiliate/dashboard', pathMatch: 'full' },
   ...AUTH_ROUTES,
   {
     path: 'checkout',
     loadChildren: () => import('./modules/payment/payment.module').then(m => m.PaymentModule)
-  },
-  {
-    path: 'affiliate/dashboard',
-    redirectTo: 'app/affiliate/dashboard',
-    pathMatch: 'full'
   },
   {
     path: 'affiliate',
@@ -43,76 +108,24 @@ const routes: Routes = [
     path: 'unauthorized',
     component: UnauthorizedComponent
   },
+  /** Legacy `/app/app/admin/...` bookmarks */
+  { path: 'app/:a/:b/:c', redirectTo: ':a/:b/:c', pathMatch: 'full' },
+  { path: 'app/:a/:b', redirectTo: ':a/:b', pathMatch: 'full' },
+  { path: 'app/:a', redirectTo: ':a', pathMatch: 'full' },
+  /** Unified mount: internal `admin/...` (browser `/app/admin/...`) */
+  ...shellWithGuards,
+  /** Standalone mount: internal `app/admin/...` (browser `/app/admin/...`) */
   {
     path: 'app',
-    canActivate: [AuthGuard, UserValidationGuard],
-    children: [
-    {
-      path: '',
-      pathMatch: 'full',
-      component: AppEntryRedirectComponent,
-    },
-    {
-      path: 'admin',
-      component: AdminLayoutComponent,
-      canActivate: [RoleGuard],
-      loadChildren: () => import('./modules/adminapp/adminapp.module').then(m => m.AdminappModule),
-      data: { roles: [Role.Admin] }
-    },
-    {
-      path: 'student',
-      component: StudentLayoutSwitcherComponent,
-      canActivate: [RoleGuard],
-      loadChildren: () => import('./modules/student/student.module').then(m => m.StudentModule),
-      data: { roles: [Role.Student] }
-    },
-    {
-      path: 'trainer',
-      component: TrainerLayoutComponent,
-      canActivate: [RoleGuard],
-      loadChildren: () => import('./modules/trainer/trainer.module').then(m => m.TrainerModule),
-      data: { roles: [Role.Trainer] }
-    },
-    {
-      path: 'affiliate',
-      component: AffiliateLayoutComponent,
-      canActivate: [AuthGuard, UserValidationGuard],
-      loadChildren: () => import('./modules/affiliate/affiliate.module').then(m => m.AffiliateModule)
-    },
-    {
-      path: 'company',
-      component: CompanyLayoutComponent,
-      canActivate: [RoleGuard],
-      loadChildren: () => import('./modules/company/company.module').then(m => m.CompanyModule),
-      data: { roles: [Role.Company] }
-    },
-    {
-      path: 'management',
-      component: ManagementLayoutComponent,
-      canActivate: [RoleGuard],
-      loadChildren: () => import('./modules/management/management.module').then(m => m.ManagementModule),
-      data: { roles: [Role.Manager] }
-    },
-    {
-      path: 'payment',
-      // component: CommonComponent,
-      loadChildren: () => import('./modules/payment/payment.module').then(m => m.PaymentModule),
-      // data: { roles: [Role.Student] }
-    },
-    {
-      path: 'profile',
-      component: UserProfileComponent,
-    },
-    ],
+    canActivate: AUTH_SHELL_GUARDS,
+    children: APP_SHELL_CHILDREN,
   },
   {
     path: '',
     component: PublicLayoutComponent,
     loadChildren: () => import('./modules/publicapp/publicapp.module').then(m => m.PublicappModule),
-    // canActivate: [AuthGuard]
   },
-  { path: '**', redirectTo: '/', pathMatch:'full' }
-
+  { path: '**', redirectTo: 'app', pathMatch: 'full' },
 ];
 
 @NgModule({

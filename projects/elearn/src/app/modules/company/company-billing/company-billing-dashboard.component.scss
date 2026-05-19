@@ -1,0 +1,274 @@
+.billing {
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.billing__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.billing__title {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.billing__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.billing__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.billing__card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.billing__card-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.billing__card-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.billing__card-value--sm {
+  font-size: 1rem;
+}
+
+.billing__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.billing__panel {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+
+  h2 {
+    margin: 0 0 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  &--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.billing__meter-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  margin-bottom: 6px;
+}
+
+.billing__meter-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.billing__meter-fill {
+  height: 100%;
+  background: var(--app-primary, #f57722);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+
+  &--alt {
+    background: #147fa0;
+  }
+
+  &--blog {
+    background: #7c3aed;
+  }
+}
+
+.billing__pending {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  font-size: 0.875rem;
+
+  strong { color: #92400e; }
+  p { margin: 4px 0 0; }
+}
+
+.billing__success {
+  margin: 8px 0 0;
+  color: #166534;
+  font-size: 0.875rem;
+}
+
+.billing__error-inline {
+  margin: 8px 0 0;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.billing__form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 12px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: #475569;
+  }
+
+  input {
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    min-width: 100px;
+  }
+}
+
+.billing__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  th {
+    color: #64748b;
+    font-weight: 600;
+  }
+}
+
+.billing__total td {
+  font-weight: 700;
+}
+
+.billing__addons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.billing__addon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.billing__addon-name {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.billing__addon-price {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.billing__btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+
+  &--primary {
+    background: var(--app-primary, #f57722);
+    border-color: var(--app-primary, #f57722);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.billing__textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+
+.billing__insights {
+  margin-bottom: 20px;
+}
+
+.billing__insight {
+  padding: 12px 16px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+
+  &--warn {
+    background: #fffbeb;
+    border-color: #fcd34d;
+  }
+}
+
+.billing__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 0.75rem;
+}
+
+.billing__empty, .billing__loading {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .billing__grid {
+    grid-template-columns: 1fr;
+  }
+}

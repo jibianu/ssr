@@ -12,6 +12,8 @@ import { RemoveFromManagementComponent } from 'src/app/shared/component/remove-f
 import { Role } from 'src/app/shared/models/role';
 import { AdminAppService } from '../../adminapp.service';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
+import { AdminCompanyStudentsDrawerComponent } from './admin-company-students-drawer.component';
+import { AdminCompanyTrainersDrawerComponent } from './admin-company-trainers-drawer.component';
 
 @Component({
     selector: 'app-company-list',
@@ -209,6 +211,26 @@ export class CompanyListComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.trainerName = item.userName || item.email;
     modalRef.componentInstance.entityType = 'company';
     modalRef.result.then(() => this.fetchCompanies()).catch(() => {});
+  }
+
+  openPortalTrainers(item: { id: string; email?: string }): void {
+    const ref = this.modalService.open(AdminCompanyTrainersDrawerComponent, {
+      windowClass: 'modal-right modal-right--wide',
+      backdrop: true,
+      scrollable: true
+    });
+    ref.componentInstance.companyUserId = item.id;
+    ref.componentInstance.companyEmail = (item.email ?? '').toString();
+  }
+
+  openPortalStudents(item: { id: string; email?: string }): void {
+    const ref = this.modalService.open(AdminCompanyStudentsDrawerComponent, {
+      windowClass: 'modal-right modal-right--wide',
+      backdrop: true,
+      scrollable: true
+    });
+    ref.componentInstance.companyUserId = item.id;
+    ref.componentInstance.companyEmail = (item.email ?? '').toString();
   }
   selectAll(){
     if(this.checkedAll){

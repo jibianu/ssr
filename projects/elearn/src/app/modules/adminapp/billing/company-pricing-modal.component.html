@@ -1,0 +1,101 @@
+<div class="pricing-modal" *ngIf="open" (click)="close()">
+  <div class="pricing-modal__panel" (click)="$event.stopPropagation()">
+    <header class="pricing-modal__head">
+      <div>
+        <h2>Edit pricing — {{ tenant?.companyName }}</h2>
+        <p *ngIf="tenant?.subdomain">{{ tenant?.subdomain }}.oilandgasclub.com</p>
+      </div>
+      <button type="button" class="pricing-modal__close" (click)="close()" aria-label="Close">&times;</button>
+    </header>
+
+    <form [formGroup]="form" class="pricing-modal__form">
+      <div class="pricing-modal__grid">
+        <label>
+          Subscription plan
+          <select formControlName="subscriptionPlan">
+            <option *ngFor="let p of planOptions" [value]="p.id">{{ p.label }}</option>
+          </select>
+        </label>
+        <label>
+          GST %
+          <input type="number" formControlName="gstPercentage" min="0" step="0.01" />
+        </label>
+        <label>
+          Employee seats
+          <input type="number" formControlName="employeeSeatsPurchased" min="0" />
+        </label>
+        <label>
+          Trainer seats
+          <input type="number" formControlName="trainerSeatsPurchased" min="0" />
+        </label>
+        <label>
+          Employee seat price (₹/yr)
+          <input type="number" formControlName="pricePerEmployeeSeat" min="0" />
+        </label>
+        <label>
+          Trainer seat price (₹/yr)
+          <input type="number" formControlName="pricePerTrainerSeat" min="0" />
+        </label>
+        <label>
+          Blogs included in plan
+          <input type="number" formControlName="blogsIncluded" min="0" />
+        </label>
+        <label>
+          Price per blog over included (₹/yr)
+          <input type="number" formControlName="pricePerBlog" min="0" />
+        </label>
+        <label class="pricing-modal__hint" *ngIf="tenant">
+          Current trainer blogs: {{ tenant.blogsUsed }} ({{ tenant.blogsPublished }} published)
+        </label>
+        <label>
+          Discount type
+          <select formControlName="discountType">
+            <option *ngFor="let d of discountTypes" [value]="d.id">{{ d.label }}</option>
+          </select>
+        </label>
+        <label>
+          Discount value
+          <input type="number" formControlName="discountValue" min="0" />
+        </label>
+        <label *ngIf="form.get('discountType')?.value == 3">
+          Custom annual subtotal (₹, before GST)
+          <input type="number" formControlName="customAnnualOverride" min="0" />
+        </label>
+        <label>
+          Renewal date
+          <input type="date" formControlName="renewalDate" />
+        </label>
+        <label>
+          Payment status
+          <select formControlName="paymentStatus">
+            <option *ngFor="let s of paymentStatusOptions" [ngValue]="s.id">{{ s.label }}</option>
+          </select>
+        </label>
+        <label class="pricing-modal__check">
+          <input type="checkbox" formControlName="allowOverage" /> Allow overage billing
+        </label>
+        <label>
+          Overage / seat (₹)
+          <input type="number" formControlName="overagePricePerSeat" min="0" />
+        </label>
+      </div>
+
+      <section class="pricing-modal__preview">
+        <h3>Live calculation</h3>
+        <div class="pricing-modal__preview-row"><span>Base subtotal</span><span>{{ formatInr(previewSubtotal) }}</span></div>
+        <div class="pricing-modal__preview-row"><span>Discount</span><span>− {{ formatInr(previewDiscount) }}</span></div>
+        <div class="pricing-modal__preview-row"><span>GST</span><span>{{ formatInr(previewTax) }}</span></div>
+        <div class="pricing-modal__preview-row pricing-modal__preview-row--total"><span>Final annual</span><span>{{ formatInr(previewTotal) }}</span></div>
+      </section>
+
+      <p class="pricing-modal__error" *ngIf="error">{{ error }}</p>
+
+      <footer class="pricing-modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">Cancel</button>
+        <button type="button" class="btn btn--primary" (click)="save()" [disabled]="saving || form.invalid">
+          {{ saving ? 'Saving…' : 'Save pricing' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>

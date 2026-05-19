@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Router } from '@angular/router';
 import { NavbarMenuItem } from '../../../config/navbar-menu.config';
+import { menuLinkToRouterCommands } from '../../../core/helpers/app-url.helper';
 
 /** Common sidebar for Admin, Trainer, Company, Management. Menu items come from permission-based config. */
 @Component({
@@ -20,8 +20,6 @@ export class CommonSidebarComponent implements OnChanges {
   /** Set when avatar image fails to load. */
   avatarImageError = false;
 
-  constructor(private router: Router) {}
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['userImageUrl']) {
       this.avatarImageError = false;
@@ -34,10 +32,7 @@ export class CommonSidebarComponent implements OnChanges {
     return (name.charAt(0) || '?').toUpperCase();
   }
 
-  /** Navigate on sidebar link click so routing works reliably from admin layout. */
-  onNavClick(event: Event, item: NavbarMenuItem): void {
-    event.preventDefault();
-    const url = item.fragment ? `${item.link}#${item.fragment}` : item.link;
-    this.router.navigateByUrl(url);
+  routerCommands(link: string): string[] {
+    return menuLinkToRouterCommands(link);
   }
 }

@@ -6,6 +6,7 @@ import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { GoogleCallbackComponent } from './google-callback/google-callback.component';
+import { SsoCallbackComponent } from './sso-callback/sso-callback.component';
 import { Routes } from '@angular/router';
 import { VerificationCodeComponent } from './verification-code/verification-code.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
@@ -33,6 +34,10 @@ export const AUTH_ROUTES: Routes = [
   {
     path: 'google-callback',
     component: GoogleCallbackComponent
+  },
+  {
+    path: 'sso-callback',
+    component: SsoCallbackComponent
   },
   {
     path: 'verification',

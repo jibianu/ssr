@@ -1,47 +1,44 @@
-#tab{
-        background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+@import '../../adminapp/course/course-list/course-list.component.scss';
+
+#tab {
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
 }
 
-.bodyHeader{
-        background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
-        padding:36px 0px;
-    }
-    .bodyHeader h4{
-        font-size: 56px;
-        color:white;
-    }
+.company-dash {
+  overflow: hidden;
+}
 
-.customDesign{
-        padding: 10px 70px;
-        // background-color: gray;
-        height: 70vh;
-        // overflow-y: scroll;
-    }
-    
-    table{
-        border: 1px solid #ddd8d8;
-        table-layout: fixed;
-        white-space: nowrap;
-    }
-    
-    table tbody{
-        overflow-y: scroll;
-    }
-    .tdtitle{
-        display: inline-block;
-        width: 100%;
-        white-space: nowrap;
-        overflow: hidden !important;
-        text-overflow: ellipsis;
-    }
-    
-    #backarrow{
-        font-size: 20px;
-        position: relative;
-        top: -10px;
-        padding-right: 22px;
-      }
-    table a{
-        text-decoration: none;
-        color: black;
-    }
+.company-dash__students-header {
+  background: linear-gradient(90deg, #153e7c 0.26%, #147fa0);
+  padding: 1rem 0;
+}
+
+.company-dash__students-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.company-courses-tab__search {
+  max-width: 22rem;
+  min-width: 12rem;
+}
+
+.company-course-list {
+  padding: 0 0.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .company-course-list {
+    padding: 0 1.25rem 1.25rem;
+  }
+}
+
+.navBackground .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.navBackground .nav-link.active {
+  color: #fff;
+  font-weight: 600;
+}

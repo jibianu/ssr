@@ -122,7 +122,8 @@ import { CommonPaginationComponent } from './component/common-pagination/common-
         FixMojibakeSafeHtmlPipe,
         NgOptimizedImage,
         InviteUserComponent,
-        UnauthorizedComponent
+        UnauthorizedComponent,
+        RouterModule
     ],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA

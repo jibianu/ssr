@@ -4,7 +4,8 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'https://localhost:52287/',
+  /** Same as `environment.ts`: HTTP binding from `launchSettings.json` (avoids browser ↔ dev HTTPS cert friction). */
+  apiUrl: 'http://localhost:52288/',
   publicCourseSiteUrl: 'http://localhost:4200',
   forcePublicCourseIframe: false,
   exploreOpenMarketingSiteInSameTab: false,
@@ -17,5 +18,8 @@ export const environment = {
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
   cognitoRedirectUri: 'http://localhost:4200/callback',
-  googleRedirectUri: 'http://localhost:4200/google-callback'
+  googleRedirectUri: 'http://localhost:4200/google-callback',
+  /** Empty in unified-local: no tenant DNS on localhost; use prod/unified-prod for https://{subdomain}.oilandgasclub.com/login */
+  companyPortalHost: '' as string | undefined,
+  companyPortalLoginPath: '/login'
 };

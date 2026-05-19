@@ -3,7 +3,7 @@
     <button *ngIf="showSidebarToggler" type="button" class="common-topbar__toggler" (click)="onSidebarTogglerClick()" aria-label="Toggle menu">
       <i class="fa fa-bars"></i>
     </button>
-    <a [routerLink]="homeRoute" class="common-topbar__logo-link" aria-label="Go to home">
+    <a href="#" class="common-topbar__logo-link" aria-label="Go to home" (click)="$event.preventDefault(); goHome()">
       <img [src]="logoUrl" alt="Logo" class="common-topbar__logo" (error)="onLogoError($event)">
     </a>
     <button *ngIf="showBack" type="button" class="common-topbar__back" (click)="goBack()" aria-label="Go back">

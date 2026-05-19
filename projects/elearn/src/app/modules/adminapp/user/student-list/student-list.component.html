@@ -1,10 +1,16 @@
+<div class="student-list-page">
 <div class="mainClass list-page-with-pagination list-table-modern">
   <div class="student-list__filter">
     <div class="student-list__filter-header">
       <span class="student-list__filter-title"><i class="fa fa-filter" aria-hidden="true"></i> Filters</span>
-      <button type="button" class="student-list__btn student-list__btn--primary" (click)="goToStudentAnalytics()" title="Open Student Analytics">
-        <i class="fa fa-bar-chart" aria-hidden="true"></i> Student Analytics
-      </button>
+      <div class="student-list__filter-header-actions">
+        <button *ngIf="!isManagementContext" type="button" class="student-list__btn student-list__btn--outline" (click)="openTraineeListDrawer()" title="All trainees including company portal accounts">
+          <i class="fa fa-users" aria-hidden="true"></i> Trainee List
+        </button>
+        <button type="button" class="student-list__btn student-list__btn--primary" (click)="goToStudentAnalytics()" title="Open Student Analytics">
+          <i class="fa fa-bar-chart" aria-hidden="true"></i> Student Analytics
+        </button>
+      </div>
     </div>
     <div class="student-list__filter-body">
       <div class="student-list__filter-group student-list__filter-group--search">
@@ -109,4 +115,86 @@
     (pageChange)="pageChanged($event)"
     (pageSizeChange)="onPageSizeChange($event)">
   </app-common-pagination>
+</div>
+
+<ng-container *ngIf="traineeDrawerOpen && !isManagementContext">
+  <div class="admin-trainee-drawer-backdrop" (click)="closeTraineeDrawer()" aria-hidden="true"></div>
+  <aside class="admin-trainee-drawer" role="dialog" aria-modal="true" aria-labelledby="admin-trainee-drawer-title" tabindex="-1">
+    <div class="admin-trainee-drawer__panel">
+      <div class="admin-trainee-drawer__head">
+        <div>
+          <h2 class="admin-trainee-drawer__title" id="admin-trainee-drawer-title">Trainee list</h2>
+          <p class="admin-trainee-drawer__sub">All student accounts, including users linked to a company portal. The main table above hides portal-linked trainees.</p>
+        </div>
+        <button type="button" class="admin-trainee-drawer__close" (click)="closeTraineeDrawer()" aria-label="Close">&times;</button>
+      </div>
+      <div class="admin-trainee-drawer__toolbar">
+        <div class="admin-trainee-drawer__search-wrap">
+          <i class="fa fa-search admin-trainee-drawer__search-icon" aria-hidden="true"></i>
+          <input type="text" class="admin-trainee-drawer__search" placeholder="Search email, username or name…"
+                 [(ngModel)]="traineeDrawerSearch" (keyup.enter)="traineeDrawerApplySearch()" />
+        </div>
+        <button type="button" class="student-list__btn student-list__btn--primary" (click)="traineeDrawerApplySearch()">Apply</button>
+      </div>
+      <div class="admin-trainee-drawer__body">
+        <div class="list-table-modern__table-responsive">
+          <table class="list-table-modern__table">
+            <thead>
+              <tr>
+                <th class="list-table-modern__th">
+                  <a href="javascript:void(0)" class="list-table-modern__sort" (click)="traineeDrawerSortByHeading('Email')">Email <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span></a>
+                </th>
+                <th class="list-table-modern__th">
+                  <a href="javascript:void(0)" class="list-table-modern__sort" (click)="traineeDrawerSortByHeading('UserName')">Username <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span></a>
+                </th>
+                <th class="list-table-modern__th">
+                  <a href="javascript:void(0)" class="list-table-modern__sort" (click)="traineeDrawerSortByHeading('CreatedOn')">Created on <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span></a>
+                </th>
+                <th class="list-table-modern__th">
+                  <a href="javascript:void(0)" class="list-table-modern__sort" (click)="traineeDrawerSortByHeading('LastLoggedIn')">Last login <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span></a>
+                </th>
+                <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of traineeDrawerUsers" class="list-table-modern__row">
+                <td class="list-table-modern__td" style="display: flex; align-items: center; gap: 0.6rem;">
+                  <span class="list-table-modern__avatar" [title]="item?.email">{{ getInitial(item) }}</span>
+                  <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.email">{{ item?.email | truncate:30 }}</a>
+                </td>
+                <td class="list-table-modern__td list-table-modern__td--ellipsis">
+                  <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.userName">{{ item?.userName | truncate:25 }}</a>
+                </td>
+                <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn ? (item.createdOn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+                <td class="list-table-modern__td list-table-modern__td--date">{{ item?.lastLoggedIn ? (item.lastLoggedIn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+                <td class="list-table-modern__td list-table-modern__td--action">
+                  <div class="list-table-modern__actions">
+                    <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteUser(item.id)" title="Delete"><i class="fa fa-trash"></i></button>
+                    <button *ngIf="managerListEnbale && !isManagementContext" type="button" class="list-table-modern__btn list-table-modern__btn--warning" title="Remove from Management" (click)="openRemoveFromManagement(item)"><i class="fa fa-user-times"></i></button>
+                    <button type="button" class="list-table-modern__btn list-table-modern__btn--primary" (click)="openPermisionModal(item)" title="Unlock"><i class="fa fa-unlock"></i></button>
+                    <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="openCourseModal(item)" title="Edit Course"><i class="fa fa-book"></i></button>
+                    <button type="button" class="list-table-modern__btn list-table-modern__btn--view" (click)="openStudentInfo(item)" title="View Info"><i class="fa fa-eye"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p *ngIf="!traineeDrawerLoading && traineeDrawerUsers.length === 0" class="admin-trainee-drawer__empty">No trainees match this search.</p>
+        <div *ngIf="traineeDrawerLoading" class="admin-trainee-drawer__loading">Loading…</div>
+      </div>
+      <div class="admin-trainee-drawer__foot">
+        <app-common-pagination
+          class="list-page__pagination"
+          [pageNumber]="traineeDrawerPage"
+          [pageSize]="traineeDrawerTableSize"
+          [totalCount]="traineeDrawerCount ?? 0"
+          [pageSizeOptions]="traineeDrawerTableSizes"
+          (pageChange)="traineeDrawerPageChanged($event)"
+          (pageSizeChange)="traineeDrawerOnPageSizeChange($event)">
+        </app-common-pagination>
+      </div>
+    </div>
+  </aside>
+</ng-container>
 </div>

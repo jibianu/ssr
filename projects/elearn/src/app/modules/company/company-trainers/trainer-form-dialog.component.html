@@ -1,0 +1,66 @@
+<div class="tf-panel">
+  <div class="tf-panel__header">
+    <h4 class="tf-panel__title" id="trainer-drawer-title">{{ mode === 'create' ? 'Add Trainer' : 'Edit Trainer' }}</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+  </div>
+  <div class="tf-panel__body">
+    <div *ngIf="loading" class="text-muted">Loading…</div>
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="save()" id="trainer-drawer-form">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">First name</label>
+          <input class="form-control" formControlName="firstName" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Last name</label>
+          <input class="form-control" formControlName="lastName" />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Email</label>
+          <input class="form-control" type="email" formControlName="email" autocomplete="email" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone</label>
+          <input class="form-control" formControlName="phone" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Department</label>
+          <input class="form-control" formControlName="department" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Designation</label>
+          <input class="form-control" formControlName="designation" />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Expertise</label>
+          <input class="form-control" formControlName="expertise" placeholder="e.g. Process simulation, HYSYS" />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Bio</label>
+          <textarea class="form-control" rows="3" formControlName="bio"></textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Profile photo URL</label>
+          <input class="form-control" formControlName="profilePictureUrl" />
+        </div>
+        <div class="col-md-6 d-flex align-items-end" *ngIf="!ssoInviteMode || mode === 'edit'">
+          <label class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" formControlName="isActive" />
+            <span class="form-check-label">Active</span>
+          </label>
+        </div>
+        <div class="col-12" *ngIf="ssoInviteMode && mode === 'create'">
+          <p class="text-muted small mb-0">This trainer will use corporate SSO. No password is sent. They activate when they first sign in with your identity provider.</p>
+        </div>
+        <div class="col-12" *ngIf="!ssoInviteMode || mode === 'edit'">
+          <label class="form-label">{{ mode === 'create' ? 'Password' : 'New password (optional)' }}</label>
+          <input class="form-control" type="password" formControlName="password" autocomplete="new-password" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="tf-panel__footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary" form="trainer-drawer-form" [disabled]="saving">{{ saving ? 'Saving…' : 'Save' }}</button>
+  </div>
+</div>

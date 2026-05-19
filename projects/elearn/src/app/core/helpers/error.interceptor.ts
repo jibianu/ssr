@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthenticationService } from './../../modules/auth/auth.service';
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
-import { EMPTY, Observable, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -28,41 +28,46 @@ export class ErrorInterceptor implements HttpInterceptor {
             }
 
             if (err.status === 401) {
-                this.authenticationService.logout();
-                // Do not redirect to login when on a public page (e.g. affiliate course URL) so anonymous users can view
+                const reqUrl = (request.url || '').toLowerCase();
+                const isCompanyOrCorporateBlogApi =
+                    reqUrl.includes('api/company/blog') || reqUrl.includes('api/admin/blog/corporate');
+                if (isCompanyOrCorporateBlogApi) {
+                    return throwError(() => err);
+                }
                 const url = this.router.url.split('?')[0];
                 const isAuthShellRoute =
                     /^\/(login|register|callback|google-callback|forget-password|verification|fg-code|change-password|user-unavailable)(?:\/|$|\?)/.test(url) ||
                     /^\/register\//.test(url) ||
                     /^\/register-/.test(url);
-                const isPublicPage = url === '/' || url === '' || (!url.startsWith('/app/') && !isAuthShellRoute);
+                const isProtectedAppRoute =
+                    url.startsWith('/app/') ||
+                    url.startsWith('/course/app/') ||
+                    /^\/elearn\/app\//i.test(url);
+                const isPublicPage =
+                    url === '/' ||
+                    url === '' ||
+                    (!isProtectedAppRoute && !isAuthShellRoute);
                 const isGetInfo = request.url.toLowerCase().includes('getinfo');
-                if (isGetInfo || isPublicPage) {
+                /** Background/optional calls must not wipe cookies (was signing users out on sidebar nav). */
+                if (isGetInfo || isPublicPage || isAuthShellRoute) {
                     return throwError(() => err);
                 }
-                // If we are already on an auth route, don't re-navigate (prevents flicker/loop).
-                if (isAuthShellRoute) {
-                    return EMPTY;
-                }
-                // Debounce redirects to avoid full-page "blinking" when multiple requests 401 together.
                 const now = Date.now();
-                if (now - this.lastLoginRedirectAt < this.loginRedirectCooldownMs) {
-                    return EMPTY;
-                }
-                this.lastLoginRedirectAt = now;
-
-                const isShowError = !request.url.toLowerCase().includes('payment/checkout');
-                if (isShowError) {
-                    this.toasterService.showError('Session expired or invalid. Please log in again.');
-                }
-                // Close any open modals/panels so login page is not obscured (e.g. Submit for Review, Event registrations)
-                try {
-                    if (this.modalService.hasOpenModals()) {
-                        this.modalService.dismissAll();
+                if (now - this.lastLoginRedirectAt >= this.loginRedirectCooldownMs) {
+                    this.lastLoginRedirectAt = now;
+                    const isShowError = !request.url.toLowerCase().includes('payment/checkout');
+                    if (isShowError) {
+                        this.toasterService.showError('Session expired or invalid. Please log in again.');
                     }
-                } catch (_) { /* ignore */ }
-                this.router.navigateByUrl('/login');
-                return EMPTY;
+                    try {
+                        if (this.modalService.hasOpenModals()) {
+                            this.modalService.dismissAll();
+                        }
+                    } catch (_) { /* ignore */ }
+                    this.authenticationService.logout();
+                    this.router.navigateByUrl('/login');
+                }
+                return throwError(() => err);
             } else if (err.status === 500) {
                 if (err?.error?.Messages?.length) {
                     this.toasterService.showError(err.error.Messages[0]);

@@ -22,6 +22,40 @@ export class AdminAppService {
         return this.http.get<any>(this.apiUrl + `api/UserManagement/courses`, { params });
     }
 
+    /** Company admin: tenant course catalog (all draft/published org courses). GET api/company/courses */
+    getCompanyCourses(params: Record<string, unknown>): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/company/courses`, { params: params as any });
+    }
+
+    publishCompanyCourse(courseId: string): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}api/company/courses/${courseId}/publish`, {});
+    }
+
+    unpublishCompanyCourse(courseId: string): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}api/company/courses/${courseId}/unpublish`, {});
+    }
+
+    deleteCompanyCourse(courseId: string): Observable<any> {
+        return this.http.delete<any>(`${this.apiUrl}api/company/courses/${courseId}`);
+    }
+
+    setCompanyCourseVisibility(courseId: string, body: { showOnLms: boolean; showOnPublic: boolean }): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}api/company/courses/${courseId}/set-visibility`, body);
+    }
+
+    updateCompanyCourseProgress(courseId: string, progress: number): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}api/company/courses/${courseId}/progress`, {
+            progress,
+            courseId
+        });
+    }
+
+    approveCompanyCourseReview(courseId: string, approvalNote?: string | null): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}api/company/courses/${courseId}/approve-review`, {
+            approvalNote: approvalNote ?? ''
+        });
+    }
+
     /** Search courses by title for topbar autocomplete. Returns up to 10 items (id, title, slug). */
     searchCourses(keyword: string): Observable<{ id: string; title: string; slug: string }[]> {
         const term = (keyword ?? '').trim();
@@ -201,6 +235,12 @@ export class AdminAppService {
         return this.http.get<any>(this.apiUrl + `api/admin/blog/review`, {
             params: { pageNumber: String(pageNumber), pageSize: String(pageSize) }
         });
+    }
+    /** Admin: company-tenant trainer blogs across all companies (read-only directory). GET /api/admin/blog/corporate */
+    getCorporateBlogs(pageNumber: number = 1, pageSize: number = 500, search?: string): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
+        const params: Record<string, string> = { pageNumber: String(pageNumber), pageSize: String(pageSize) };
+        if (search != null && search.trim() !== '') params['search'] = search.trim();
+        return this.http.get<any>(this.apiUrl + `api/admin/blog/corporate`, { params });
     }
     /**
      * Admin: publish/approve blog.
@@ -436,6 +476,17 @@ export class AdminAppService {
         if (right)
             return this.http.get<any>(this.apiUrl + `api/user/students`, { params });
         return this.http.get<any>(this.apiUrl + `api/UserManagement/students`, { params });
+    }
+
+    /** Admin: students with <c>CompanyId</c> = company account (portal employees). Requires GetCompanies. */
+    getCompanyPortalStudents(companyUserId: string, params: Record<string, string | number | boolean>) {
+        const enc = encodeURIComponent(companyUserId);
+        return this.http.get<any>(`${this.apiUrl}api/user/companies/${enc}/portal-students`, { params });
+    }
+
+    getCompanyPortalTrainers(companyUserId: string, params: Record<string, string | number | boolean>) {
+        const enc = encodeURIComponent(companyUserId);
+        return this.http.get<any>(`${this.apiUrl}api/user/companies/${enc}/portal-trainers`, { params });
     }
 
     getTrainers(params, right: boolean = true) {

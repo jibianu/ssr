@@ -4,7 +4,12 @@
   </div>
   <ul class="common-sidebar__menu">
     <li class="common-sidebar__item" *ngFor="let item of menuItems">
-      <a class="common-sidebar__link" [routerLink]="item.link" [fragment]="item.fragment ?? null" routerLinkActive="active" (click)="onNavClick($event, item)">
+      <a
+        class="common-sidebar__link"
+        [routerLink]="routerCommands(item.link)"
+        [fragment]="item.fragment ?? null"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }">
         <i class="common-sidebar__icon" [ngClass]="item.icon || 'fa fa-circle'"></i>
         <span class="common-sidebar__text">{{ item.label }}</span>
       </a>

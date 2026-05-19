@@ -14,31 +14,37 @@
 
   <div class="publish-course-modal__body">
     <ng-container *ngIf="!isSuccess">
-      <p class="publish-course-modal__message">
+      <p class="publish-course-modal__message" *ngIf="!companyTenant">
         Choose where this course is visible. Check <strong>Elearn LMS</strong> to show it on the LMS course page; check <strong>Public marketing</strong> to show it on the public course page.
+        <span *ngIf="courseTitle" class="publish-course-modal__course-title">Course: {{ courseTitle }}</span>
+      </p>
+      <p class="publish-course-modal__message" *ngIf="companyTenant">
+        Control whether <strong>students in your organization</strong> can see this course on the LMS / Explore. Public marketing listing is not used for company-only courses.
         <span *ngIf="courseTitle" class="publish-course-modal__course-title">Course: {{ courseTitle }}</span>
       </p>
       <div class="publish-course-modal__checkboxes">
         <label class="publish-course-modal__checkbox-wrap">
           <input type="checkbox" [(ngModel)]="showOnLms" (ngModelChange)="onLmsChange($event)" class="publish-course-modal__checkbox" />
-          <span>Show on <strong>Elearn LMS course page</strong></span>
+          <span>Show on <strong>Elearn LMS course page</strong> (company students)</span>
         </label>
-        <label class="publish-course-modal__checkbox-wrap" [class.publish-course-modal__checkbox-wrap--disabled]="!showOnLms">
+        <label class="publish-course-modal__checkbox-wrap" *ngIf="!companyTenant" [class.publish-course-modal__checkbox-wrap--disabled]="!showOnLms">
           <input type="checkbox" [(ngModel)]="showOnPublic" class="publish-course-modal__checkbox" [disabled]="!showOnLms" />
           <span>Show on <strong>Public marketing course page</strong></span>
         </label>
       </div>
-      <p class="publish-course-modal__hint">Checking <strong>Elearn LMS</strong> also checks <strong>Public marketing</strong> by default (course appears on both). Uncheck Public if you want the course only in the LMS.</p>
+      <p class="publish-course-modal__hint" *ngIf="!companyTenant">Checking <strong>Elearn LMS</strong> also checks <strong>Public marketing</strong> by default (course appears on both). Uncheck Public if you want the course only in the LMS.</p>
       <p *ngIf="errorMessage" class="publish-course-modal__error">{{ errorMessage }}</p>
     </ng-container>
     <ng-container *ngIf="isSuccess">
       <p class="publish-course-modal__message publish-course-modal__message--success">
-        <span *ngIf="showOnLms && showOnPublic">This course is now visible on the Elearn LMS and the Public marketing course page.</span>
-        <span *ngIf="showOnLms && !showOnPublic">This course is now visible only on the Elearn LMS course page (hidden from the Public marketing page).</span>
-        <span *ngIf="!showOnLms && showOnPublic">This course is now visible only on the Public marketing course page.</span>
-        <span *ngIf="!showOnLms && !showOnPublic">This course is no longer visible on the Elearn LMS or the Public marketing course page.</span>
+        <span *ngIf="companyTenant && showOnLms">This course is now visible to students in your organization.</span>
+        <span *ngIf="companyTenant && !showOnLms">This course is hidden from students in your organization.</span>
+        <span *ngIf="!companyTenant && showOnLms && showOnPublic">This course is now visible on the Elearn LMS and the Public marketing course page.</span>
+        <span *ngIf="!companyTenant && showOnLms && !showOnPublic">This course is now visible only on the Elearn LMS course page (hidden from the Public marketing page).</span>
+        <span *ngIf="!companyTenant && !showOnLms && showOnPublic">This course is now visible only on the Public marketing course page.</span>
+        <span *ngIf="!companyTenant && !showOnLms && !showOnPublic">This course is no longer visible on the Elearn LMS or the Public marketing course page.</span>
       </p>
-      <div class="publish-course-modal__links" *ngIf="showOnPublic">
+      <div class="publish-course-modal__links" *ngIf="!companyTenant && showOnPublic">
         <a *ngIf="publicCoursePageUrl" [href]="publicCoursePageUrl" target="_blank" rel="noopener noreferrer" class="publish-course-modal__link">
           <i class="fa fa-external-link-alt"></i> View course on Public site
         </a>

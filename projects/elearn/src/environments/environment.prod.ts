@@ -13,7 +13,9 @@ export const environment = {
   stripeKey: 'pk_live_N0CVrqPSTq9ECjQxRSODpGUE00Jg3I2H71',
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
-  /** Must match baseHref /Elearn/ on this build — same path Google Console redirect URI. */
   cognitoRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/callback',
+  /** Tenant apex for company portals. With companyPortalLoginPath=/login → https://{subdomain}.oilandgasclub.com/login after register. */
+  companyPortalHost: 'oilandgasclub.com' as string | undefined,
+  companyPortalLoginPath: '/login',
   googleRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/google-callback'
 };

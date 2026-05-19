@@ -21,6 +21,7 @@ import {
 } from './ssr-handler/elearn-spa';
 import { registerSsrCatchAll, warmHtmlCache, type SsrCatchAllDeps } from './ssr-handler/ssr-catch-all';
 import { resolveBrowserDistFolder } from './utils/dist-paths';
+import { registerApiBackendProxy } from './api-backend-proxy';
 import { registerSeoBackendProxy } from './seo-backend-proxy';
 
 export interface CreateProductionServerOptions {
@@ -70,6 +71,9 @@ export function createProductionServer(
   app.use(securityHeadersMiddleware);
   app.use(requestTimingMiddleware);
   app.use(compression({ threshold: 1024 }));
+
+  // --- Dev: proxy /api to Kestrel so Elearn can call same-origin /api on localhost:4200 ---
+  registerApiBackendProxy(app, !isProd);
 
   // --- SEO: sitemap + robots from .NET (before static + SSR; Angular must not own these routes) ---
   registerSeoBackendProxy(app);

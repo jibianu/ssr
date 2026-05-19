@@ -3,10 +3,12 @@ import { Routes, RouterModule } from '@angular/router';
 import { BlogListComponent } from './blog-list/blog-list.component';
 import { BlogAddEditComponent } from './blog-add-edit/blog-add-edit.component';
 import { BlogReviewComponent } from './blog-review/blog-review.component';
+import { CorporateBlogListComponent } from './corporate-blog-list/corporate-blog-list.component';
 
 const routes: Routes = [
   { path: 'list', component: BlogListComponent },
   { path: 'review', component: BlogReviewComponent },
+  { path: 'corporate', component: CorporateBlogListComponent },
   { path: 'add', component: BlogAddEditComponent },
   { path: 'edit/:id', component: BlogAddEditComponent },
   { path: '', redirectTo: 'list', pathMatch: 'full' },

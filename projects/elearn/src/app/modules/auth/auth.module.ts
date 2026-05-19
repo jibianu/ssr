@@ -16,6 +16,7 @@ import { ForgetPasswordVerificationComponent } from './forget-password-verificat
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { GoogleCallbackComponent } from './google-callback/google-callback.component';
+import { SsoCallbackComponent } from './sso-callback/sso-callback.component';
 import { UserUnavailableComponent } from './user-unavailable/user-unavailable.component';
 
 @NgModule({
@@ -32,7 +33,8 @@ import { UserUnavailableComponent } from './user-unavailable/user-unavailable.co
     ForgetPasswordVerificationComponent,
     ChangePasswordComponent,
     AuthCallbackComponent,
-    GoogleCallbackComponent
+    GoogleCallbackComponent,
+    SsoCallbackComponent
   ],
   imports: [
     CommonModule,

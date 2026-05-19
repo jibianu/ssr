@@ -1,5 +1,7 @@
 import { Role } from '../shared/models/role';
 
+export { normalizeRoleLandingRoute, normalizeAppRouterUrl } from '../core/helpers/app-url.helper';
+
 export interface NavbarMenuItem {
   link: string;
   label: string;
@@ -18,9 +20,11 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
   [Role.Admin]: [
     { link: `${APP}/admin/dashboard`, label: 'Dashboard', icon: 'fa fa-tachometer' },
     { link: `${APP}/admin/revenue`, label: 'Revenue share', icon: 'fa fa-chart-pie' },
+    { link: `${APP}/admin/billing`, label: 'Billing & Licenses', icon: 'fa fa-credit-card' },
     { link: `${APP}/admin/analytics/dashboard`, label: 'Analytics Dashboard', icon: 'fa fa-chart-line' },
     { link: `${APP}/admin/analytics`, label: 'Student Analytics', icon: 'fa fa-users' },
     { link: `${APP}/admin/blog`, label: 'Blog', icon: 'fa fa-blog' },
+    { link: `${APP}/admin/blog/corporate`, label: 'Corporate blog', icon: 'fa fa-building' },
     { link: `${APP}/admin/students`, label: 'Student List', icon: 'fa fa-users' },
     { link: `${APP}/admin/trainers`, label: 'Trainer List', icon: 'fa fa-graduation-cap' },
     { link: `${APP}/admin/companies`, label: 'Company List', icon: 'fa fa-building' },
@@ -67,6 +71,11 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
     { link: `${APP}/company/dashboard`, label: 'Dashboard', icon: 'fa fa-home' },
     { link: `${APP}/company/courses`, label: 'Courses', icon: 'fa fa-book' },
     { link: `${APP}/company/categories`, label: 'Explore', icon: 'fa fa-compass' },
+    { link: `${APP}/company/billing`, label: 'Billing & Licenses', icon: 'fa fa-credit-card' },
+    { link: `${APP}/company/blog`, label: 'Blog', icon: 'fa fa-blog' },
+    { link: `${APP}/company/users`, label: 'Users', icon: 'fa fa-users' },
+    { link: `${APP}/company/trainers`, label: 'Trainers', icon: 'fa fa-graduation-cap' },
+    { link: `${APP}/company/settings/sso`, label: 'SSO configuration', icon: 'fa fa-key' },
     { link: `${APP}/company/profile`, label: 'Profile', icon: 'fa fa-user-circle' },
     { link: `${APP}/company/certificate`, label: 'Certificates', icon: 'fa fa-certificate' },
   ],
@@ -87,3 +96,4 @@ export function getNavbarMenuForRole(roleId: number | null): NavbarMenuItem[] {
   if (roleId == null) return [];
   return NAVBAR_MENU[roleId] ?? [];
 }
+

@@ -1,0 +1,50 @@
+<div class="mainClass list-page-with-pagination list-table-modern">
+  <div class="list-page__table-wrap list-table-modern__wrap">
+    <p class="mb-2 text-muted">
+      All blogs whose authors are company-tenant trainers. Publishing and rejection are handled in each company portal by the company admin.
+    </p>
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">Title</th>
+            <th class="list-table-modern__th">Company subdomain</th>
+            <th class="list-table-modern__th">Author</th>
+            <th class="list-table-modern__th">Status</th>
+            <th class="list-table-modern__th">Created</th>
+            <th class="list-table-modern__th">Published</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading" class="list-table-modern__row">
+            <td colspan="6" class="list-table-modern__empty">Loading...</td>
+          </tr>
+          <tr *ngIf="!loading && loadError" class="list-table-modern__row">
+            <td colspan="6" class="list-table-modern__empty text-warning">
+              {{ loadError }}
+              <button type="button" class="btn btn-sm btn-outline-primary ms-2" (click)="fetch()">Retry</button>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && !loadError && !blogs?.length" class="list-table-modern__row">
+            <td colspan="6" class="list-table-modern__empty">No corporate blogs</td>
+          </tr>
+          <tr *ngFor="let item of blogs" class="list-table-modern__row">
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">{{ item.title }}</td>
+            <td class="list-table-modern__td">{{ item.subdomain }}</td>
+            <td class="list-table-modern__td">{{ item.authorName }}</td>
+            <td class="list-table-modern__td">
+              <span class="badge rounded-pill" [ngClass]="{
+                'bg-secondary': item.status === 0,
+                'bg-warning text-dark': item.status === 1,
+                'bg-success': item.status === 2,
+                'bg-danger': item.status === 3
+              }">{{ statusLabel(item.status) }}</span>
+            </td>
+            <td class="list-table-modern__td">{{ item.createdOn | date:'MMM d, y' }}</td>
+            <td class="list-table-modern__td">{{ item.publishedDate ? (item.publishedDate | date:'MMM d, y') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import {
   getLandingRoute,
   ROLE_LANDING_ROUTES
 } from '../../../modules/auth/auth.service';
+import { normalizeRoleLandingRoute } from '../../helpers/app-url.helper';
 
 /**
  * Resolves bare /app (no role segment) to the correct role home.
@@ -26,7 +27,7 @@ export class AppEntryRedirectComponent implements OnInit {
     const roleId = this.auth.getRoleId();
     const fromRole = roleId != null ? ROLE_LANDING_ROUTES[roleId] : undefined;
     if (fromRole) {
-      this.router.navigateByUrl(fromRole, { replaceUrl: true });
+      this.router.navigateByUrl(normalizeRoleLandingRoute(fromRole), { replaceUrl: true });
       return;
     }
     this.auth.postLogin().pipe(first()).subscribe((res) => {

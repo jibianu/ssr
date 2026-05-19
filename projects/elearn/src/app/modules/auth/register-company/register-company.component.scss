@@ -157,6 +157,172 @@ $page-padding-desktop: 2rem;
   &:last-of-type { margin-bottom: 0; }
 }
 
+.login-form__error {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+  line-height: 1.35;
+}
+
+.login-form__register-banner {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: $control-radius;
+}
+
+.login-form__req {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+// -----------------------------------------------------------------------------
+// Custom company subdomain (Udemy-style URL row)
+// -----------------------------------------------------------------------------
+$subdomain-ok: #15803d;
+$subdomain-bad: #b91c1c;
+$subdomain-muted: #6b7280;
+
+.subdomain-field {
+  margin-bottom: $gap-field-mobile;
+}
+
+.subdomain-url {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+  min-height: $control-height;
+  border: 1px solid $border;
+  border-radius: $control-radius;
+  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-within {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px color.adjust($accent, $alpha: -0.85);
+  }
+
+  &--invalid {
+    border-color: $subdomain-bad;
+    &:focus-within {
+      border-color: $subdomain-bad;
+      box-shadow: 0 0 0 3px rgba($subdomain-bad, 0.2);
+    }
+  }
+
+  &--available {
+    border-color: $subdomain-ok;
+    &:focus-within {
+      border-color: $subdomain-ok;
+      box-shadow: 0 0 0 3px rgba($subdomain-ok, 0.2);
+    }
+  }
+
+  &--taken {
+    border-color: $subdomain-bad;
+    &:focus-within {
+      border-color: $subdomain-bad;
+      box-shadow: 0 0 0 3px rgba($subdomain-bad, 0.2);
+    }
+  }
+}
+
+.subdomain-url__prefix,
+.subdomain-url__suffix {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  font-size: 0.8125rem;
+  color: $subdomain-muted;
+  background: #f9fafb;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.subdomain-url__prefix {
+  border-right: 1px solid $border;
+}
+
+.subdomain-url__suffix {
+  border-left: 1px solid $border;
+}
+
+.subdomain-url__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  background: #fff;
+  color: $text;
+
+  &::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+  }
+}
+
+.subdomain-field__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: $text-muted;
+  line-height: 1.4;
+}
+
+.subdomain-field__errors {
+  margin-top: 0.35rem;
+}
+
+.subdomain-field__status {
+  margin-top: 0.35rem;
+  min-height: 1.25rem;
+}
+
+.subdomain-field__status-text {
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  &--pending {
+    color: $text-muted;
+  }
+
+  &--ok {
+    color: $subdomain-ok;
+  }
+
+  &--bad {
+    color: $subdomain-bad;
+  }
+}
+
+@media (max-width: 380px) {
+  .subdomain-url__prefix,
+  .subdomain-url__suffix {
+    font-size: 0.7rem;
+    padding: 0 0.35rem;
+  }
+
+  .subdomain-url__input {
+    font-size: 0.9rem;
+    padding: 0 0.4rem;
+  }
+}
+
+@media (min-width: 480px) {
+  .subdomain-field {
+    margin-bottom: $gap-field-tablet;
+  }
+}
+
 .login-form__label {
   display: block;
   font-size: 0.875rem;

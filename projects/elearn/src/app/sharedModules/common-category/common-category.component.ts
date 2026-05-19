@@ -11,6 +11,14 @@ import { getElearnAppBaseUrl } from 'src/app/core/helpers/app-url.helper';
 import { resolveCourseId } from 'src/app/core/helpers/course-id.helper';
 import { navigateExploreCourseMarketingPage } from 'src/app/core/helpers/explore-course-nav.helper';
 import { environment } from 'src/environments/environment';
+import { getTenantSubdomainFromHostname, isCompanyTenantLoginHost } from 'src/app/core/company-portal-host.util';
+import {
+  resolveViewerTenantCompanyId$,
+  sortExploreCoursesTenantFirst
+} from 'src/app/core/helpers/explore-tenant-course-sort.helper';
+
+/** Backend ExploreCatalogFilter.CompanyPrivateOnly */
+const EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY = 2;
 
 export interface CategoryWithCourses {
   category: any;
@@ -29,9 +37,15 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
   sortDir = 1;
   /** One section (row) per category; each section lists that category's courses in a 4-per-row grid */
   categoriesWithCourses: CategoryWithCourses[] = [];
+  /** Company host + logged in: org-only rows first, then marketplace rows (separate sections). */
+  splitExploreLayout = false;
+  tenantCategoriesWithCourses: CategoryWithCourses[] = [];
+  marketplaceCategoriesWithCourses: CategoryWithCourses[] = [];
   currencyCode = 'INR';
   /** courseId -> true if current user is enrolled (from bulk enrollment-status API) */
   enrollmentByCourseId: Record<string, boolean> = {};
+  /** On company portal Explore: show next to each category title (e.g. "Process — Acme"). */
+  portalCompanyLabel: string | null = null;
 
   constructor(
     private appService: AdminAppService,
@@ -46,7 +60,51 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.studentBreadcrumb.setBreadcrumb([{ label: 'Explore' }]);
+    this.resolvePortalCompanyLabel();
     this.fetchCategories();
+  }
+
+  /** Company name for category headers on tenant Explore (profile field or tenant subdomain). */
+  private resolvePortalCompanyLabel(): void {
+    if (typeof window === 'undefined' || !isCompanyTenantLoginHost(window.location.hostname)) {
+      return;
+    }
+    const u = this.authService.currentUser();
+    const fromCookie = this.trimLabel(u?.companyName ?? u?.CompanyName);
+    if (fromCookie) {
+      this.portalCompanyLabel = fromCookie;
+      return;
+    }
+    if (!this.authService.currentToken()) {
+      this.portalCompanyLabel = this.tenantSubdomainDisplayLabel();
+      return;
+    }
+    this.subscription.add(
+      this.authService.getUserInfo().subscribe({
+        next: (user: any) => {
+          const n = this.trimLabel(user?.companyName ?? user?.CompanyName);
+          this.portalCompanyLabel = n || this.tenantSubdomainDisplayLabel();
+        },
+        error: () => {
+          this.portalCompanyLabel = this.tenantSubdomainDisplayLabel();
+        }
+      })
+    );
+  }
+
+  private trimLabel(v: unknown): string | null {
+    const s = v != null ? String(v).trim() : '';
+    return s.length > 0 ? s : null;
+  }
+
+  private tenantSubdomainDisplayLabel(): string | null {
+    const raw = getTenantSubdomainFromHostname(
+      typeof window !== 'undefined' ? window.location.hostname : ''
+    );
+    if (!raw) {
+      return null;
+    }
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
   }
 
   fetchCategories(): void {
@@ -62,18 +120,17 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Load all public-listing courses in few paginated calls (API caps pageSize at 100),
-   * then group by category — avoids one GET per category plus one price GET per course.
-   */
-  private fetchAllPublicListingCourses() {
+  private isSplitExploreHost(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      isCompanyTenantLoginHost(window.location.hostname) &&
+      !!this.authService.currentToken()
+    );
+  }
+
+  /** Paginated GET for Explore (shared helper). */
+  private fetchCoursesPages(baseParams: Record<string, string | number | boolean>) {
     const pageSize = 100;
-    const baseParams = {
-      'Filter.ForPublicListing': true,
-      pageSize,
-      'Sort.PropertyName': 'Title',
-      'Sort.IsAscending': 'true'
-    };
     return this.appService.getCourses({ ...baseParams, pageNumber: 1 }).pipe(
       switchMap((first) => {
         const total = first?.totalNumberOfRecords ?? 0;
@@ -93,41 +150,154 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Load all public-listing courses in few paginated calls (API caps pageSize at 100),
+   * then group by category — avoids one GET per category plus one price GET per course.
+   */
+  private fetchAllPublicListingCourses() {
+    const onTenant = this.isSplitExploreHost();
+    const baseParams: Record<string, string | number | boolean> = {
+      pageSize: 100,
+      'Sort.PropertyName': 'Title',
+      'Sort.IsAscending': 'true',
+      'Filter.IsProgressInfo': true
+    };
+    if (!onTenant) {
+      baseParams['Filter.ForPublicListing'] = true;
+    }
+    return this.fetchCoursesPages(baseParams);
+  }
+
+  private fetchTenantCatalogCoursesOnly() {
+    return this.fetchCoursesPages({
+      pageSize: 100,
+      'Sort.PropertyName': 'Title',
+      'Sort.IsAscending': 'true',
+      'Filter.IsProgressInfo': true,
+      'Filter.ExploreCatalogFilter': EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY
+    });
+  }
+
+  private fetchMarketplaceCatalogCoursesOnly() {
+    return this.fetchCoursesPages({
+      pageSize: 100,
+      'Sort.PropertyName': 'Title',
+      'Sort.IsAscending': 'true',
+      'Filter.IsProgressInfo': true,
+      'Filter.ForPublicListing': true
+    });
+  }
+
+  /** Derive category rows from course payloads (includes org-only categories not on global list). */
+  private categoriesDerivedFromCourses(courses: any[]): Category[] {
+    const byId = new Map<string, Category>();
+    for (const c of courses || []) {
+      const id = String((c as any)?.category?.id ?? (c as any)?.category?.Id ?? '').trim();
+      if (!id || byId.has(id)) {
+        continue;
+      }
+      const name = (c as any)?.category?.name ?? (c as any)?.category?.Name ?? 'Category';
+      byId.set(id, { id, name } as Category);
+    }
+    return Array.from(byId.values()).sort((a, b) => {
+      const na = (a.name || '').toString().toLowerCase();
+      const nb = (b.name || '').toString().toLowerCase();
+      return na.localeCompare(nb);
+    });
+  }
+
+  private buildBlocksForCategories(
+    categoryList: Category[],
+    allCourses: any[],
+    tenantId: string | null,
+    maxPerCategory: number
+  ): CategoryWithCourses[] {
+    const byCat = new Map<string, any[]>();
+    for (const c of allCourses || []) {
+      const catId = String((c as any)?.category?.id ?? (c as any)?.category?.Id ?? '').trim();
+      if (!catId) {
+        continue;
+      }
+      if (!byCat.has(catId)) {
+        byCat.set(catId, []);
+      }
+      byCat.get(catId)!.push(c);
+    }
+    const blocks = categoryList.map((cat) => {
+      const catKey = String(cat.id);
+      const raw = sortExploreCoursesTenantFirst(byCat.get(catKey) ?? [], tenantId);
+      const courses = raw.slice(0, maxPerCategory).map((c) => ({
+        ...c,
+        id: resolveCourseId(c) || ((c as any)?.id ?? (c as any)?.Id),
+        bgColor: this.getRandomColor()
+      }));
+      return { category: cat, courses };
+    });
+    return blocks.filter((b) => b.courses?.length > 0);
+  }
+
+  private sortExploreBlocks(blocks: CategoryWithCourses[]): CategoryWithCourses[] {
+    return [...blocks].sort((a, b) => {
+      const nameA = (a.category?.name || '').toString().toLowerCase();
+      const nameB = (b.category?.name || '').toString().toLowerCase();
+      if (nameA === 'process') {
+        return -1;
+      }
+      if (nameB === 'process') {
+        return 1;
+      }
+      return 0;
+    });
+  }
+
   /** Load courses for all categories; one section per category, up to 12 courses per row */
   fetchCoursesByCategory(): void {
     const list = this.categories || [];
     if (list.length === 0) {
       this.categoriesWithCourses = [];
+      this.tenantCategoriesWithCourses = [];
+      this.marketplaceCategoriesWithCourses = [];
+      this.splitExploreLayout = false;
       return;
     }
+
+    if (!this.isSplitExploreHost()) {
+      this.splitExploreLayout = false;
+      this.tenantCategoriesWithCourses = [];
+      this.marketplaceCategoriesWithCourses = [];
+      this.subscription.add(
+        forkJoin({
+          allCourses: this.fetchAllPublicListingCourses(),
+          tenantId: resolveViewerTenantCompanyId$(this.authService)
+        }).subscribe({
+          next: ({ allCourses, tenantId }) => {
+            this.categoriesWithCourses = this.sortExploreBlocks(
+              this.buildBlocksForCategories(list, allCourses || [], tenantId, 12)
+            );
+            this.fetchEnrollmentStatusBulk();
+          },
+          error: (error) => console.log(error)
+        })
+      );
+      return;
+    }
+
+    this.splitExploreLayout = true;
     this.subscription.add(
-      this.fetchAllPublicListingCourses().subscribe({
-        next: (allCourses) => {
-          const byCat = new Map<string, any[]>();
-          for (const c of allCourses || []) {
-            const catId = String((c as any)?.category?.id ?? (c as any)?.category?.Id ?? '').trim();
-            if (!catId) continue;
-            if (!byCat.has(catId)) byCat.set(catId, []);
-            byCat.get(catId)!.push(c);
-          }
-          const blocks = list.map((cat) => {
-            const catKey = String(cat.id);
-            const raw = byCat.get(catKey) ?? [];
-            const courses = raw.slice(0, 12).map((c) => ({
-              ...c,
-              id: resolveCourseId(c) || (c?.id ?? c?.Id),
-              bgColor: this.getRandomColor()
-            }));
-            return { category: cat, courses };
-          });
-          const withCourses = blocks.filter((b) => b.courses?.length > 0);
-          this.categoriesWithCourses = withCourses.sort((a, b) => {
-            const nameA = (a.category?.name || '').toString().toLowerCase();
-            const nameB = (b.category?.name || '').toString().toLowerCase();
-            if (nameA === 'process') return -1;
-            if (nameB === 'process') return 1;
-            return 0;
-          });
+      forkJoin({
+        tenantCourses: this.fetchTenantCatalogCoursesOnly(),
+        marketplaceCourses: this.fetchMarketplaceCatalogCoursesOnly(),
+        tenantId: resolveViewerTenantCompanyId$(this.authService)
+      }).subscribe({
+        next: ({ tenantCourses, marketplaceCourses, tenantId }) => {
+          const tenantList = this.categoriesDerivedFromCourses(tenantCourses || []);
+          this.tenantCategoriesWithCourses = this.sortExploreBlocks(
+            this.buildBlocksForCategories(tenantList, tenantCourses || [], tenantId, 12)
+          );
+          this.marketplaceCategoriesWithCourses = this.sortExploreBlocks(
+            this.buildBlocksForCategories(list, marketplaceCourses || [], tenantId, 12)
+          );
+          this.categoriesWithCourses = [];
           this.fetchEnrollmentStatusBulk();
         },
         error: (error) => console.log(error)
@@ -142,9 +312,12 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
 
   /** Fetch enrollment status for all visible courses so we can show Resume vs Buy/Enroll. */
   private fetchEnrollmentStatusBulk(): void {
-    const courseIds = (this.categoriesWithCourses || []).flatMap((b) =>
-      (b.courses || []).map((c) => this.courseIdOf(c)).filter(Boolean)
-    );
+    const blocks = [
+      ...(this.categoriesWithCourses || []),
+      ...(this.tenantCategoriesWithCourses || []),
+      ...(this.marketplaceCategoriesWithCourses || [])
+    ];
+    const courseIds = blocks.flatMap((b) => (b.courses || []).map((c) => this.courseIdOf(c)).filter(Boolean));
     if (courseIds.length === 0 || !this.authService.currentToken()) {
       this.enrollmentByCourseId = {};
       return;
@@ -231,12 +404,38 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     return Number(v) || 0;
   }
 
-  goToCategoryCourses(cat: any): void {
-    if (cat?.id != null && cat?.name != null) {
-      this.router.navigate(['category-courses', cat.id, cat.name], {
-        relativeTo: this.activatedRoute.parent
-      });
+  /** Row title: org section appends company name; marketplace section is category only; legacy uses suffix when portal label exists. */
+  exploreRowTitle(block: CategoryWithCourses, mode: 'tenant' | 'marketplace' | 'legacy'): string {
+    const base = (block.category?.name || '').toString();
+    if (mode === 'tenant' && this.portalCompanyLabel) {
+      return `${base} — ${this.portalCompanyLabel}`;
     }
+    if (mode === 'marketplace') {
+      return base;
+    }
+    return this.portalCompanyLabel ? `${base} — ${this.portalCompanyLabel}` : base;
+  }
+
+  /** Card pill: org section shows "Company · Category". */
+  exploreCardTag(item: any, mode: 'tenant' | 'marketplace' | 'legacy'): string {
+    const cat = (item?.category?.name || '').toString();
+    if (mode === 'tenant' && this.portalCompanyLabel) {
+      return `${this.portalCompanyLabel} · ${cat}`;
+    }
+    return cat;
+  }
+
+  goToCategoryCourses(cat: any, orgOnlySection: boolean): void {
+    if (cat?.id == null || cat?.name == null) {
+      return;
+    }
+    const navExtras: { relativeTo: typeof this.activatedRoute.parent; queryParams?: { org: string } } = {
+      relativeTo: this.activatedRoute.parent
+    };
+    if (this.splitExploreLayout && orgOnlySection) {
+      navExtras.queryParams = { org: '1' };
+    }
+    this.router.navigate(['category-courses', cat.id, cat.name], navExtras);
   }
 
   getRandomColor() {

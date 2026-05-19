@@ -1,0 +1,92 @@
+<div class="company-students-drawer">
+  <div class="company-students-drawer__header">
+    <div>
+      <h2 class="company-students-drawer__title">Portal students</h2>
+      <p class="company-students-drawer__subtitle" *ngIf="companyEmail">{{ companyEmail }}</p>
+    </div>
+    <button type="button" class="company-students-drawer__close" (click)="activeModal.dismiss()" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <p class="company-students-drawer__hint">Students linked to this company account (company portal). They are excluded from the global Admin → Student list.</p>
+
+  <div class="company-students-drawer__search">
+    <label class="company-students-drawer__label" for="portal-student-search">Search</label>
+    <div class="company-students-drawer__search-row">
+      <input
+        id="portal-student-search"
+        type="text"
+        class="company-students-drawer__input"
+        [(ngModel)]="searchTitle"
+        (keyup.enter)="applySearch()"
+        placeholder="Email, username or name…" />
+      <button type="button" class="company-students-drawer__btn company-students-drawer__btn--primary" (click)="applySearch()">Apply</button>
+    </div>
+  </div>
+
+  <div class="company-students-drawer__table-wrap">
+    <div class="list-table-modern__table-responsive">
+      <table class="list-table-modern__table">
+        <thead>
+          <tr>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('Email')">
+                Email <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('UserName')">
+                Username <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('CreatedOn')">
+                Created on <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th">
+              <a href="javascript:void(0)" class="list-table-modern__sort" (click)="sortByHeading('LastLoggedIn')">
+                Last login <span class="list-table-modern__sort-icon fa fa-sort" aria-hidden="true"></span>
+              </a>
+            </th>
+            <th class="list-table-modern__th list-table-modern__th--action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!users?.length" class="list-table-modern__row">
+            <td colspan="5" class="list-table-modern__empty">No portal students for this company.</td>
+          </tr>
+          <tr *ngFor="let item of users" class="list-table-modern__row">
+            <td class="list-table-modern__td" style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="list-table-modern__avatar" [title]="item?.email">{{ getInitial(item) }}</span>
+              <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.email">{{ item?.email | truncate:28 }}</a>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--ellipsis">
+              <a href="javascript:void(0)" class="list-table-modern__link" (click)="openStudentInfo(item)" [title]="item?.userName">{{ item?.userName | truncate:22 }}</a>
+            </td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.createdOn ? (item.createdOn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--date">{{ item?.lastLoggedIn ? (item.lastLoggedIn | date:'dd-MMM-yyyy HH:mm') : '--' }}</td>
+            <td class="list-table-modern__td list-table-modern__td--action">
+              <div class="list-table-modern__actions">
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--primary" (click)="openPermissionModal(item)" title="Unlock"><i class="fa fa-unlock"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="openCourseModal(item)" title="Courses"><i class="fa fa-book"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--view" (click)="openStudentInfo(item)" title="View"><i class="fa fa-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <app-common-pagination
+    class="company-students-drawer__pagination"
+    [pageNumber]="page"
+    [pageSize]="tableSize"
+    [totalCount]="count ?? 0"
+    [pageSizeOptions]="tableSizes"
+    (pageChange)="pageChanged($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-common-pagination>
+</div>

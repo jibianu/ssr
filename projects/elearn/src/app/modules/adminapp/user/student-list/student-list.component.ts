@@ -1,5 +1,5 @@
 import { UpdatePermissionomponent } from './../../../../shared/component/permission/update-permission/update-permission.component';
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { StudentDetailsComponent } from 'src/app/app/modal/student-details/student-details.component';
@@ -45,6 +45,19 @@ export class StudentListComponent implements OnInit, OnDestroy {
   role: Role;
   checkedAll = false;
   managerListEnbale = false;
+
+  /** Right drawer: full trainee roster (includes company portal students). */
+  traineeDrawerOpen = false;
+  traineeDrawerUsers: unknown[] = [];
+  traineeDrawerCount = 0;
+  traineeDrawerPage = 1;
+  traineeDrawerTableSize = 20;
+  traineeDrawerTableSizes = [10, 20, 50];
+  traineeDrawerSearch = '';
+  traineeDrawerSortBy = 'FirstName';
+  traineeDrawerIsAsc = true;
+  traineeDrawerLoading = false;
+
   constructor(
     private appService: AdminAppService,
     private modalService: NgbModal,
@@ -53,6 +66,14 @@ export class StudentListComponent implements OnInit, OnDestroy {
     private router: Router,
     private sharedService: SharedService
   ) { }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this.traineeDrawerOpen) {
+      e.preventDefault();
+      this.closeTraineeDrawer();
+    }
+  }
 
   ngOnInit(): void {
     this.sharedService.certificateName.next('Student List');
@@ -120,6 +141,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
       }));
       return;
     }
+    obj['Filter.ExcludeLinkedCompanyStudents'] = true;
     this.subscription.add(
       this.appService.GetPermissionByAction('Users.GetStudents').subscribe(res => {
         this.subscription.add(
@@ -168,6 +190,9 @@ export class StudentListComponent implements OnInit, OnDestroy {
               this.toasterService.showSuccess('Student deleted successfully');
               this.page = 1;
               this.fetchStudents();
+              if (this.traineeDrawerOpen) {
+                this.fetchTraineeDrawerStudents();
+              }
             },
             error => {
               console.log(error);
@@ -210,6 +235,80 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.fetchStudents();
   }
 
+  openTraineeListDrawer(): void {
+    if (this.isManagementContext) {
+      return;
+    }
+    this.traineeDrawerOpen = true;
+    this.traineeDrawerPage = 1;
+    this.fetchTraineeDrawerStudents();
+  }
+
+  closeTraineeDrawer(): void {
+    this.traineeDrawerOpen = false;
+  }
+
+  traineeDrawerApplySearch(): void {
+    this.traineeDrawerPage = 1;
+    this.fetchTraineeDrawerStudents();
+  }
+
+  traineeDrawerPageChanged(event: number): void {
+    this.traineeDrawerPage = event;
+    this.fetchTraineeDrawerStudents();
+  }
+
+  traineeDrawerOnPageSizeChange(size: number): void {
+    this.traineeDrawerTableSize = size;
+    this.traineeDrawerPage = 1;
+    this.fetchTraineeDrawerStudents();
+  }
+
+  traineeDrawerSortByHeading(value: string): void {
+    this.traineeDrawerSortBy = value;
+    this.traineeDrawerIsAsc = !this.traineeDrawerIsAsc;
+    this.traineeDrawerPage = 1;
+    this.fetchTraineeDrawerStudents();
+  }
+
+  private fetchTraineeDrawerStudents(): void {
+    if (!this.traineeDrawerOpen || this.isManagementContext) {
+      return;
+    }
+    this.traineeDrawerLoading = true;
+    const obj: Record<string, string | number | boolean> = {
+      'Sort.PropertyName': this.traineeDrawerSortBy,
+      'Sort.IsAscending': this.traineeDrawerIsAsc,
+      pageSize: this.traineeDrawerTableSize,
+      pageNumber: this.traineeDrawerPage
+    };
+    if (this.traineeDrawerSearch?.trim()) {
+      obj['Filter.Search'] = this.traineeDrawerSearch.trim();
+    }
+    // Intentionally omit Filter.ExcludeLinkedCompanyStudents so portal-linked trainees appear here.
+    this.subscription.add(
+      this.appService.GetPermissionByAction('Users.GetStudents').subscribe((res) => {
+        this.subscription.add(
+          this.appService.getStudents(obj, res).subscribe({
+            next: (response) => {
+              this.traineeDrawerUsers = response?.results || [];
+              this.traineeDrawerCount = response?.totalNumberOfRecords ?? 0;
+              this.traineeDrawerLoading = false;
+            },
+            error: (error) => {
+              this.traineeDrawerUsers = [];
+              this.traineeDrawerCount = 0;
+              this.traineeDrawerLoading = false;
+              if (error?.status !== 401) {
+                console.log(error);
+              }
+            }
+          })
+        );
+      })
+    );
+  }
+
 
   openPermisionModal(item) {
     // debugger
@@ -246,7 +345,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
     const modalRef = this.modalService.open(UserManagemntMappingComponent, { windowClass: 'modal-right' });
     modalRef.componentInstance.users = [];
     modalRef.componentInstance.sourceRole = 'student';
-    modalRef.result.then(() => this.fetchStudents()).catch(() => {});
+    modalRef.result.then(() => {
+      this.fetchStudents();
+      if (this.traineeDrawerOpen) {
+        this.fetchTraineeDrawerStudents();
+      }
+    }).catch(() => {});
   }
 
   openRemoveFromManagement(item) {
@@ -254,7 +358,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.trainerId = item.id;
     modalRef.componentInstance.trainerName = item.userName || item.email;
     modalRef.componentInstance.entityType = 'student';
-    modalRef.result.then(() => this.fetchStudents()).catch(() => {});
+    modalRef.result.then(() => {
+      this.fetchStudents();
+      if (this.traineeDrawerOpen) {
+        this.fetchTraineeDrawerStudents();
+      }
+    }).catch(() => {});
   }
   selectAll(){
     if(this.checkedAll){

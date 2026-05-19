@@ -1,11 +1,10 @@
 import { environment } from 'src/environments/environment';
 
-/** Which admin shell the user is in (handles `/app/app/admin/...` duplicate segments). */
+/** Which admin shell the user is in (handles legacy `/app/app/admin/...` URLs). */
 export type AdminAppSegment = 'admin' | 'trainer' | 'management';
 
 /**
  * Reads admin | trainer | management from a path or full URL.
- * Do not use `segments[segments.indexOf('app') + 1]` — with `/app/app/admin/...` that yields `app`.
  */
 export function resolveAdminAppSegment(pathOrUrl: string): AdminAppSegment {
   if (!pathOrUrl || typeof pathOrUrl !== 'string') {
@@ -21,10 +20,17 @@ export function resolveAdminAppSegment(pathOrUrl: string): AdminAppSegment {
   return 'admin';
 }
 
+/** True when Elearn is served under `/app/` (unified SSR mount). */
+export function isUnifiedElearnMount(): boolean {
+  if (typeof document === 'undefined') {
+    return false;
+  }
+  const base = document.querySelector('base')?.getAttribute('href')?.trim().replace(/\/+$/, '') ?? '';
+  return base === '/app';
+}
+
 /**
  * Base URL of the elearn app (auth, student dashboard).
- * Derived from existing env so no hardcoded domain is required in production.
- * Order: optional elearnAppUrl → seoUrl origin → googleRedirectUri origin → window.location.origin.
  */
 export function getElearnAppBaseUrl(): string {
   const env = environment as { elearnAppUrl?: string; seoUrl?: string; googleRedirectUri?: string };
@@ -47,11 +53,6 @@ export function getElearnAppBaseUrl(): string {
   return '';
 }
 
-/**
- * Absolute base of the deployed SPA for Stripe `return_url` (includes path prefix, e.g. `https://host/course`).
- * On oilandgasclub.com the learn app is under `/course/`; using `window.location.origin` alone sends users to
- * `https://host/app/...` (marketing shell) so payment success never runs and enrollment is skipped.
- */
 export function getAbsoluteAppBaseUrlForStripeReturn(): string {
   if (typeof window === 'undefined') {
     return '';
@@ -66,6 +67,41 @@ export function getAbsoluteAppBaseUrlForStripeReturn(): string {
     }
   }
   return window.location.origin.replace(/\/+$/, '');
+}
+
+/** Canonical browser path: always single `/app/...` (never `/app/app/...`). */
+export function normalizeAppRouterUrl(pathOrUrl: string): string {
+  const s = (pathOrUrl ?? '').trim();
+  if (!s) {
+    return s;
+  }
+  if (s.startsWith('/app/app/')) {
+    return s.replace(/^\/app\/app\//, '/app/');
+  }
+  return s;
+}
+
+/** Role landing paths after login. */
+export function normalizeRoleLandingRoute(route: string): string {
+  return normalizeAppRouterUrl(route);
+}
+
+/**
+ * RouterLink commands for menu items.
+ * Unified (`<base href="/app/">`): `['admin','students']` → browser `/app/admin/students`.
+ * Standalone (`<base href="/">`): `['app','admin','students']` → browser `/app/admin/students`.
+ */
+export function menuLinkToRouterCommands(pathOrUrl: string): string[] {
+  const path = normalizeAppRouterUrl((pathOrUrl ?? '').trim()).split('?')[0].split('#')[0];
+  let segments = path.split('/').filter(Boolean);
+  if (segments[0] === 'app') {
+    segments = segments.slice(1);
+  }
+  // Leading `/` = absolute navigation (relative arrays break from e.g. admin/students).
+  if (isUnifiedElearnMount()) {
+    return segments.length ? ['/', ...segments] : ['/'];
+  }
+  return segments.length ? ['/', 'app', ...segments] : ['/app'];
 }
 
 /** Turn a path like `/app/payment/success?...` into a full URL using the same prefix as the SPA. */

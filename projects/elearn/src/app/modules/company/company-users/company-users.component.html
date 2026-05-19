@@ -1,0 +1,145 @@
+<div class="cu">
+  <div class="cu__head">
+    <div>
+      <h1 class="cu__title">Users</h1>
+      <p class="cu__sub">Employees linked to your company portal. Only your organization’s accounts are shown.</p>
+    </div>
+    <div class="cu__actions">
+      <button type="button" class="cu__btn cu__btn--ghost" (click)="exportCsv()">Export CSV</button>
+      <label class="cu__btn cu__btn--ghost cu__file">
+        Import CSV
+        <input type="file" accept=".csv,text/csv" (change)="onImportFile($event)" aria-label="Import CSV" />
+      </label>
+      <button type="button" class="cu__btn cu__btn--primary" (click)="openAdd()">+ Add user</button>
+    </div>
+  </div>
+
+  <div class="cu__card" *ngIf="!loading && rows.length === 0 && !searchInput && !filterDepartment && filterActive === '' && filterRoleId === null">
+    <div class="cu__empty">
+      <div class="cu__empty-icon" aria-hidden="true">👥</div>
+      <h2 class="cu__empty-title">No employees added yet</h2>
+      <p class="cu__empty-text">Invite your team by email or import a CSV.</p>
+      <button type="button" class="cu__btn cu__btn--primary" (click)="openAdd()">+ Add first user</button>
+    </div>
+  </div>
+
+  <div class="cu__card" *ngIf="loading || rows.length > 0 || searchInput || filterDepartment || filterActive !== '' || filterRoleId !== null">
+    <div class="cu__filters">
+      <input class="cu__input" type="search" placeholder="Search name, email, department…" [value]="searchInput" (input)="onSearchChange($any($event.target).value)" />
+      <input class="cu__input" type="text" placeholder="Department" [(ngModel)]="filterDepartment" />
+      <select class="cu__select" [(ngModel)]="filterRoleId">
+        <option [ngValue]="null">All roles</option>
+        <option [ngValue]="studentRoleId">Student</option>
+      </select>
+      <select class="cu__select" [(ngModel)]="filterActive">
+        <option value="">All statuses</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+      <button type="button" class="cu__btn cu__btn--secondary" (click)="applyFilters()">Apply</button>
+    </div>
+
+    <div class="cu__table-wrap" *ngIf="!loading">
+      <table class="cu__table">
+        <thead>
+          <tr>
+            <th></th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('LastName')">Name</button></th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('Email')">Email</button></th>
+            <th>Employee ID</th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('Department')">Department</button></th>
+            <th>Designation</th>
+            <th>Role</th>
+            <th>Auth</th>
+            <th>Activation</th>
+            <th>Status</th>
+            <th>Last sync</th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('LastLoggedIn')">Last login</button></th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('CreatedOn')">Joined</button></th>
+            <th class="cu__th-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td class="cu__avatar-cell">
+              <img *ngIf="row.profilePictureUrl" [src]="row.profilePictureUrl" alt="" class="cu__avatar" width="36" height="36" />
+              <span *ngIf="!row.profilePictureUrl" class="cu__avatar cu__avatar--ph">{{ (row.firstName || row.email || '?').charAt(0) | uppercase }}</span>
+            </td>
+            <td>{{ fullName(row) }}</td>
+            <td>{{ row.email }}</td>
+            <td>{{ row.employeeCode || '—' }}</td>
+            <td>{{ row.department || '—' }}</td>
+            <td>{{ row.designation || '—' }}</td>
+            <td>{{ row.roleName || 'Student' }}</td>
+            <td>{{ row.authTypeLabel || '—' }}</td>
+            <td>{{ row.activationStatusLabel || '—' }}</td>
+            <td><span class="cu__pill" [class.cu__pill--off]="row.isActive === false">{{ statusLabel(row) }}</span></td>
+            <td>{{ row.lastSyncedAt ? (row.lastSyncedAt | date:'short') : '—' }}</td>
+            <td>{{ row.lastLoggedIn ? (row.lastLoggedIn | date:'medium') : '—' }}</td>
+            <td>{{ row.createdOn ? (row.createdOn | date:'mediumDate') : '—' }}</td>
+            <td>
+              <div ngbDropdown container="body" class="d-inline-block">
+                <button type="button" class="cu__btn-dots" ngbDropdownToggle aria-label="Actions">⋯</button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem type="button" (click)="openView(row)">View</button>
+                  <button ngbDropdownItem type="button" (click)="openEdit(row)">Edit</button>
+                  <button ngbDropdownItem type="button" (click)="disableUser(row)" *ngIf="row.isActive !== false">Disable</button>
+                  <button ngbDropdownItem type="button" (click)="openReset(row)" *ngIf="row.authType !== 1">Reset password</button>
+                  <button ngbDropdownItem type="button" class="text-danger" (click)="confirmDelete(row)">Delete</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cu__loading" *ngIf="loading">Loading…</div>
+
+    <div class="cu__pager" *ngIf="!loading && total > pageSize">
+      <button type="button" class="cu__btn cu__btn--ghost" [disabled]="page <= 1" (click)="setPage(page - 1)">Previous</button>
+      <span class="cu__pager-meta">Page {{ page }} · {{ total }} users</span>
+      <button type="button" class="cu__btn cu__btn--ghost" [disabled]="page * pageSize >= total" (click)="setPage(page + 1)">Next</button>
+      <select class="cu__select cu__select--sm" [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+        <option *ngFor="let s of pageSizeOptions" [ngValue]="s">{{ s }}/page</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<ng-template #viewTpl let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">User details</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.close()"></button>
+  </div>
+  <div class="modal-body" *ngIf="viewUser as v">
+    <p><strong>Name:</strong> {{ fullName(v) }}</p>
+    <p><strong>Email:</strong> {{ v.email }}</p>
+    <p><strong>Phone:</strong> {{ v.phone || '—' }}</p>
+    <p><strong>Department:</strong> {{ v.department || '—' }}</p>
+    <p><strong>Designation:</strong> {{ v.designation || '—' }}</p>
+    <p><strong>Employee ID:</strong> {{ v.employeeCode || '—' }}</p>
+    <p><strong>Auth:</strong> {{ v.authTypeLabel || '—' }} <span *ngIf="v.ssoProviderLabel">({{ v.ssoProviderLabel }})</span></p>
+    <p><strong>Activation:</strong> {{ v.activationStatusLabel || '—' }} · {{ statusLabel(v) }}</p>
+    <p><strong>Last profile sync:</strong> {{ v.lastSyncedAt ? (v.lastSyncedAt | date:'medium') : '—' }}</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #resetTpl let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Reset password</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [formGroup]="resetForm">
+    <p class="text-muted small" *ngIf="resetUser">For {{ resetUser.email }}</p>
+    <label class="form-label">New password</label>
+    <input type="password" class="form-control" formControlName="newPassword" autocomplete="new-password" />
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="submitReset(modal)">Save</button>
+  </div>
+</ng-template>

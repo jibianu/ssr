@@ -1,0 +1,189 @@
+<div class="admin-billing">
+  <header class="admin-billing__header">
+    <div>
+      <h1>Platform billing</h1>
+      <p>Live tenant data from database — edit pricing, discounts, and renewals</p>
+    </div>
+    <button type="button" class="admin-billing__btn" (click)="load()" [disabled]="loading">Refresh</button>
+  </header>
+
+  <p class="admin-billing__error" *ngIf="error">{{ error }}</p>
+
+  <div class="admin-billing__cards" *ngIf="!loading && data">
+    <div class="admin-billing__card">
+      <span class="admin-billing__label">Total ARR</span>
+      <span class="admin-billing__value">{{ formatInr(data.totalArr) }}</span>
+    </div>
+    <div class="admin-billing__card">
+      <span class="admin-billing__label">MRR</span>
+      <span class="admin-billing__value">{{ formatInr(data.monthlyRecurringRevenue) }}</span>
+    </div>
+    <div class="admin-billing__card">
+      <span class="admin-billing__label">Active companies</span>
+      <span class="admin-billing__value">{{ data.activeCompanies }}</span>
+    </div>
+    <div class="admin-billing__card">
+      <span class="admin-billing__label">Seats sold</span>
+      <span class="admin-billing__value">{{ data.totalSeatsSold }}</span>
+    </div>
+    <div class="admin-billing__card">
+      <span class="admin-billing__label">Trainer blogs</span>
+      <span class="admin-billing__value">{{ data.totalBlogsUsed ?? 0 }}</span>
+    </div>
+    <div class="admin-billing__card">
+      <span class="admin-billing__label">Renewals (30d)</span>
+      <span class="admin-billing__value">{{ data.pendingRenewals30Days }}</span>
+    </div>
+    <div class="admin-billing__card admin-billing__card--warn">
+      <span class="admin-billing__label">Failed payments</span>
+      <span class="admin-billing__value">{{ data.failedPayments }}</span>
+    </div>
+    <div class="admin-billing__card" [class.admin-billing__card--warn]="(data.pendingLicenseChangeRequests ?? 0) > 0">
+      <span class="admin-billing__label">License requests</span>
+      <span class="admin-billing__value">{{ data.pendingLicenseChangeRequests ?? 0 }}</span>
+    </div>
+  </div>
+
+  <section class="admin-billing__requests" *ngIf="!loading && data?.licenseChangeRequests?.length">
+    <h2>Pending license change requests</h2>
+    <div class="admin-billing__table-scroll">
+      <table class="admin-billing__table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Subdomain</th>
+            <th>Employee seats</th>
+            <th>Trainer licenses</th>
+            <th>Trainer blogs</th>
+            <th>Submitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of data.licenseChangeRequests">
+            <td><strong>{{ r.companyName }}</strong></td>
+            <td>{{ r.subdomain || '—' }}</td>
+            <td>{{ r.currentEmployeeSeats }} → <strong>{{ r.requestedEmployeeSeats }}</strong></td>
+            <td>{{ r.currentTrainerSeats }} → <strong>{{ r.requestedTrainerSeats }}</strong></td>
+            <td>{{ r.currentBlogsIncluded }} → <strong>{{ r.requestedBlogsIncluded }}</strong></td>
+            <td>{{ r.createdOn | date:'medium' }}</td>
+            <td class="admin-billing__actions">
+              <button type="button" class="link-btn link-btn--success" (click)="approveLicenseRequest(r)" [disabled]="reviewingRequestId === r.id">Approve</button>
+              <button type="button" class="link-btn link-btn--danger" (click)="rejectLicenseRequest(r)" [disabled]="reviewingRequestId === r.id">Reject</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="admin-billing__charts" *ngIf="!loading && data?.analytics">
+    <div class="admin-billing__chart-panel">
+      <h2>Seat utilization by company</h2>
+      <canvas #utilChartCanvas height="120"></canvas>
+    </div>
+    <div class="admin-billing__chart-panel admin-billing__chart-panel--list">
+      <h2>Revenue by renewal month</h2>
+      <ul class="admin-billing__mini-list">
+        <li *ngFor="let p of data.analytics?.revenueByMonth">
+          <span>{{ p.label }}</span>
+          <strong>{{ formatInr(p.value) }}</strong>
+        </li>
+        <li *ngIf="!data.analytics?.revenueByMonth?.length" class="admin-billing__empty">No renewal data yet</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="admin-billing__table-wrap" *ngIf="!loading && data">
+    <h2>Tenant billing</h2>
+    <div class="admin-billing__table-scroll">
+      <table class="admin-billing__table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Subdomain</th>
+            <th>Plan</th>
+            <th>Emp seats</th>
+            <th>Tr seats</th>
+            <th>Blogs</th>
+            <th>Used</th>
+            <th>Util.</th>
+            <th>Annual (pre-tax)</th>
+            <th>Discount</th>
+            <th>Final billing</th>
+            <th>Renewal</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of data.tenants" [class.row--suspended]="t.isSuspended">
+            <td><strong>{{ t.companyName }}</strong></td>
+            <td>{{ t.subdomain || '—' }}</td>
+            <td>{{ t.subscriptionPlan }}</td>
+            <td>{{ t.employeeSeats }}</td>
+            <td>{{ t.trainerSeats }}</td>
+            <td>{{ t.blogsUsed }} / {{ t.blogsIncluded || 0 }}</td>
+            <td>{{ t.employeeSeatsUsed }} / {{ t.trainerSeatsUsed }}</td>
+            <td>{{ t.utilizationPercent }}%</td>
+            <td>{{ formatInr(t.annualSubtotal) }}</td>
+            <td>{{ t.discountApplied }}</td>
+            <td><strong>{{ formatInr(t.annualAmount) }}</strong></td>
+            <td>{{ t.renewalDate | date:'mediumDate' }}</td>
+            <td><span class="badge" [ngClass]="statusClass(t.paymentStatus)">{{ t.paymentStatus }}</span></td>
+            <td class="admin-billing__actions">
+              <button type="button" class="link-btn" (click)="openPricing(t)" [disabled]="!t.hasSubscription" title="Edit pricing">✏ Edit</button>
+              <button
+                type="button"
+                class="link-btn link-btn--success"
+                (click)="markPaid(t)"
+                [disabled]="!t.hasSubscription || isPaid(t)"
+                title="Set payment status to Paid">
+                Mark paid
+              </button>
+              <button type="button" class="link-btn" (click)="viewInvoices(t)" [disabled]="!t.hasSubscription">Invoice</button>
+              <button type="button" class="link-btn" (click)="renew(t)" [disabled]="!t.hasSubscription">Renew</button>
+              <button type="button" class="link-btn link-btn--danger" (click)="suspend(t)" [disabled]="!t.hasSubscription">
+                {{ t.isSuspended ? 'Activate' : 'Suspend' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p *ngIf="!data.tenants?.length" class="admin-billing__empty">No company accounts found.</p>
+  </section>
+
+  <p *ngIf="loading" class="admin-billing__loading">Loading billing data…</p>
+</div>
+
+<app-company-pricing-modal
+  [open]="modalOpen"
+  [tenant]="selectedTenant"
+  (closed)="modalOpen = false"
+  (saved)="onPricingSaved($event)">
+</app-company-pricing-modal>
+
+<div class="invoice-drawer" *ngIf="invoiceModalOpen" (click)="invoiceModalOpen = false">
+  <div class="invoice-drawer__panel" (click)="$event.stopPropagation()">
+    <header>
+      <h3>Invoices — {{ selectedTenant?.companyName }}</h3>
+      <button type="button" (click)="invoiceModalOpen = false">&times;</button>
+    </header>
+    <p *ngIf="invoiceLoading">Loading…</p>
+    <table *ngIf="!invoiceLoading && invoiceRows.length" class="admin-billing__table">
+      <thead>
+        <tr><th>#</th><th>Period</th><th>Total</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let inv of invoiceRows">
+          <td>{{ inv.invoiceNumber }}</td>
+          <td>{{ inv.billingPeriodStart | date:'shortDate' }} – {{ inv.billingPeriodEnd | date:'shortDate' }}</td>
+          <td>{{ formatInr(inv.totalAmount) }}</td>
+          <td>{{ inv.paymentStatus }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!invoiceLoading && !invoiceRows.length" class="admin-billing__empty">No invoices generated yet.</p>
+  </div>
+</div>

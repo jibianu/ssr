@@ -1,0 +1,115 @@
+<div class="sso-settings">
+  <h1 class="sso-settings__title">SSO configuration</h1>
+  <p class="sso-settings__intro">
+    Configure OpenID Connect for your company portal (e.g. Microsoft Entra ID). Employees must use an email on an allowed domain.
+    SAML ACS is planned; store SAML metadata fields for future use.
+  </p>
+
+  <div *ngIf="loading" class="sso-settings__loading">Loading…</div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="save()" class="sso-settings__form" novalidate>
+    <label class="sso-settings__check">
+      <input type="checkbox" formControlName="enabled" />
+      Enable SSO for this company portal
+    </label>
+    <label class="sso-settings__check">
+      <input type="checkbox" formControlName="autoRedirectEnabled" />
+      Auto-redirect visitors to the identity provider (skip manual button when possible)
+    </label>
+    <label class="sso-settings__check">
+      <input type="checkbox" formControlName="autoCreateUsersFromSso" />
+      Auto-create users from SSO when someone signs in with an allowed domain (turn off for invite-only)
+    </label>
+    <label class="sso-settings__check">
+      <input type="checkbox" formControlName="disableOtpVerification" />
+      Disable Cognito / OTP for company-added employees (invite-only; they activate on first SSO login)
+    </label>
+    <label class="sso-settings__check">
+      <input type="checkbox" formControlName="restrictLoginToSsoOnly" />
+      Restrict company portal login to SSO only (hide email/password on tenant login page)
+    </label>
+    <label class="sso-settings__check">
+      <input type="checkbox" formControlName="autoSyncProfileFromIdp" />
+      Auto-sync profile from identity provider on each SSO login
+    </label>
+
+    <div class="sso-settings__field">
+      <label for="sso-provider">Identity provider</label>
+      <select id="sso-provider" formControlName="providerType">
+        <option *ngFor="let o of providerOptions" [ngValue]="o.v">{{ o.label }}</option>
+      </select>
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-tenant">Tenant / directory ID (Azure) or leave blank if using full discovery URL</label>
+      <input id="sso-tenant" type="text" formControlName="tenantId" autocomplete="off" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-client">Application (client) ID</label>
+      <input id="sso-client" type="text" formControlName="clientId" autocomplete="off" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-secret">Client secret (leave blank to keep existing)</label>
+      <input id="sso-secret" type="password" formControlName="clientSecret" autocomplete="new-password" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-discovery">Discovery URL (optional if Azure tenant ID is set)</label>
+      <input id="sso-discovery" type="url" formControlName="discoveryUrl" placeholder="https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-authz">Authorization URL override (optional)</label>
+      <input id="sso-authz" type="url" formControlName="authorizationUrl" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-token">Token URL override (optional)</label>
+      <input id="sso-token" type="url" formControlName="tokenUrl" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-logout">Logout URL (optional)</label>
+      <input id="sso-logout" type="url" formControlName="logoutUrl" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-domains">Allowed email domains <span class="sso-settings__req">*</span></label>
+      <input id="sso-domains" type="text" formControlName="allowedEmailDomains" placeholder="anu.com, subsidiary.com" />
+      <span class="sso-settings__hint">Comma-separated host parts after @. Only these domains may sign in via SSO.</span>
+    </div>
+
+    <h2 class="sso-settings__h2">Branding</h2>
+    <div class="sso-settings__field">
+      <label for="sso-portal">Portal title</label>
+      <input id="sso-portal" type="text" formControlName="portalDisplayName" placeholder="Anu Learning Portal" />
+    </div>
+    <div class="sso-settings__field">
+      <label for="sso-logo">Logo URL</label>
+      <input id="sso-logo" type="url" formControlName="logoUrl" />
+    </div>
+    <div class="sso-settings__field">
+      <label for="sso-color">Primary color (#RRGGBB)</label>
+      <input id="sso-color" type="text" formControlName="primaryColorHex" placeholder="#F87D4A" />
+    </div>
+    <div class="sso-settings__field">
+      <label for="sso-welcome">Welcome message</label>
+      <textarea id="sso-welcome" rows="3" formControlName="welcomeMessage"></textarea>
+    </div>
+    <div class="sso-settings__field">
+      <label for="sso-bg">Login background image URL</label>
+      <input id="sso-bg" type="url" formControlName="loginBackgroundUrl" />
+    </div>
+
+    <div class="sso-settings__field">
+      <label for="sso-scopes">OAuth scopes</label>
+      <input id="sso-scopes" type="text" formControlName="oauthScopes" />
+    </div>
+
+    <button type="submit" class="sso-settings__submit" [disabled]="saving">
+      {{ saving ? 'Saving…' : 'Save settings' }}
+    </button>
+  </form>
+</div>

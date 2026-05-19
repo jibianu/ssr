@@ -1,4 +1,4 @@
-<div class="login-page">
+<div class="login-page" [class.login-page--tenant]="tenantPrimaryColor || tenantLoginBackgroundUrl" [ngStyle]="tenantLoginBackgroundUrl ? { 'background-image': 'linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url(' + tenantLoginBackgroundUrl + ')', 'background-size': 'cover', 'background-position': 'center' } : null">
   <!-- Blocking modal: role not configured -->
   <div class="login-alert-overlay" *ngIf="showAlert" role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-message">
     <div class="login-alert-backdrop" (click)="closeAlert()"></div>
@@ -17,37 +17,51 @@
       <a routerLink="/" class="login-brand" aria-label="oilandgasclub home">
         <img [src]="logoUrl" alt="oilandgasclub" class="login-brand__logo" width="130" height="42" fetchpriority="high">
       </a>
-      <p class="login-header__prompt">
+      <p class="login-header__prompt" *ngIf="!hideLocalCredentials">
         Don't have an account? <a [routerLink]="['/register']" class="login-header__link">Get started free</a>
       </p>
     </header>
 
-    <div class="login-info-box">
-      <h1 class="login-info-box__title">Grow your skills with industry-recognized courses.</h1>
-      <p class="login-info-box__text">Self-paced oil & gas learning from industry experts. Get certified and advance your career.</p>
+    <div class="login-info-box" *ngIf="tenantInfoTitle; else defaultInfo">
+      <h1 class="login-info-box__title">{{ tenantInfoTitle }}</h1>
+      <p class="login-info-box__text" *ngIf="tenantInfoSubtitle">{{ tenantInfoSubtitle }}</p>
     </div>
+    <ng-template #defaultInfo>
+      <div class="login-info-box">
+        <h1 class="login-info-box__title">Grow your skills with industry-recognized courses.</h1>
+        <p class="login-info-box__text">Self-paced oil & gas learning from industry experts. Get certified and advance your career.</p>
+      </div>
+    </ng-template>
+
+    <p class="login-form__loading" *ngIf="loadingSsoConfig">Loading sign-in options…</p>
 
     <form class="login-form" (ngSubmit)="loginWithCognito()" aria-label="Sign in">
-      <div class="login-form__field login-form__google-wrap" *ngIf="googleEnabled">
-        <button type="button" class="login-form__google-btn" (click)="continueWithGoogle()" [disabled]="!googleEnabled" aria-label="Continue with Google">
+      <div class="login-form__field login-form__google-wrap" *ngIf="showGoogleOAuthButton">
+        <button type="button" class="login-form__google-btn" (click)="continueWithGoogle()" aria-label="Continue with Google">
           <span class="login-form__google-icon" aria-hidden="true"></span>
           <span class="login-form__google-text">Continue with Google</span>
         </button>
       </div>
-      <div class="login-form__divider" aria-hidden="true">OR</div>
+      <div class="login-form__field login-form__google-wrap" *ngIf="showCompanyPortalSsoButton">
+        <button type="button" class="login-form__sso-btn" (click)="continueCompanyPortalSignIn()" [attr.aria-label]="enterpriseSsoButtonLabel">
+          <span class="login-form__sso-icon" aria-hidden="true"></span>
+          <span class="login-form__sso-text">{{ enterpriseSsoButtonLabel }}</span>
+        </button>
+      </div>
+      <div class="login-form__divider" *ngIf="(showGoogleOAuthButton || showCompanyPortalSsoButton) && !hideLocalCredentials" aria-hidden="true">OR</div>
 
-      <div class="login-form__field">
+      <div class="login-form__field" *ngIf="!hideLocalCredentials">
         <label class="login-form__label" for="login-email">Email address</label>
         <input id="login-email" type="email" name="email" [(ngModel)]="email" required
           placeholder="you@example.com" class="login-form__input" autocomplete="email" inputmode="email">
       </div>
-      <div class="login-form__field">
+      <div class="login-form__field" *ngIf="!hideLocalCredentials">
         <label class="login-form__label" for="login-password">Password</label>
         <input id="login-password" type="password" name="password" [(ngModel)]="password" required
           placeholder="Enter your password" class="login-form__input" autocomplete="current-password">
       </div>
 
-      <div class="login-form__options">
+      <div class="login-form__options" *ngIf="!hideLocalCredentials">
         <label class="login-form__remember">
           <input type="checkbox" name="remember" aria-label="Remember me">
           <span>Remember me</span>
@@ -55,10 +69,11 @@
         <a [routerLink]="['/forget-password']" class="login-form__forgot">Forgot password</a>
       </div>
 
-      <button type="submit" class="login-form__submit">Log In</button>
+      <button type="submit" class="login-form__submit" *ngIf="!hideLocalCredentials" [style.background-color]="tenantPrimaryColor || null">Log In</button>
+      <p class="login-form__sso-only-hint" *ngIf="hideLocalCredentials">Use your organization’s single sign-on button above. Password login is disabled for this portal.</p>
     </form>
 
-    <p class="login-signup">
+    <p class="login-signup" *ngIf="!hideLocalCredentials">
       Don't have an account yet? <a [routerLink]="['/register']" class="login-signup__link">Sign up</a>
     </p>
   </div>

@@ -18,19 +18,57 @@
       <p class="login-info-box__text">We create custom corporate academies with training programs designed for your organization's specific needs.</p>
     </div>
 
-    <form class="login-form" (ngSubmit)="register()" aria-label="Company sign up">
+    <p *ngIf="registerError" class="login-form__error login-form__register-banner" role="alert">{{ registerError }}</p>
+
+    <form class="login-form" [formGroup]="registerForm" (ngSubmit)="register()" aria-label="Company sign up">
       <div class="login-form__field">
         <label class="login-form__label" for="company-email">Email address</label>
-        <input id="company-email" type="email" name="email" [(ngModel)]="email" required
+        <input id="company-email" type="email" formControlName="email"
           placeholder="you@company.com" class="login-form__input" autocomplete="email" inputmode="email">
-      </div>
-      <div class="login-form__field">
-        <label class="login-form__label" for="company-password">Password</label>
-        <input id="company-password" type="password" name="password" [(ngModel)]="password" required
-          placeholder="Create a password" class="login-form__input" autocomplete="new-password">
+        <p class="login-form__error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']">Email is required.</p>
+        <p class="login-form__error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']">Enter a valid email address.</p>
       </div>
 
-      <button type="submit" class="login-form__submit">Register</button>
+      <div class="login-form__field subdomain-field"
+        [class.subdomain-field--invalid]="registerForm.get('subdomain')?.touched && registerForm.get('subdomain')?.invalid"
+        [class.subdomain-field--available]="registerForm.get('subdomain')?.valid && subdomainAvailable === true && !subdomainChecking"
+        [class.subdomain-field--taken]="registerForm.get('subdomain')?.valid && subdomainAvailable === false && !subdomainChecking && !subdomainCheckError">
+        <label class="login-form__label" for="company-subdomain">Custom Company Subdomain <span class="login-form__req" aria-hidden="true">*</span></label>
+        <div class="subdomain-url" [class.subdomain-url--invalid]="registerForm.get('subdomain')?.touched && registerForm.get('subdomain')?.invalid"
+          [class.subdomain-url--available]="registerForm.get('subdomain')?.valid && subdomainAvailable === true && !subdomainChecking"
+          [class.subdomain-url--taken]="registerForm.get('subdomain')?.valid && subdomainAvailable === false && !subdomainChecking && !subdomainCheckError">
+          <span class="subdomain-url__prefix" aria-hidden="true">https://</span>
+          <input id="company-subdomain" type="text" formControlName="subdomain" class="subdomain-url__input"
+            placeholder="your-company" autocomplete="off" autocapitalize="none" spellcheck="false"
+            maxlength="30" aria-describedby="subdomain-hint subdomain-errors subdomain-status">
+          <span class="subdomain-url__suffix" aria-hidden="true">{{ portalSuffix }}</span>
+        </div>
+        <p id="subdomain-hint" class="subdomain-field__hint">This will be your company’s private training portal URL.</p>
+        <div id="subdomain-errors" class="subdomain-field__errors" *ngIf="registerForm.get('subdomain')?.touched && registerForm.get('subdomain')?.invalid">
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['required']">Subdomain is required.</p>
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['minlength']">Use at least 3 characters.</p>
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['maxlength']">Use at most 30 characters.</p>
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['pattern']">Only lowercase letters, numbers, and hyphens are allowed.</p>
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['subdomainHyphenEdges']">Cannot start or end with a hyphen.</p>
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['subdomainChars']">Only lowercase letters, numbers, and hyphens are allowed.</p>
+          <p class="login-form__error" *ngIf="registerForm.get('subdomain')?.errors?.['subdomainReserved']">This subdomain is reserved. Please choose another.</p>
+        </div>
+        <div id="subdomain-status" class="subdomain-field__status" *ngIf="registerForm.get('subdomain')?.valid && registerForm.get('subdomain')?.value">
+          <span *ngIf="subdomainChecking" class="subdomain-field__status-text subdomain-field__status-text--pending">Checking availability…</span>
+          <span *ngIf="!subdomainChecking && subdomainAvailable === true" class="subdomain-field__status-text subdomain-field__status-text--ok">✓ Available</span>
+          <span *ngIf="!subdomainChecking && subdomainAvailable === false && !subdomainCheckError" class="subdomain-field__status-text subdomain-field__status-text--bad">✗ Already taken</span>
+          <span *ngIf="!subdomainChecking && subdomainCheckError" class="subdomain-field__status-text subdomain-field__status-text--bad">Could not verify availability. Try again.</span>
+        </div>
+      </div>
+
+      <div class="login-form__field">
+        <label class="login-form__label" for="company-password">Password</label>
+        <input id="company-password" type="password" formControlName="password"
+          placeholder="Create a password" class="login-form__input" autocomplete="new-password">
+        <p class="login-form__error" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']">Password is required.</p>
+      </div>
+
+      <button type="submit" class="login-form__submit" [disabled]="!canSubmit">Register</button>
     </form>
 
     <p class="login-signup">

@@ -9,6 +9,7 @@ import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { SharedService } from '../../service/shared-service.service';
 import { ToasterService } from '../toaster/toaster.service';
 import { environment } from 'src/environments/environment';
+import { normalizeAppRouterUrl, normalizeRoleLandingRoute } from 'src/app/core/helpers/app-url.helper';
 
 const ROLE_TRAINER = 3;
 
@@ -126,13 +127,13 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     const roleId = user?.roleId != null ? user.roleId : this.authService.currentUser()?.roleId;
     this.isTrainer = roleId === ROLE_TRAINER;
     if (roleId != null && ROLE_LANDING_ROUTES[roleId]) {
-      this.homeRoute = ROLE_LANDING_ROUTES[roleId];
+      this.homeRoute = normalizeRoleLandingRoute(ROLE_LANDING_ROUTES[roleId]);
     }
     if (this.router.url.startsWith('/app/affiliate')) {
-      this.homeRoute = '/app/affiliate/dashboard';
+      this.homeRoute = normalizeAppRouterUrl('/app/affiliate/dashboard');
     }
     if (this.homeRouteOverride) {
-      this.homeRoute = this.homeRouteOverride;
+      this.homeRoute = normalizeAppRouterUrl(this.homeRouteOverride);
     }
     if (this.pageTitle) {
       this.displayTitle = this.pageTitle;
@@ -517,7 +518,29 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   goBack(): void {
-    this.location.back();
+    const url = this.router.url.split('?')[0];
+    const adminMatch = url.match(/\/app\/(?:app\/)?admin\/(.+)/);
+    if (adminMatch) {
+      const segments = adminMatch[1].split('/').filter(Boolean);
+      if (segments.length > 1) {
+        segments.pop();
+        this.router.navigateByUrl(normalizeAppRouterUrl(`/app/admin/${segments.join('/')}`));
+        return;
+      }
+      if (segments.length === 1 && segments[0] !== 'dashboard') {
+        this.router.navigateByUrl(normalizeAppRouterUrl('/app/admin/dashboard'));
+        return;
+      }
+    }
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    this.router.navigateByUrl(normalizeAppRouterUrl(this.homeRoute));
+  }
+
+  goHome(): void {
+    this.router.navigateByUrl(normalizeAppRouterUrl(this.homeRoute));
   }
 
   onSidebarTogglerClick(): void {

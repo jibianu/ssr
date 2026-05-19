@@ -1,0 +1,132 @@
+<div class="cu-wrap">
+<div class="cu">
+  <div class="cu__head">
+    <div>
+      <h1 class="cu__title">Trainers</h1>
+      <p class="cu__sub">Corporate trainers linked to your company portal. Only your organization’s trainer accounts are shown.</p>
+    </div>
+    <div class="cu__actions">
+      <button type="button" class="cu__btn cu__btn--ghost" (click)="exportCsv()">Export CSV</button>
+      <button type="button" class="cu__btn cu__btn--primary" (click)="openAdd()">+ Add Trainer</button>
+    </div>
+  </div>
+
+  <div class="cu__card cu__perm" *ngIf="contentPermLoading || contentPermRequests.length > 0">
+    <h2 class="cu__perm-title">Pending permission requests</h2>
+    <p class="cu__perm-sub">Your trainers asked to create courses, events, or blogs. Approve or reject here.</p>
+    <div *ngIf="contentPermLoading" class="cu__loading">Loading requests…</div>
+    <div class="cu__table-wrap" *ngIf="!contentPermLoading && contentPermRequests.length > 0">
+      <table class="cu__table cu__table--perm">
+        <thead>
+          <tr>
+            <th>Trainer</th>
+            <th>Email</th>
+            <th>Content</th>
+            <th>Requested</th>
+            <th class="cu__th-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of contentPermRequests">
+            <td>{{ r.userName || '—' }}</td>
+            <td>{{ r.userEmail || '—' }}</td>
+            <td><span class="cu__pill cu__pill--type">{{ r.contentType }}</span></td>
+            <td>{{ r.requestedAt ? (r.requestedAt | date:'medium') : '—' }}</td>
+            <td>
+              <button type="button" class="cu__btn cu__btn--secondary cu__btn--sm" (click)="rejectContentPerm(r)">Reject</button>
+              <button type="button" class="cu__btn cu__btn--primary cu__btn--sm" (click)="approveContentPerm(r)">Approve</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cu__card" *ngIf="!loading && rows.length === 0 && !searchInput && !filterDepartment && filterActive === ''">
+    <div class="cu__empty">
+      <div class="cu__empty-icon" aria-hidden="true">🎓</div>
+      <h2 class="cu__empty-title">No trainers yet</h2>
+      <p class="cu__empty-text">Invite trainers by email so they can build private courses for your organization.</p>
+      <button type="button" class="cu__btn cu__btn--primary" (click)="openAdd()">+ Add first trainer</button>
+    </div>
+  </div>
+
+  <div class="cu__card" *ngIf="loading || rows.length > 0 || searchInput || filterDepartment || filterActive !== ''">
+    <div class="cu__filters">
+      <input class="cu__input" type="search" placeholder="Search name, email, department, expertise…" [value]="searchInput" (input)="onSearchChange($any($event.target).value)" />
+      <input class="cu__input" type="text" placeholder="Department" [(ngModel)]="filterDepartment" />
+      <select class="cu__select" [(ngModel)]="filterActive">
+        <option value="">All statuses</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+      <button type="button" class="cu__btn cu__btn--secondary" (click)="applyFilters()">Apply</button>
+    </div>
+
+    <div class="cu__table-wrap" *ngIf="!loading">
+      <table class="cu__table">
+        <thead>
+          <tr>
+            <th></th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('LastName')">Trainer Name</button></th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('Email')">Email</button></th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('Department')">Department</button></th>
+            <th>Expertise</th>
+            <th>Assigned Courses</th>
+            <th>Webinars</th>
+            <th>Status</th>
+            <th><button type="button" class="cu__th" (click)="toggleSort('CreatedOn')">Joined</button></th>
+            <th class="cu__th-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td class="cu__avatar-cell">
+              <img *ngIf="row.profilePictureUrl" [src]="row.profilePictureUrl" alt="" class="cu__avatar" width="36" height="36" />
+              <span *ngIf="!row.profilePictureUrl" class="cu__avatar cu__avatar--ph">{{ (row.firstName || row.email || '?').charAt(0) | uppercase }}</span>
+            </td>
+            <td>{{ fullName(row) }}</td>
+            <td>{{ row.email }}</td>
+            <td>{{ row.department || '—' }}</td>
+            <td>{{ row.expertise || '—' }}</td>
+            <td>{{ row.assignedCoursesCount }}</td>
+            <td>{{ row.webinarsCount }}</td>
+            <td><span class="cu__pill" [class.cu__pill--off]="row.isActive === false">{{ statusLabel(row) }}</span></td>
+            <td>{{ row.createdOn ? (row.createdOn | date:'mediumDate') : '—' }}</td>
+            <td>
+              <div ngbDropdown container="body" class="d-inline-block">
+                <button type="button" class="cu__btn-dots" ngbDropdownToggle aria-label="Actions">⋯</button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem type="button" (click)="openEdit(row)">Edit Trainer</button>
+                  <button ngbDropdownItem type="button" (click)="disableTrainer(row)" *ngIf="row.isActive !== false">Disable Trainer</button>
+                  <button ngbDropdownItem type="button" class="text-danger" (click)="confirmDelete(row)">Delete</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cu__loading" *ngIf="loading">Loading…</div>
+
+    <div class="cu__pager" *ngIf="!loading && total > pageSize">
+      <button type="button" class="cu__btn cu__btn--ghost" [disabled]="page <= 1" (click)="setPage(page - 1)">Previous</button>
+      <span class="cu__pager-info">Page {{ page }} of {{ totalPages() }}</span>
+      <button type="button" class="cu__btn cu__btn--ghost" [disabled]="page * pageSize >= total" (click)="setPage(page + 1)">Next</button>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="trainerDrawerOpen">
+  <div class="cu-drawer-backdrop" (click)="closeTrainerDrawer()" aria-hidden="true"></div>
+  <aside class="cu-drawer" role="dialog" aria-modal="true" aria-labelledby="trainer-drawer-title" tabindex="-1">
+    <app-trainer-form-dialog
+      [mode]="trainerDrawerMode"
+      [trainerId]="trainerDrawerTrainerId"
+      (dismissed)="closeTrainerDrawer()"
+      (saved)="onTrainerSaved()"
+    />
+  </aside>
+</ng-container>
+</div>

@@ -1,0 +1,91 @@
+.cu-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: rgba(15, 23, 42, 0.45);
+  animation: cu-drawer-backdrop-in 0.2s ease-out;
+}
+
+@keyframes cu-drawer-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cu-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  width: min(100%, 32rem);
+  max-width: 100vw;
+  max-height: 100vh;
+  max-height: 100dvh;
+  background: #fff;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  animation: cu-drawer-slide-in 0.25s ease-out;
+}
+
+/* Flex item default min-height:auto prevents shrink — without this, content grows past the viewport and clips Save */
+.cu-drawer app-trainer-form-dialog {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@keyframes cu-drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.cu__perm {
+  margin-bottom: 1rem;
+  border-left: 4px solid #ea580c;
+}
+
+.cu__perm-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.cu__perm-sub {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.cu__table--perm th,
+.cu__table--perm td {
+  font-size: 0.875rem;
+}
+
+.cu__btn--sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  margin-right: 0.35rem;
+}
+
+.cu__pill--type {
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 600;
+  text-transform: capitalize;
+}

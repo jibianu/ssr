@@ -1,0 +1,171 @@
+<div class="billing">
+  <header class="billing__header">
+    <div>
+      <h1 class="billing__title">Billing &amp; Licenses</h1>
+      <p class="billing__subtitle" *ngIf="data?.overview as o">{{ o.companyName }} · {{ o.subscriptionPlan }} · {{ o.billingModel }}</p>
+    </div>
+    <button type="button" class="billing__btn billing__btn--primary" (click)="load()" [disabled]="loading">Refresh</button>
+  </header>
+
+  <div class="billing__insights" *ngIf="data?.insights?.length">
+    <div class="billing__insight" *ngFor="let i of data!.insights" [class.billing__insight--warn]="i.severity === 'warning'">
+      <i class="fa fa-lightbulb-o"></i> {{ i.message }}
+    </div>
+  </div>
+
+  <div class="billing__cards" *ngIf="!loading && data?.overview as o">
+    <div class="billing__card">
+      <span class="billing__card-label">Purchased seats</span>
+      <span class="billing__card-value">{{ o.totalPurchasedSeats }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Active users</span>
+      <span class="billing__card-value">{{ o.activeUsers }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Remaining seats</span>
+      <span class="billing__card-value">{{ o.remainingSeats }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Trainer licenses</span>
+      <span class="billing__card-value">{{ o.trainerLicensesUsed }} / {{ o.trainerLicensesPurchased }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Trainer blogs</span>
+      <span class="billing__card-value">{{ o.blogsUsed ?? 0 }}<ng-container *ngIf="o.blogsIncluded"> / {{ o.blogsIncluded }}</ng-container></span>
+    </div>
+    <div class="billing__card" *ngIf="o.blogsPublished != null">
+      <span class="billing__card-label">Published blogs</span>
+      <span class="billing__card-value">{{ o.blogsPublished }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Annual (excl. tax)</span>
+      <span class="billing__card-value">{{ formatCurrency(o.annualBillingAmount) }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Annual + GST ({{ o.gstPercentage }}%)</span>
+      <span class="billing__card-value">{{ formatCurrency(o.annualBillingWithTax) }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Renewal date</span>
+      <span class="billing__card-value billing__card-value--sm">{{ o.renewalDate | date:'mediumDate' }}</span>
+    </div>
+    <div class="billing__card">
+      <span class="billing__card-label">Monthly active learners</span>
+      <span class="billing__card-value">{{ o.monthlyActiveLearners }}</span>
+    </div>
+  </div>
+
+  <div class="billing__grid" *ngIf="!loading && data">
+    <section class="billing__panel">
+      <h2>License usage</h2>
+      <div class="billing__meter" *ngIf="data.licenseUsage as lu">
+        <div class="billing__meter-head"><span>Employee seats</span><span>{{ lu.employeeSeatsUsed }} / {{ lu.employeeSeatsPurchased }}</span></div>
+        <div class="billing__meter-bar"><div class="billing__meter-fill" [style.width.%]="employeeUtilPercent()"></div></div>
+        <div class="billing__meter-head"><span>Trainer licenses</span><span>{{ lu.trainerSeatsUsed }} / {{ lu.trainerSeatsPurchased }}</span></div>
+        <div class="billing__meter-bar"><div class="billing__meter-fill billing__meter-fill--alt" [style.width.%]="trainerUtilPercent()"></div></div>
+        <div class="billing__meter-head"><span>Trainer blogs</span><span>{{ lu.blogsUsed ?? 0 }} / {{ lu.blogsIncluded ?? 0 }}</span></div>
+        <div class="billing__meter-bar"><div class="billing__meter-fill billing__meter-fill--blog" [style.width.%]="blogUtilPercent()"></div></div>
+        <p class="billing__hint" *ngIf="lu.blogsBillable > 0">Blog overage: {{ lu.blogsBillable }} post(s)</p>
+        <p class="billing__hint" *ngIf="lu.overageSeats > 0">Seat overage: {{ lu.overageSeats }} seat(s)</p>
+      </div>
+      <div class="billing__pending" *ngIf="hasPendingLicenseRequest() && data.pendingLicenseChangeRequest as p">
+        <strong>Pending approval</strong>
+        <p>Submitted {{ p.createdOn | date:'medium' }} — waiting for super admin.</p>
+        <p class="billing__hint">
+          Requested: {{ p.requestedEmployeeSeats }} employee · {{ p.requestedTrainerSeats }} trainer · {{ p.requestedBlogsIncluded }} blogs
+          (current: {{ p.currentEmployeeSeats }} · {{ p.currentTrainerSeats }} · {{ p.currentBlogsIncluded }})
+        </p>
+      </div>
+      <div class="billing__form-row">
+        <label>Employee seats<input type="number" [(ngModel)]="seatForm.employeeSeatsPurchased" min="0" [disabled]="hasPendingLicenseRequest()" /></label>
+        <label>Trainer licenses<input type="number" [(ngModel)]="seatForm.trainerSeatsPurchased" min="0" [disabled]="hasPendingLicenseRequest()" /></label>
+        <label>Trainer blogs<input type="number" [(ngModel)]="seatForm.blogsIncluded" min="0" [disabled]="hasPendingLicenseRequest()" /></label>
+        <button type="button" class="billing__btn billing__btn--primary" (click)="saveSeats()" [disabled]="savingSeats || hasPendingLicenseRequest()">
+          {{ savingSeats ? 'Submitting…' : 'Submit request' }}
+        </button>
+      </div>
+      <p class="billing__success" *ngIf="seatMessage">{{ seatMessage }}</p>
+      <p class="billing__error-inline" *ngIf="seatError">{{ seatError }}</p>
+      <p class="billing__hint">Changes require super admin approval before they apply to your subscription.</p>
+    </section>
+
+    <section class="billing__panel">
+      <h2>Billing summary</h2>
+      <table class="billing__table" *ngIf="data.calculation?.lineItems?.length">
+        <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Amount</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of data.calculation.lineItems">
+            <td>{{ row.description }}</td>
+            <td>{{ row.quantity }}</td>
+            <td>{{ formatCurrency(row.unitPrice) }}</td>
+            <td>{{ formatCurrency(row.amount) }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="3">Subtotal</td><td>{{ formatCurrency(data.calculation.subtotal) }}</td></tr>
+          <tr><td colspan="3">GST</td><td>{{ formatCurrency(data.calculation.taxAmount) }}</td></tr>
+          <tr class="billing__total"><td colspan="3">Total</td><td>{{ formatCurrency(data.calculation.totalAmount) }}</td></tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <section class="billing__panel billing__panel--wide">
+      <h2>Trainer blogs</h2>
+      <p class="billing__hint">Blogs created by trainers in your company portal.</p>
+      <table class="billing__table" *ngIf="data.blogs?.length; else noBlogs">
+        <thead>
+          <tr><th>Title</th><th>Author</th><th>Status</th><th>Created</th><th>Published</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of data.blogs">
+            <td>{{ b.title }}</td>
+            <td>{{ b.authorName || b.authorEmail }}</td>
+            <td><span class="billing__badge">{{ b.status }}</span></td>
+            <td>{{ b.createdOn | date:'mediumDate' }}</td>
+            <td>{{ b.publishedDate ? (b.publishedDate | date:'mediumDate') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noBlogs><p class="billing__empty">No trainer blogs yet.</p></ng-template>
+    </section>
+
+    <section class="billing__panel billing__panel--wide">
+      <h2>Enterprise add-ons</h2>
+      <div class="billing__addons">
+        <label class="billing__addon" *ngFor="let a of data.addons">
+          <input type="checkbox" [checked]="a.isActive" (change)="toggleAddon(a)" />
+          <span class="billing__addon-name">{{ a.name }}</span>
+          <span class="billing__addon-price">{{ formatCurrency(a.annualPrice) }}/yr</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="billing__panel billing__panel--wide">
+      <h2>Invoice history</h2>
+      <table class="billing__table" *ngIf="data.invoices?.length; else noInvoices">
+        <thead>
+          <tr><th>Invoice</th><th>Period</th><th>Total</th><th>Status</th><th>Paid</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let inv of data.invoices">
+            <td>{{ inv.invoiceNumber }}</td>
+            <td>{{ inv.billingPeriodStart | date:'shortDate' }} – {{ inv.billingPeriodEnd | date:'shortDate' }}</td>
+            <td>{{ formatCurrency(inv.totalAmount) }}</td>
+            <td><span class="billing__badge">{{ inv.paymentStatus }}</span></td>
+            <td>{{ inv.paidOn ? (inv.paidOn | date:'shortDate') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noInvoices><p class="billing__empty">No invoices yet. Invoices are generated at renewal.</p></ng-template>
+    </section>
+
+    <section class="billing__panel">
+      <h2>Request quote</h2>
+      <textarea class="billing__textarea" rows="4" [(ngModel)]="quoteMessage" placeholder="Describe upgrade needs, seat count, or custom contract…"></textarea>
+      <button type="button" class="billing__btn billing__btn--primary" (click)="submitQuote()">Request enterprise quote</button>
+    </section>
+  </div>
+
+  <div class="billing__loading" *ngIf="loading">Loading billing data…</div>
+</div>

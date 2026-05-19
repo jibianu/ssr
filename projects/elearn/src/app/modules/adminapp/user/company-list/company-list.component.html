@@ -46,6 +46,8 @@
               <div class="list-table-modern__actions">
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--danger" (click)="deleteUser(item.id)" title="Delete"><i class="fa fa-trash"></i></button>
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--primary" (click)="openPermisionModal(item)" title="Lock / Unlock"><i class="fa fa-unlock"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--success" (click)="openPortalStudents(item)" title="Portal student list"><i class="fa fa-users"></i></button>
+                <button type="button" class="list-table-modern__btn list-table-modern__btn--warning" (click)="openPortalTrainers(item)" title="Portal trainer list"><i class="fa fa-graduation-cap"></i></button>
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--info" (click)="openCourseModal(item)" title="Edit Course"><i class="fa fa-book"></i></button>
                 <button type="button" class="list-table-modern__btn list-table-modern__btn--view" (click)="openStudentInfo(item)" title="View Info"><i class="fa fa-eye"></i></button>
               </div>

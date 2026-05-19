@@ -3,9 +3,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { isCompanyTenantLoginHost, getTenantSubdomainFromHostname } from 'src/app/core/company-portal-host.util';
 import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
+import { jsonProp } from 'src/app/core/api-json.util';
 
 @Component({
     selector: 'app-login',
@@ -24,6 +26,17 @@ export class LoginComponent implements OnInit {
     /** True when Google OAuth (code flow) is configured; custom button shown immediately, no SDK load. */
     googleEnabled = !!environment.oauthKey?.trim();
 
+    /** Company portal: one SSO row (OIDC when enabled in API, else Cognito fallback if configured, else still shown so admin can enable SSO). */
+    showCompanyPortalSsoButton = false;
+
+    tenantSubdomain: string | null = null;
+    companySsoPublic: Record<string, unknown> | null = null;
+    loadingSsoConfig = false;
+    enterpriseSsoButtonLabel = 'Company SSO';
+
+    /** Consumer Google button (hidden on company tenant hosts). */
+    showGoogleOAuthButton = false;
+
     /** Blocking modal when role is not configured */
     showAlert = false;
     alertMessage = '';
@@ -36,12 +49,160 @@ export class LoginComponent implements OnInit {
     ) { }
 
   ngOnInit(): void {
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    const onCompanyTenant = isCompanyTenantLoginHost(host);
+    this.tenantSubdomain = getTenantSubdomainFromHostname(host);
+    this.showGoogleOAuthButton = this.googleEnabled && !onCompanyTenant;
+
+    if (onCompanyTenant && this.tenantSubdomain) {
+      this.loadingSsoConfig = true;
+      this.authenticationService.getCompanySsoPublicConfig(this.tenantSubdomain).subscribe({
+        next: (cfg) => {
+          this.companySsoPublic = cfg;
+          this.applyTenantSsoUi();
+          this.loadingSsoConfig = false;
+          const rec = cfg as Record<string, unknown>;
+          const auto = !!jsonProp<boolean>(rec, 'AutoRedirectEnabled', 'autoRedirectEnabled');
+          const enabled = !!jsonProp<boolean>(rec, 'SsoEnabled', 'ssoEnabled');
+          if (enabled && auto) {
+            setTimeout(() => this.continueWithEnterpriseSso(), 0);
+          }
+        },
+        error: () => {
+          this.companySsoPublic = null;
+          this.applyTenantSsoUi();
+          this.loadingSsoConfig = false;
+        }
+      });
+    } else {
+      this.applyTenantSsoUi();
+    }
+
     const returnUrl = (this.route.snapshot.queryParams['returnUrl'] ?? this.route.snapshot.queryParams['redirect'] ?? '').toString().trim();
     if (returnUrl && typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem('returnUrl', returnUrl);
       } catch (_) {}
     }
+  }
+
+  tenantInfoTitle: string | null = null;
+  tenantInfoSubtitle: string | null = null;
+  tenantPrimaryColor: string | null = null;
+  tenantLoginBackgroundUrl: string | null = null;
+
+  /** When true, company tenant login hides email/password (SSO-only). */
+  hideLocalCredentials = false;
+
+  private readonly cognitoFallbackConfigured = !!(
+    environment.cognitoHostedUiDomain?.trim() &&
+    environment.cognitoClientId?.trim()
+  );
+
+  private applyTenantSsoUi(): void {
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    const onCompanyTenant = isCompanyTenantLoginHost(host);
+    const p = this.companySsoPublic as Record<string, unknown> | null;
+    const apiEnabled = !!jsonProp<boolean>(p, 'SsoEnabled', 'ssoEnabled');
+    /** Only offer SSO when we loaded tenant config and either OIDC is on or Cognito fallback exists. Otherwise password login is the path. */
+    this.showCompanyPortalSsoButton =
+      onCompanyTenant &&
+      !!this.tenantSubdomain &&
+      p != null &&
+      (apiEnabled || this.cognitoFallbackConfigured);
+    const pt = Number(jsonProp<number>(p, 'ProviderType', 'providerType') ?? 0);
+    const restrict = !!jsonProp<boolean>(p, 'RestrictLoginToSsoOnly', 'restrictLoginToSsoOnly');
+    this.hideLocalCredentials = onCompanyTenant && apiEnabled && restrict;
+    if (apiEnabled) {
+      if (pt === 1) {
+        this.enterpriseSsoButtonLabel = 'Sign in with Microsoft';
+      } else if (pt === 2) {
+        this.enterpriseSsoButtonLabel = 'Sign in with Google';
+      } else if (pt === 3) {
+        this.enterpriseSsoButtonLabel = 'Sign in with Okta';
+      } else if (pt === 4) {
+        this.enterpriseSsoButtonLabel = 'Sign in with Auth0';
+      } else if (pt === 5) {
+        this.enterpriseSsoButtonLabel = 'Sign in with OneLogin';
+      } else if (pt === 7) {
+        this.enterpriseSsoButtonLabel = 'Sign in with SSO';
+      } else {
+        this.enterpriseSsoButtonLabel = 'Company SSO';
+      }
+    } else if (this.cognitoFallbackConfigured) {
+      this.enterpriseSsoButtonLabel = 'Company SSO';
+    } else {
+      this.enterpriseSsoButtonLabel = 'Sign in with SSO';
+    }
+    const welcome = jsonProp<string>(p, 'WelcomeMessage', 'welcomeMessage')?.trim();
+    const portalName = jsonProp<string>(p, 'PortalDisplayName', 'portalDisplayName')?.trim();
+    if (portalName || welcome) {
+      this.tenantInfoTitle = portalName || welcome || null;
+      this.tenantInfoSubtitle = portalName && welcome && welcome !== portalName ? welcome : null;
+    } else {
+      this.tenantInfoTitle = null;
+      this.tenantInfoSubtitle = null;
+    }
+    const logo = jsonProp<string>(p, 'LogoUrl', 'logoUrl');
+    if (logo) {
+      this.logoUrl = logo;
+    }
+    const color = jsonProp<string>(p, 'PrimaryColorHex', 'primaryColorHex');
+    this.tenantPrimaryColor = color && /^#[0-9A-Fa-f]{3,8}$/.test(color) ? color : null;
+    const bg = jsonProp<string>(p, 'LoginBackgroundUrl', 'loginBackgroundUrl');
+    this.tenantLoginBackgroundUrl = bg || null;
+  }
+
+  /** Single entry for the company-portal SSO row (replaces a separate Google OAuth affordance on tenant hosts). */
+  continueCompanyPortalSignIn(): void {
+    const p = this.companySsoPublic as Record<string, unknown> | null;
+    const apiEnabled = !!jsonProp<boolean>(p, 'SsoEnabled', 'ssoEnabled');
+    if (apiEnabled) {
+      this.continueWithEnterpriseSso();
+      return;
+    }
+    if (this.cognitoFallbackConfigured) {
+      this.continueWithCompanySso();
+      return;
+    }
+    this.continueWithEnterpriseSso();
+  }
+
+  continueWithEnterpriseSso(): void {
+    if (!this.tenantSubdomain) {
+      return;
+    }
+    const redirectUri = `${window.location.origin}/sso-callback`.replace(/\/+$/, '');
+    const redirect = (this.route.snapshot.queryParams['redirect'] ?? this.route.snapshot.queryParams['returnUrl'] ?? '').toString().trim();
+    try {
+      sessionStorage.setItem('companySsoSubdomain', this.tenantSubdomain);
+      if (redirect) {
+        sessionStorage.setItem('companySsoReturnState', redirect);
+      } else {
+        sessionStorage.removeItem('companySsoReturnState');
+      }
+    } catch (_) {}
+    this.authenticationService
+      .initCompanySsoLogin({
+        subdomain: this.tenantSubdomain,
+        redirectUri,
+        state: redirect || undefined
+      })
+      .subscribe({
+        next: (r) => {
+          const rec = r as Record<string, unknown>;
+          const url = jsonProp<string>(rec, 'AuthorizeUrl', 'authorizeUrl');
+          if (url) {
+            window.location.href = url;
+          } else {
+            alert('Could not start company sign-in.');
+          }
+        },
+        error: (err) => {
+          const msg = err?.error?.messages?.[0] ?? err?.message ?? 'Could not start company sign-in.';
+          alert(msg);
+        }
+      });
   }
 
   /**
@@ -65,7 +226,42 @@ export class LoginComponent implements OnInit {
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
 
+  /**
+   * Cognito Hosted UI (SAML/OIDC company IdP). Redirect URI must be registered for this origin (including *.localhost in dev).
+   * Optional env `cognitoCompanyIdentityProvider` skips the Hosted UI picker and sends users straight to that IdP.
+   */
+  continueWithCompanySso(): void {
+    if (!this.cognitoFallbackConfigured) {
+      alert('Company sign-in is not configured for this environment. Use your work email and password, or contact your administrator.');
+      return;
+    }
+    let base = environment.cognitoHostedUiDomain!.trim().replace(/\/+$/, '');
+    if (!base.toLowerCase().startsWith('https://')) {
+      base = 'https://' + base;
+    }
+    const authorizeUrl = `${base}/oauth2/authorize`;
+    const redirectUri = (environment.cognitoRedirectUri || '').trim() || `${window.location.origin}/callback`;
+    const redirect = (this.route.snapshot.queryParams['redirect'] ?? this.route.snapshot.queryParams['returnUrl'] ?? '').toString().trim();
+    const params = new URLSearchParams({
+      client_id: environment.cognitoClientId!.trim(),
+      response_type: 'code',
+      scope: 'openid email profile',
+      redirect_uri: redirectUri
+    });
+    const idp = (environment as unknown as Record<string, string | undefined>).cognitoCompanyIdentityProvider?.trim();
+    if (idp) {
+      params.set('identity_provider', idp);
+    }
+    if (redirect) {
+      params.set('state', redirect);
+    }
+    window.location.href = `${authorizeUrl}?${params.toString()}`;
+  }
+
   async loginWithCognito() {
+      if (this.hideLocalCredentials) {
+        return;
+      }
       // debugger
       try {
         // var user = await Auth.signIn(this.email.toString(), this.password.toString());
