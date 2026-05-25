@@ -28,6 +28,7 @@ import { CheckoutGuard } from '../../core/guards/checkout.guard';
 import { RedirectCoursesToSlugComponent } from './public-course/redirect-courses-to-slug/redirect-courses-to-slug.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { PaymentSuccessComponent } from './payment-success/payment-success.component';
+import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirect-to-elearn.component';
 
 const routes: Routes = [
   { 
@@ -325,6 +326,11 @@ const routes: Routes = [
   {
     path: 'payment/success',
     component: PaymentSuccessComponent
+  },
+  // OAuth / auth callbacks must not hit slug-resolver (see also isElearnSpaRootPath on unified SSR)
+  {
+    path: 'sso-callback',
+    component: RedirectToElearnComponent
   },
   // ✅ Universal slug: domain/{slug} → course | blog | event (resolved by GET /api/slug-resolver/{slug})
   {

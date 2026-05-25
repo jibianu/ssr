@@ -83,6 +83,20 @@
   color: #FF5722;
 }
 
+.common-sidebar__account {
+  flex-shrink: 0;
+  border-top: 1px solid #e9ecef;
+  padding: 8px 0;
+}
+
+.common-sidebar__link--button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+}
+
 .common-sidebar__footer {
   padding: 15px;
   border-top: 1px solid #e9ecef;

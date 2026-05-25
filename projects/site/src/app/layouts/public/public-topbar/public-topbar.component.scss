@@ -59,7 +59,7 @@ header#theme-header.theme-header.inner-header.course-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
   padding-block: clamp(1rem, 3vw, 1.35rem);
   flex-wrap: nowrap;
   width: 100%;
@@ -80,16 +80,17 @@ header#theme-header.theme-header.inner-header.course-page-header {
 
 .topbar-search {
   position: relative;
-  flex: 1;
-  max-width: 420px;
-  min-width: 0;
-  margin-left: 1.25rem;
-  margin-right: 2.25rem;
+  flex: 0 1 auto;
+  width: min(100%, 360px);
+  max-width: 360px;
+  min-width: 200px;
+  margin-left: 1rem;
+  margin-right: 1.5rem;
 }
 
 .topbar-search__icon {
   position: absolute;
-  left: 1rem;
+  left: 0.875rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -98,71 +99,85 @@ header#theme-header.theme-header.inner-header.course-page-header {
   pointer-events: none;
   color: #9ca3af;
   z-index: 1;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
 }
 
 .topbar-search__input {
   width: 100%;
-  padding: 0.6rem 1rem 0.6rem 2.75rem;
+  height: 36px;
+  padding: 0 0.875rem 0 2.375rem;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 0.9375rem;
-  color: #111827;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  line-height: 1;
+  color: #1f2937;
   background: #f9fafb;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
 
   &::placeholder {
     color: #9ca3af;
+    font-weight: 400;
   }
 
   &:hover {
-    background: #fff;
+    background: #f3f4f6;
     border-color: #d1d5db;
   }
 
   &:focus {
     outline: none;
     background: #fff;
-    border-color: #ea580c;
-    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+    border-color: #cbd5e1;
   }
 }
 
 .topbar-search__dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 5px);
   left: 0;
   right: 0;
-  max-height: 320px;
+  min-width: 220px;
+  max-height: 280px;
   overflow-y: auto;
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.04);
   z-index: 1000;
+  padding: 0.25rem;
 }
 
 .topbar-search__loading {
-  padding: 0.75rem 1rem;
-  color: #6b7280;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  color: #64748b;
+  font-size: 0.8125rem;
 }
 
 .topbar-search__item {
   display: block;
   width: 100%;
-  padding: 0.625rem 1rem;
+  padding: 0.5rem 0.75rem;
   text-align: left;
   border: none;
   background: none;
-  font-size: 0.9375rem;
-  color: #1f2937;
+  font-size: 0.8125rem;
+  color: #1e293b;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.12s ease, color 0.12s ease;
 
   &:hover,
   &:focus {
-    background: #f3f4f6;
+    background: #fff7ed;
+    color: #c2410c;
     outline: none;
   }
 }
@@ -172,10 +187,11 @@ header#theme-header.theme-header.inner-header.course-page-header {
     display: flex !important;
     align-items: center;
     gap: 1.5rem;
-    flex: 1;
+    flex: 0 0 auto;
     justify-content: flex-end;
     min-width: 0;
-    padding-left: 0.5rem;
+    margin-left: 0;
+    padding-left: 0;
     overflow: visible;
     position: relative;
   }
@@ -187,7 +203,7 @@ header#theme-header.theme-header.inner-header.course-page-header {
 
 .nav-menu {
   display: flex;
-  --nav-gap: clamp(1.25rem, 3vw, 2rem);
+  --nav-gap: clamp(1.25rem, 2vw, 2rem);
   gap: var(--nav-gap);
   margin: 0;
   padding: 0;
@@ -200,8 +216,9 @@ header#theme-header.theme-header.inner-header.course-page-header {
 .menu-actions {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
-  padding-left: 0;
+  gap: 0.75rem;
+  padding-left: clamp(1rem, 1.5vw, 1.5rem);
+  margin-left: clamp(0.5rem, 1vw, 1rem);
   border-left: none;
 }
 
@@ -414,8 +431,19 @@ header#theme-header.theme-header.inner-header.course-page-header {
   }
 
   .topbar-search__input {
-    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    height: 40px;
+    padding: 0 0.875rem 0 2.5rem;
     font-size: 16px; // avoids zoom on focus on iOS
+    border-radius: 10px;
+  }
+
+  .topbar-search__icon {
+    left: 0.875rem;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   .topbar-search__dropdown {
@@ -875,7 +903,7 @@ header#theme-header.theme-header.inner-header.course-page-header {
 // Responsive Breakpoints for Desktop
 @media (max-width: 1200px) {
   .nav-menu {
-    gap: clamp(0.75rem, 2vw, 1.25rem);
+    --nav-gap: clamp(1rem, 1.5vw, 1.5rem);
   }
 
   .btn-login,

@@ -31,6 +31,7 @@ export function isElearnSpaRootPath(requestPath: string): boolean {
   const roots = new Set([
     '/login',
     '/register',
+    '/sso-callback',
     '/callback',
     '/google-callback',
     '/forget-password',

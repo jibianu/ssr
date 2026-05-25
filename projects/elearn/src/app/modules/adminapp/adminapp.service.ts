@@ -27,6 +27,11 @@ export class AdminAppService {
         return this.http.get<any>(this.apiUrl + `api/company/courses`, { params: params as any });
     }
 
+    /** Public marketplace catalog (no auth). Used on company Explore for marketplace section. */
+    getPublicCourses(params: Record<string, string | number>): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/public/courses`, { params: params as any });
+    }
+
     publishCompanyCourse(courseId: string): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}api/company/courses/${courseId}/publish`, {});
     }

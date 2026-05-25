@@ -25,6 +25,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   isEmbedMode = false;
   /** When true, URL is /:courseId (e.g. /123) → Elearn layout; hide public header/footer. */
   isElearnCoursePage = false;
+  isCorporateTrainingPage = false;
   private subs = new Subscription();
 
   constructor(
@@ -51,6 +52,9 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     this.isAuthRoute = this.router.url.startsWith('/auth');
     this.isEmbedMode = this.router.url.includes('embed=1');
     this.isElearnCoursePage = this.isCourseIdParam(this.router.routerState.snapshot.root);
+    this.isCorporateTrainingPage =
+      this.router.url.includes('/corporate-training') ||
+      this.router.url.endsWith('/corporate-training');
     this.cdr.markForCheck();
   }
 

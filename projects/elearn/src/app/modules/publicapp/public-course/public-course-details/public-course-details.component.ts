@@ -23,6 +23,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
   courseUrl: string;
   locationUrl: string;
   courseDetails;
+  private pendingAffiliateRef: string | null = null;
   Editor;
   image = '';
   isBrowser = false;
@@ -66,9 +67,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
     this.activatedRoute.queryParams.subscribe(params => {
       const ref = params['ref'];
       if (ref && typeof ref === 'string' && ref.trim()) {
-        const code = ref.trim();
-        this.setAffiliateRef(code);
-        this.trackAffiliateClick(code);
+        this.pendingAffiliateRef = ref.trim();
       }
     });
     this.activatedRoute.params.subscribe(params => {
@@ -102,8 +101,25 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
   }
 
   private trackAffiliateClick(code: string): void {
+    const slug = (this.courseDetails?.canonicalUrl || this.courseUrl || '').toString().trim();
+    const courseId = this.courseDetails?.id ? String(this.courseDetails.id) : undefined;
     this.subscription.add(
-      this.affiliateService.trackClick(code).subscribe({ next: () => {}, error: () => {} })
+      this.affiliateService.trackClick(code, slug || undefined, courseId).subscribe({
+        next: (res) => {
+          if (res?.tracked) {
+            this.setAffiliateRef(code);
+            if (courseId) {
+              try {
+                localStorage.setItem('affiliate_ref_course', courseId);
+                const expires = new Date();
+                expires.setDate(expires.getDate() + AFFILIATE_REF_DAYS);
+                localStorage.setItem('affiliate_ref_course_exp', expires.toISOString());
+              } catch (_) {}
+            }
+          }
+        },
+        error: () => {},
+      })
     );
   }
 
@@ -139,14 +155,10 @@ export class PublicCourseDetailsComponent implements OnInit, OnDestroy {
     this.courseDetails = res;
     this.categoryName = (this.courseDetails?.category) ? this.courseDetails.category.name : '';
     this.courseId = this.courseDetails.id;
-    const ref = this.activatedRoute.snapshot.queryParams['ref'];
-    if (ref && this.courseDetails?.id) {
-      try {
-        localStorage.setItem('affiliate_ref_course', this.courseDetails.id);
-        const expires = new Date();
-        expires.setDate(expires.getDate() + AFFILIATE_REF_DAYS);
-        localStorage.setItem('affiliate_ref_course_exp', expires.toISOString());
-      } catch (_) {}
+    const ref = this.pendingAffiliateRef || this.activatedRoute.snapshot.queryParams['ref'];
+    if (ref && typeof ref === 'string' && ref.trim()) {
+      this.trackAffiliateClick(ref.trim());
+      this.pendingAffiliateRef = null;
     }
     this.image = this.courseDetails.titleImageUrl;
     const slug = this.courseDetails.canonicalUrl || this.courseUrl;

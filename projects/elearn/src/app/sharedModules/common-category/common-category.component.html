@@ -74,5 +74,19 @@
       <ng-container *ngTemplateOutlet="categoryRow; context: { block: block, mode: 'legacy' }"></ng-container>
     </ng-container>
   </ng-container>
+
+  <p class="explore-loading" *ngIf="exploreLoading">Loading courses…</p>
+
+  <p
+    class="explore-empty"
+    *ngIf="
+      !exploreLoading &&
+      !categoriesWithCourses?.length &&
+      !tenantCategoriesWithCourses?.length &&
+      !marketplaceCategoriesWithCourses?.length
+    "
+  >
+    No courses are available to explore yet. Publish company courses or add marketplace listings, then refresh this page.
+  </p>
 </div>
 </div>

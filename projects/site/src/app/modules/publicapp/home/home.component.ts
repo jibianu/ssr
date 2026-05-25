@@ -290,7 +290,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       schedule: 'Sat, 10 AM IST',
       discount: 'Save ₹1,200',
       originalPrice: '₹1,999.00',
-      ctaLabel: 'Register'
+      ctaLabel: 'Check back soon'
     },
     {
       url: '',
@@ -306,7 +306,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       schedule: 'Sun, 3 PM IST',
       discount: 'Save ₹1,500',
       originalPrice: '₹2,399.00',
-      ctaLabel: 'Register'
+      ctaLabel: 'Check back soon'
     },
     {
       url: '',
@@ -322,7 +322,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       schedule: 'Fri, 6 PM IST',
       discount: 'Save ₹900',
       originalPrice: '₹1,699.00',
-      ctaLabel: 'Register'
+      ctaLabel: 'Check back soon'
     },
     {
       url: '',
@@ -338,7 +338,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       schedule: 'Wed, 7 PM IST',
       discount: 'Save ₹1,300',
       originalPrice: '₹2,199.00',
-      ctaLabel: 'Register'
+      ctaLabel: 'Check back soon'
     }
   ];
 

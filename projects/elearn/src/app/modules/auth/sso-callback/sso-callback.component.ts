@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService, getLandingRoute } from '../auth.service';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
+import { tryRedirectToCompanyPortalAfterLogin } from 'src/app/core/helpers/company-portal-redirect.helper';
 
 @Component({
   selector: 'app-sso-callback',
@@ -108,6 +109,9 @@ export class SsoCallbackComponent implements OnInit {
                   } else {
                     this.router.navigateByUrl(stateRedirect);
                   }
+                  return;
+                }
+                if (tryRedirectToCompanyPortalAfterLogin(pl, this.authService.currentUser(), stateRedirect)) {
                   return;
                 }
                 const route = getLandingRoute(pl);

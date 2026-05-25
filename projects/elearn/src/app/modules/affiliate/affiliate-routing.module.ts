@@ -8,6 +8,7 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 const routes: Routes = [
   { path: 'register', component: AffiliateRegisterComponent },
   { path: 'onboarding', component: AffiliateOnboardingComponent, canActivate: [AuthGuard] },
+  { path: 'profile', component: AffiliateOnboardingComponent, canActivate: [AuthGuard] },
   { path: 'dashboard', component: AffiliateDashboardComponent, canActivate: [AuthGuard] },
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' }
 ];

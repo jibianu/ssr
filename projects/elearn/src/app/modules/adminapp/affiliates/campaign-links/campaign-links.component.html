@@ -1,0 +1,145 @@
+<div class="impact-admin-affiliates">
+  <header class="impact-admin__header">
+    <h1 class="impact-admin__title">Campaign links</h1>
+    <p class="impact-admin__subtitle">Create admin-approved affiliate links. Only these URLs track clicks, referrals, and commissions.</p>
+    <a routerLink="/app/admin/affiliates" class="impact-link-back">← Back to affiliates</a>
+  </header>
+
+  <div class="impact-admin__summary">
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ links.length }}</span>
+        <span class="stat-label">Active campaigns</span>
+      </div>
+    </div>
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ totalClicks }}</span>
+        <span class="stat-label">Total clicks</span>
+      </div>
+    </div>
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ totalInvalid }}</span>
+        <span class="stat-label">Invalid attempts</span>
+      </div>
+    </div>
+    <div class="impact-card impact-card--stat">
+      <div class="impact-card__body">
+        <span class="stat-value">{{ totalEarnings | number:'1.2-2' }}</span>
+        <span class="stat-label">Earnings</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="impact-admin__toolbar">
+    <div class="impact-admin__filters">
+      <label class="impact-label">Affiliate</label>
+      <select class="impact-select" [(ngModel)]="filterAffiliateId" (ngModelChange)="loadLinks()">
+        <option value="">All approved</option>
+        <option *ngFor="let a of approvedAffiliates" [value]="a.id">{{ a.name }} ({{ a.email }})</option>
+      </select>
+    </div>
+    <button type="button" class="impact-btn impact-btn--primary" (click)="openForm()">Generate link</button>
+    <button type="button" class="impact-btn" (click)="load()" [disabled]="loading">Refresh</button>
+  </div>
+
+  <div class="impact-card impact-card--form" *ngIf="showForm">
+    <div class="impact-card__body">
+      <h3 class="form-title">New campaign link</h3>
+      <div class="form-grid">
+        <div>
+          <label class="impact-label">Affiliate</label>
+          <select class="impact-select impact-select--full" [(ngModel)]="formAffiliateId">
+            <option value="">Select affiliate</option>
+            <option *ngFor="let a of approvedAffiliates" [value]="a.id">{{ a.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="impact-label">Course</label>
+          <select class="impact-select impact-select--full" [(ngModel)]="formCourseId">
+            <option value="">Select course</option>
+            <option *ngFor="let c of courses" [value]="c.id">{{ c.title }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="impact-label">Commission %</label>
+          <input type="number" class="impact-input" [(ngModel)]="formCommission" min="0" max="100" />
+        </div>
+        <div>
+          <label class="impact-label">Expiry (optional)</label>
+          <input type="datetime-local" class="impact-input" [(ngModel)]="formExpiresAt" />
+        </div>
+        <div class="form-grid--full">
+          <label class="impact-label">Label</label>
+          <input type="text" class="impact-input" [(ngModel)]="formLabel" placeholder="e.g. Q2 piping promo" />
+        </div>
+        <div>
+          <label class="impact-check">
+            <input type="checkbox" [(ngModel)]="formIsActive" /> Active
+          </label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="impact-btn impact-btn--primary" (click)="createLink()" [disabled]="saving">
+          {{ saving ? 'Creating…' : 'Create link' }}
+        </button>
+        <button type="button" class="impact-btn" (click)="showForm = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="impact-admin__loading" *ngIf="loading">Loading campaign links…</div>
+
+  <div class="impact-card impact-card--table" *ngIf="!loading">
+    <div class="impact-card__body">
+      <div class="table-wrap">
+        <table class="impact-table">
+          <thead>
+            <tr>
+              <th>Affiliate</th>
+              <th>Course</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Clicks</th>
+              <th>Sales</th>
+              <th>Invalid</th>
+              <th>Conv %</th>
+              <th>Earnings</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let link of links">
+              <td>{{ link.affiliateName || '—' }}</td>
+              <td>{{ link.courseTitle || '—' }}</td>
+              <td><code>{{ link.trackingCode }}</code></td>
+              <td>
+                <span class="impact-badge" [class.impact-badge--success]="link.isActive" [class.impact-badge--secondary]="!link.isActive">
+                  {{ link.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>{{ link.totalClicks }}</td>
+              <td>{{ link.totalSales }}</td>
+              <td>{{ link.invalidReferralAttempts }}</td>
+              <td>{{ link.conversionPercent | number:'1.1-1' }}%</td>
+              <td>{{ link.totalCommission | number:'1.2-2' }}</td>
+              <td>{{ link.expiresAt ? (link.expiresAt | date:'short') : '—' }}</td>
+              <td class="actions-cell">
+                <button type="button" class="impact-btn impact-btn--sm" (click)="copyLink(link.affiliateUrl)" title="Copy link">Copy</button>
+                <button type="button" class="impact-btn impact-btn--sm" (click)="toggleStatus(link)">
+                  {{ link.isActive ? 'Disable' : 'Enable' }}
+                </button>
+                <button type="button" class="impact-btn impact-btn--sm impact-btn--danger" (click)="deleteLink(link)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="links.length === 0">
+              <td colspan="11" class="empty-row">No campaign links yet. Click “Generate link” to create one.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

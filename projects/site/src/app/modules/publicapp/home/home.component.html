@@ -161,17 +161,15 @@
             <div class="home-card__copy" [innerHTML]="event.description | fixMojibakeSafeHtml"></div>
           </div>
           <footer class="home-card__footer">
-            @if (event.url) {
+            @if (event.url && event.ctaLabel !== 'Check back soon') {
               <a [routerLink]="event.url" class="home-card__cta">
                 <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                 <span class="home-card__cta-label">{{ event.ctaLabel || 'Register Now' }}</span>
                 <span class="home-card__cta-price">{{ event.price }}</span>
               </a>
             } @else {
-              <span class="home-card__cta is-disabled">
-                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                <span class="home-card__cta-label">{{ event.ctaLabel || 'Register Now' }}</span>
-                <span class="home-card__cta-price">{{ event.price }}</span>
+              <span class="home-card__cta is-disabled" aria-disabled="true">
+                <span class="home-card__cta-label">{{ event.ctaLabel || 'Check back soon' }}</span>
               </span>
             }
           </footer>

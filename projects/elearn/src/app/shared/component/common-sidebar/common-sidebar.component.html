@@ -15,6 +15,16 @@
       </a>
     </li>
   </ul>
+  <div class="common-sidebar__account" *ngIf="showSidebarAccountActions">
+    <a class="common-sidebar__link" [routerLink]="profileLink" routerLinkActive="active">
+      <i class="common-sidebar__icon fa fa-user-circle"></i>
+      <span class="common-sidebar__text">Profile</span>
+    </a>
+    <button type="button" class="common-sidebar__link common-sidebar__link--button" (click)="logout()">
+      <i class="common-sidebar__icon fa fa-sign-out"></i>
+      <span class="common-sidebar__text">Sign out</span>
+    </button>
+  </div>
   <div class="common-sidebar__footer">
     <div class="common-sidebar__user">
       <div class="common-sidebar__avatar">

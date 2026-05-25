@@ -7,6 +7,10 @@
   overflow: visible;
 }
 
+:host:has(.public-main-wrapper--white) {
+  background-color: #ffffff;
+}
+
 app-public-topbar,
 app-public-footer {
   flex-shrink: 0;
@@ -45,6 +49,10 @@ app-public-footer {
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), #ffffff 55%);
   overflow-x: clip;
   position: relative;
+
+  &--white {
+    background: #ffffff;
+  }
 }
 
 /* Logged-in student on course page: make room for Elearn sidebar (72px) */

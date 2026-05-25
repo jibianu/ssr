@@ -95,10 +95,12 @@ export class CategoryCoursesComponent implements OnInit, OnDestroy {
     if (this.role == Role.Company || this.role == Role.Student) {
       obj['Filter.IsProgressInfo'] = true;
     }
+    const onCompanyPortal =
+      this.authService.getRoleId() === Role.Company ||
+      (typeof window !== 'undefined' && isCompanyTenantLoginHost(window.location.hostname));
     const orgOnly =
       this.activateRoute.snapshot.queryParamMap.get('org') === '1' &&
-      typeof window !== 'undefined' &&
-      isCompanyTenantLoginHost(window.location.hostname) &&
+      onCompanyPortal &&
       !!this.authService.currentToken();
     if (orgOnly) {
       obj['Filter.ExploreCatalogFilter'] = EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY;

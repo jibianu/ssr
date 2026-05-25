@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationService, getLandingRoute } from '../auth.service';
+import { tryRedirectToCompanyPortalAfterLogin } from 'src/app/core/helpers/company-portal-redirect.helper';
 import { environment } from 'src/environments/environment';
 
 /**
@@ -53,6 +54,9 @@ export class AuthCallbackComponent implements OnInit {
                   if (!res.isValidUser) {
                     this.error = 'User role is not configured. Please contact administrator.';
                     this.loading = false;
+                    return;
+                  }
+                  if (tryRedirectToCompanyPortalAfterLogin(res, this.authService.currentUser())) {
                     return;
                   }
                   const route = getLandingRoute(res);

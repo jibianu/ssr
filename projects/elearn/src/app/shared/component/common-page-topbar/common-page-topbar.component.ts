@@ -414,8 +414,7 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   onAffiliateAllowCoursesClick(): void {
-    // Navigate to dedicated admin page
-    this.router.navigate(['/app/admin/affiliates/allow-courses']);
+    this.sharedService.affiliateAllowCoursesClick$.next();
   }
 
   onBlogReviewApproveClick(): void {

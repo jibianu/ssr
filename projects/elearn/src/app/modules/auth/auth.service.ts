@@ -334,10 +334,16 @@ export class AuthenticationService {
         return this.http.get(this.apiUrl + `api/account/getinfo`).pipe(map((user: any) => {
             if (user) {
                 // API may return PascalCase (ProfilePictureUrl); normalize so app can use profilePictureUrl
-                const normalized = { ...user, profilePictureUrl: user.profilePictureUrl ?? user.ProfilePictureUrl };
+                const normalized = {
+                    ...user,
+                    profilePictureUrl: user.profilePictureUrl ?? user.ProfilePictureUrl,
+                    roleId: user.roleId ?? user.RoleId,
+                    companyId: user.companyId ?? user.CompanyId,
+                    companyPortalSubdomain: user.companyPortalSubdomain ?? user.CompanyPortalSubdomain
+                };
                 this.user = normalized;
                 this.cookieService.setCookie('currentUser', JSON.stringify(normalized), 1);
-                const roleId = (user as { roleId?: number }).roleId;
+                const roleId = normalized.roleId;
                 if (roleId != null) {
                     this.roleIdSubject.next(roleId);
                 }

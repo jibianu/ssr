@@ -2,15 +2,24 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'src/app/modules/auth/auth.service';
 import { isCompanyTenantLoginHost } from 'src/app/core/company-portal-host.util';
+import { Role } from 'src/app/shared/models/role';
 
 /**
  * Tenant company admin id for the current user (cookie or getinfo), or null.
+ * Company admins: tenant id is their user id (matches backend ResolveViewerTenantCompanyIdAsync).
  */
 export function resolveViewerTenantCompanyId$(auth: AuthenticationService): Observable<string | null> {
   const u = auth.currentUser();
   const fromCookie = u?.companyId ?? u?.CompanyId;
   if (fromCookie != null && String(fromCookie).trim() !== '') {
     return of(String(fromCookie));
+  }
+  const roleId = auth.getRoleId() ?? u?.roleId ?? u?.RoleId;
+  if (roleId === Role.Company) {
+    const selfId = u?.id ?? u?.Id ?? u?.userId ?? u?.UserId;
+    if (selfId != null && String(selfId).trim() !== '') {
+      return of(String(selfId));
+    }
   }
   if (typeof window === 'undefined' || !isCompanyTenantLoginHost(window.location.hostname)) {
     return of(null);
@@ -21,7 +30,15 @@ export function resolveViewerTenantCompanyId$(auth: AuthenticationService): Obse
   return auth.getUserInfo().pipe(
     map((user: any) => {
       const cid = user?.companyId ?? user?.CompanyId;
-      return cid != null && String(cid).trim() !== '' ? String(cid) : null;
+      if (cid != null && String(cid).trim() !== '') {
+        return String(cid);
+      }
+      const r = user?.roleId ?? user?.RoleId;
+      if (r === Role.Company) {
+        const uid = user?.id ?? user?.Id ?? user?.userId ?? user?.UserId;
+        return uid != null && String(uid).trim() !== '' ? String(uid) : null;
+      }
+      return null;
     }),
     catchError(() => of(null))
   );

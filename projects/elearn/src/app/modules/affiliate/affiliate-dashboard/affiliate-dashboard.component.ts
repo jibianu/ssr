@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AffiliateService, AffiliateDashboardResponse, AffiliateProfileResponse, AffiliateGenerateLinkResponse, AffiliateSnapshotResponse } from '../affiliate.service';
+import { AuthenticationService } from '../../auth/auth.service';
 import { SharedService } from '../../../shared/service/shared-service.service';
 import { ToasterService } from '../../../shared/component/toaster/toaster.service';
 import { first } from 'rxjs/operators';
@@ -13,6 +14,11 @@ import { environment } from '../../../../environments/environment';
   standalone: false
 })
 export class AffiliateDashboardComponent implements OnInit, OnDestroy {
+  supportPhone = '';
+  supportEmail = '';
+  supportWhatsAppUrl = '';
+  supportLoading = true;
+
   dashboard: AffiliateDashboardResponse | null = null;
   loading = true;
   copySuccess = false;
@@ -23,8 +29,13 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
   completeSuccess = false;
   /** Course-specific link: list of courses for dropdown */
   coursesForLinks: { id: string; title: string }[] = [];
+  /** Portal pages (e.g. corporate-training) for link dropdown */
+  pagesForLinks: { pageKey: string; title: string; pathSlug: string }[] = [];
+  /** '' = general; course GUID; page:{pageKey} */
+  selectedPromo = 'page:corporate-training';
+  private readonly defaultPromoPageKey = 'corporate-training';
+  private defaultPromoInitialized = false;
   loadingCourses = false;
-  selectedCourseId = '';
   courseLink = '';
   loadingCourseLink = false;
   copyCourseLinkSuccess = false;
@@ -46,7 +57,8 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     private affiliateService: AffiliateService,
     private sharedService: SharedService,
     private router: Router,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private authService: AuthenticationService
   ) {}
 
   private errorMessage(err: any, fallback: string): string {
@@ -81,11 +93,69 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  private extractRefFromLink(link: string | null | undefined): string {
+    if (!link) return '';
+    try {
+      return new URL(link).searchParams.get('ref')?.trim() ?? '';
+    } catch {
+      const match = /[?&]ref=([^&]+)/.exec(link);
+      return match ? decodeURIComponent(match[1]).trim() : '';
+    }
+  }
+
+  private getAffiliateRefCode(): string {
+    const code = this.dashboard?.affiliateCode?.trim();
+    if (code) return code;
+    return this.extractRefFromLink(this.dashboard?.referralLink);
+  }
+
+  /** Client-side portal page URL (matches API generate-page-link shape). */
+  private buildPortalPageLink(pageKey: string): string {
+    const page = this.pagesForLinks.find((p) => p.pageKey === pageKey);
+    const slug =
+      page?.pathSlug ??
+      (pageKey === this.defaultPromoPageKey ? 'corporate-training' : pageKey);
+    const ref = this.getAffiliateRefCode();
+    if (!ref) return '';
+    return this.normalizeLink(`/${slug}?ref=${encodeURIComponent(ref)}`);
+  }
+
+  private applyDefaultPromoSelection(): void {
+    if (this.defaultPromoInitialized) return;
+    const page = this.pagesForLinks.find((p) => p.pageKey === this.defaultPromoPageKey);
+    if (!page) {
+      if (this.selectedPromo === `page:${this.defaultPromoPageKey}`) {
+        this.selectedPromo = '';
+        this.courseLink = '';
+      }
+      return;
+    }
+    this.defaultPromoInitialized = true;
+    this.selectedPromo = `page:${this.defaultPromoPageKey}`;
+    this.onPromoSelect();
+  }
+
   ngOnInit(): void {
     this.sharedService.certificateName.next('Affiliate Dashboard');
     this.loadDashboard();
     this.loadCoursesForLinks();
     this.loadSnapshot();
+    this.loadSupportSettings();
+  }
+
+  loadSupportSettings(): void {
+    this.supportLoading = true;
+    this.affiliateService.getSupportSettings().pipe(first()).subscribe({
+      next: (s) => {
+        this.supportPhone = s.supportPhone ?? '';
+        this.supportEmail = s.supportEmail ?? '';
+        this.supportWhatsAppUrl = s.whatsAppUrl ?? '';
+        this.supportLoading = false;
+      },
+      error: () => {
+        this.supportLoading = false;
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -101,11 +171,14 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
         }
         this.dashboard = data;
         this.loading = false;
+        if (this.pagesForLinks.length) {
+          this.applyDefaultPromoSelection();
+        }
         this.completePhone = data?.phone ?? '';
         this.completeLinkedIn = data?.linkedInProfile ?? '';
         this.completeReason = data?.reason ?? '';
         if (data?.status !== 'None' && data?.profileCompleted === false) {
-          this.router.navigate(['/app/affiliate/onboarding']);
+          this.router.navigate(['/app/affiliate/profile']);
         } else if (data?.status !== 'None') {
           this.loadProfile();
         }
@@ -155,10 +228,12 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
 
   loadCoursesForLinks(): void {
     this.loadingCourses = true;
-    this.affiliateService.getCoursesForLinks().pipe(first()).subscribe({
-      next: (list) => {
-        this.coursesForLinks = list ?? [];
+    this.affiliateService.getPromotableItems().pipe(first()).subscribe({
+      next: (data) => {
+        this.coursesForLinks = data?.courses ?? [];
+        this.pagesForLinks = data?.pages ?? [];
         this.loadingCourses = false;
+        this.applyDefaultPromoSelection();
       },
       error: (err) => {
         this.loadingCourses = false;
@@ -167,12 +242,29 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  onCourseSelect(): void {
+  onPromoSelect(): void {
     this.courseLink = '';
     this.generateLinkResponse = null;
-    if (!this.selectedCourseId?.trim()) return;
+    const sel = (this.selectedPromo || '').trim();
+    if (!sel) return;
+    if (sel.startsWith('page:')) {
+      const pageKey = sel.slice(5);
+      this.loadingCourseLink = true;
+      this.affiliateService.generatePageLink(pageKey).pipe(first()).subscribe({
+        next: (res) => {
+          const raw = res?.affiliateLink ?? '';
+          this.courseLink = this.normalizeLink(raw);
+          this.loadingCourseLink = false;
+        },
+        error: () => {
+          this.loadingCourseLink = false;
+          this.toaster.showError('Could not generate page link. Ensure Corporate Training is allowed for your account.');
+        },
+      });
+      return;
+    }
     this.loadingCourseLink = true;
-    this.affiliateService.getGenerateLink(this.selectedCourseId).pipe(first()).subscribe({
+    this.affiliateService.getGenerateLink(sel).pipe(first()).subscribe({
       next: (res) => {
         this.generateLinkResponse = res;
         const raw = res?.affiliateLink ?? '';
@@ -224,11 +316,20 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     return r != null && r >= 0 ? r : 10;
   }
 
-  /** Selected course title for Create a link context. */
-  get selectedCourseName(): string {
-    if (!this.selectedCourseId) return '';
-    const c = this.coursesForLinks.find((x) => x.id === this.selectedCourseId);
+  /** Selected course or page title for Create a link context. */
+  get selectedPromoName(): string {
+    const sel = (this.selectedPromo || '').trim();
+    if (!sel) return '';
+    if (sel.startsWith('page:')) {
+      const key = sel.slice(5);
+      return this.pagesForLinks.find((x) => x.pageKey === key)?.title ?? '';
+    }
+    const c = this.coursesForLinks.find((x) => x.id === sel);
     return c?.title ?? '';
+  }
+
+  get selectedPromoIsPage(): boolean {
+    return (this.selectedPromo || '').startsWith('page:');
   }
 
   /** Conversion rate (signups / clicks * 100). */
@@ -272,11 +373,40 @@ export class AffiliateDashboardComponent implements OnInit, OnDestroy {
     this.loadSnapshot();
   }
 
-  /** Link to show in Create a link: course-specific or default. */
+  /** Link to show in Create a link: course/page-specific; Corporate Training by default (not home). */
   get displayLink(): string {
     if (this.courseLink) return this.courseLink;
-    if (this.selectedCourseId) return '';
+    const sel = (this.selectedPromo || '').trim();
+    if (sel.startsWith('page:')) {
+      const built = this.buildPortalPageLink(sel.slice(5));
+      if (built) return built;
+    }
+    if (sel) return '';
     return this.dashboard?.referralLink ?? '';
+  }
+
+  signOut(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  openSupport(): void {
+    if (!this.supportPhone) {
+      this.toaster.showError('Support contact is not configured yet.');
+      return;
+    }
+    this.toaster.showSuccess(`Contact support: ${this.supportPhone}`);
+    if (this.supportWhatsAppUrl) {
+      window.open(this.supportWhatsAppUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  openSupportEmail(): void {
+    if (!this.supportEmail) {
+      this.toaster.showError('Support email is not configured yet.');
+      return;
+    }
+    window.location.href = `mailto:${encodeURIComponent(this.supportEmail)}`;
   }
 
   copyDisplayLink(): void {

@@ -88,7 +88,7 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
   ],
   [Role.Affiliate]: [
     { link: `${APP}/affiliate/dashboard`, label: 'Dashboard', icon: 'fa fa-tachometer' },
-    { link: `${APP}/profile`, label: 'Profile', icon: 'fa fa-user-circle' },
+    { link: `${APP}/affiliate/profile`, label: 'Profile', icon: 'fa fa-user-circle' },
   ],
 };
 

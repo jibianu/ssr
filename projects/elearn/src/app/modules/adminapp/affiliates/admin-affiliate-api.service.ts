@@ -7,6 +7,15 @@ import { environment } from '../../../../environments/environment';
 export interface AdminAffiliateCourseOption {
   id: string;
   title: string;
+  slug?: string;
+}
+
+export interface AdminAffiliatePageItem {
+  id: string;
+  title: string;
+  url: string;
+  category: 'portal' | 'course' | 'campaign';
+  subtitle?: string;
 }
 
 export interface AdminAffiliateListItem {
@@ -56,6 +65,11 @@ export interface AdminAffiliateDetail extends AdminAffiliateListItem {
   courseCommissions: AdminAffiliateCourseCommission[];
   /** Optional allowlist for which courses affiliate can promote (if backend supports). */
   allowedCourseIds?: string[];
+  restrictsCourses?: boolean;
+  permittedCourses?: AdminAffiliateCourseOption[];
+  allowedPageKeys?: string[];
+  restrictsPages?: boolean;
+  permittedPages?: { pageKey: string; title: string; pathSlug: string }[];
 }
 
 export interface UpdateAffiliateCommissionRequest {
@@ -63,6 +77,8 @@ export interface UpdateAffiliateCommissionRequest {
   courseCommissions?: { courseId: string; commissionPercent: number }[];
   /** Optional allowlist for which courses affiliate can promote (if backend supports). */
   allowedCourseIds?: string[];
+  /** Empty = allow all portal pages; non-empty = restrict to these keys. */
+  allowedPageKeys?: string[];
 }
 
 export interface AdminReferralItem {
@@ -74,15 +90,58 @@ export interface AdminReferralItem {
   status: string;
 }
 
+export interface AffiliateSupportSettings {
+  supportPhone: string;
+  supportEmail: string;
+  whatsAppUrl: string;
+}
+
+export interface UpdateAffiliateSupportSettingsRequest {
+  supportPhone: string;
+  supportEmail: string;
+}
+
 export interface ApproveAffiliateResponse {
   success: boolean;
   affiliateCode?: string;
   referralLink?: string;
 }
 
+export interface AdminAffiliateLinkItem {
+  id: string;
+  affiliateId: string;
+  affiliateName: string;
+  affiliateEmail: string;
+  courseId: string;
+  courseTitle: string;
+  courseSlug: string;
+  trackingCode: string;
+  affiliateUrl: string;
+  commissionPercentage: number | null;
+  isActive: boolean;
+  expiresAt: string | null;
+  totalClicks: number;
+  totalSales: number;
+  totalCommission: number;
+  validReferrals: number;
+  invalidReferralAttempts: number;
+  conversionPercent: number;
+  createdOn: string;
+}
+
+export interface CreateAdminAffiliateLinkRequest {
+  affiliateId: string;
+  courseId: string;
+  commissionPercentage?: number;
+  expiresAt?: string | null;
+  label?: string;
+  isActive?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminAffiliateApiService {
   private readonly baseUrl = `${(environment.apiUrl || '').replace(/\/$/, '')}/api/admin/affiliate`;
+  private readonly linksBaseUrl = `${(environment.apiUrl || '').replace(/\/$/, '')}/api/admin/affiliate-links`;
   private readonly apiUrl = `${(environment.apiUrl || '').replace(/\/$/, '')}/`;
 
   constructor(private http: HttpClient) {}
@@ -139,6 +198,32 @@ export class AdminAffiliateApiService {
     const allowedCourseIds = Array.isArray(allowedCourseIdsRaw)
       ? allowedCourseIdsRaw.map((x: any) => String(x))
       : undefined;
+    const permittedRaw = r?.permittedCourses ?? r?.PermittedCourses ?? null;
+    const permittedCourses = Array.isArray(permittedRaw)
+      ? permittedRaw.map((c: any) => ({
+          id: String(c?.id ?? c?.Id ?? ''),
+          title: String(c?.title ?? c?.Title ?? ''),
+          slug: String(c?.slug ?? c?.Slug ?? '').trim() || undefined,
+        })).filter((x: AdminAffiliateCourseOption) => !!x.id && !!x.title)
+      : undefined;
+    const restrictsCourses = Boolean(
+      r?.restrictsCourses ?? r?.RestrictsCourses ?? (allowedCourseIds?.length ?? 0) > 0
+    );
+    const allowedPageKeysRaw = r?.allowedPageKeys ?? r?.AllowedPageKeys ?? null;
+    const allowedPageKeys = Array.isArray(allowedPageKeysRaw)
+      ? allowedPageKeysRaw.map((x: any) => String(x))
+      : undefined;
+    const permittedPagesRaw = r?.permittedPages ?? r?.PermittedPages ?? null;
+    const permittedPages = Array.isArray(permittedPagesRaw)
+      ? permittedPagesRaw.map((p: any) => ({
+          pageKey: String(p?.pageKey ?? p?.PageKey ?? ''),
+          title: String(p?.title ?? p?.Title ?? ''),
+          pathSlug: String(p?.pathSlug ?? p?.PathSlug ?? ''),
+        }))
+      : undefined;
+    const restrictsPages = Boolean(
+      r?.restrictsPages ?? r?.RestrictsPages ?? (allowedPageKeys?.length ?? 0) > 0
+    );
     return {
       ...item,
       linkedInProfile: r?.linkedInProfile ?? r?.LinkedInProfile ?? '',
@@ -160,11 +245,36 @@ export class AdminAffiliateApiService {
       promotionLinks: links,
       courseCommissions,
       allowedCourseIds,
+      restrictsCourses,
+      permittedCourses,
+      allowedPageKeys,
+      restrictsPages,
+      permittedPages,
     };
   }
 
   updateCommission(id: string, request: UpdateAffiliateCommissionRequest): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/${id}`, request);
+  }
+
+  getSupportSettings(): Observable<AffiliateSupportSettings> {
+    return this.http.get<any>(`${this.baseUrl}/support-settings`).pipe(
+      map((r) => this.normalizeSupportSettings(r))
+    );
+  }
+
+  updateSupportSettings(request: UpdateAffiliateSupportSettingsRequest): Observable<AffiliateSupportSettings> {
+    return this.http.put<any>(`${this.baseUrl}/support-settings`, request).pipe(
+      map((r) => this.normalizeSupportSettings(r))
+    );
+  }
+
+  private normalizeSupportSettings(r: any): AffiliateSupportSettings {
+    return {
+      supportPhone: String(r?.supportPhone ?? r?.SupportPhone ?? ''),
+      supportEmail: String(r?.supportEmail ?? r?.SupportEmail ?? ''),
+      whatsAppUrl: String(r?.whatsAppUrl ?? r?.WhatsAppUrl ?? ''),
+    };
   }
 
   approve(id: string): Observable<ApproveAffiliateResponse> {
@@ -176,6 +286,55 @@ export class AdminAffiliateApiService {
   }
 
   /** Admin helper: list published courses for allowlist selection. */
+  getCampaignLinks(affiliateId?: string, courseId?: string): Observable<AdminAffiliateLinkItem[]> {
+    const params: Record<string, string> = {};
+    if (affiliateId) params['affiliateId'] = affiliateId;
+    if (courseId) params['courseId'] = courseId;
+    return this.http.get<any[]>(this.linksBaseUrl, { params }).pipe(
+      map((rows) => (rows || []).map((r) => this.normalizeLinkItem(r)))
+    );
+  }
+
+  createCampaignLink(request: CreateAdminAffiliateLinkRequest): Observable<AdminAffiliateLinkItem> {
+    return this.http.post<any>(`${this.linksBaseUrl}/create`, request).pipe(
+      map((r) => this.normalizeLinkItem(r))
+    );
+  }
+
+  updateCampaignLinkStatus(id: string, isActive: boolean): Observable<AdminAffiliateLinkItem> {
+    return this.http.put<any>(`${this.linksBaseUrl}/${id}/status`, { isActive }).pipe(
+      map((r) => this.normalizeLinkItem(r))
+    );
+  }
+
+  deleteCampaignLink(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.linksBaseUrl}/${id}`);
+  }
+
+  private normalizeLinkItem(r: any): AdminAffiliateLinkItem {
+    return {
+      id: String(r?.id ?? r?.Id ?? ''),
+      affiliateId: String(r?.affiliateId ?? r?.AffiliateId ?? ''),
+      affiliateName: r?.affiliateName ?? r?.AffiliateName ?? '',
+      affiliateEmail: r?.affiliateEmail ?? r?.AffiliateEmail ?? '',
+      courseId: String(r?.courseId ?? r?.CourseId ?? ''),
+      courseTitle: r?.courseTitle ?? r?.CourseTitle ?? '',
+      courseSlug: r?.courseSlug ?? r?.CourseSlug ?? '',
+      trackingCode: r?.trackingCode ?? r?.TrackingCode ?? '',
+      affiliateUrl: r?.affiliateUrl ?? r?.AffiliateUrl ?? '',
+      commissionPercentage: r?.commissionPercentage ?? r?.CommissionPercentage ?? null,
+      isActive: Boolean(r?.isActive ?? r?.IsActive ?? true),
+      expiresAt: r?.expiresAt ?? r?.ExpiresAt ?? null,
+      totalClicks: Number(r?.totalClicks ?? r?.TotalClicks ?? 0),
+      totalSales: Number(r?.totalSales ?? r?.TotalSales ?? 0),
+      totalCommission: Number(r?.totalCommission ?? r?.TotalCommission ?? 0),
+      validReferrals: Number(r?.validReferrals ?? r?.ValidReferrals ?? 0),
+      invalidReferralAttempts: Number(r?.invalidReferralAttempts ?? r?.InvalidReferralAttempts ?? 0),
+      conversionPercent: Number(r?.conversionPercent ?? r?.ConversionPercent ?? 0),
+      createdOn: r?.createdOn ?? r?.CreatedOn ?? '',
+    };
+  }
+
   getPublishedCoursesForSelection(pageSize: number = 500): Observable<AdminAffiliateCourseOption[]> {
     const params: any = {
       pageNumber: '1',
@@ -190,7 +349,8 @@ export class AdminAffiliateApiService {
         if (!Array.isArray(rows)) return [];
         return rows.map((c: any) => ({
           id: String(c?.id ?? c?.Id ?? ''),
-          title: String(c?.title ?? c?.Title ?? '')
+          title: String(c?.title ?? c?.Title ?? ''),
+          slug: String(c?.slug ?? c?.Slug ?? c?.canonicalUrl ?? c?.CanonicalUrl ?? '').trim() || undefined,
         })).filter((x: AdminAffiliateCourseOption) => !!x.id && !!x.title);
       })
     );

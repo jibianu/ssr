@@ -39,8 +39,12 @@ export class AllowCoursesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sharedService.certificateName.next('Allow courses');
-    // Show the topbar button on this page too (same permission gate already handled elsewhere).
     this.sharedService.showAffiliateAllowCoursesButton.next(true);
+    this.sub.add(
+      this.sharedService.affiliateAllowCoursesClick$.subscribe(() => {
+        // On dedicated page, refresh is enough; modal is on main affiliates list.
+      })
+    );
     this.load();
   }
 
@@ -100,14 +104,22 @@ export class AllowCoursesComponent implements OnInit, OnDestroy {
   onAffiliateChange(): void {
     if (!this.selectedAffiliateId) return;
     if (this.selectedAffiliateId === this.ALL_USERS_ID) {
-      // Bulk mode: admin can select courses then Save applies to all affiliates.
-      this.saving = false;
-      this.dirty = false;
-      this.allowAllCourses = true;
-      this.allowedCourseIds.clear();
+      const anyAffiliateId = this.affiliates?.[0]?.id;
+      if (anyAffiliateId) this.loadAllowedForAffiliate(anyAffiliateId);
+      else {
+        this.allowAllCourses = true;
+        this.allowedCourseIds.clear();
+      }
       return;
     }
     this.loadAllowedForAffiliate(this.selectedAffiliateId);
+  }
+
+  /** When restricted, show only permitted courses in the edit list. */
+  get visibleCourses(): AdminAffiliateCourseOption[] {
+    if (this.allowAllCourses) return this.courses ?? [];
+    if (!this.allowedCourseIds.size) return this.courses ?? [];
+    return (this.courses ?? []).filter((c) => this.allowedCourseIds.has(String(c.id)));
   }
 
   private loadAllowedForAffiliate(affiliateId: string): void {

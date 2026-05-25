@@ -7,10 +7,25 @@
 
     <div *ngIf="!loading">
       <div class="impact-dashboard__header">
-        <h1 class="impact-dashboard__title">Affiliate Dashboard</h1>
-        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Approved'">Share your link and earn {{ commissionRate }}% on every purchase.</p>
-        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Pending'">Your application is under review. You will receive your referral link after approval.</p>
-        <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'None'">You are not registered as an affiliate. <a href="/register-affiliate">Apply here</a>.</p>
+        <div class="impact-dashboard__header-main">
+          <div>
+            <h1 class="impact-dashboard__title">Affiliate Dashboard</h1>
+            <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Approved'">Share your link and earn {{ commissionRate }}% on every purchase.</p>
+            <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'Pending'">Your application is under review. You will receive your referral link after approval.</p>
+            <p class="impact-dashboard__subtitle" *ngIf="dashboard?.status === 'None'">You are not registered as an affiliate. <a href="/register-affiliate">Apply here</a>.</p>
+          </div>
+          <div class="impact-dashboard__header-actions" *ngIf="dashboard?.status === 'Approved' || dashboard?.status === 'Pending'">
+            <a routerLink="/app/affiliate/profile" class="impact-btn impact-btn--outline">
+              <i class="fa fa-user-circle" aria-hidden="true"></i> Profile
+            </a>
+            <button type="button" class="impact-btn impact-btn--outline impact-btn--whatsapp" (click)="openSupport()">
+              <i class="fa fa-whatsapp" aria-hidden="true"></i> Support
+            </button>
+            <button type="button" class="impact-btn impact-btn--outline impact-btn--signout" (click)="signOut()">
+              <i class="fa fa-sign-out" aria-hidden="true"></i> Sign out
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Pending: complete application -->
@@ -71,11 +86,28 @@
           <div class="impact-card impact-card--messages">
             <div class="impact-card__body">
               <div class="impact-card__head">
-                <h2 class="impact-card__title impact-card__title--uppercase">Message center</h2>
-                <a href="javascript:void(0)" class="impact-link">View all</a>
+                <h2 class="impact-card__title impact-card__title--uppercase">Support</h2>
               </div>
-              <div class="message-list">
-                <p class="message-list__empty" *ngIf="!messages?.length">No new messages.</p>
+              <div class="support-panel" *ngIf="!supportLoading">
+                <p class="support-panel__text">Need help with your affiliate account, links, or payouts?</p>
+                <p class="support-panel__phone" *ngIf="supportPhone">
+                  <i class="fa fa-whatsapp" aria-hidden="true"></i> {{ supportPhone }}
+                </p>
+                <p class="support-panel__email" *ngIf="supportEmail">
+                  <a [href]="'mailto:' + supportEmail">{{ supportEmail }}</a>
+                </p>
+                <div class="support-panel__actions">
+                  <button type="button" class="impact-btn impact-btn--whatsapp" (click)="openSupport()" *ngIf="supportPhone">
+                    <i class="fa fa-whatsapp" aria-hidden="true"></i> Chat on WhatsApp
+                  </button>
+                  <button type="button" class="impact-btn impact-btn--outline" (click)="openSupportEmail()" *ngIf="supportEmail">
+                    <i class="fa fa-envelope" aria-hidden="true"></i> Email support
+                  </button>
+                </div>
+              </div>
+              <p class="impact-card__meta" *ngIf="supportLoading">Loading support contact…</p>
+              <div class="message-list" *ngIf="messages?.length">
+                <h3 class="message-list__heading">Messages</h3>
                 <div class="message-item" *ngFor="let m of messages">
                   <span class="message-item__title">{{ m.title }}</span>
                   <span class="message-item__meta">{{ m.date }}</span>
@@ -137,21 +169,27 @@
                 <span class="create-link__icon" aria-hidden="true">🔗</span>
                 <h2 class="impact-card__title impact-card__title--uppercase">Create a link</h2>
               </div>
-              <p class="impact-card__meta create-link__desc">Promote any course with a simple link. Share the URL; when someone signs up or purchases, you earn commission.</p>
+              <p class="impact-card__meta create-link__desc">Promote a course or affiliate page with a simple link. Share the URL; when someone signs up or purchases, you earn commission.</p>
               <div class="create-link__main">
-                <label class="create-link__label">Select a course</label>
-                <select [(ngModel)]="selectedCourseId" (ngModelChange)="onCourseSelect()" class="impact-select form-control" [disabled]="loadingCourses">
-                  <option value="">General referral (all courses)</option>
-                  <option *ngFor="let c of coursesForLinks" [value]="c.id">{{ c.title }}</option>
+                <label class="create-link__label">Select course or page</label>
+                <select [(ngModel)]="selectedPromo" (ngModelChange)="onPromoSelect()" class="impact-select form-control" [disabled]="loadingCourses">
+                  <option value="">General referral (registration)</option>
+                  <optgroup label="Courses" *ngIf="coursesForLinks?.length">
+                    <option *ngFor="let c of coursesForLinks" [value]="c.id">{{ c.title }}</option>
+                  </optgroup>
+                  <optgroup label="Affiliate pages" *ngIf="pagesForLinks?.length">
+                    <option *ngFor="let p of pagesForLinks" [value]="'page:' + p.pageKey">{{ p.title }}</option>
+                  </optgroup>
                 </select>
-                <p class="create-link__course-note" *ngIf="selectedCourseId && selectedCourseName">This link opens registration with <strong>{{ selectedCourseName }}</strong> pre-selected.</p>
+                <p class="create-link__course-note" *ngIf="selectedPromo && selectedPromoName && !selectedPromoIsPage">This link opens registration with <strong>{{ selectedPromoName }}</strong> pre-selected.</p>
+                <p class="create-link__course-note" *ngIf="selectedPromoIsPage && selectedPromoName">This link opens <strong>{{ selectedPromoName }}</strong> on the public site with your referral code.</p>
                 <div class="create-link__output" *ngIf="displayLink">
                   <input type="text" [value]="displayLink" readonly class="create-link__input form-control">
                   <button type="button" class="impact-btn impact-btn--primary" (click)="copyDisplayLink()">
                     {{ (copyCourseLinkSuccess || copySuccess) ? 'Copied!' : 'Copy link' }}
                   </button>
                 </div>
-                <p class="create-link__loading" *ngIf="loadingCourseLink && selectedCourseId">Loading link…</p>
+                <p class="create-link__loading" *ngIf="loadingCourseLink && selectedPromo">Loading link…</p>
                 <p class="impact-card__meta create-link__save-note">Generated links are not stored in the app; copy and save them where you need (e.g. notes, social posts).</p>
               </div>
             </div>
@@ -162,8 +200,16 @@
         <div class="impact-grid impact-grid--2">
           <div class="impact-card impact-card--courses">
             <div class="impact-card__body">
-              <h2 class="impact-card__title impact-card__title--uppercase">Courses to promote</h2>
+              <h2 class="impact-card__title impact-card__title--uppercase">Courses &amp; pages to promote</h2>
               <p class="impact-card__meta">Earn {{ commissionRate }}% on every purchase when you share your link.</p>
+              <div class="courses-grid" *ngIf="pagesForLinks?.length">
+                <div class="course-tile course-tile--page" *ngFor="let p of pagesForLinks">
+                  <div class="course-tile__info">
+                    <span class="course-tile__title">{{ p.title }}</span>
+                    <span class="course-tile__commission">Affiliate page · /{{ p.pathSlug }}</span>
+                  </div>
+                </div>
+              </div>
               <div class="courses-grid" *ngIf="coursesForLinks?.length">
                 <div class="course-tile" *ngFor="let c of coursesForLinks.slice(0, 6)">
                   <div class="course-tile__info">
@@ -172,14 +218,15 @@
                   </div>
                 </div>
               </div>
-              <p class="impact-card__meta" *ngIf="!coursesForLinks?.length">Loading courses…</p>
+              <p class="impact-card__meta" *ngIf="loadingCourses">Loading…</p>
+              <p class="impact-card__meta" *ngIf="!loadingCourses && !coursesForLinks?.length && !pagesForLinks?.length">No courses or pages assigned yet. Contact support.</p>
             </div>
           </div>
           <div class="impact-card impact-card--profile-summary">
             <div class="impact-card__body">
               <div class="impact-card__head">
                 <h2 class="impact-card__title impact-card__title--uppercase">Your profile</h2>
-                <a routerLink="../onboarding" class="impact-btn impact-btn--outline">Edit profile</a>
+                <a routerLink="/app/affiliate/profile" class="impact-btn impact-btn--outline">View profile</a>
               </div>
               <div *ngIf="loadingProfile" class="profile-loading">Loading…</div>
               <dl class="profile-dl" *ngIf="profile && !loadingProfile">

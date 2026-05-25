@@ -16,9 +16,7 @@ import { RedirectToElearnComponent } from './core/redirect-to-elearn/redirect-to
 import { ElearnLayoutComponent } from './layouts/public/elearn-layout/elearn-layout.component';
 
 @NgModule({
-    declarations: [
-        RedirectToElearnComponent
-    ],
+    declarations: [],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA
     ],
@@ -37,7 +35,8 @@ import { ElearnLayoutComponent } from './layouts/public/elearn-layout/elearn-lay
         AuthModule,
         AdminappModule,
         CommonModule,
-        ElearnLayoutComponent
+        ElearnLayoutComponent,
+        RedirectToElearnComponent
     ], 
         
         

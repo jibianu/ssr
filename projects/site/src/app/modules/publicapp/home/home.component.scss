@@ -932,6 +932,16 @@ $home-section-spacing: clamp(1.5rem, 4vw, 2.4rem);
     $hover-background: color.adjust($course-color-accent-blue, $lightness: -6%)
   );
   justify-content: center;
+
+  &.is-disabled {
+    background: $course-color-accent-blue;
+    color: #fff;
+    opacity: 1;
+    cursor: default;
+    pointer-events: none;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
 }
 
 .section-actions {

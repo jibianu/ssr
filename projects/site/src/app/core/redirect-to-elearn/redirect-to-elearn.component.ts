@@ -7,7 +7,7 @@ import { buildElearnAuthUrl } from '../helpers/elearn-auth-url.helper';
  */
 @Component({
   selector: 'app-redirect-to-elearn',
-  standalone: false,
+  standalone: true,
   template: `<div class="p-4 text-center">Redirecting to login…</div>`,
   styles: [`:host { display: block; }`]
 })
@@ -24,6 +24,7 @@ export class RedirectToElearnComponent implements OnInit {
     // Allow all Elearn auth routes from auth-routing.module.ts
     const allowedAuthRoutes = new Set([
       'login',
+      'sso-callback',
       'callback',
       'google-callback',
       'verification',

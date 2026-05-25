@@ -115,6 +115,26 @@
   margin-right: auto;
 }
 
+.explore-loading {
+  margin: 2rem auto 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.explore-empty {
+  margin: 2rem auto 0;
+  max-width: 32rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.55;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+}
+
 /* Category section – clear hierarchy, Edutec style */
 .category-row {
   margin-bottom: 3rem;

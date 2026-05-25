@@ -1,305 +1,689 @@
-<!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static marketing page -->
+<!-- Skip hydration for static marketing landing -->
 <div class="corp-page" ngSkipHydration>
-  <section class="corp-hero">
-    <div class="corp-hero__copy">
-      <p class="corp-eyebrow">Enterprise upskilling · Hybrid delivery · API/ASNT/CSWIP experts</p>
-      <h1>Build high-performing oil &amp; gas teams with <span>custom corporate academies</span></h1>
-      <p>
-        Tailored programs for process, mechanical, inspection, and digital teams with live labs, project simulations,
-        and global instructor networks.
-      </p>
-      <div class="corp-stats">
-        @for (stat of heroStats; track stat.label) {
-          <div class="corp-stat">
-            <span class="corp-stat__value">{{ stat.value }}</span>
-            <span class="corp-stat__label">{{ stat.label }}</span>
+  <!-- Sticky mobile CTA -->
+  <aside class="corp-sticky-cta" aria-label="Book a demo">
+    <button type="button" class="corp-sticky-cta__btn" (click)="openModal($event)">Book Free Demo</button>
+  </aside>
+
+  <!-- HERO — Premium SaaS -->
+  <section class="corp-hero corp-hero--saas" aria-labelledby="corp-hero-title">
+    <div class="corp-hero__ambient" aria-hidden="true">
+      <span class="corp-hero__blob corp-hero__blob--1"></span>
+      <span class="corp-hero__blob corp-hero__blob--2"></span>
+      <span class="corp-hero__blob corp-hero__blob--3"></span>
+      <span class="corp-hero__grid"></span>
+      <span class="corp-hero__glow"></span>
+    </div>
+
+    <div class="corp-hero__inner">
+      <div class="corp-hero__content">
+        <p class="corp-hero__label">{{ heroCopy.eyebrow }}</p>
+        <h1 id="corp-hero-title">{{ heroCopy.title }}</h1>
+        <p class="corp-hero__lead">{{ heroCopy.lead }}</p>
+
+        <ul class="corp-hero__features">
+          @for (feature of heroFeatures; track feature.label) {
+            <li>
+              <span class="corp-hero__feature-icon" [attr.data-icon]="feature.icon" aria-hidden="true">
+                @switch (feature.icon) {
+                  @case ('sso') {
+                    <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 100-8 4 4 0 000 8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 20v-1a6 6 0 0112 0v1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  }
+                  @case ('webinar') {
+                    <svg viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M17 10l4-2v8l-4-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                  }
+                  @case ('tracking') {
+                    <svg viewBox="0 0 24 24"><path d="M4 18V6M8 18V10M12 18V14M16 18V8M20 18V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  }
+                  @case ('scorm') {
+                    <svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4" y="5" width="3" height="14" rx="1" fill="currentColor" opacity="0.35"/></svg>
+                  }
+                }
+              </span>
+              <span>{{ feature.label }}</span>
+            </li>
+          }
+        </ul>
+
+        <div class="corp-hero__actions">
+          <button type="button" class="corp-hero__btn corp-hero__btn--primary" (click)="openModal($event)">
+            Schedule Demo
+          </button>
+          <a class="corp-hero__btn corp-hero__btn--ghost" [routerLink]="explorePlatformUrl">Explore Platform</a>
+        </div>
+
+        <p class="corp-hero__proof">{{ heroCopy.socialProof }}</p>
+        <ul class="corp-hero__logos" aria-label="Trusted companies">
+          @for (logo of heroTrustedLogos; track logo.name) {
+            <li><img [src]="logo.src" [alt]="logo.name" width="88" height="32" loading="lazy" /></li>
+          }
+        </ul>
+      </div>
+
+      <div class="corp-hero__showcase" aria-hidden="true">
+        @for (stat of heroFloatingStats; track stat.label; let i = $index) {
+          <div class="corp-hero__float-card corp-hero__float-card--{{ i + 1 }}">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
           </div>
         }
-      </div>
-      <div class="corp-hero__actions">
-        <a class="btn-primary" href="#" (click)="openModal($event)">Request a custom program</a>
-        <a class="btn-link" href="https://www.oilandgasclub.com/courses">Download full catalog →</a>
-      </div>
-    </div>
-    <div class="corp-hero__card">
-      <h3>Design a learning sprint</h3>
-      <ol>
-        <li>Pick target roles (process, mechanical, inspection, digital)</li>
-        <li>Choose format: cohort, hybrid, or on-site</li>
-        <li>Align on KPIs, labs, and certification goals</li>
-      </ol>
-      <p class="corp-note">Most customers launch their first cohort in 3–4 weeks.</p>
-    </div>
-  </section>
 
-  <section class="corp-section">
-    <header class="corp-section__header">
-      <p class="corp-eyebrow">Solutions</p>
-      <h2>What we deliver</h2>
-    </header>
-    <div class="corp-grid">
-      @for (solution of solutions; track solution.title) {
-        <article class="corp-card">
-          <h3>{{ solution.title }}</h3>
-          <p>{{ solution.description }}</p>
-        </article>
-      }
-    </div>
-  </section>
-
-  <section class="corp-section">
-    <header class="corp-section__header">
-      <p class="corp-eyebrow">Delivery modes</p>
-      <h2>We adapt to your rhythm</h2>
-    </header>
-    <div class="corp-grid corp-grid--modes">
-      @for (mode of deliveryModes; track mode.mode) {
-        <article class="corp-mode">
-          <h3>{{ mode.mode }}</h3>
-          <p>{{ mode.detail }}</p>
-        </article>
-      }
-    </div>
-  </section>
-
-  <section class="corp-section">
-    <header class="corp-section__header">
-      <p class="corp-eyebrow">How it works</p>
-      <h2>Partnering with us</h2>
-    </header>
-    <div class="corp-steps">
-      @for (step of trainingSteps; track step.step) {
-        <article class="corp-step">
-          <span class="corp-step__index">{{ step.step }}</span>
-          <h3>{{ step.title }}</h3>
-          <p>{{ step.detail }}</p>
-        </article>
-      }
-    </div>
-  </section>
-
-  <section class="corp-section corp-section--highlight">
-    <div class="corp-highlight">
-      <div>
-        <p class="corp-eyebrow">Insight</p>
-        <h2>Upskilling that sticks</h2>
-        <p>Live labs, cohort communities, and project reviews keep engineers accountable. We embed your assets,
-          vendors, and compliance frameworks for seamless adoption.</p>
-      </div>
-      <a class="btn-primary" href="#" (click)="openModal($event)">Book a discovery call</a>
-    </div>
-  </section>
-
-  <section class="corp-section corp-section--testimonials">
-    <header class="corp-section__header">
-      <p class="corp-eyebrow">Customer stories</p>
-      <h2>Leaders trust Oilandgasclub</h2>
-    </header>
-    <div class="corp-testimonials">
-      @for (story of testimonials; track story.author) {
-        <article class="corp-testimonial">
-          <p class="corp-testimonial__quote">{{ story.quote }}</p>
-          <p class="corp-testimonial__author">{{ story.author }}</p>
-        </article>
-      }
-    </div>
-    <div class="corp-logos">
-      @for (logo of logos; track logo.label) {
-        <div class="corp-logo-icon" [ngSwitch]="logo.icon" [attr.aria-label]="logo.label">
-          <svg *ngSwitchCase="'orbit'" viewBox="0 0 48 48" fill="none" role="img">
-            <defs>
-              <linearGradient id="corpOrbit" x1="10" y1="10" x2="38" y2="38" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#3B82F6" stop-opacity="0.18" />
-                <stop offset="1" stop-color="#6366F1" stop-opacity="0.10" />
-              </linearGradient>
-            </defs>
-            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpOrbit)" />
-            <circle cx="24" cy="24" r="8" stroke="#1E3A8A" stroke-width="2" />
-            <path d="M12 20c2-3 7-6 12-6s10 3 12 6m-24 8c2 3 7 6 12 6s10-3 12-6" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" />
-          </svg>
-          <svg *ngSwitchCase="'shield'" viewBox="0 0 48 48" fill="none" role="img">
-            <defs>
-              <linearGradient id="corpShield" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#10B981" stop-opacity="0.18" />
-                <stop offset="1" stop-color="#3B82F6" stop-opacity="0.12" />
-              </linearGradient>
-            </defs>
-            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpShield)" />
-            <path d="M24 10l12 4v10c0 7.2-5 13.7-12 15-7-1.3-12-7.8-12-15V14l12-4z" stroke="#065F46" stroke-width="2" stroke-linejoin="round" />
-            <path d="M24 18v12" stroke="#065F46" stroke-width="2" stroke-linecap="round" />
-            <path d="M18 24h12" stroke="#065F46" stroke-width="2" stroke-linecap="round" />
-          </svg>
-          <svg *ngSwitchCase="'pulse'" viewBox="0 0 48 48" fill="none" role="img">
-            <defs>
-              <linearGradient id="corpPulse" x1="10" y1="10" x2="38" y2="38" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#F59E0B" stop-opacity="0.18" />
-                <stop offset="1" stop-color="#EC4899" stop-opacity="0.10" />
-              </linearGradient>
-            </defs>
-          <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpPulse)" />
-          <path d="M12 26h6l3-8 6 16 3-8h6" stroke="#7C2D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <svg *ngSwitchCase="'circuit'" viewBox="0 0 48 48" fill="none" role="img">
-            <defs>
-              <linearGradient id="corpCircuit" x1="12" y1="12" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#6366F1" stop-opacity="0.16" />
-                <stop offset="1" stop-color="#10B981" stop-opacity="0.12" />
-              </linearGradient>
-            </defs>
-            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#corpCircuit)" />
-            <path d="M16 16h16v16H16z" stroke="#312E81" stroke-width="2" />
-            <path d="M16 24h-4v8h8v-4" stroke="#312E81" stroke-width="2" stroke-linecap="round" />
-            <path d="M32 24h4v-8h-8v4" stroke="#312E81" stroke-width="2" stroke-linecap="round" />
-            <circle cx="12" cy="32" r="2" fill="#312E81" />
-            <circle cx="36" cy="16" r="2" fill="#312E81" />
-          </svg>
+        <div class="corp-hero__glass corp-hero__glass--analytics">
+          <span class="corp-hero__glass-title">Team performance</span>
+          <div class="corp-hero__bars">
+            <span style="--h: 72%"></span>
+            <span style="--h: 55%"></span>
+            <span style="--h: 88%"></span>
+            <span style="--h: 64%"></span>
+            <span style="--h: 91%"></span>
+          </div>
         </div>
+
+        <div class="corp-hero__glass corp-hero__glass--cert">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 9-4-.5-7-4.5-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Certificates issued</span>
+          <strong>2,480+</strong>
+        </div>
+
+        <figure class="corp-hero__dashboard">
+          <div class="corp-hero__dashboard-frame">
+            <img
+              [src]="heroDashboardSrc"
+              alt="Oilandgasclub LMS dashboard with courses, progress tracking, and analytics"
+              width="960"
+              height="640"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATISTICS -->
+  <section class="corp-stats-bar" aria-label="Platform highlights">
+    <div class="corp-stats-bar__grid">
+      @for (stat of platformStats; track stat.label) {
+        <article class="corp-stat-card">
+          <span class="corp-stat-card__value">{{ stat.value }}</span>
+          <span class="corp-stat-card__label">{{ stat.label }}</span>
+        </article>
       }
     </div>
   </section>
 
-  <section class="corp-section corp-section--cta">
-    <div class="corp-cta">
-      <div>
-        <p class="corp-eyebrow">Ready to get started?</p>
-        <h2>Co-create a learning roadmap</h2>
-        <p>Send us your skill matrix, competency goals, or certification requirements. Our team will respond within 48 hours with a proposal.</p>
+  <!-- PLATFORM EASE OF USE (3x3 grid) -->
+  <section class="corp-platform" aria-labelledby="corp-platform-title">
+    <header class="corp-platform__header">
+      <h2 id="corp-platform-title">Secure LMS training platform built for ease of use</h2>
+      <p>
+        {{ brandName }} helps industrial organizations run a secure LMS with simple setup, powerful administration,
+        and training workflows designed for oil &amp; gas, EPC, and refinery teams.
+      </p>
+    </header>
+
+    <div class="corp-platform__grid">
+      @for (item of platformCapabilities; track item.title) {
+        <article class="corp-platform__item">
+          <div class="corp-platform__icon" [attr.data-icon]="item.icon" aria-hidden="true">
+            @switch (item.icon) {
+              @case ('deploy') {
+                <svg viewBox="0 0 32 32"><path d="M6 16h14M16 10l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="6" width="10" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              }
+              @case ('author') {
+                <svg viewBox="0 0 32 32"><path d="M8 24h16M10 8h12M12 12h8M12 16h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 8l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              }
+              @case ('brand') {
+                <svg viewBox="0 0 32 32"><rect x="6" y="8" width="20" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 14h12M10 18h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              }
+              @case ('automate') {
+                <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 11v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 8l3 3M24 8l-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              }
+              @case ('access') {
+                <svg viewBox="0 0 32 32"><circle cx="16" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 26c1.5-4 5-6 8-6s6.5 2 8 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 10l4-2v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              }
+              @case ('analytics') {
+                <svg viewBox="0 0 32 32"><path d="M8 24V14M14 24V10M20 24V16M26 24V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 26h22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              }
+              @case ('library') {
+                <svg viewBox="0 0 32 32"><path d="M8 8h6v16H8zM14 8h6v16h-6zM20 8h6v16h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              }
+              @case ('enterprise') {
+                <svg viewBox="0 0 32 32"><rect x="6" y="12" width="8" height="14" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="18" y="8" width="8" height="18" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 18h2M20 14h2M20 18h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              }
+              @case ('social') {
+                <svg viewBox="0 0 32 32"><circle cx="11" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="21" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 24c1.5-3 4-4 5-4s3.5 1 5 4M16 24c1.5-3 4-4 5-4s3.5 1 5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              }
+            }
+          </div>
+          <h3>{{ item.title }}</h3>
+          <p [innerHTML]="item.descriptionHtml"></p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- INDUSTRIES WE SERVE -->
+  <section class="corp-industries" aria-labelledby="corp-trust-title">
+    <div class="corp-industries__ambient" aria-hidden="true">
+      <span class="corp-industries__glow corp-industries__glow--1"></span>
+      <span class="corp-industries__glow corp-industries__glow--2"></span>
+      <span class="corp-industries__grid-lines"></span>
+      <span class="corp-industries__particle corp-industries__particle--1"></span>
+      <span class="corp-industries__particle corp-industries__particle--2"></span>
+      <span class="corp-industries__particle corp-industries__particle--3"></span>
+    </div>
+
+    <header class="corp-industries__header">
+      <p class="corp-industries__eyebrow">Trusted by industrial leaders</p>
+      <h2 id="corp-trust-title">Built for Industrial &amp; Oil &amp; Gas Organizations</h2>
+      <p class="corp-industries__lead">
+        Designed for enterprise HR, L&amp;D, and training managers across energy and industrial sectors.
+      </p>
+    </header>
+
+    <ul class="corp-industries__stats" aria-label="Platform impact">
+      @for (badge of industryStats; track badge.label) {
+        <li class="corp-industries__stat">
+          <strong>{{ badge.value }}</strong>
+          <span>{{ badge.label }}</span>
+        </li>
+      }
+    </ul>
+
+    <div class="corp-industries__cards">
+      @for (item of industryAudience; track item.title; let i = $index) {
+        <article
+          class="corp-industries__card"
+          [style.--card-i]="i"
+          (mousemove)="onIndustryCardHover($event)"
+          (mouseleave)="onIndustryCardLeave($event)"
+        >
+          <span class="corp-industries__card-border" aria-hidden="true"></span>
+          <div class="corp-industries__illus" aria-hidden="true">
+            <span class="corp-industries__illus-glow"></span>
+            <span class="corp-industries__spark corp-industries__spark--1"></span>
+            <span class="corp-industries__spark corp-industries__spark--2"></span>
+            <span class="corp-industries__spark corp-industries__spark--3"></span>
+            @switch (item.icon) {
+              @case ('rig') {
+                <svg viewBox="0 0 140 100" role="presentation">
+                  <ellipse cx="70" cy="88" rx="48" ry="6" fill="#e2e8f0"/>
+                  <rect x="62" y="28" width="16" height="52" rx="3" fill="#ff6b00"/>
+                  <path d="M70 12 L88 36 H52 Z" fill="#0f172a"/>
+                  <rect x="40" y="44" width="60" height="6" rx="2" fill="#94a3b8"/>
+                  <circle cx="48" cy="58" r="10" fill="#ff6b00" opacity="0.85"/>
+                  <rect x="82" y="52" width="22" height="14" rx="3" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+                </svg>
+              }
+              @case ('blueprint') {
+                <svg viewBox="0 0 140 100" role="presentation">
+                  <rect x="24" y="22" width="72" height="54" rx="6" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                  <path d="M34 58h44M34 48h32M34 38h52" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="98" cy="62" r="16" fill="#ff6b00"/>
+                  <path d="M92 62h12M98 56v12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                  <rect x="88" y="34" width="18" height="10" rx="2" fill="#0f172a"/>
+                </svg>
+              }
+              @case ('refinery') {
+                <svg viewBox="0 0 140 100" role="presentation">
+                  <ellipse cx="70" cy="90" rx="50" ry="5" fill="#e2e8f0"/>
+                  <rect x="48" y="30" width="18" height="48" rx="4" fill="#ff6b00"/>
+                  <rect x="72" y="18" width="14" height="60" rx="3" fill="#0f172a"/>
+                  <rect x="90" y="38" width="12" height="40" rx="3" fill="#ff8533"/>
+                  <path d="M56 30h40" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="36" cy="64" r="12" fill="#fff" stroke="#ff6b00" stroke-width="2"/>
+                </svg>
+              }
+              @case ('offshore') {
+                <svg viewBox="0 0 140 100" role="presentation">
+                  <path d="M10 72 Q70 58 130 72 L130 82 Q70 68 10 82 Z" fill="#bfdbfe"/>
+                  <rect x="58" y="36" width="24" height="28" rx="4" fill="#0f172a"/>
+                  <path d="M70 20 L92 40 H48 Z" fill="#ff6b00"/>
+                  <rect x="34" y="48" width="72" height="8" rx="2" fill="#94a3b8"/>
+                  <circle cx="104" cy="50" r="8" fill="#ff6b00"/>
+                </svg>
+              }
+              @case ('plant') {
+                <svg viewBox="0 0 140 100" role="presentation">
+                  <rect x="28" y="40" width="84" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+                  <path d="M40 58h24M40 50h40" stroke="#ff6b00" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="98" cy="52" r="14" fill="#ff6b00"/>
+                  <rect x="52" y="24" width="10" height="20" rx="2" fill="#0f172a"/>
+                  <rect x="78" y="28" width="10" height="16" rx="2" fill="#0f172a"/>
+                </svg>
+              }
+              @case ('academy') {
+                <svg viewBox="0 0 140 100" role="presentation">
+                  <rect x="30" y="34" width="80" height="48" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                  <path d="M40 52h60M40 62h44" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="96" cy="44" r="14" fill="#ff6b00"/>
+                  <path d="M90 44l5 5 10-12" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="48" y="22" width="44" height="14" rx="3" fill="#0f172a"/>
+                </svg>
+              }
+            }
+          </div>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="corp-section corp-section--alt" aria-labelledby="corp-features-title">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Platform capabilities</p>
+      <h2 id="corp-features-title">Secure LMS Platform Features</h2>
+      <p>Enterprise-grade LMS tools to deliver, secure, and scale internal learning across your organization.</p>
+    </header>
+    <div class="corp-features-grid">
+      @for (feature of features; track feature.title) {
+        <article class="corp-feature-card">
+          <div class="corp-feature-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 40 40" role="presentation">
+              <rect x="4" y="4" width="32" height="32" rx="9" fill="currentColor" opacity="0.1"/>
+              <path d="M12 20h16M20 12v16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="corp-section corp-section--process" aria-labelledby="corp-process-title">
+    <header class="corp-section__header corp-section__header--process">
+      <p class="corp-eyebrow corp-eyebrow--process">Implementation flow</p>
+      <h2 id="corp-process-title">How the Platform Works</h2>
+      <p class="corp-section__lead">From portal setup to measurable learning outcomes in four clear steps.</p>
+    </header>
+    <div class="corp-timeline">
+      @for (step of howItWorks; track step.step; let last = $last; let i = $index) {
+        <article class="corp-timeline__step" [style.animation-delay.ms]="i * 80">
+          <span class="corp-timeline__index">{{ step.step }}</span>
+          <div class="corp-timeline__body">
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.detail }}</p>
+          </div>
+          @if (!last) {
+            <span class="corp-timeline__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="presentation">
+                <path d="M5 12h12M13 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          }
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- LEARNING ECOSYSTEM (image + accordion) -->
+  <section class="corp-learning" aria-labelledby="corp-learning-title">
+    <header class="corp-learning__header">
+      <p class="corp-learning__eyebrow">{{ learningCopy.eyebrow }}</p>
+      <h2 id="corp-learning-title">{{ learningCopy.title }}</h2>
+      <p class="corp-learning__lead">{{ learningCopy.lead }}</p>
+    </header>
+
+    <ul class="corp-learning__stats" aria-label="Platform highlights">
+      @for (stat of learningStats; track stat.label) {
+        <li class="corp-learning__stat">
+          <strong>{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </li>
+      }
+    </ul>
+
+    <ul class="corp-learning__tags" aria-label="Industries and teams served">
+      @for (tag of learningIndustryTags; track tag) {
+        <li>{{ tag }}</li>
+      }
+    </ul>
+
+    <div class="corp-learning__card">
+      <figure class="corp-learning__visual">
+        <img
+          [src]="teamImageSrc"
+          alt="Corporate team collaborating in a professional office meeting"
+          width="720"
+          height="540"
+          loading="lazy"
+        />
+        <figcaption class="corp-learning__visual-overlay" aria-hidden="true">
+          <span class="corp-learning__visual-title">{{ learningVisual.overlayTitle }}</span>
+          <span class="corp-learning__visual-badge">{{ learningVisual.badge }}</span>
+          <ul class="corp-learning__chips">
+            @for (chip of learningFloatingTags; track chip; let i = $index) {
+              <li class="corp-learning__chip corp-learning__chip--{{ i + 1 }}">{{ chip }}</li>
+            }
+          </ul>
+        </figcaption>
+      </figure>
+
+      <div class="corp-learning__accordion" role="tablist" aria-label="Platform learning capabilities">
+        @for (panel of learningPanels; track panel.title; let i = $index) {
+          <article
+            class="corp-learning__panel"
+            [class.is-open]="isLearningPanelOpen(i)"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="corp-learning__trigger"
+              role="tab"
+              [attr.aria-selected]="isLearningPanelOpen(i)"
+              [attr.aria-expanded]="isLearningPanelOpen(i)"
+              [attr.id]="'corp-learning-tab-' + i"
+              [attr.aria-controls]="'corp-learning-panel-' + i"
+              (click)="toggleLearningPanel(i)"
+            >
+              <span class="corp-learning__trigger-icon" [attr.data-icon]="panel.icon" aria-hidden="true">
+                @switch (panel.icon) {
+                  @case ('portal') {
+                    <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 8l3-1v10l-3-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                  }
+                  @case ('tracking') {
+                    <svg viewBox="0 0 24 24"><path d="M4 18V6M8 18V10M12 18V14M16 18V8M20 18V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  }
+                  @case ('webinar') {
+                    <svg viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M17 10l4-2v8l-4-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                  }
+                  @case ('knowledge') {
+                    <svg viewBox="0 0 24 24"><path d="M6 4h10a2 2 0 012 2v14l-4-2-4 2V6a2 2 0 00-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8h6M9 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  }
+                }
+              </span>
+              <span class="corp-learning__trigger-title">{{ panel.title }}</span>
+              <svg class="corp-learning__chevron" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+            @if (isLearningPanelOpen(i)) {
+              <div
+                class="corp-learning__content"
+                role="tabpanel"
+                [attr.id]="'corp-learning-panel-' + i"
+                [attr.aria-labelledby]="'corp-learning-tab-' + i"
+              >
+                <p>{{ panel.description }}</p>
+              </div>
+            }
+          </article>
+        }
       </div>
-      <a class="btn-primary" href="#" (click)="openModal($event)">Request proposal</a>
+    </div>
+
+    <div class="corp-learning__footer">
+      <button type="button" class="corp-learning__cta" (click)="openModal($event)">
+        {{ learningCta.primary }}
+      </button>
+      <p class="corp-learning__cta-note">{{ learningCta.support }}</p>
+    </div>
+  </section>
+
+  <!-- USE CASES -->
+  <section class="corp-section corp-section--alt" aria-labelledby="corp-usecases-title">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Training scenarios</p>
+      <h2 id="corp-usecases-title">Perfect for</h2>
+    </header>
+    <div class="corp-usecases-grid">
+      @for (useCase of useCases; track useCase) {
+        <article class="corp-usecase-card">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 10l2 2 4-4M17 10a7 7 0 11-14 0 7 7 0 0114 0z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>{{ useCase }}</span>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- INDUSTRY SPECIALIZATION -->
+  <section class="corp-section" aria-labelledby="corp-specialization-title">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Discipline coverage</p>
+      <h2 id="corp-specialization-title">Specialized for Oil &amp; Gas Industry</h2>
+      <p>Align training pathways with technical disciplines and operational roles.</p>
+    </header>
+    <div class="corp-tags">
+      @for (tag of specializations; track tag) {
+        <span class="corp-tag">{{ tag }}</span>
+      }
+    </div>
+  </section>
+
+  <!-- BENEFITS -->
+  <section class="corp-section corp-section--alt" aria-labelledby="corp-benefits-title">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Business outcomes</p>
+      <h2 id="corp-benefits-title">Why Companies Choose {{ brandName }}</h2>
+    </header>
+    <div class="corp-benefits-grid">
+      @for (benefit of benefits; track benefit.title) {
+        <article class="corp-benefit-card">
+          <div class="corp-benefit-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 36 36" role="presentation">
+              <circle cx="18" cy="18" r="14" fill="currentColor" opacity="0.1"/>
+              <path d="M12 18l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>{{ benefit.title }}</h3>
+          <p>{{ benefit.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- TOP COMPANIES TRUST US -->
+  <section class="corp-trusted" aria-labelledby="corp-trusted-title">
+    <header class="corp-trusted__header">
+      <h2 id="corp-trusted-title">{{ trustedCompanies.title }}</h2>
+      <p class="corp-trusted__lead">{{ trustedCompanies.lead }}</p>
+    </header>
+    <ul class="corp-trusted__logos" aria-label="Companies that trust Oilandgasclub">
+      @for (logo of trustedCompanyLogos; track logo.name) {
+        <li>
+          <img [src]="logo.src" [alt]="logo.name" width="140" height="48" loading="lazy" />
+        </li>
+      }
+    </ul>
+  </section>
+
+  <!-- DEMO CTA -->
+  <section class="corp-section corp-section--cta corp-section--cta-light" aria-labelledby="corp-demo-title">
+    <div class="corp-demo-cta">
+      <div class="corp-demo-cta__content">
+        <p class="corp-eyebrow">{{ demoCta.eyebrow }}</p>
+        <h2 id="corp-demo-title">
+          {{ demoCta.titleLine1 }}<br />
+          {{ demoCta.titleLine2 }}
+        </h2>
+        <p class="corp-demo-cta__lead">{{ demoCta.lead }}</p>
+        <p class="corp-demo-cta__support">{{ demoCta.support }}</p>
+        <div class="corp-demo-cta__actions">
+          <button type="button" class="btn-primary" (click)="openModal($event)">Schedule Demo</button>
+          <a class="btn-secondary" [routerLink]="contactUrl">Contact Team</a>
+        </div>
+      </div>
+      <figure class="corp-demo-cta__visual">
+        <img
+          [src]="demoCtaImageSrc"
+          alt="Corporate training team collaborating in a modern boardroom"
+          width="720"
+          height="480"
+          loading="lazy"
+        />
+      </figure>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="corp-section corp-section--alt" aria-labelledby="corp-faq-title">
+    <header class="corp-section__header">
+      <p class="corp-eyebrow">Common questions</p>
+      <h2 id="corp-faq-title">Frequently Asked Questions</h2>
+    </header>
+    <div class="corp-faq">
+      @for (faq of faqs; track faq.question; let i = $index) {
+        <article class="corp-faq__item" [class.is-open]="isFaqOpen(i)">
+          <button
+            type="button"
+            class="corp-faq__trigger"
+            [attr.aria-expanded]="isFaqOpen(i)"
+            (click)="toggleFaq(i)"
+          >
+            <span>{{ faq.question }}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          @if (isFaqOpen(i)) {
+            <div class="corp-faq__panel">
+              <p>{{ faq.answer }}</p>
+            </div>
+          }
+        </article>
+      }
     </div>
   </section>
 </div>
 
-  <!-- Corporate Training Enquiry Modal -->
-  @if (showModal) {
-    <div class="modal-overlay show" (click)="closeModal()" [attr.aria-hidden]="!showModal" aria-modal="true" role="dialog">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <div class="modal-header-content">
-          <h2>Request Corporate Training</h2>
-            <p>Submit your details below. Our team will respond within 48 hours with a proposal.</p>
-          </div>
-          <button class="modal-close" (click)="closeModal()" aria-label="Close modal">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+<!-- Demo request modal -->
+@if (showModal) {
+  <div
+    class="modal-overlay show"
+    (click)="closeModal()"
+    [attr.aria-hidden]="!showModal"
+    aria-modal="true"
+    role="dialog"
+    aria-labelledby="corp-modal-title"
+  >
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <h2 id="corp-modal-title">Book Free Demo</h2>
+          <p>Share your details and our enterprise team will schedule a platform walkthrough.</p>
         </div>
+        <button class="modal-close" type="button" (click)="closeModal()" aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
 
-        <form
-          class="corporate-form"
-          (ngSubmit)="onFormSubmit(corporateForm)"
-          #corporateForm="ngForm"
-        >
-          @if (showThankYouInModal) {
-            <div class="submit-message success corporate-thankyou">
-              {{ thankYouMessage }}
-            </div>
-          } @else {
-            <div class="form-row">
-              <div class="form-column">
-                <div class="form-group">
-                  <input
-                    type="text"
+      <form class="corporate-form" (ngSubmit)="onFormSubmit(corporateForm)" #corporateForm="ngForm">
+        @if (showThankYouInModal) {
+          <div class="submit-message success corporate-thankyou">
+            {{ thankYouMessage }}
+          </div>
+        } @else {
+          <div class="form-row">
+            <div class="form-column">
+              <div class="form-group">
+                <input
+                  type="text"
                   id="firstName"
-                    name="firstName"
-                    [(ngModel)]="formData.firstName"
+                  name="firstName"
+                  [(ngModel)]="formData.firstName"
                   placeholder="First Name"
-                    required
-                    #firstNameInput="ngModel"
-                    [class.error]="firstNameInput.invalid && firstNameInput.touched"
-                  />
-                  @if (firstNameInput.invalid && firstNameInput.touched) {
+                  required
+                  #firstNameInput="ngModel"
+                  [class.error]="firstNameInput.invalid && firstNameInput.touched"
+                />
+                @if (firstNameInput.invalid && firstNameInput.touched) {
                   <span class="error-message">First name is required</span>
-                  }
-                </div>
+                }
+              </div>
 
-                <div class="form-group">
-                  <input
-                    type="text"
+              <div class="form-group">
+                <input
+                  type="text"
                   id="lastName"
-                    name="lastName"
-                    [(ngModel)]="formData.lastName"
-                    placeholder="Last Name"
+                  name="lastName"
+                  [(ngModel)]="formData.lastName"
+                  placeholder="Last Name"
                   required
                   #lastNameInput="ngModel"
                   [class.error]="lastNameInput.invalid && lastNameInput.touched"
-                  />
+                />
                 @if (lastNameInput.invalid && lastNameInput.touched) {
                   <span class="error-message">Last name is required</span>
                 }
-                </div>
-
-                <div class="form-group">
-                  <input
-                    type="email"
-                  id="workEmail"
-                    name="workEmail"
-                    [(ngModel)]="formData.workEmail"
-                  placeholder="Work Email"
-                    required
-                    email
-                  #emailInput="ngModel"
-                  [class.error]="emailInput.invalid && emailInput.touched"
-                  />
-                @if (emailInput.invalid && emailInput.touched) {
-                  <span class="error-message">Valid email is required</span>
-                  }
-                </div>
               </div>
 
-              <div class="form-column">
-                <div class="form-group">
-                  <input
-                    type="text"
-                  id="whatsappNumber"
-                    name="whatsappNumber"
-                    [(ngModel)]="formData.whatsappNumber"
-                  placeholder="WhatsApp Number"
-                    required
-                    #whatsappInput="ngModel"
-                    [class.error]="whatsappInput.invalid && whatsappInput.touched"
-                  />
-                  @if (whatsappInput.invalid && whatsappInput.touched) {
-                  <span class="error-message">WhatsApp number is required</span>
-                  }
-                </div>
+              <div class="form-group">
+                <input
+                  type="email"
+                  id="workEmail"
+                  name="workEmail"
+                  [(ngModel)]="formData.workEmail"
+                  placeholder="Work Email"
+                  required
+                  email
+                  #emailInput="ngModel"
+                  [class.error]="emailInput.invalid && emailInput.touched"
+                />
+                @if (emailInput.invalid && emailInput.touched) {
+                  <span class="error-message">Valid email is required</span>
+                }
+              </div>
+            </div>
 
-                <div class="form-group">
-                  <input
-                    type="text"
+            <div class="form-column">
+              <div class="form-group">
+                <input
+                  type="text"
+                  id="whatsappNumber"
+                  name="whatsappNumber"
+                  [(ngModel)]="formData.whatsappNumber"
+                  placeholder="WhatsApp Number"
+                  required
+                  #whatsappInput="ngModel"
+                  [class.error]="whatsappInput.invalid && whatsappInput.touched"
+                />
+                @if (whatsappInput.invalid && whatsappInput.touched) {
+                  <span class="error-message">WhatsApp number is required</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <input
+                  type="text"
                   id="company"
-                    name="company"
-                    [(ngModel)]="formData.company"
+                  name="company"
+                  [(ngModel)]="formData.company"
                   placeholder="Company"
                   required
                   #companyInput="ngModel"
                   [class.error]="companyInput.invalid && companyInput.touched"
-                  />
+                />
                 @if (companyInput.invalid && companyInput.touched) {
                   <span class="error-message">Company is required</span>
                 }
-                </div>
               </div>
             </div>
+          </div>
 
           @if (submitMessage && !submitSuccess) {
             <div class="submit-message error">
-                {{ submitMessage }}
-              </div>
-            }
-
-            <div class="form-actions">
-            <button type="submit" class="btn-submit" [disabled]="isSubmitting">
-                @if (isSubmitting) {
-                  Submitting...
-                } @else {
-                Submit Request
-                }
-              </button>
+              {{ submitMessage }}
             </div>
           }
-        </form>
-      </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+              @if (isSubmitting) {
+                Submitting...
+              } @else {
+                Schedule Demo
+              }
+            </button>
+          </div>
+        }
+      </form>
     </div>
-  }
+  </div>
+}

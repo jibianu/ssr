@@ -178,8 +178,6 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
       const ref = (q.get('ref') || '').trim();
       if (ref) {
         this.affiliateRefCode = ref;
-        this.setAffiliateRef(ref);
-        this.trackAffiliateClick(ref);
       }
     });
     this.subscription.add(qpSub);
@@ -386,19 +384,13 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.course = data;
     this.courseDetails = data;
     this.expandedCurriculumIndex = 0;
-    // If this visit has an affiliate ref, store the courseId for attribution on signup.
-    if (this.affiliateRefCode && this.courseDetails?.id) {
-      try {
-        localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_COURSE_KEY, String(this.courseDetails.id));
-        const expires = new Date();
-        expires.setDate(expires.getDate() + PublicCourseDetailsComponent.AFFILIATE_REF_DAYS);
-        localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_COURSE_KEY + '_exp', expires.toISOString());
-      } catch (_) {}
-    }
     const slug = (canonicalSlugHint ?? this.courseSlug ?? (data.canonicalUrl ?? data.CanonicalUrl ?? '')).toString().trim();
     this.setComponentProperties(data, null, slug, noCoursesPrefix);
     this.isLoaded = true;
     this.isLoading = false;
+    if (this.affiliateRefCode) {
+      this.trackAffiliateClick(this.affiliateRefCode);
+    }
   }
 
   private setAffiliateRef(code: string): void {
@@ -414,9 +406,28 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   private trackAffiliateClick(code: string): void {
     const apiBase = ((environment as any).apiUrl || '').toString().replace(/\/$/, '');
     if (!apiBase) return;
-    // No auth, no UI impact; ignore errors
+    const slug = this.courseSlugForCheckout;
+    const courseId = this.courseId || undefined;
+    const body: { affiliateCode: string; courseSlug?: string; courseId?: string } = { affiliateCode: code };
+    if (slug) body.courseSlug = slug;
+    if (courseId) body.courseId = courseId;
     this.subscription.add(
-      this.http.post<void>(`${apiBase}/api/affiliate/track-click`, { affiliateCode: code }).subscribe({ next: () => {}, error: () => {} })
+      this.http.post<{ tracked?: boolean }>(`${apiBase}/api/affiliate/track-click`, body).subscribe({
+        next: (res) => {
+          if (res?.tracked) {
+            this.setAffiliateRef(code);
+            if (courseId) {
+              try {
+                localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_COURSE_KEY, courseId);
+                const expires = new Date();
+                expires.setDate(expires.getDate() + PublicCourseDetailsComponent.AFFILIATE_REF_DAYS);
+                localStorage.setItem(PublicCourseDetailsComponent.AFFILIATE_REF_COURSE_KEY + '_exp', expires.toISOString());
+              } catch (_) {}
+            }
+          }
+        },
+        error: () => {},
+      })
     );
   }
 

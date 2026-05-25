@@ -4,6 +4,7 @@ import { first } from 'rxjs/operators';
 import { AuthenticationService, getLandingRoute } from '../auth.service';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
+import { tryRedirectToCompanyPortalAfterLogin } from 'src/app/core/helpers/company-portal-redirect.helper';
 
 /** Same redirect_uri as login/register (must match Google token exchange). */
 function normalizedRedirectUri(): string {
@@ -110,6 +111,9 @@ export class GoogleCallbackComponent implements OnInit {
                   }
                   const route = getLandingRoute(res);
                   if (route) {
+                    if (tryRedirectToCompanyPortalAfterLogin(res, this.authService.currentUser(), stateRedirect)) {
+                      return;
+                    }
                     this.authService.getUserInfo().subscribe({
                       next: () => this.router.navigate([route]),
                       error: () => this.router.navigate([route])

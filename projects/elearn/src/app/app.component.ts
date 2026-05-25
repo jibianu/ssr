@@ -92,14 +92,7 @@ export class AppComponent implements OnInit {
       const params = new URLSearchParams(query);
       const ref = params.get('ref')?.trim();
       if (!ref) return;
-      this.setAffiliateRefStorage(ref);
-      const sentKey = `${AFFILIATE_CLICK_SENT_KEY}_${ref}`;
-      if (sessionStorage.getItem(sentKey)) return;
-      sessionStorage.setItem(sentKey, '1');
-      this.affiliateService.recordClick(ref).subscribe({
-        next: () => {},
-        error: () => { sessionStorage.removeItem(sentKey); }
-      });
+      // Affiliate ref is validated and tracked on course detail pages only (admin campaign links).
     } catch (_) {}
   }
 

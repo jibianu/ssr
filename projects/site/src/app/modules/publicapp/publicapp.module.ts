@@ -29,6 +29,7 @@ import { PublicCourseModule } from './public-course/public-course.module';
 import { RedirectCoursesToSlugComponent } from './public-course/redirect-courses-to-slug/redirect-courses-to-slug.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { PaymentSuccessComponent } from './payment-success/payment-success.component';
+import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirect-to-elearn.component';
 
 
 
@@ -68,6 +69,7 @@ import { PaymentSuccessComponent } from './payment-success/payment-success.compo
     SharedModule,
     PublicCourseModule,
     RedirectCoursesToSlugComponent,
+    RedirectToElearnComponent,
     FixMojibakeSafeHtmlPipe
   ],
   providers: [ provideHttpClient(withFetch())],

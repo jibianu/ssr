@@ -17,6 +17,82 @@ $warning: #d97706;
   margin: 0 auto;
 }
 
+.impact-card--support-settings {
+  margin-bottom: 1.25rem;
+}
+
+.support-settings-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.25rem;
+  margin-top: 0.75rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.support-settings-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.support-settings-form__input {
+  display: block;
+  width: 100%;
+  min-width: 200px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid $gray-200;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.support-settings-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.25rem;
+  margin-top: 0.75rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.support-settings-view__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.support-settings-view__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.support-settings-view__value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $gray-900;
+  word-break: break-word;
+}
+
+.support-settings-form__actions,
+.support-settings-view__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
 .impact-admin__header {
   margin-bottom: 1.5rem;
 }
@@ -95,7 +171,13 @@ $warning: #d97706;
 .impact-btn--primary {
   background: $primary;
   color: $white;
-  &:hover { background: $primary-dark; }
+  &:hover:not(:disabled) { background: $primary-dark; }
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background: $primary;
+    color: $white;
+  }
 }
 
 .impact-btn--outline {
@@ -307,7 +389,8 @@ $warning: #d97706;
   margin-bottom: 0;
 }
 
-.impact-input {
+.commission-edit .impact-input,
+.commission-edit__table .impact-input {
   padding: 6px 10px;
   border: 1px solid $gray-200;
   border-radius: 8px;
@@ -339,6 +422,240 @@ $warning: #d97706;
 .allowed-courses__loading {
   color: $gray-500;
   font-size: 0.8125rem;
+}
+
+.allowed-courses__readonly {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: $gray-700;
+
+  li {
+    margin-bottom: 0.35rem;
+  }
+}
+
+/* Right sidenav: allow courses for affiliates */
+.affiliate-allow-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.affiliate-allow-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  width: min(100%, 36rem);
+  max-width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: $white;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+}
+
+.affiliate-allow-drawer__panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.affiliate-allow-drawer__head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid $gray-200;
+  background: $gray-50;
+}
+
+.affiliate-allow-drawer__section-title {
+  margin: 1.25rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.affiliate-allow-drawer__section-meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--impact-muted, #6b7280);
+}
+
+.affiliate-allow-drawer__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $gray-500;
+}
+
+.affiliate-allow-drawer__sub {
+  margin: 0;
+  font-size: 0.875rem;
+  color: $gray-700;
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.affiliate-allow-drawer__close {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 8px;
+  background: $gray-100;
+  color: $gray-700;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  &:hover {
+    background: $gray-200;
+    color: $gray-900;
+  }
+}
+
+.affiliate-allow-drawer__controls {
+  flex-shrink: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid $gray-200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.affiliate-allow-drawer__select {
+  width: 100%;
+}
+
+.affiliate-allow-drawer__search {
+  width: 100%;
+}
+
+.affiliate-allow-drawer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.affiliate-allow-drawer__footer {
+  flex-shrink: 0;
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid $gray-200;
+  background: $white;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.affiliate-allow-drawer__save {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+}
+
+.affiliate-allow-drawer__body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.25rem 1.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.affiliate-allow-drawer__courses {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem 1rem;
+  padding: 0.75rem;
+  border: 1px solid $gray-200;
+  border-radius: 10px;
+  background: $white;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.affiliate-allow-drawer__course {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: $gray-700;
+  line-height: 1.35;
+
+  input {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: $primary;
+  }
+}
+
+.affiliate-allow-drawer__course-title {
+  word-break: break-word;
+}
+
+.affiliate-allow-drawer__loading,
+.affiliate-allow-drawer__empty {
+  padding: 1.5rem 0;
+  text-align: center;
+  color: $gray-500;
+  font-size: 0.875rem;
+}
+
+/* Affiliate pages sidenav */
+.affiliate-pages-drawer {
+  width: min(100%, 40rem);
+}
+
+.affiliate-pages-drawer__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: $gray-500;
+}
+
+.affiliate-pages-drawer__section {
+  margin-bottom: 1.25rem;
+}
+
+.affiliate-pages-drawer__section-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $gray-500;
+}
+
+.affiliate-pages-drawer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid $gray-200;
+  border-radius: 10px;
+  background: $white;
+}
+
+.affiliate-pages-drawer__list--scroll {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.affiliate-allow-drawer__slug,
+.affiliate-pages-drawer__slug {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: $gray-500;
+  margin-top: 2px;
 }
 
 .allowed-courses__list {

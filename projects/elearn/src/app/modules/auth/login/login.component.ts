@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { isCompanyTenantLoginHost, getTenantSubdomainFromHostname } from 'src/app/core/company-portal-host.util';
+import { tryRedirectToCompanyPortalAfterLogin } from 'src/app/core/helpers/company-portal-redirect.helper';
 import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
@@ -373,6 +374,9 @@ export class LoginComponent implements OnInit {
                 } else {
                   this.router.navigateByUrl(returnUrl);
                 }
+                return;
+              }
+              if (tryRedirectToCompanyPortalAfterLogin(res, this.authenticationService.currentUser(), returnUrl)) {
                 return;
               }
               const route = getLandingRoute(res);

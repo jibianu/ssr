@@ -4,6 +4,47 @@
     <p class="impact-admin__subtitle">Review applications, approve affiliates, set per-course commission, and mark payouts.</p>
   </header>
 
+  <section class="impact-card impact-card--support-settings">
+    <div class="impact-card__body">
+      <h2 class="impact-detail-section__title">Affiliate support contact</h2>
+      <p class="impact-card__meta">Shown on the affiliate dashboard (WhatsApp and email). Affiliates only see what you save here.</p>
+      <div class="support-settings-view" *ngIf="!supportSettingsLoading && !supportSettingsEditing">
+        <div class="support-settings-view__item">
+          <span class="support-settings-view__label">WhatsApp / phone</span>
+          <span class="support-settings-view__value">{{ supportPhone || '—' }}</span>
+        </div>
+        <div class="support-settings-view__item">
+          <span class="support-settings-view__label">Email</span>
+          <span class="support-settings-view__value">{{ supportEmail || '—' }}</span>
+        </div>
+        <div class="support-settings-view__actions">
+          <button type="button" class="impact-btn impact-btn--primary impact-btn--sm" (click)="startSupportSettingsEdit()">
+            Edit
+          </button>
+        </div>
+      </div>
+      <div class="support-settings-form" *ngIf="!supportSettingsLoading && supportSettingsEditing">
+        <div class="support-settings-form__field">
+          <label class="impact-label" for="affiliate-support-phone">WhatsApp / phone</label>
+          <input id="affiliate-support-phone" type="text" class="support-settings-form__input" [(ngModel)]="supportPhone" placeholder="+91-9840287919" [disabled]="supportSettingsSaving" />
+        </div>
+        <div class="support-settings-form__field">
+          <label class="impact-label" for="affiliate-support-email">Email</label>
+          <input id="affiliate-support-email" type="email" class="support-settings-form__input" [(ngModel)]="supportEmail" placeholder="anush@oilandgasclub.com" [disabled]="supportSettingsSaving" />
+        </div>
+        <div class="support-settings-form__actions">
+          <button type="button" class="impact-btn impact-btn--primary impact-btn--sm" (click)="saveSupportSettings()" [disabled]="supportSettingsSaving">
+            {{ supportSettingsSaving ? 'Saving…' : 'Save' }}
+          </button>
+          <button type="button" class="impact-btn impact-btn--outline impact-btn--sm" (click)="cancelSupportSettingsEdit()" [disabled]="supportSettingsSaving">
+            Cancel
+          </button>
+        </div>
+      </div>
+      <p class="impact-card__meta" *ngIf="supportSettingsLoading">Loading support settings…</p>
+    </div>
+  </section>
+
   <!-- Summary cards (Impact-style) -->
   <div class="impact-admin__summary">
     <div class="impact-card impact-card--stat">
@@ -36,7 +77,8 @@
         <option value="Rejected">Rejected</option>
       </select>
     </div>
-    <button type="button" class="impact-btn impact-btn--primary" (click)="load()" [disabled]="loading">
+    <a routerLink="/app/admin/affiliates/campaign-links" class="impact-btn impact-btn--primary">Generate link</a>
+    <button type="button" class="impact-btn" (click)="load()" [disabled]="loading">
       {{ loading ? 'Loading…' : 'Refresh' }}
     </button>
   </div>
@@ -146,7 +188,8 @@
             <input type="number" min="0" max="100" step="0.5" [(ngModel)]="editCommissionRate" class="impact-input impact-input--sm" />
             <button type="button" class="impact-btn impact-btn--primary impact-btn--sm" (click)="saveDefaultCommission()" [disabled]="commissionSaving">Save default</button>
           </div>
-          <p class="impact-card__meta">Per-course overrides below. Leave blank or set to use default for that course.</p>
+          <p class="impact-card__meta" *ngIf="detailHasCourseRestriction">Per-course commission for permitted courses only. Use <strong>Allow course</strong> in the toolbar to change which courses are allowed.</p>
+          <p class="impact-card__meta" *ngIf="!detailHasCourseRestriction">Per-course overrides below. Leave blank or set to use default for that course.</p>
           <div class="commission-edit__table">
             <table class="impact-table impact-table--compact">
               <thead>
@@ -169,18 +212,32 @@
         </div>
       </section>
 
-      <!-- Allowed courses (admin decides what affiliate can promote) -->
+      <!-- Allowed courses: when restricted, only permitted courses are listed (editable) -->
       <section class="impact-detail-section">
         <h3 class="impact-detail-section__title">Allowed courses (editable)</h3>
-        <p class="impact-card__meta">Select which courses this affiliate is allowed to promote. If you click “Allow all”, they can promote any published course.</p>
+        <p class="impact-card__meta" *ngIf="detailHasCourseRestriction">
+          Only courses permitted for this affiliate are shown. To add or remove courses, use <strong>Allow course</strong> in the top bar.
+        </p>
+        <p class="impact-card__meta" *ngIf="!detailHasCourseRestriction">
+          Select which courses this affiliate may promote. Click “Allow all” for every published course.
+        </p>
         <div class="allowed-courses">
-          <div class="allowed-courses__toolbar">
+          <div class="allowed-courses__toolbar" *ngIf="!detailHasCourseRestriction">
             <button type="button" class="impact-btn impact-btn--outline impact-btn--sm" (click)="allowAllCourses()" [disabled]="commissionSaving">Allow all</button>
             <button type="button" class="impact-btn impact-btn--primary impact-btn--sm" (click)="saveAllowedCourses()" [disabled]="commissionSaving || !allowedCoursesDirty">Save allowed courses</button>
-            <span class="allowed-courses__loading" *ngIf="loadingCourses">Loading courses…</span>
           </div>
-          <div class="allowed-courses__list" *ngIf="allCourses?.length">
-            <label class="allowed-courses__item" *ngFor="let c of allCourses">
+          <button
+            type="button"
+            class="impact-btn impact-btn--primary impact-btn--sm"
+            *ngIf="detailHasCourseRestriction && allowedCoursesDirty"
+            (click)="saveAllowedCourses()"
+            [disabled]="commissionSaving"
+          >
+            Save allowed courses
+          </button>
+          <span class="allowed-courses__loading" *ngIf="loadingCourses || detailLoading">Loading courses…</span>
+          <div class="allowed-courses__list" *ngIf="!detailLoading && detailEditableCourses.length">
+            <label class="allowed-courses__item" *ngFor="let c of detailEditableCourses">
               <input
                 type="checkbox"
                 [checked]="isCourseAllowed(c.id)"
@@ -190,7 +247,12 @@
               <span class="allowed-courses__title">{{ c.title }}</span>
             </label>
           </div>
-          <p class="impact-card__meta" *ngIf="!loadingCourses && (!allCourses || allCourses.length === 0)">No published courses found.</p>
+          <p class="impact-card__meta" *ngIf="!detailLoading && !loadingCourses && detailHasCourseRestriction && !detailEditableCourses.length">
+            No permitted courses in the database for this affiliate. Open <strong>Allow course</strong>, check the courses, and click Save.
+          </p>
+          <p class="impact-card__meta" *ngIf="!detailLoading && !loadingCourses && !detailHasCourseRestriction && !detailEditableCourses.length">
+            No published courses found.
+          </p>
         </div>
       </section>
 
@@ -256,3 +318,99 @@
     </div>
   </div>
 </ng-template>
+
+<!-- Allow courses sidenav (topbar "Allow course" button) -->
+<ng-container *ngIf="allowCoursesDrawerOpen">
+  <div class="affiliate-allow-drawer-backdrop" (click)="closeAllowCoursesDrawer()" aria-hidden="true"></div>
+  <aside class="affiliate-allow-drawer" role="dialog" aria-modal="true" aria-labelledby="affiliate-allow-drawer-title">
+    <div class="affiliate-allow-drawer__panel">
+      <header class="affiliate-allow-drawer__head">
+        <div>
+          <h2 class="affiliate-allow-drawer__title" id="affiliate-allow-drawer-title">Allowed courses &amp; pages</h2>
+          <p class="affiliate-allow-drawer__sub">
+            Select courses and affiliate pages (e.g. Corporate Training) affiliates may promote. Checked items appear on the affiliate dashboard.
+            “Allow all” clears restrictions for that section.
+          </p>
+        </div>
+        <button type="button" class="affiliate-allow-drawer__close" (click)="closeAllowCoursesDrawer()" aria-label="Close">&times;</button>
+      </header>
+
+      <div class="affiliate-allow-drawer__controls">
+        <label class="impact-label">Apply to</label>
+        <select
+          class="impact-select affiliate-allow-drawer__select"
+          [(ngModel)]="allowModalAffiliateId"
+          (ngModelChange)="onAllowModalAffiliateChange()"
+          [disabled]="allowModalSaving"
+        >
+          <option [value]="ALL_USERS_ID">All affiliates</option>
+          <option *ngFor="let a of list" [value]="a.id">{{ displayAffiliateLabel(a) }}</option>
+        </select>
+        <input
+          type="search"
+          class="impact-input affiliate-allow-drawer__search"
+          placeholder="Search courses…"
+          [(ngModel)]="allowDrawerCourseFilter"
+          [disabled]="allowModalSaving"
+        />
+        <div class="affiliate-allow-drawer__actions">
+          <button type="button" class="impact-btn impact-btn--outline impact-btn--sm" (click)="allowModalSelectAll()" [disabled]="allowModalSaving">
+            Allow all courses
+          </button>
+          <button type="button" class="impact-btn impact-btn--outline impact-btn--sm" (click)="allowModalSelectAllPages()" [disabled]="allowModalSaving">
+            Allow all pages
+          </button>
+        </div>
+      </div>
+
+      <div class="affiliate-allow-drawer__body">
+        <div class="affiliate-allow-drawer__loading" *ngIf="allowModalLoading || loadingCourses">Loading courses…</div>
+        <div class="affiliate-allow-drawer__courses" *ngIf="!allowModalLoading && !loadingCourses && filteredDrawerCourses.length">
+          <label class="affiliate-allow-drawer__course" *ngFor="let c of filteredDrawerCourses">
+            <input
+              type="checkbox"
+              [checked]="isAllowModalCourseChecked(c.id)"
+              (change)="toggleAllowModalCourse(c.id, $any($event.target).checked)"
+              [disabled]="allowModalSaving"
+            />
+            <span class="affiliate-allow-drawer__course-title">
+              {{ c.title }}
+              <span class="affiliate-allow-drawer__slug" *ngIf="c.slug">{{ c.slug }}</span>
+            </span>
+          </label>
+        </div>
+        <p class="affiliate-allow-drawer__empty" *ngIf="!allowModalLoading && !loadingCourses && !filteredDrawerCourses.length">
+          {{ allowDrawerCourseFilter ? 'No courses match your search.' : 'No published courses found.' }}
+        </p>
+
+        <h3 class="affiliate-allow-drawer__section-title">Affiliate pages</h3>
+        <p class="affiliate-allow-drawer__section-meta">Public site landing pages (not individual courses).</p>
+        <div class="affiliate-allow-drawer__courses">
+          <label class="affiliate-allow-drawer__course" *ngFor="let p of portalPages">
+            <input
+              type="checkbox"
+              [checked]="isAllowModalPageChecked(p.pageKey)"
+              (change)="toggleAllowModalPage(p.pageKey, $any($event.target).checked)"
+              [disabled]="allowModalSaving"
+            />
+            <span class="affiliate-allow-drawer__course-title">
+              {{ p.title }}
+              <span class="affiliate-allow-drawer__slug">/{{ p.pathSlug }}</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <footer class="affiliate-allow-drawer__footer">
+        <button
+          type="button"
+          class="impact-btn impact-btn--primary affiliate-allow-drawer__save"
+          (click)="saveAllowModalCourses()"
+          [disabled]="allowModalSaving"
+        >
+          {{ allowModalSaving ? 'Saving…' : 'Save courses & pages' }}
+        </button>
+      </footer>
+    </div>
+  </aside>
+</ng-container>

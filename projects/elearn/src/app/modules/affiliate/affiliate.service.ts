@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface AffiliateRegisterRequest {
@@ -77,6 +78,12 @@ export interface AffiliateProfileResponse {
   promotionLinks: AffiliatePromotionLinkDto[];
 }
 
+export interface AffiliateSupportSettings {
+  supportPhone: string;
+  supportEmail: string;
+  whatsAppUrl: string;
+}
+
 export interface AffiliateSnapshotResponse {
   clicks: number;
   actions: number;
@@ -128,6 +135,16 @@ export class AffiliateService {
     return this.http.get<AffiliateDashboardResponse>(`${this.apiUrl}api/affiliate/dashboard`);
   }
 
+  getSupportSettings(): Observable<AffiliateSupportSettings> {
+    return this.http.get<any>(`${this.apiUrl}api/affiliate/support`).pipe(
+      map((r) => ({
+        supportPhone: String(r?.supportPhone ?? r?.SupportPhone ?? ''),
+        supportEmail: String(r?.supportEmail ?? r?.SupportEmail ?? ''),
+        whatsAppUrl: String(r?.whatsAppUrl ?? r?.WhatsAppUrl ?? ''),
+      }))
+    );
+  }
+
   /** Get time-filtered snapshot metrics for the snapshot card. */
   getSnapshot(period: 'all' | '7d' | '30d'): Observable<AffiliateSnapshotResponse> {
     const p = period || 'all';
@@ -138,9 +155,12 @@ export class AffiliateService {
     return this.http.post<void>(`${this.apiUrl}api/affiliate/click?code=${encodeURIComponent(code)}`, {});
   }
 
-  /** POST /api/affiliate/track-click with body { affiliateCode }. No auth. Use from course-details when ref in URL. */
-  trackClick(affiliateCode: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}api/affiliate/track-click`, { affiliateCode });
+  /** POST /api/affiliate/track-click. Only admin campaign links with matching course are tracked. */
+  trackClick(affiliateCode: string, courseSlug?: string, courseId?: string): Observable<{ tracked?: boolean }> {
+    const body: { affiliateCode: string; courseSlug?: string; courseId?: string } = { affiliateCode };
+    if (courseSlug) body.courseSlug = courseSlug;
+    if (courseId) body.courseId = courseId;
+    return this.http.post<{ tracked?: boolean }>(`${this.apiUrl}api/affiliate/track-click`, body);
   }
 
   updateApplication(phone?: string, linkedInProfile?: string, reason?: string): Observable<void> {
@@ -163,9 +183,52 @@ export class AffiliateService {
     return this.http.get<AffiliateGenerateLinkResponse>(`${this.apiUrl}api/affiliate/generate-link/${courseId}`);
   }
 
-  /** Get published courses (id, title) for course-specific link dropdown. */
+  /** Published courses and portal pages for affiliate link dropdown. */
+  getPromotableItems(): Observable<{
+    courses: { id: string; title: string }[];
+    pages: { pageKey: string; title: string; pathSlug: string }[];
+  }> {
+    return this.http.get<any>(`${this.apiUrl}api/affiliate/courses`).pipe(
+      map((r) => {
+        if (Array.isArray(r)) {
+          return { courses: r, pages: [] };
+        }
+        const courses = (r?.courses ?? r?.Courses ?? []).map((c: any) => ({
+          id: String(c?.id ?? c?.Id ?? ''),
+          title: String(c?.title ?? c?.Title ?? ''),
+        }));
+        const pages = (r?.pages ?? r?.Pages ?? []).map((p: any) => ({
+          pageKey: String(p?.pageKey ?? p?.PageKey ?? ''),
+          title: String(p?.title ?? p?.Title ?? ''),
+          pathSlug: String(p?.pathSlug ?? p?.PathSlug ?? ''),
+        }));
+        return { courses, pages };
+      })
+    );
+  }
+
+  /** @deprecated Use getPromotableItems */
   getCoursesForLinks(): Observable<{ id: string; title: string }[]> {
-    return this.http.get<{ id: string; title: string }[]>(`${this.apiUrl}api/affiliate/courses`);
+    return this.getPromotableItems().pipe(map((x) => x.courses));
+  }
+
+  generatePageLink(pageKey: string): Observable<{
+    pageKey: string;
+    pageTitle: string;
+    pathSlug: string;
+    affiliateCode: string;
+    affiliateLink: string;
+  }> {
+    const key = encodeURIComponent(pageKey);
+    return this.http.get<any>(`${this.apiUrl}api/affiliate/generate-page-link/${key}`).pipe(
+      map((r) => ({
+        pageKey: r?.pageKey ?? r?.PageKey ?? pageKey,
+        pageTitle: r?.pageTitle ?? r?.PageTitle ?? '',
+        pathSlug: r?.pathSlug ?? r?.PathSlug ?? '',
+        affiliateCode: r?.affiliateCode ?? r?.AffiliateCode ?? '',
+        affiliateLink: r?.affiliateLink ?? r?.AffiliateLink ?? '',
+      }))
+    );
   }
 
   /** Get extended affiliate profile (Impact.com-style onboarding). */
