@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 const SESSION_STORAGE_KEY = 'studentSessionId';
@@ -71,11 +71,21 @@ export class StudentSessionService {
     sessionStorage.removeItem(SESSION_STORAGE_KEY);
   }
 
-  /** Get time in app and days active for the current user. */
+  /** Get time in app and days active for the current logged-in user only. */
   getAnalytics(): Observable<StudentSessionAnalyticsResponse | null> {
-    return this.http.get<StudentSessionAnalyticsResponse>(`${this.baseUrl}/analytics`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.baseUrl}/analytics`).pipe(
+      map((r) => this.normalizeAnalytics(r)),
       catchError(() => of(null))
     );
+  }
+
+  private normalizeAnalytics(r: Record<string, unknown> | null): StudentSessionAnalyticsResponse | null {
+    if (!r) return null;
+    return {
+      totalSecondsInApp: Number(r['totalSecondsInApp'] ?? r['TotalSecondsInApp'] ?? 0),
+      daysActive: Number(r['daysActive'] ?? r['DaysActive'] ?? 0),
+      currentSessionId: (r['currentSessionId'] ?? r['CurrentSessionId'] ?? null) as string | null,
+    };
   }
 
   getCurrentSessionId(): string | null {

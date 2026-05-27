@@ -6,6 +6,7 @@ import { SlugResolverService } from './slug-resolver.service';
 import { PublicAppService } from '../publicapp.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { BlogService } from '../blog/blog.service';
+import { isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
 
 /** Prefetched data for /:slug (course | blog | event) — runs before route activation so SSR includes content. */
 export interface SlugPageData {
@@ -27,6 +28,10 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
 
   if (!slug.trim()) {
     return of({ slug: '', type: null, notFound: true });
+  }
+
+  if (isAppShellSlug(slug)) {
+    return of({ slug, type: null, notFound: true });
   }
 
   // Resolve slug type first; only call GET page/course/course/{slug} for courses (or when metadata is unavailable).

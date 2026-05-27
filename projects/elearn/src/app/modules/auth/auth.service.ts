@@ -336,6 +336,9 @@ export class AuthenticationService {
                 // API may return PascalCase (ProfilePictureUrl); normalize so app can use profilePictureUrl
                 const normalized = {
                     ...user,
+                    firstName: user.firstName ?? user.FirstName,
+                    lastName: user.lastName ?? user.LastName,
+                    userName: user.userName ?? user.UserName,
                     profilePictureUrl: user.profilePictureUrl ?? user.ProfilePictureUrl,
                     roleId: user.roleId ?? user.RoleId,
                     companyId: user.companyId ?? user.CompanyId,

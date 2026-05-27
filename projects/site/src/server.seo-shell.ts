@@ -50,7 +50,14 @@ const RESERVED_SINGLE_SEGMENT = new Set(
     'register-management',
     'cache-stats',
     'performance-stats',
-    'performance-metrics'
+    'performance-metrics',
+    'dashboard',
+    'company',
+    'admin',
+    'trainer',
+    'student',
+    'management',
+    'affiliate'
   ].map((s) => s.toLowerCase())
 );
 

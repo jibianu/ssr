@@ -56,6 +56,42 @@ export function isElearnSpaRootPath(requestPath: string): boolean {
   return false;
 }
 
+/** Authenticated Elearn areas (unified build uses base href `/`, not under `/app` only). */
+const ELEARN_APP_SHELL_PREFIXES = [
+  '/company',
+  '/trainer',
+  '/admin',
+  '/student',
+  '/management',
+  '/affiliate',
+];
+
+/** True when the request should serve the Elearn SPA (auth, checkout, or logged-in shell). */
+export function isElearnAppShellPath(requestPath: string): boolean {
+  if (isElearnSpaRootPath(requestPath)) {
+    return true;
+  }
+  const p = requestPath.split('?')[0].replace(/\/$/, '') || '/';
+  if (p === '/app' || p.startsWith('/app/')) {
+    return true;
+  }
+  for (const prefix of ELEARN_APP_SHELL_PREFIXES) {
+    if (p === prefix || p.startsWith(`${prefix}/`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Base href patch for Elearn index: `/app/*` uses `/app/`, role shells use `/`. */
+export function resolveElearnSpaMountPath(requestPath: string): string {
+  const p = requestPath.split('?')[0].replace(/\/$/, '') || '/';
+  if (p === '/app' || p.startsWith('/app/')) {
+    return '/app';
+  }
+  return '/';
+}
+
 /**
  * Prefer Elearn hashed bundles when the file exists (unified build).
  */
@@ -124,13 +160,21 @@ export function mountElearnSpaIfPresent(app: Express, elearnBrowserFolder: strin
     app.get(`${mountPath}/{*splat}`, sendSpa);
   };
 
+  const sendElearnRootSpa = (_req: Request, res: Response) => {
+    sendElearnSpaIndex(res, '/', indexFile);
+  };
+
   console.log(
-    `[SSR] Elearn SPA: ${elearnBrowserFolder} → /login, /register, /checkout, /course/*, /auth/*, /Elearn/*, /app/*`
+    `[SSR] Elearn SPA: ${elearnBrowserFolder} → /login, /register, /checkout, /course/*, /auth/*, /Elearn/*, /app/*, role shells`
   );
   mountSpa('/course');
   mountSpa('/auth');
   mountSpa('/Elearn');
   mountSpa('/app');
+  for (const prefix of ELEARN_APP_SHELL_PREFIXES) {
+    app.get(prefix, sendElearnRootSpa);
+    app.get(`${prefix}/{*splat}`, sendElearnRootSpa);
+  }
 }
 
 export function resolveElearnBrowserFolder(serverDistFolder: string): string {

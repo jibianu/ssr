@@ -61,7 +61,7 @@ export class AuthCallbackComponent implements OnInit {
                   }
                   const route = getLandingRoute(res);
                   if (route) {
-                    this.router.navigate([route]);
+                    this.router.navigateByUrl(route, { replaceUrl: true });
                   } else {
                     this.error = 'User role is not configured. Please contact administrator.';
                     this.loading = false;

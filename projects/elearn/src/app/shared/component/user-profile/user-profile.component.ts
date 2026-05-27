@@ -293,12 +293,18 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     const socialLinks = (raw.socialLinks || [])
       .filter((l: any) => l && (l.url || '').trim())
       .map((l: any) => ({ platform: (l.platform || '').trim() || 'Other', url: (l.url || '').trim() }));
-    const payload = { ...raw, socialLinks };
-    this.subscription.add(this.appService.profileUpdate(payload).subscribe((res: any) => {
+    const payload = {
+      firstname: raw.firstName,
+      lastname: raw.lastName,
+      username: raw.userName,
+      profilePictureUrl: raw.profilePictureUrl,
+      bio: raw.bio,
+      phone: raw.phone,
+      socialLinks,
+    };
+    this.subscription.add(this.appService.profileUpdate(payload).subscribe(() => {
       this.toasterService.showSuccess('Profile updated successfully');
-      if (res && (res.firstName != null || res.lastName != null || res.userName != null)) {
-        this.userDisplayName = this.buildDisplayName(res.firstName, res.lastName, res.userName);
-      }
+      this.userDisplayName = this.buildDisplayName(raw.firstName, raw.lastName, raw.userName);
       this.getUserInfo();
     },
       error => {

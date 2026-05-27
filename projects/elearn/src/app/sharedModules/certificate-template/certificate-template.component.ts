@@ -8,6 +8,7 @@ import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { AuthenticationService } from 'src/app/modules/auth/auth.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
 import { environment } from 'src/environments/environment';
+import { getApiBaseUrl } from 'src/app/core/helpers/api-base-url.helper';
 
 @Component({
   selector: 'app-certificate-template',
@@ -106,10 +107,13 @@ export class CertificateTemplateComponent implements OnInit, OnDestroy {
           this.statusMessage = 'Unable to check certificate status.';
           this.messageType = 'warning';
           this.loading = false;
-          return of({ completed: false });
+          return of<{ completed: boolean; enrollmentId?: string }>({ completed: false });
         })
       ).subscribe(res => {
         this.loading = false;
+        if (res?.enrollmentId) {
+          this.enrollmentId = String(res.enrollmentId);
+        }
         this.courseCompleted = res?.completed ?? false;
         if (!this.courseCompleted) {
           this.statusMessage = 'Complete the course to unlock your certificate.';
@@ -122,7 +126,7 @@ export class CertificateTemplateComponent implements OnInit, OnDestroy {
   viewCertificate(): void {
     if (!this.enrollmentId) return;
     const token = this.authService.currentToken();
-    const url = environment.apiUrl + 'certificate/view/' + this.enrollmentId +
+    const url = getApiBaseUrl() + 'certificate/view/' + this.enrollmentId +
       (token ? '?token=' + encodeURIComponent(token) : '');
     window.open(url, '_blank');
   }
@@ -130,7 +134,7 @@ export class CertificateTemplateComponent implements OnInit, OnDestroy {
   downloadCertificate(): void {
     if (!this.enrollmentId) return;
     const token = this.authService.currentToken();
-    const url = environment.apiUrl + 'certificate/download/' + this.enrollmentId +
+    const url = getApiBaseUrl() + 'certificate/download/' + this.enrollmentId +
       (token ? '?token=' + encodeURIComponent(token) : '');
     window.open(url, '_blank');
   }
@@ -139,7 +143,7 @@ export class CertificateTemplateComponent implements OnInit, OnDestroy {
   getCertificateViewUrl(): string {
     if (!this.enrollmentId) return '';
     const token = this.authService.currentToken();
-    return environment.apiUrl + 'certificate/view/' + this.enrollmentId +
+    return getApiBaseUrl() + 'certificate/view/' + this.enrollmentId +
       (token ? '?token=' + encodeURIComponent(token) : '');
   }
 

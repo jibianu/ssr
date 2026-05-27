@@ -22,7 +22,12 @@ import {
   setSsrDiagnosticHeader,
 } from '../utils/http-paths';
 import { ensureSafeRequest } from '../utils/request-safety';
-import { isElearnSpaRootPath, resolveElearnIndexPath, sendElearnSpaIndex } from './elearn-spa';
+import {
+  isElearnAppShellPath,
+  resolveElearnIndexPath,
+  resolveElearnSpaMountPath,
+  sendElearnSpaIndex,
+} from './elearn-spa';
 
 export interface SsrCatchAllDeps {
   angularApp: AngularNodeAppEngine;
@@ -80,8 +85,8 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
     }
 
     const elearnIndexFile = resolveElearnIndexPath(elearnBrowserFolder);
-    if (elearnIndexFile && isElearnSpaRootPath(requestPath)) {
-      sendElearnSpaIndex(res, '/', elearnIndexFile);
+    if (elearnIndexFile && isElearnAppShellPath(requestPath)) {
+      sendElearnSpaIndex(res, resolveElearnSpaMountPath(requestPath), elearnIndexFile);
       return;
     }
 
@@ -228,8 +233,8 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
         return;
       }
       const elearnIdx = resolveElearnIndexPath(elearnBrowserFolder);
-      if (elearnIdx && isElearnSpaRootPath(path)) {
-        sendElearnSpaIndex(res, '/', elearnIdx);
+      if (elearnIdx && isElearnAppShellPath(path)) {
+        sendElearnSpaIndex(res, resolveElearnSpaMountPath(path), elearnIdx);
         return;
       }
       const elearnPrimary = join(elearnBrowserFolder, 'index.html');

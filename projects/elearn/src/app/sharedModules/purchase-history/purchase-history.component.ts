@@ -29,8 +29,14 @@ export class PurchaseHistoryComponent implements OnInit {
   selectedItem: StudentPurchaseHistoryItem | null = null;
   showReceiptModal = false;
   showInvoiceModal = false;
-  sellerName = environment.certificateBrandName || 'Oil and Gas Club';
-  sellerWebsite = environment.seoUrl || '';
+  readonly companyLegalName = 'OILANDGASCLUB EDUTECH (OPC) PRIVATE LIMITED';
+  readonly companyCin = 'U85500TN2025OPC185436';
+  readonly companyTan = 'CHEO07226C';
+  readonly companyGst = '33AAECO9137B1ZP';
+  readonly refundPolicyUrl = 'https://www.oilandgasclub.com/refund-cancellation-policy';
+  readonly sellerWebsite = 'https://www.oilandgasclub.com/';
+  readonly companyLogoUrl =
+    (environment as { logoUrl?: string }).logoUrl || 'assets/img/oilandgas_club.svg';
 
   constructor(
     private api: StudentDashboardApiService,
@@ -128,5 +134,17 @@ export class PurchaseHistoryComponent implements OnInit {
 
   invoiceIgst(item: StudentPurchaseHistoryItem): number {
     return this.receiptTax(item);
+  }
+
+  onCompanyLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (!img) return;
+    if (!img.src.includes('assets/img/oilandgas_club.svg')) {
+      img.src = 'assets/img/oilandgas_club.svg';
+      return;
+    }
+    if (!img.src.includes('assets/s3/oilandgas_club.svg')) {
+      img.src = 'assets/s3/oilandgas_club.svg';
+    }
   }
 }

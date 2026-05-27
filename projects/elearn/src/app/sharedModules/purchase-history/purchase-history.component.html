@@ -83,9 +83,18 @@
       <div class="purchase-history__receipt-body">
         <div class="purchase-history__receipt-grid">
           <div class="purchase-history__receipt-seller">
-            <strong>{{ sellerName }}</strong><br>
-            <span class="purchase-history__receipt-address">—</span><br>
-            <a [href]="sellerWebsite" target="_blank" rel="noopener">{{ sellerWebsite }}</a>
+            <img
+              class="purchase-history__company-logo"
+              [src]="companyLogoUrl"
+              alt="Oilandgasclub"
+              (error)="onCompanyLogoError($event)" />
+            <div class="purchase-history__company-ids">
+              <strong>{{ companyLegalName }}</strong><br>
+              CIN: {{ companyCin }}<br>
+              TAN: {{ companyTan }}<br>
+              GST: {{ companyGst }}<br>
+              <a [href]="sellerWebsite" target="_blank" rel="noopener noreferrer">{{ sellerWebsite }}</a>
+            </div>
           </div>
           <div class="purchase-history__receipt-meta">
             <strong>Date:</strong> {{ selectedItem.purchaseDate | date:'MMM. d, y' }}<br>
@@ -121,6 +130,10 @@
           <p><strong>Total Paid:</strong> {{ (selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</p>
         </div>
         <p class="purchase-history__receipt-disclaimer">*For any users charged VAT, the Tax amount is calculated on the Subtotal, not the Total Amount.</p>
+        <p class="purchase-history__refund-note">
+          Refund not possible. Refer to our
+          <a [href]="refundPolicyUrl" target="_blank" rel="noopener noreferrer">refund &amp; cancellation policy</a>.
+        </p>
       </div>
     </div>
   </div>
@@ -138,11 +151,19 @@
       </div>
       <div class="purchase-history__invoice-body">
         <div class="purchase-history__invoice-grid">
-          <div>
+          <div class="purchase-history__invoice-supplier">
+            <img
+              class="purchase-history__company-logo"
+              [src]="companyLogoUrl"
+              alt="Oilandgasclub"
+              (error)="onCompanyLogoError($event)" />
             <strong>Supplier details:</strong><br>
-            {{ sellerName }}<br>
-            <span class="purchase-history__receipt-address">—</span><br>
-            GSTIN: —<br>PAN no. —
+            <span class="purchase-history__company-ids">
+              {{ companyLegalName }}<br>
+              CIN: {{ companyCin }}<br>
+              TAN: {{ companyTan }}<br>
+              GSTIN: {{ companyGst }}
+            </span>
           </div>
           <div>
             <strong>Recipient details:</strong><br>
@@ -187,7 +208,12 @@
             </tr>
           </tfoot>
         </table>
+        <p class="purchase-history__invoice-rcm">Whether GST is applicable under reverse charge mechanism? NO</p>
         <p class="purchase-history__receipt-disclaimer">This is a system generated invoice and does not require a signature or a digital signature.</p>
+        <p class="purchase-history__refund-note">
+          Refund not possible. Refer to our
+          <a [href]="refundPolicyUrl" target="_blank" rel="noopener noreferrer">refund &amp; cancellation policy</a>.
+        </p>
       </div>
     </div>
   </div>

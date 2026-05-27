@@ -12,6 +12,7 @@ import { BlogService } from '../blog/blog.service';
 import { PublicCourseModule } from '../public-course/public-course.module';
 import { BlogDetailComponent } from '../blog/blog-detail/blog-detail.component';
 import { PublicEventModule } from '../public-event/public-event.module';
+import { appShellRedirectForSlug, isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
 
 @Component({
   selector: 'app-slug-resolver',
@@ -88,6 +89,13 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
           this.notFound.set(true);
           this.loading.set(false);
           return of(null);
+        }
+        if (isAppShellSlug(slug) && isPlatformBrowser(this.platformId)) {
+          const target = appShellRedirectForSlug(slug);
+          if (target) {
+            window.location.replace(target);
+            return of(null);
+          }
         }
         this.slug.set(slug);
         this.loading.set(true);

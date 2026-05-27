@@ -257,6 +257,50 @@ $text-muted: #6b7280;
   margin: 0 0 0.25rem;
 }
 
+.purchase-history__company-logo {
+  display: block;
+  max-width: 160px;
+  max-height: 48px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 0.75rem;
+}
+
+.purchase-history__company-ids {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--app-dark, #1f2937);
+
+  a {
+    color: #c45c26;
+    word-break: break-all;
+  }
+}
+
+.purchase-history__invoice-supplier {
+  min-width: 0;
+}
+
+.purchase-history__invoice-rcm {
+  font-size: 0.875rem;
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  color: var(--app-dark, #1f2937);
+}
+
+.purchase-history__refund-note {
+  font-size: 0.8125rem;
+  color: $text-muted;
+  margin: 0.75rem 0 0;
+
+  a {
+    color: #c45c26;
+    text-decoration: underline;
+  }
+}
+
 .purchase-history__modal-close {
   position: absolute;
   top: -0.25rem;

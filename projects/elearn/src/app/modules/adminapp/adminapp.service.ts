@@ -5,6 +5,7 @@ import { environment } from './../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEventType, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { AuthenticationService } from '../auth/auth.service';
+import { getApiBaseUrl } from 'src/app/core/helpers/api-base-url.helper';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAppService {
@@ -639,8 +640,10 @@ export class AdminAppService {
     /**
      * Check if course is completed for certificate (dynamic certificate view/download).
      */
-    checkCertificateCompleted(enrollmentId: string): Observable<{ completed: boolean }> {
-        return this.http.get<{ completed: boolean }>(this.apiUrl + `certificate/check/${enrollmentId}`);
+    checkCertificateCompleted(enrollmentId: string): Observable<{ completed: boolean; enrollmentId?: string }> {
+        return this.http.get<{ completed: boolean; enrollmentId?: string }>(
+            getApiBaseUrl() + `certificate/check/${enrollmentId}`
+        );
     }
 
     getDocumnetAsFile(doc, docId) {

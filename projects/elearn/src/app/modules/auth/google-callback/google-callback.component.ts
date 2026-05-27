@@ -115,8 +115,8 @@ export class GoogleCallbackComponent implements OnInit {
                       return;
                     }
                     this.authService.getUserInfo().subscribe({
-                      next: () => this.router.navigate([route]),
-                      error: () => this.router.navigate([route])
+                      next: () => this.router.navigateByUrl(route, { replaceUrl: true }),
+                      error: () => this.router.navigateByUrl(route, { replaceUrl: true })
                     });
                   } else {
                     this.error = 'User role is not configured. Please contact administrator.';

@@ -116,7 +116,7 @@ export class SsoCallbackComponent implements OnInit {
                 }
                 const route = getLandingRoute(pl);
                 if (route) {
-                  this.router.navigate([route]);
+                  this.router.navigateByUrl(route, { replaceUrl: true });
                 } else {
                   this.error = 'User role is not configured.';
                   this.loading = false;

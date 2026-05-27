@@ -23,9 +23,9 @@ export function registerApiBackendProxy(app: Express, enabled: boolean): void {
     return;
   }
 
-  console.log(`[SSR] Dev API proxy: /api/* → ${origin}`);
+  console.log(`[SSR] Dev API proxy: /api/* and /certificate/* → ${origin}`);
 
-  app.use('/api', (req: Request, res: Response) => {
+  const proxyToBackend = (req: Request, res: Response) => {
     let target: URL;
     try {
       target = new URL(req.originalUrl, origin);
@@ -78,5 +78,8 @@ export function registerApiBackendProxy(app: Express, enabled: boolean): void {
     } else {
       req.pipe(proxyReq);
     }
-  });
+  };
+
+  app.use('/api', proxyToBackend);
+  app.use('/certificate', proxyToBackend);
 }

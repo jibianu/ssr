@@ -146,18 +146,77 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
     return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
   }
 
+  /** Load categories + course catalog in parallel (Explore does not need per-course progress). */
   fetchCategories(): void {
+    this.loadExplorePage();
+  }
+
+  private loadExplorePage(): void {
+    this.exploreLoading = true;
+    this.exploreDataLoaded = true;
+
+    if (this.shouldUseCompanyExploreLayout()) {
+      this.loadCompanyExplorePage();
+      return;
+    }
+    this.loadStudentExplorePage();
+  }
+
+  private loadStudentExplorePage(): void {
+    this.splitExploreLayout = false;
+    this.tenantCategoriesWithCourses = [];
+    this.marketplaceCategoriesWithCourses = [];
     this.subscription.add(
-      this.appService.getPublishedCategories().subscribe({
-        next: (response) => {
-          this.categories = response || [];
+      forkJoin({
+        categories: this.appService.getPublishedCategories().pipe(catchError(() => of([]))),
+        allCourses: this.fetchAllPublicListingCourses(),
+        tenantId: resolveViewerTenantCompanyId$(this.authService).pipe(catchError(() => of(null)))
+      }).subscribe({
+        next: ({ categories, allCourses, tenantId }) => {
+          this.categories = categories || [];
           this.sortArr('name');
-          this.fetchCoursesByCategory();
+          const derived = this.categoriesDerivedFromCourses(allCourses || []);
+          const categoryList = this.categories.length > 0 ? this.categories : derived;
+          this.categoriesWithCourses = this.sortExploreBlocks(
+            this.buildBlocksForCategories(categoryList, allCourses || [], tenantId, 12)
+          );
+          this.exploreLoading = false;
+          this.fetchEnrollmentStatusBulk();
         },
         error: (error) => {
-          console.error('Error loading published categories:', error);
-          this.categories = [];
-          this.fetchCoursesByCategory();
+          console.error('Error loading explore courses:', error);
+          this.exploreLoading = false;
+        }
+      })
+    );
+  }
+
+  private loadCompanyExplorePage(): void {
+    const list = this.categories || [];
+    this.splitExploreLayout = true;
+    this.categoriesWithCourses = [];
+    this.subscription.add(
+      forkJoin({
+        categories: this.appService.getPublishedCategories().pipe(catchError(() => of([]))),
+        tenantCourses: this.fetchOrgCoursesForExplore(),
+        marketplaceCourses: this.fetchMarketplaceCatalogCoursesOnly(),
+        tenantId: resolveViewerTenantCompanyId$(this.authService).pipe(catchError(() => of(null)))
+      }).subscribe({
+        next: ({ categories, tenantCourses, marketplaceCourses, tenantId }) => {
+          this.categories = categories || [];
+          this.sortArr('name');
+          this.applyCompanyExploreResults(
+            tenantCourses || [],
+            marketplaceCourses || [],
+            tenantId,
+            this.categories.length > 0 ? this.categories : list
+          );
+          this.exploreLoading = false;
+          this.fetchEnrollmentStatusBulk();
+        },
+        error: (error) => {
+          console.error('Error loading company explore courses:', error);
+          this.exploreLoading = false;
         }
       })
     );
@@ -307,38 +366,35 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
    * Load all public-listing courses in few paginated calls (API caps pageSize at 100),
    * then group by category — avoids one GET per category plus one price GET per course.
    */
-  private fetchAllPublicListingCourses() {
-    const baseParams: Record<string, string | number | boolean> = {
+  private exploreListingParams(extra: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
+    return {
       pageSize: 100,
       'Sort.PropertyName': 'Title',
       'Sort.IsAscending': 'true',
-      'Filter.IsProgressInfo': true,
-      'Filter.ForPublicListing': true
+      'Filter.IsProgressInfo': false,
+      ...extra
     };
-    return this.fetchCoursesPages(baseParams);
+  }
+
+  private fetchAllPublicListingCourses() {
+    return this.fetchCoursesPages(
+      this.exploreListingParams({ 'Filter.ForPublicListing': true })
+    );
   }
 
   private fetchTenantCatalogCoursesOnly() {
-    return this.fetchCoursesPages({
-      pageSize: 100,
-      'Sort.PropertyName': 'Title',
-      'Sort.IsAscending': 'true',
-      'Filter.IsProgressInfo': true,
-      'Filter.ExploreCatalogFilter': EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY
-    });
+    return this.fetchCoursesPages(
+      this.exploreListingParams({ 'Filter.ExploreCatalogFilter': EXPLORE_CATALOG_COMPANY_PRIVATE_ONLY })
+    );
   }
 
   private fetchMarketplaceCatalogCoursesOnly() {
     if (this.isCompanyAdminViewer() || this.isOnCompanyPortalRoute()) {
       return this.fetchPublicCoursesPages();
     }
-    return this.fetchCoursesPages({
-      pageSize: 100,
-      'Sort.PropertyName': 'Title',
-      'Sort.IsAscending': 'true',
-      'Filter.IsProgressInfo': true,
-      'Filter.ForPublicListing': true
-    });
+    return this.fetchCoursesPages(
+      this.exploreListingParams({ 'Filter.ForPublicListing': true })
+    );
   }
 
   /** Derive category rows from course payloads (includes org-only categories not on global list). */
@@ -462,65 +518,6 @@ export class CommonCategoryComponent implements OnInit, OnDestroy {
       marketBlocks = this.fallbackAllCoursesBlock(marketplaceCourses, tenantId);
     }
     this.marketplaceCategoriesWithCourses = marketBlocks;
-  }
-
-  /** Load courses for all categories; one section per category, up to 12 courses per row */
-  fetchCoursesByCategory(): void {
-    const list = this.categories || [];
-    this.exploreLoading = true;
-    this.exploreDataLoaded = true;
-
-    if (this.shouldUseCompanyExploreLayout()) {
-      this.splitExploreLayout = true;
-      this.categoriesWithCourses = [];
-      this.subscription.add(
-        forkJoin({
-          tenantCourses: this.fetchOrgCoursesForExplore(),
-          marketplaceCourses: this.fetchMarketplaceCatalogCoursesOnly(),
-          tenantId: resolveViewerTenantCompanyId$(this.authService).pipe(catchError(() => of(null)))
-        }).subscribe({
-          next: ({ tenantCourses, marketplaceCourses, tenantId }) => {
-            this.applyCompanyExploreResults(
-              tenantCourses || [],
-              marketplaceCourses || [],
-              tenantId,
-              list
-            );
-            this.exploreLoading = false;
-            this.fetchEnrollmentStatusBulk();
-          },
-          error: (error) => {
-            console.error('Error loading company explore courses:', error);
-            this.exploreLoading = false;
-          }
-        })
-      );
-      return;
-    }
-
-    this.splitExploreLayout = false;
-    this.tenantCategoriesWithCourses = [];
-    this.marketplaceCategoriesWithCourses = [];
-    this.subscription.add(
-      forkJoin({
-        allCourses: this.fetchAllPublicListingCourses(),
-        tenantId: resolveViewerTenantCompanyId$(this.authService)
-      }).subscribe({
-        next: ({ allCourses, tenantId }) => {
-          const derived = this.categoriesDerivedFromCourses(allCourses || []);
-          const categoryList = list.length > 0 ? list : derived;
-          this.categoriesWithCourses = this.sortExploreBlocks(
-            this.buildBlocksForCategories(categoryList, allCourses || [], tenantId, 12)
-          );
-          this.exploreLoading = false;
-          this.fetchEnrollmentStatusBulk();
-        },
-        error: (error) => {
-          console.error('Error loading explore courses:', error);
-          this.exploreLoading = false;
-        }
-      })
-    );
   }
 
   /** Course id for routing/API (maps Id → id via shared helper). */

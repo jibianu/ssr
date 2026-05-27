@@ -381,7 +381,7 @@ export class LoginComponent implements OnInit {
               }
               const route = getLandingRoute(res);
               if (route) {
-                this.router.navigate([route]);
+                this.router.navigateByUrl(route, { replaceUrl: true });
               } else {
                 this.showRoleNotConfiguredModal();
               }

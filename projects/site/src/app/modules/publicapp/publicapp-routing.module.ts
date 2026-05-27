@@ -29,6 +29,7 @@ import { RedirectCoursesToSlugComponent } from './public-course/redirect-courses
 import { CheckoutComponent } from './checkout/checkout.component';
 import { PaymentSuccessComponent } from './payment-success/payment-success.component';
 import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirect-to-elearn.component';
+import { RedirectToAppShellComponent } from '../../core/redirect-to-app-shell/redirect-to-app-shell.component';
 
 const routes: Routes = [
   { 
@@ -332,6 +333,14 @@ const routes: Routes = [
     path: 'sso-callback',
     component: RedirectToElearnComponent
   },
+  // Elearn app shell segments — must not resolve as course/blog/event slugs (e.g. /dashboard after login)
+  { path: 'dashboard', component: RedirectToAppShellComponent },
+  { path: 'company', component: RedirectToAppShellComponent },
+  { path: 'admin', component: RedirectToAppShellComponent },
+  { path: 'trainer', component: RedirectToAppShellComponent },
+  { path: 'student', component: RedirectToAppShellComponent },
+  { path: 'management', component: RedirectToAppShellComponent },
+  { path: 'affiliate', component: RedirectToAppShellComponent },
   // ✅ Universal slug: domain/{slug} → course | blog | event (resolved by GET /api/slug-resolver/{slug})
   {
     path: ':slug',

@@ -53,6 +53,7 @@ export class JwtInterceptor implements HttpInterceptor {
             const isApiRequest =
                 request.url.includes('/api/') ||
                 request.url.startsWith('/api') ||
+                request.url.includes('/certificate/') ||
                 !apiBase ||
                 request.url.startsWith(apiBase);
             if (isApiRequest) {
