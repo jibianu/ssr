@@ -59,7 +59,7 @@
           aria-label="Toggle navigation"
                 
                 routerLinkActive="active"
-                  *ngFor="let item of curriculumList; index as i;">
+                  *ngFor="let item of curriculumList; index as i; trackBy: trackById">
                   <a class="nav-link customNavLink" (click)="goToCurriculumDetails(item,i)"
                     routerLink="/app/{{redirectTo}}/details/curriculum-details/{{item.id}}" (click)="itemOptions(item)">
                     <i class="fa fa-check-circle curriculum-sidebar-item__icon curriculum-sidebar-item__icon--completed" *ngIf="item.isCompleted"></i>
@@ -110,7 +110,7 @@
               </li>
               <div *ngIf="isTest">
                 <li class="nav-item sub-menu" routerLinkActive="active"
-                  *ngFor="let item of questionsSetList; index as i;">
+                  *ngFor="let item of questionsSetList; index as i; trackBy: trackById">
                   <a class="nav-link customNavLink" (click)="goToCurriculumDetails(item)"
                     routerLink="/app/{{redirectTo}}/details/test-details/{{item.id}}">
                     

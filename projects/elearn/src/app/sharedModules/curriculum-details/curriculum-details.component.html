@@ -11,7 +11,7 @@
   </div>
   <p class="curriculum-sidebar__subtitle">Select a topic to view content.</p>
   <ul class="curriculum-sidebar__list">
-    <li class="curriculum-sidebar__item" *ngFor="let item of Curriculams || []; index as i" [class.curriculum-sidebar__item--active]="item.id === curriculumId">
+    <li class="curriculum-sidebar__item" *ngFor="let item of Curriculams || []; index as i; trackBy: trackById" [class.curriculum-sidebar__item--active]="item.id === curriculumId">
       <a class="curriculum-sidebar__link" href="javascript:void(0)" (click)="openCurriculumAndCloseSidebar(item)">
         <span class="curriculum-sidebar__num">{{ i + 1 }}</span>
         <div class="curriculum-sidebar__body">

@@ -1,4 +1,4 @@
-import { map, switchMap, catchError } from 'rxjs/operators';
+import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { Category } from './category/category.model';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from './../../../environments/environment';
@@ -11,10 +11,29 @@ import { getApiBaseUrl } from 'src/app/core/helpers/api-base-url.helper';
 export class AdminAppService {
     user: any;
     apiUrl = environment.apiUrl;
+
+    /**
+     * Short-lived cache for the curriculum list (course structure) keyed by courseId.
+     * The course-details sidebar re-requests this on every in-course navigation (topic switch),
+     * so caching it avoids a heavy duplicate round-trip while browsing topics. Invalidated on
+     * progress writes and after a short TTL so completion state stays fresh.
+     */
+    private curriculumListCache = new Map<string, { obs: Observable<any>; ts: number }>();
+    private readonly curriculumListCacheTtlMs = 60_000;
+
     constructor(
         private http: HttpClient,
         private authService: AuthenticationService
     ) {
+    }
+
+    /** Drop cached curriculum list(s) so the next request re-fetches fresh progress/completion. */
+    invalidateCurriculumListCache(courseId?: string): void {
+        if (courseId) {
+            this.curriculumListCache.delete(courseId);
+        } else {
+            this.curriculumListCache.clear();
+        }
     }
 
     getCourses(params,right:boolean=true): Observable<any> {
@@ -680,7 +699,21 @@ export class AdminAppService {
     }
 
     getCurriculumByCourseId(courseId) {
-        return this.http.get<any>(this.apiUrl + `api/curriculum/course/` + courseId);
+        const key = String(courseId);
+        const cached = this.curriculumListCache.get(key);
+        if (cached && (Date.now() - cached.ts) < this.curriculumListCacheTtlMs) {
+            return cached.obs;
+        }
+        const obs = this.http.get<any>(this.apiUrl + `api/curriculum/course/` + courseId).pipe(
+            catchError((err) => {
+                // Don't cache failures – allow the next call to retry instead of replaying the error for the whole TTL.
+                this.curriculumListCache.delete(key);
+                return throwError(() => err);
+            }),
+            shareReplay({ bufferSize: 1, refCount: false })
+        );
+        this.curriculumListCache.set(key, { obs, ts: Date.now() });
+        return obs;
     }
     getCurriculumByCourseId1(courseId) {
         return this.http.get<any>(this.apiUrl + `api/curriculum/courseByCourse/` + courseId);
@@ -1019,6 +1052,8 @@ export class AdminAppService {
     }
     /** Save watch progress for a curriculum (video). When progress >= 90%, curriculum is marked completed. */
     saveCurriculumWatchProgress(payload: { curriculumId: string; secondsWatched: number; videoDurationSeconds?: number }) {
+        // Progress may flip a curriculum to "completed"; drop the cached list so the sidebar reflects it.
+        this.invalidateCurriculumListCache();
         return this.http.post<any>(this.apiUrl + `api/CourseProgress/SaveCurriculumWatchProgress`, payload);
     }
     getEnrolledCourses(params): Observable<any> {

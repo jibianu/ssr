@@ -45,8 +45,15 @@
     </iframe>
   </div>
 
-  <div class="player-video__loading" *ngIf="loading">
-    <p>Loading video...</p>
+  <div class="player-video__loading" *ngIf="loading" aria-busy="true" aria-live="polite">
+    <div class="player-video__skeleton">
+      <div class="player-video__skeleton-screen">
+        <div class="player-video__skeleton-play"></div>
+      </div>
+      <div class="player-video__skeleton-bar player-video__skeleton-bar--wide"></div>
+      <div class="player-video__skeleton-bar player-video__skeleton-bar--narrow"></div>
+    </div>
+    <span class="sr-only">Loading video…</span>
   </div>
   <div class="player-video__error" *ngIf="error && !loading">
     <p>Unable to load video.</p>

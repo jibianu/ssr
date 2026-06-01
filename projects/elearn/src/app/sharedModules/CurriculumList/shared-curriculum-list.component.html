@@ -3,7 +3,7 @@
   <p class="curriculum-list-page__subtitle">Select a topic to view concepts, study material, videos, and questions.</p>
 
   <div class="curriculum-list">
-    <a class="curriculum-card" *ngFor="let item of curriculumList; index as i" href="javascript:void(0)"
+    <a class="curriculum-card" *ngFor="let item of curriculumList; index as i; trackBy: trackById" href="javascript:void(0)"
       (click)="goToCurriculumDetails(item); $event.preventDefault()">
       <span class="curriculum-card__number">{{ i + 1 }}</span>
       <div class="curriculum-card__body">

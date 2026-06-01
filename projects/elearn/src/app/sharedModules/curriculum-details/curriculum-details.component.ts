@@ -133,6 +133,11 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
     this.route.navigate([path]);
   }
 
+  /** trackBy for the curriculum sidebar list so switching topics doesn't re-render every row. */
+  trackById(_index: number, item: any): any {
+    return item?.id ?? _index;
+  }
+
   /** Mobile: open a curriculum from the sidebar and close the sidebar (data updates via route). */
   openCurriculumAndCloseSidebar(item: any): void {
     if (item?.id) {

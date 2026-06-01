@@ -288,6 +288,11 @@ export class CourseDetailsComponent implements OnInit, DoCheck, OnDestroy {
 
   }
 
+  /** trackBy for curriculum / question-set lists to avoid re-rendering the whole sidebar on each change-detection pass. */
+  trackById(_index: number, item: any): any {
+    return item?.id ?? _index;
+  }
+
   /** True when curriculum has questions – user must pass quiz to complete; no manual mark. */
   hasQuestions(item: any): boolean {
     return (item?.curriculumQuestionCount ?? 0) > 0;

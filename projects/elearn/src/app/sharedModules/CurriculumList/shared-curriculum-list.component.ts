@@ -136,6 +136,11 @@ export class SharedCurriculumListComponent implements OnInit {
     console.log(r)
     this.router.navigateByUrl(r)
   }
+
+  /** trackBy for the curriculum list to avoid re-rendering rows unnecessarily. */
+  trackById(_index: number, item: any): any {
+    return item?.id ?? _index;
+  }
 }
 
 
