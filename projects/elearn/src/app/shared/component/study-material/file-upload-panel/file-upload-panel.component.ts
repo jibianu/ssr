@@ -85,8 +85,10 @@ export class FileUploadPanelComponent {
           this.uploadInProgressChange.emit(Object.keys(this.uploadProgress).length > 0);
         }
       },
-      error: () => {
-        this.errorMessage = `Upload failed: ${file.name}`;
+      error: (err) => {
+        const detail = this.extractUploadError(err);
+        this.errorMessage = detail ? `Upload failed: ${file.name} — ${detail}` : `Upload failed: ${file.name}`;
+        console.error('Study material file upload failed', { file: file.name, status: err?.status, error: err?.error });
         delete this.uploadProgress[key];
         this.uploadInProgressChange.emit(false);
       },
@@ -109,5 +111,30 @@ export class FileUploadPanelComponent {
 
   get progressEntries(): { name: string; pct: number }[] {
     return Object.entries(this.uploadProgress).map(([name, pct]) => ({ name, pct }));
+  }
+
+  /** Turn an HTTP error into a human-readable reason so failures are diagnosable. */
+  private extractUploadError(err: any): string {
+    if (!err) return '';
+    switch (err.status) {
+      case 0:
+        return 'Network error or the file is too large for the server. Please try a smaller file or check your connection.';
+      case 401:
+        return 'Your session has expired. Please sign in again.';
+      case 403:
+        return 'You do not have permission to upload files to this section.';
+      case 404:
+        return 'Section not found. Save the section first, then upload.';
+      case 413:
+        return 'The file is too large for the server.';
+      case 504:
+        return 'The upload timed out. Please try again or use a smaller file.';
+    }
+    const e = err.error;
+    if (typeof e === 'string' && e.trim()) return e;
+    if (Array.isArray(e?.messages) && e.messages.length) return e.messages.join(', ');
+    if (Array.isArray(e?.Messages) && e.Messages.length) return e.Messages.join(', ');
+    if (e?.message) return e.message;
+    return err.message || '';
   }
 }
