@@ -39,16 +39,19 @@ export class JwtInterceptor implements HttpInterceptor {
         // add authorization header with jwt token if available
         const token = this.authenticationService.currentToken();
         let uploadimage = false;
+        // Direct-to-S3 uploads/downloads (presigned URLs) must NOT receive our Authorization
+        // header (S3 rejects requests with two auth mechanisms) and shouldn't block the UI.
+        const isExternalStorage = /amazonaws\.com/i.test(request.url);
         const isDashboardRequest = /api\/(admin|company|management|student|trainer)\/(dashboard|billing)/.test(request.url);
         const showSpinner =
-            !isDashboardRequest && !JwtInterceptor.isSilentBackgroundUrl(request.url);
+            !isExternalStorage && !isDashboardRequest && !JwtInterceptor.isSilentBackgroundUrl(request.url);
         if (showSpinner) {
             JwtInterceptor.fullscreenSpinnerRefs++;
             if (JwtInterceptor.fullscreenSpinnerRefs === 1) {
                 this.spinner.show();
             }
         }
-        if (token) {
+        if (token && !isExternalStorage) {
             if (request.url.includes('api/CurriculumVideoLecture/UploadImage') || request.url.includes('api/CurriculumVideoLecture/UploadVideo')) {
                 uploadimage = true;
             }

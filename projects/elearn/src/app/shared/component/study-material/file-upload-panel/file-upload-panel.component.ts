@@ -74,28 +74,46 @@ export class FileUploadPanelComponent {
     this.uploadProgress[key] = 0;
     this.uploadInProgressChange.emit(true);
     this.errorMessage = '';
+    const contentType = file.type || 'application/octet-stream';
 
-    this.fileService.uploadFile(this.studyMaterialId, file).subscribe({
-      next: (ev) => {
-        if (ev.progress != null) this.uploadProgress[key] = ev.progress;
-        if (ev.result) {
-          this.files = [...this.files, ev.result];
-          this.filesChange.emit(this.files);
-          delete this.uploadProgress[key];
-          this.uploadInProgressChange.emit(Object.keys(this.uploadProgress).length > 0);
-        }
+    const fail = (err: any) => {
+      const detail = this.extractUploadError(err);
+      this.errorMessage = detail ? `Upload failed: ${file.name} — ${detail}` : `Upload failed: ${file.name}`;
+      console.error('Study material file upload failed', { file: file.name, status: err?.status, error: err?.error });
+      delete this.uploadProgress[key];
+      this.uploadInProgressChange.emit(Object.keys(this.uploadProgress).length > 0);
+    };
+
+    // Step 1: get a presigned S3 URL (small request – not subject to the gateway body limit).
+    this.fileService.createUploadUrl(this.studyMaterialId, file).subscribe({
+      next: (presign) => {
+        // Step 2: PUT the file bytes directly to S3.
+        this.fileService.uploadToStorage(presign.uploadUrl, file, contentType).subscribe({
+          next: (p) => {
+            this.uploadProgress[key] = p.progress;
+            if (!p.done) return;
+            // Step 3: register the uploaded file with the API.
+            this.fileService
+              .completeUpload(this.studyMaterialId, {
+                fileName: presign.fileName,
+                fileUrl: presign.fileUrl,
+                contentType,
+                fileSize: file.size
+              })
+              .subscribe({
+                next: (result) => {
+                  this.files = [...this.files, result];
+                  this.filesChange.emit(this.files);
+                  delete this.uploadProgress[key];
+                  this.uploadInProgressChange.emit(Object.keys(this.uploadProgress).length > 0);
+                },
+                error: fail
+              });
+          },
+          error: fail
+        });
       },
-      error: (err) => {
-        const detail = this.extractUploadError(err);
-        this.errorMessage = detail ? `Upload failed: ${file.name} — ${detail}` : `Upload failed: ${file.name}`;
-        console.error('Study material file upload failed', { file: file.name, status: err?.status, error: err?.error });
-        delete this.uploadProgress[key];
-        this.uploadInProgressChange.emit(false);
-      },
-      complete: () => {
-        if (this.uploadProgress[key] !== undefined) delete this.uploadProgress[key];
-        this.uploadInProgressChange.emit(Object.keys(this.uploadProgress).length > 0);
-      }
+      error: fail
     });
   }
 
