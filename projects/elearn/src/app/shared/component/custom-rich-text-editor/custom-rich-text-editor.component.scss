@@ -1,0 +1,167 @@
+:host {
+  display: block;
+  --rte-shell-bg: #fafafa;
+  --rte-bg: #fff;
+  --rte-border: #e8e8e8;
+  --rte-text: #333;
+  --rte-muted: #666;
+  --rte-placeholder: #8a8a8a;
+  --rte-title-size: 1.75rem;
+  --rte-toolbar-bg: #fff;
+  --rte-btn-hover: #f0f0f0;
+  --rte-btn-active-bg: #e8f4fc;
+  --rte-btn-active: #0a66c2;
+  --rte-focus: #0a66c2;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+:host-context(.dark-mode),
+.rte-shell--dark {
+  --rte-shell-bg: #1a1a1a;
+  --rte-bg: #242424;
+  --rte-border: #3d3d3d;
+  --rte-text: #e8e8e8;
+  --rte-muted: #aaa;
+  --rte-placeholder: #888;
+  --rte-toolbar-bg: #242424;
+  --rte-btn-hover: #333;
+  --rte-btn-active-bg: #1a3a52;
+}
+
+.rte-shell {
+  border: 1px solid var(--rte-border);
+  border-radius: 16px;
+  background: var(--rte-shell-bg);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:focus-within:not(.rte-shell--readonly) {
+    border-color: #c4c4c4;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.rte-surface {
+  background: var(--rte-bg);
+  padding: 20px 24px 8px;
+  min-height: 220px;
+}
+
+.rte-shell--compact .rte-surface {
+  min-height: 110px;
+  padding: 14px 18px 4px;
+}
+
+.rte-shell--compact .rte-body {
+  min-height: 80px;
+}
+
+.rte-title {
+  position: relative;
+  font-size: var(--rte-title-size);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--rte-text);
+  outline: none;
+  margin-bottom: 8px;
+  min-height: 2.2rem;
+  word-break: break-word;
+
+  &:empty::before,
+  &--empty::before {
+    content: attr(data-placeholder);
+    color: var(--rte-placeholder);
+    pointer-events: none;
+  }
+}
+
+.rte-body {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--rte-text);
+  outline: none;
+  min-height: 200px;
+  overflow: hidden;
+  word-break: break-word;
+
+  &--empty:not(:focus)::before,
+  &:empty:not(:focus)::before {
+    content: attr(data-placeholder);
+    color: var(--rte-placeholder);
+    pointer-events: none;
+    display: block;
+  }
+}
+
+.rte-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+:host ::ng-deep .rte-body {
+  p {
+    margin: 0.35em 0;
+  }
+
+  h1, h2, h3 {
+    margin: 0.5em 0 0.35em;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.4rem; }
+  h3 { font-size: 1.15rem; }
+
+  ul, ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+  }
+
+  blockquote {
+    margin: 0.75em 0;
+    padding-left: 1em;
+    border-left: 3px solid var(--rte-border);
+    color: var(--rte-muted);
+  }
+
+  pre {
+    margin: 0.75em 0;
+    padding: 12px 14px;
+    background: var(--rte-shell-bg);
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+  }
+
+  code {
+    font-family: inherit;
+  }
+
+  a {
+    color: var(--rte-btn-active);
+    text-decoration: underline;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 0.5em 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .rte-surface {
+    padding: 16px 16px 6px;
+  }
+
+  .rte-title {
+    font-size: 1.45rem;
+  }
+}

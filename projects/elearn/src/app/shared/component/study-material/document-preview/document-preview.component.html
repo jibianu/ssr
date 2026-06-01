@@ -1,0 +1,33 @@
+<!-- Student: PDF as continuous page images in document flow -->
+<app-pdf-inline-viewer *ngIf="file && useInlinePdf" [fileId]="file.id" [url]="file.fileUrl"></app-pdf-inline-viewer>
+
+<!-- Admin / office files: panel with optional iframe -->
+<div class="doc-preview doc-preview--panel" *ngIf="file && !useInlinePdf && readingMode === 'panel'">
+  <div class="doc-preview__frame" *ngIf="previewSrc">
+    <iframe
+      [src]="previewSrc | safeUrl"
+      class="doc-preview__iframe"
+      [title]="file.fileName"
+      loading="lazy"
+    ></iframe>
+  </div>
+  <div class="doc-preview__bar" *ngIf="previewSrc">
+    <span class="doc-preview__label"><i class="fa" [ngClass]="iconClass"></i> {{ file.fileName }}</span>
+    <div class="doc-preview__bar-actions" *ngIf="allowDownload">
+      <a [href]="file.fileUrl" target="_blank" rel="noopener" class="btn btn-sm btn-link" title="Download">
+        <i class="fa fa-download"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Student: non-PDF office docs (minimal, no download) -->
+<div class="doc-preview doc-preview--inline-office" *ngIf="file && !useInlinePdf && readingMode === 'inline'">
+  <iframe
+    *ngIf="previewSrc"
+    [src]="previewSrc | safeUrl"
+    class="doc-preview__iframe doc-preview__iframe--flow"
+    [title]="file.fileName"
+    loading="lazy"
+  ></iframe>
+</div>

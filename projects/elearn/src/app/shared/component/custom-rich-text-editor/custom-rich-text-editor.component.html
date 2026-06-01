@@ -1,0 +1,62 @@
+<div
+  class="rte-shell"
+  [class.rte-shell--readonly]="!isEditable"
+  [class.rte-shell--compact]="compact"
+  [class.rte-shell--dark]="false"
+  role="group"
+  aria-label="Rich text editor"
+>
+  <div class="rte-surface">
+    <div
+      *ngIf="showTitle"
+      #titleEl
+      class="rte-title"
+      [class.rte-title--empty]="titleEmpty"
+      [attr.contenteditable]="isEditable"
+      [attr.data-placeholder]="titlePlaceholder"
+      role="textbox"
+      aria-label="Title"
+      tabindex="0"
+      (focus)="onTitleFocus()"
+      (input)="onTitleInput()"
+      (blur)="onFieldBlur()"
+      (paste)="onTitlePaste($event)"
+    ></div>
+
+    <div
+      #bodyEl
+      class="rte-body"
+      [class.rte-body--empty]="bodyEmpty"
+      [attr.contenteditable]="isEditable"
+      [attr.data-placeholder]="bodyPlaceholder"
+      role="textbox"
+      aria-multiline="true"
+      aria-label="Content"
+      tabindex="0"
+      (focus)="onBodyFocus()"
+      (input)="onBodyInput()"
+      (blur)="onFieldBlur()"
+      (paste)="onBodyPaste($event)"
+      (keydown)="onBodyKeydown($event)"
+    ></div>
+  </div>
+
+  <app-editor-toolbar
+    *ngIf="isEditable"
+    [state]="toolbarState"
+    [disabled]="!isEditable"
+    [imageEnabled]="!!uploadImage"
+    (command)="onToolbarCommand($event)"
+    (formatBlock)="onFormatBlock($event)"
+  ></app-editor-toolbar>
+
+  <input
+    #imageInput
+    type="file"
+    accept="image/*"
+    class="rte-hidden-input"
+    tabindex="-1"
+    aria-hidden="true"
+    (change)="onImageSelected($event)"
+  />
+</div>

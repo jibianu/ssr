@@ -1,0 +1,161 @@
+.sm-reader {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: start;
+
+  &--student {
+    display: block;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 0 32px;
+  }
+}
+
+.sm-reader__sidebar {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.sm-reader__progress {
+  margin-bottom: 16px;
+}
+
+.sm-reader__progress-bar {
+  height: 6px;
+  background: #e5e5e5;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sm-reader__progress-fill {
+  height: 100%;
+  background: #f07d22;
+  transition: width 0.3s ease;
+}
+
+.sm-reader__progress-text {
+  font-size: 12px;
+  color: #666;
+  display: block;
+  margin-top: 6px;
+}
+
+.sm-reader__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sm-reader__nav-item {
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    background: #fff;
+  }
+
+  &--active {
+    background: #fff;
+    box-shadow: 0 0 0 2px #f07d22;
+  }
+}
+
+.sm-reader__nav-group {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.sm-reader__nav-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.sm-reader__main {
+  min-width: 0;
+}
+
+.sm-reader__article {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #eee;
+
+  .sm-reader--student & {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.sm-reader__article-header {
+  margin-bottom: 20px;
+}
+
+.sm-reader__group-label {
+  font-size: 13px;
+  color: #f07d22;
+  margin-bottom: 4px;
+}
+
+.sm-reader__article-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sm-reader__html {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+.sm-reader__attachments-title {
+  font-size: 1.1rem;
+  margin: 24px 0 12px;
+}
+
+.sm-reader__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0 32px;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(transparent, #fff 24px);
+}
+
+.sm-reader__empty {
+  text-align: center;
+  padding: 48px;
+  color: #888;
+
+  .fa {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 992px) {
+  .sm-reader {
+    grid-template-columns: 1fr;
+  }
+  .sm-reader__sidebar {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+}

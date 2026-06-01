@@ -8,7 +8,6 @@ import { AddCurriculumComponent } from './add-curriculum/add-curriculum.componen
 import { CurriculumListComponent } from './curriculum-list/curriculum-list.component';
 import { CurriculumDetailComponent } from './curriculum-detail/curriculum-detail.component';
 import { CurriculumDescriptionComponent } from './curriculum-description/curriculum-description.component';
-import { CurriculumConceptsComponent } from './curriculum-concepts/curriculum-concepts.component';
 import { CurriculumStudyMaterialComponent } from './curriculum-study-material/curriculum-study-material.component';
 import { CurriculumVideoComponent } from './curriculum-video/curriculum-video.component';
 import { CurriculumQuestionsSetComponent } from './curriculum-questions-set/curriculum-questions-set.component';
@@ -17,6 +16,7 @@ import { CourseQuestionComponent } from './course-question/course-question.compo
 import { CurriculumQuestionSetQuestionsListComponent } from './curriculum-questions-set/curriculum-question-set-questions-list/curriculum-question-set-questions-list.component';
 import { CoursePricesComponent } from './course-prices/course-prices.component';
 import { LessonEditorModule } from './../../../shared/component/lesson-editor/lesson-editor.module';
+import { StudyMaterialModule } from './../../../shared/component/study-material/study-material.module';
 import { CourseRejectModalComponent } from '../course/course-review/course-reject-modal/course-reject-modal.component';
 import { CourseApproveModalComponent } from '../course/course-review/course-approve-modal/course-approve-modal.component';
 
@@ -26,7 +26,6 @@ import { CourseApproveModalComponent } from '../course/course-review/course-appr
     CurriculumListComponent,
     CurriculumDetailComponent,
     CurriculumDescriptionComponent,
-    CurriculumConceptsComponent,
     CurriculumStudyMaterialComponent,
     CurriculumVideoComponent,
     CurriculumQuestionsSetComponent,
@@ -40,6 +39,7 @@ import { CourseApproveModalComponent } from '../course/course-review/course-appr
     SharedModule,
     CurriculumRoutingModule,
     LessonEditorModule,
+    StudyMaterialModule,
     CourseRejectModalComponent,
     CourseApproveModalComponent
   ],
@@ -48,7 +48,6 @@ import { CourseApproveModalComponent } from '../course/course-review/course-appr
     CurriculumListComponent,
     CurriculumDetailComponent,
     CurriculumDescriptionComponent,
-    CurriculumConceptsComponent,
     CurriculumStudyMaterialComponent,
     CurriculumVideoComponent,
     CurriculumQuestionsSetComponent,

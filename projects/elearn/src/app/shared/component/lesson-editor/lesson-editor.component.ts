@@ -35,6 +35,7 @@ export class LessonEditorComponent {
   @Input() set content(value: LessonContent | string | null | undefined) {
     this._lessonContent = typeof value === 'string' ? parseLessonContent(value) : (value || { ...EMPTY_LESSON_CONTENT });
     this._lessonContent.blocks = this._lessonContent.blocks.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+    this.maybeAutoStartTextBlock();
     this.cdr.markForCheck();
   }
   get lessonContent(): LessonContent {
@@ -44,6 +45,10 @@ export class LessonEditorComponent {
   @Input() mode: LessonEditorMode = 'author';
   /** When set, only these block types are shown in toolbar and rendered (e.g. ['text'] for question answer fields). */
   @Input() allowedBlockTypes?: LessonBlockType[];
+  /** When true and author mode with text-only blocks, starts with one empty text block. */
+  @Input() autoStartTextBlock = false;
+  /** Placeholder for empty text blocks in author mode. */
+  @Input() textPlaceholder?: string;
   /** Optional: (file) => Observable<url>. Enables inline + block image upload in text blocks. */
   @Input() uploadImage?: (file: File) => import('rxjs').Observable<string>;
   /** Optional: (url) => Observable<void>. Enables block image delete from S3. */
@@ -55,6 +60,7 @@ export class LessonEditorComponent {
 
   _lessonContent: LessonContent = { ...EMPTY_LESSON_CONTENT };
   private _uploadCount = 0;
+  private _autoStartApplied = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -83,6 +89,23 @@ export class LessonEditorComponent {
 
   get isAuthorMode(): boolean {
     return this.mode === 'author';
+  }
+
+  private maybeAutoStartTextBlock(): void {
+    if (
+      this._autoStartApplied ||
+      !this.autoStartTextBlock ||
+      this.mode !== 'author' ||
+      this._lessonContent.blocks.length > 0
+    ) {
+      return;
+    }
+    const textOnly =
+      !this.allowedBlockTypes?.length ||
+      (this.allowedBlockTypes.length === 1 && this.allowedBlockTypes[0] === 'text');
+    if (!textOnly) return;
+    this._autoStartApplied = true;
+    this.addBlock('text');
   }
 
   addBlock(type: LessonBlockType): void {

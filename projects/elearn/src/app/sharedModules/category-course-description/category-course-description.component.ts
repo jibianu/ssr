@@ -218,17 +218,12 @@ export class CategoryCourseDescriptionComponent implements OnInit, OnDestroy {
   getModuleDurationMinutes(item: any): number {
     const v = item?.curriculumVideoLectureCount ?? 0;
     const q = item?.curriculumQuestionCount ?? 0;
-    const c = item?.curriculumConceptCount ?? 0;
-    return Math.max(0, v * 5 + q * 2 + c * 3);
+    return Math.max(0, v * 5 + q * 2);
   }
 
-  /** Content rows for accordion body: same format as admin (Key Points : title, Study Materials : title, Video : title, Q/A (n)) */
+  /** Content rows for accordion body: same format as admin (Study Materials : title, Video : title, Q/A (n)) */
   getModuleContentRows(item: any): { displayText: string; icon: string }[] {
     const rows: { displayText: string; icon: string }[] = [];
-    if ((item?.curriculumConceptCount ?? 0) > 0) {
-      const text = item?.firstConceptTitle ? `Key Points : ${item.firstConceptTitle}` : `Key Points (${item.curriculumConceptCount})`;
-      rows.push({ displayText: text, icon: 'fa-lightbulb-o' });
-    }
     if ((item?.curriculumStudyMaterialCount ?? 0) > 0) {
       const text = item?.firstStudyMaterialTitle ? `Study Materials : ${item.firstStudyMaterialTitle}` : `Study Materials (${item.curriculumStudyMaterialCount})`;
       rows.push({ displayText: text, icon: 'fa-book' });

@@ -1,0 +1,74 @@
+<div class="sm-section" [formGroup]="sectionForm">
+  <div class="sm-section__header">
+    <span class="sm-section__drag-handle" cdkDragHandle title="Drag to reorder">
+      <i class="fa fa-bars" aria-hidden="true"></i>
+    </span>
+    <span class="sm-section__title">Study Material Section {{ index + 1 }}</span>
+    <div class="sm-section__header-actions">
+      <button
+        type="button"
+        class="btn btn-sm btn-light sm-section__action-btn"
+        (click)="copySectionContent($event)"
+        title="Copy section content to clipboard"
+      >
+        <i class="fa fa-copy"></i>
+        <span class="sm-section__action-label" *ngIf="copyFeedback">{{ copyFeedback }}</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-light sm-section__action-btn"
+        (click)="onDuplicate($event)"
+        title="Duplicate section"
+      >
+        <i class="fa fa-clone"></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-light sm-section__action-btn"
+        (click)="togglePreview($event)"
+        [disabled]="!savedOnce && previewAfterSaveOnly"
+        title="Preview"
+      >
+        <i class="fa fa-eye"></i> Preview
+      </button>
+      <button type="button" class="btn btn-sm btn-warning sm-section__action-btn" (click)="onArchive($event)" title="Archive">
+        <i class="fa fa-archive"></i>
+      </button>
+      <button type="button" class="btn btn-sm btn-danger sm-section__action-btn" (click)="onRemove($event)" title="Remove">
+        <i class="fa fa-trash"></i> Remove
+      </button>
+    </div>
+  </div>
+
+  <div class="sm-section__body">
+    <div class="form-group">
+      <label>Content</label>
+      <app-custom-rich-text-editor
+        [title]="sectionForm.get('title')?.value"
+        (titleChange)="sectionForm.patchValue({ title: $event })"
+        [html]="editorHtml"
+        (htmlChange)="onHtmlChange($event)"
+        titlePlaceholder="Title"
+        bodyPlaceholder="Write hear"
+        [uploadImage]="uploadImage"
+        (uploadInProgressChange)="uploadInProgressChange.emit($event)"
+      ></app-custom-rich-text-editor>
+    </div>
+
+    <div class="form-group">
+      <label>Attachments</label>
+      <app-file-upload-panel
+        [studyMaterialId]="sectionId"
+        [files]="files"
+        (filesChange)="files = $event"
+        (uploadInProgressChange)="uploadInProgressChange.emit($event)"
+      ></app-file-upload-panel>
+    </div>
+
+    <div class="sm-section__preview" *ngIf="canShowInlinePreview && showPreview">
+      <h6 class="sm-section__preview-label">Student preview</h6>
+      <div class="sm-section__preview-html post-body" [innerHTML]="editorHtml | fixMojibakeSafeHtml"></div>
+      <app-document-preview *ngFor="let f of files" [file]="f" readingMode="panel" [allowDownload]="true"></app-document-preview>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+<div class="sm-upload" [class.sm-upload--drag]="dragOver" *ngIf="!readonly">
+  <div
+    class="sm-upload__dropzone"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    <i class="fa fa-cloud-upload sm-upload__icon"></i>
+    <p class="sm-upload__text">Drag & drop files here or</p>
+    <label class="btn btn-sm btn-outline-primary sm-upload__browse">
+      Browse files
+      <input type="file" multiple hidden [accept]="'.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx'" (change)="onFileSelected($event)" />
+    </label>
+    <p class="sm-upload__hint">{{ allowedLabel }}</p>
+  </div>
+  <p class="text-danger small" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <div class="sm-upload__progress" *ngFor="let p of progressEntries">
+    <span class="sm-upload__progress-name">{{ p.name }}</span>
+    <div class="progress">
+      <div class="progress-bar" [style.width.%]="p.pct"></div>
+    </div>
+  </div>
+</div>
+
+<ul class="sm-upload__list" *ngIf="files?.length">
+  <li class="sm-upload__item" *ngFor="let f of files">
+    <i class="fa fa-paperclip"></i>
+    <span class="sm-upload__fname">{{ f.fileName }}</span>
+    <span class="sm-upload__fsize text-muted small">{{ (f.fileSizeBytes / 1024 / 1024) | number:'1.1-1' }} MB</span>
+    <button *ngIf="!readonly" type="button" class="btn btn-sm btn-link text-danger" (click)="deleteFile(f)" title="Remove">
+      <i class="fa fa-trash"></i>
+    </button>
+  </li>
+</ul>

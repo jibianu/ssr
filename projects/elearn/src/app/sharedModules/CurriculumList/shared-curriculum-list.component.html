@@ -8,8 +8,7 @@
       <span class="curriculum-card__number">{{ i + 1 }}</span>
       <div class="curriculum-card__body">
         <h3 class="curriculum-card__title">{{ item?.title }}</h3>
-        <div class="curriculum-card__meta" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
-          <span class="curriculum-card__meta-item" *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+        <div class="curriculum-card__meta" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
           <span class="curriculum-card__meta-item" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
           <span class="curriculum-card__meta-item" *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
           <span class="curriculum-card__meta-item" *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>

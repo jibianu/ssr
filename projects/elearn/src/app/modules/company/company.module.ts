@@ -22,7 +22,6 @@ import { CommonPaginationComponent } from 'src/app/shared/component/common-pagin
 // import { CurriculumDetailsComponent } from 'src/app/sharedModules/curriculum-details/curriculum-details.component';
 // import { CurriculumVideosComponent } from 'src/app/sharedModules/curriculum-details/curriculum-videos-component/curriculum-videos.component';
 // import { SharedCurriculumStudyMaterialComponent } from 'src/app/sharedModules/curriculum-details/shared-curriculum-study-material/shared-curriculum-study-material.component';
-// import { SharedCurriculumConceptsComponent } from 'src/app/sharedModules/curriculum-details/shared-curriculum-concepts-component/shared-curriculum-concepts.component';
 // import { CurriculumQuestionsComponent } from 'src/app/sharedModules/curriculum-details/curriculum-questions/curriculum-questions.component';
 
 @NgModule({
@@ -43,7 +42,6 @@ import { CommonPaginationComponent } from 'src/app/shared/component/common-pagin
     // QuestionsBankComponent,
     // CurriculumDetailsComponent,
     // CurriculumVideosComponent,
-    // SharedCurriculumConceptsComponent,
     // SharedCurriculumStudyMaterialComponent,
     // CurriculumQuestionsComponent
   ],

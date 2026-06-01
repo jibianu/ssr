@@ -1,44 +1,44 @@
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
-import { Component, Input, OnInit, OnChanges, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import {
+  CurriculumStudyMaterialGroupDto,
+  normalizeStudyMaterialGroups
+} from 'src/app/shared/models/study-material.model';
 
 @Component({
-    selector: 'app-student-curriculum-study-material',
-    templateUrl: './student-curriculum-study-material.component.html',
-    styleUrls: ['./student-curriculum-study-material.component.scss'],
-    standalone: false
+  selector: 'app-student-curriculum-study-material',
+  templateUrl: './student-curriculum-study-material.component.html',
+  styleUrls: ['./student-curriculum-study-material.component.scss'],
+  standalone: false
 })
-export class StudentCurriculumStudyMaterialComponent implements OnInit, OnChanges, OnDestroy {
-
+export class StudentCurriculumStudyMaterialComponent implements OnChanges, OnDestroy {
   @Input() curriculumId: string;
-  studyMaterials = [];
-  subscription: Subscription = new Subscription();
-  constructor(
-    private appService: AdminAppService,
-  ) { }
+  studyMaterials: CurriculumStudyMaterialGroupDto[] = [];
+  loading = true;
 
-  ngOnInit(): void {
-  }
+  private subscription = new Subscription();
 
-  ngOnChanges() {
+  constructor(private appService: AdminAppService) {}
+
+  ngOnChanges(): void {
     if (this.curriculumId) {
-      this.getStudyMaterialByCurriculumId(this.curriculumId);
+      this.subscription.add(
+        this.appService.getCurriculumStudyMaterialByCurriculumId(this.curriculumId).subscribe({
+          next: (res: unknown) => {
+            this.studyMaterials = normalizeStudyMaterialGroups(res);
+            this.loading = false;
+          },
+          error: () => {
+            this.studyMaterials = [];
+            this.loading = false;
+          }
+        })
+      );
     }
   }
 
-
-  getStudyMaterialByCurriculumId(id) {
-    this.subscription.add(this.appService.getCurriculumStudyMaterialByCurriculumId(id).subscribe((res: any) => {
-      if (res) {
-        this.studyMaterials = res;
-      }
-    }));
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
-
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-  }
-
 }

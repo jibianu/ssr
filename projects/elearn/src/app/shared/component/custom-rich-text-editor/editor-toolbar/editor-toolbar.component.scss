@@ -1,0 +1,136 @@
+:host {
+  display: block;
+}
+
+.rte-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 14px;
+  background: var(--rte-toolbar-bg, #fff);
+  border-top: 1px solid var(--rte-border, #e8e8e8);
+  min-height: 48px;
+}
+
+.rte-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rte-toolbar__divider {
+  width: 1px;
+  height: 22px;
+  background: var(--rte-border, #e0e0e0);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.rte-toolbar__select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.rte-toolbar__select {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rte-text, #333);
+  padding: 6px 28px 6px 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--rte-btn-hover, #f0f0f0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.rte-toolbar__chevron {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--rte-muted, #666);
+  transform: translateY(-25%);
+  pointer-events: none;
+}
+
+.rte-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--rte-text, #333);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--rte-btn-hover, #f0f0f0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--rte-focus, #0a66c2);
+    outline-offset: 1px;
+  }
+
+  &--active {
+    background: var(--rte-btn-active-bg, #e8f4fc);
+    color: var(--rte-btn-active, #0a66c2);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--icon {
+    padding: 0 6px;
+  }
+}
+
+.rte-toolbar__underline {
+  text-decoration: underline;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 576px) {
+  .rte-toolbar__divider {
+    margin: 0 4px;
+  }
+
+  .rte-toolbar {
+    padding: 8px 10px;
+  }
+}

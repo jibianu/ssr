@@ -24,7 +24,7 @@
           <div class="video-info-card">
             <div class="video-description">
               <h4>Description</h4>
-              <p>{{videoObj?.description}}</p>
+              <div class="post-body" [innerHTML]="videoObj?.description | fixMojibakeSafeHtml"></div>
             </div>
             <div *ngIf="item?.videoLectures?.length > 1" class="video-switcher mt-2">
               <button type="button" class="btn btn-sm btn-outline-secondary me-1" *ngFor="let v of item.videoLectures"

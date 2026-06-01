@@ -26,8 +26,7 @@
               <tr *ngFor="let item of curriculumList | filter:term | paginate: config; trackBy: trackByCurriculumId" class="curriculum-page__row">
                 <td class="curriculum-page__cell">
                   <a href="javascript:void(0)" class="curriculum-page__link" (click)="checkCourse(content, item)">{{item?.title}}</a>
-                  <div class="curriculum-page__subtitles" aria-label="Curriculum content types" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
-                    <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+                  <div class="curriculum-page__subtitles" aria-label="Curriculum content types" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
                     <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
                     <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
                     <span class="curriculum-page__subtitle" *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>
@@ -111,11 +110,8 @@
         </div>
       </div>
       <!-- Row 2: 4 Tab buttons (show in view and in edit mode so user can switch sections) -->
-      <div class="curriculum-modal-header__tabs-row" *ngIf="(operationOnModal==='view' && !isEditingCurriculum) || operationOnModal==='concepts' || operationOnModal==='add-concepts' || operationOnModal==='study-material' || operationOnModal==='add-study-material' || operationOnModal==='videos' || operationOnModal==='add-videos' || operationOnModal==='questions' || operationOnModal==='add-questions'">
+      <div class="curriculum-modal-header__tabs-row" *ngIf="(operationOnModal==='view' && !isEditingCurriculum) || operationOnModal==='study-material' || operationOnModal==='add-study-material' || operationOnModal==='videos' || operationOnModal==='add-videos' || operationOnModal==='questions' || operationOnModal==='add-questions'">
         <div class="curriculum-modal-header__tabs">
-          <button type="button" (click)="scrollToContent('KeyPoint')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='concepts' || operationOnModal==='add-concepts'" title="Key Points">
-            <i class="fa fa-lightbulb-o"></i> Key Points <span *ngIf="(selectedCurriculumItem?.curriculumConceptCount ?? 0) > 0" class="curriculum-modal-header__count">({{selectedCurriculumItem?.curriculumConceptCount}})</span>
-          </button>
           <button type="button" (click)="scrollToContent('StudyMaterials')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='study-material' || operationOnModal==='add-study-material'" title="Study Materials">
             <i class="fa fa-book"></i> Study Materials <span *ngIf="(selectedCurriculumItem?.curriculumStudyMaterialCount ?? 0) > 0" class="curriculum-modal-header__count">({{selectedCurriculumItem?.curriculumStudyMaterialCount}})</span>
           </button>
@@ -135,45 +131,6 @@
       <div class="card curriculum-view__card">
         <div class="card-body pt-0 pb-1 curriculum-view__card-body">
           <div class="col-md-12 p-0 customScroll">
-            <!-- Key Points -->
-            <div class="curriculum-view__section" id="KeyPoint" *ngIf="concepts?.length">
-              <div class="curriculum-view__section-header curriculum-view__section-header--with-action">
-                <div class="curriculum-view__section-title">
-                  <i class="fa fa-lightbulb-o"></i>
-                  <span>Key Points</span>
-                </div>
-                <div class="curriculum-view__section-actions">
-                  <button type="button" class="btn btn-success btn-sm curriculum-view__add-btn" (click)="editCurriculum('add-concepts')" title="Add Concept">
-                    <i class="fa fa-plus"></i> Add Concept
-                  </button>
-                </div>
-              </div>
-              <div class="curriculum-view__content-list" *ngFor="let item of concepts; trackBy: trackByCurriculumId">
-                <div class="curriculum-view__content-card">
-                  <div class="curriculum-view__card-header curriculum-view__card-header--with-actions">
-                    <h5 class="curriculum-view__card-title">{{ item?.title | fixMojibake }}</h5>
-                    <div class="curriculum-view__card-actions">
-                      <button type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('concepts', item)" title="Edit Key Point">
-                        <i class="fa fa-pencil"></i> Edit
-                      </button>
-                      <button type="button" class="btn btn-outline-danger btn-sm curriculum-view__header-delete-btn" (click)="deleteConcept(item)" title="Delete Key Point (removes from DB and S3)">
-                        <i class="fa fa-trash"></i> Delete
-                      </button>
-                    </div>
-                  </div>
-                  <div class="curriculum-view__card-body" *ngFor="let x of item.concepts; trackBy: trackByConceptId">
-                    <h6 class="curriculum-view__item-title">{{ x?.title | fixMojibake }}</h6>
-                    <div class="curriculum-view__item-image" *ngIf="x.imageLink">
-                      <img [src]="x.imageLink" alt="Concept" />
-                    </div>
-                    <div class="curriculum-view__item-content">
-                      <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <!-- Study Materials -->
             <div class="curriculum-view__section" id="StudyMaterials" *ngIf="studyMaterials?.length">
               <div class="curriculum-view__section-header curriculum-view__section-header--with-action">
@@ -202,12 +159,10 @@
                   </div>
                   <div class="curriculum-view__card-body" *ngFor="let x of item.studyMaterials; trackBy: trackByConceptId">
                     <h6 class="curriculum-view__item-title">{{ x?.title | fixMojibake }}</h6>
-                    <div class="curriculum-view__item-image" *ngIf="x.imageLink">
-                      <img [src]="x.imageLink" alt="Study material" />
-                    </div>
                     <div class="curriculum-view__item-content">
                       <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
+                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description) && isHtmlStudyContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
+                      <app-document-preview *ngFor="let f of x.files" [file]="f" readingMode="panel" [allowDownload]="true"></app-document-preview>
                     </div>
                   </div>
                 </div>
@@ -255,7 +210,7 @@
                         <div class="curriculum-view__card-header">
                           <h5 class="curriculum-view__card-title">{{ videoObj?.title | fixMojibake }}</h5>
                         </div>
-                        <p class="curriculum-view__video-desc">{{videoObj?.description}}</p>
+                        <div class="curriculum-view__video-desc post-body" [innerHTML]="videoObj?.description | fixMojibakeSafeHtml"></div>
                       </div>
                     </div>
                     <hr class="curriculum-view__divider" *ngIf="item?.videoLectures?.length > 1" />
@@ -307,137 +262,33 @@
         </div>
       </div>
     </div>
-    <div *ngIf="operationOnModal=='concepts' || operationOnModal=='add-concepts'" class="curriculum-editor-page">
-      <form [formGroup]="conceptForm">
-        <div class="form-group">
-          <label>Title <span class="text-muted small">(optional)</span></label>
-          <textarea type="text" formControlName="title" class="form-control addshowmore"
-            onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
-            [ngClass]="{ 'is-invalid': submitted && cf.title.errors }"> </textarea>
-        </div>
-  
-        <div formArrayName="concepts">
-          <div *ngFor="let item of courseConceptsArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
-            <div class="w-100 mb-2">
-              <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm"
-                (click)="removeCourseConceptItems(i)">
-                <span>Concept Section {{i + 1}}</span> <span>
-                  <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</span></a>
-            </div>
-  
-            <div class="mb-3">
-              <div [formGroupName]="i" class="h-100">
-                <div class="form-group">
-                  <label>Title <span class="text-muted small">(optional)</span></label>
-                  <input type="text" formControlName="title" class="form-control" />
-                </div>
-  
-                <div class="form-group lesson-editor-form-group">
-                  <label>Content (block-based lesson editor)</label>
-                  <div class="lesson-editor-container">
-                    <app-lesson-editor
-                      [content]="item.controls.description.value"
-                      [mode]="sectionViewMode('c-' + i)"
-                      [uploadImage]="uploadImageFn"
-                      [deleteImage]="deleteImageFn"
-                      (uploadInProgressChange)="uploadInProgress = $event"
-                      (jsonChange)="item.controls.description.setValue($event)"
-                    ></app-lesson-editor>
-                  </div>
-                  <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback d-block">
-                    <div *ngIf="item.controls.description.errors.required">Content is required (add at least one block)</div>
-                  </div>
-                </div>
-  
-                <div class="form-group">
-                  <label>Image</label>
-                  <br>
-                  <input type="file" name="image" accept="image/*" (change)="conceptfileProgress($event, i)" />
-                </div>
-                <div *ngIf="fileUploadProgress">
-                  Upload progress: {{ fileUploadProgress }}
-                </div>
-                <div class="image-preview mb-3" *ngIf="item.controls.imageLink.value">
-                  <img [src]="item.controls.imageLink.value" height="200" />
-                </div>
-  
-                <div class="mb-3" *ngIf="item.controls.imageLink.value">
-                  {{item.controls.imageLink.value}}
-                </div>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="btn btn-success w-100 ml-2 mb-2" (click)="addCourseConceptItems()">Add
-            Concept</button>
-        </div>
-      </form>
-      <!-- Sticky footer so Update/Cancel are always visible -->
-      <div class="question-editor__sticky-footer">
-        <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onConceptSubmit()" [disabled]="uploadInProgress">
-          <i class="fa fa-check"></i> {{btntext}}
-        </button>
-        <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="closeModal()">Cancel</button>
-      </div>
-    </div>
     <div *ngIf="operationOnModal=='study-material' || operationOnModal=='add-study-material'" class="curriculum-editor-page">
       <form [formGroup]="studyMaterialForm">
-        <div class="form-group">
-          <label>Title <span class="text-muted small">(optional)</span></label>
-          <textarea type="text" formControlName="title" class="form-control addshowmore" onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
-            [ngClass]="{ 'is-invalid': submitted && f.title.errors }"></textarea>
-        </div>
-  
-        <div formArrayName="studyMaterials">
-          <div *ngFor="let item of courseStudyMaterialsArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
-            <div class="d-sm-flex align-items-center justify-content-between">
-              <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm" (click)="removeCourseStudyMaterialsItems(i)">
-               <span>Study Material Section {{i + 1}}</span> <span><i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove </span></a>
-            </div>
-  
-            <div class="mb-3">
-              <div [formGroupName]="i" class="h-100">
-                <div class="form-group">
-                  <label>Title <span class="text-muted small">(optional)</span></label>
-                  <input type="text" formControlName="title" class="form-control" />
-                </div>
-  
-                <div class="form-group lesson-editor-form-group">
-                  <label>Content (block-based lesson editor)</label>
-                  <div class="lesson-editor-container">
-                    <app-lesson-editor
-                      [content]="item.controls.description.value"
-                      [mode]="sectionViewMode('sm-' + i)"
-                      [uploadImage]="uploadImageFn"
-                      [deleteImage]="deleteImageFn"
-                      (uploadInProgressChange)="uploadInProgress = $event"
-                      (jsonChange)="item.controls.description.setValue($event)"
-                    ></app-lesson-editor>
-                  </div>
-                  <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback d-block">
-                    <div *ngIf="item.controls.description.errors.required">Content is required (add at least one block)</div>
-                  </div>
-                </div>
-  
-                <div class="form-group">
-                  <label>Image</label>
-                  <br>
-                  <input type="file" name="image" accept="image/*" (change)="studyMaterialfileProgress($event, i)" />
-                </div>
-                <div *ngIf="fileUploadProgress">
-                  Upload progress: {{ fileUploadProgress }}
-                </div>
-                <div class="image-preview mb-3" *ngIf="item.controls.imageLink.value">
-                  <img [src]="item.controls.imageLink.value" height="200" />
-                </div>
-  
-                <div class="mb-3" *ngIf="item.controls.imageLink.value">
-                  {{item.controls.imageLink.value}}
-                </div>
-              </div>
+        <div formArrayName="studyMaterials" cdkDropList (cdkDropListDropped)="dropStudyMaterialSection($event)">
+          <div
+            *ngFor="let item of courseStudyMaterialsArray?.controls; let i = index; trackBy: trackByIndex"
+            cdkDrag
+            cdkDragLockAxis="y"
+            class="mb-3 sm-section-drag"
+            [hidden]="item.get('isArchived')?.value"
+          >
+            <div [formGroupName]="i">
+              <app-study-material-section-admin
+                [sectionForm]="item"
+                [index]="i"
+                [sectionKey]="'sm-' + i"
+                [savedOnce]="studyMaterialSavedOnce"
+                [uploadImage]="uploadImageFn"
+                (remove)="removeCourseStudyMaterialsItems(i)"
+                (duplicate)="duplicateStudyMaterialSection(i, $event)"
+                (archive)="archiveStudyMaterialSection(i)"
+                (uploadInProgressChange)="uploadInProgress = $event"
+              ></app-study-material-section-admin>
             </div>
           </div>
-          <button type="button" class="btn  w-100 btn-success ml-2 mb-2" (click)="addCourseStudyMaterialsItems()">Add
-            Study Material</button>
+          <button type="button" class="btn w-100 btn-success ml-2 mb-2" (click)="addCourseStudyMaterialsItems()">
+            <i class="fa fa-plus"></i> Add Study Material Section
+          </button>
         </div>
       </form>
       <!-- Sticky footer so Update/Cancel are always visible -->
@@ -450,82 +301,94 @@
     </div>
     <div *ngIf="operationOnModal=='videos' || operationOnModal=='add-videos'" class="curriculum-editor-page">
       <form [formGroup]="videoForm">
-        <div class="form-group">
-            <label>Title <span class="text-muted small">(optional)</span></label>
-            <textarea type="text" formControlName="title" class="form-control addshowmore" onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
-                [ngClass]="{ 'is-invalid': submitted && vf.title.errors }" ></textarea>
-        </div>
-
         <div formArrayName="videoLectures">
-            <div *ngFor="let item of courseVideoLectureArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
-                <div class="d-sm-flex align-items-center justify-content-between">
-                    <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm"
-                        (click)="removeCourseVideoLectureItems(i)">
-                        <span>Video Section {{i + 1}}</span><span>
-                        <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</span></a>
+            <div *ngFor="let item of courseVideoLectureArray?.controls; let i = index; trackBy: trackByIndex" class="vid-section">
+                <div class="vid-section__header">
+                    <span class="vid-section__title">
+                        <i class="fa fa-film" aria-hidden="true"></i> Video Section {{i + 1}}
+                    </span>
+                    <button type="button" class="vid-section__remove" (click)="removeCourseVideoLectureItems(i)" title="Remove this section">
+                        <i class="fa fa-trash-o" aria-hidden="true"></i> Remove
+                    </button>
                 </div>
 
-                <div class="mb-3">
-                    <div [formGroupName]="i" class="h-100">
-                        <div class="form-group">
-                            <label>Title <span class="text-muted small">(optional)</span></label>
-                            <input type="text" formControlName="title" class="form-control" />
+                <div class="vid-section__body" [formGroupName]="i">
+                    <div class="form-group">
+                        <label class="vid-section__label">Video Source</label>
+                        <div class="vid-toggle" role="group" aria-label="Video source">
+                            <button type="button" class="vid-toggle__btn" [class.vid-toggle__btn--active]="item.controls.providerType.value=='local'" (click)="changeProvider('local',i)">
+                                <i class="fa fa-upload" aria-hidden="true"></i> Local Upload
+                            </button>
+                            <button type="button" class="vid-toggle__btn" [class.vid-toggle__btn--active]="item.controls.providerType.value=='youtube'" (click)="changeProvider('youtube',i)">
+                                <i class="fa fa-youtube-play" aria-hidden="true"></i> YouTube
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Local upload -->
+                    <div *ngIf="item.controls.providerType.value=='local'">
+                        <div class="vid-dropzone" *ngIf="!item.controls.videoLink.value">
+                            <input type="file" class="vid-dropzone__input" id="vidfile-{{i}}" accept="video/*" (change)="videofileProgress($event,i)" />
+                            <label class="vid-dropzone__label" [attr.for]="'vidfile-' + i">
+                                <span class="vid-dropzone__icon"><i class="fa fa-cloud-upload" aria-hidden="true"></i></span>
+                                <span class="vid-dropzone__text">Click to choose a video file</span>
+                                <span class="vid-dropzone__hint">MP4, WebM or MOV</span>
+                            </label>
                         </div>
 
-                        <div class="form-group">
-                            <label>Description <span class="text-muted small">(optional)</span></label>
-                            <textarea type="text" formControlName="description" class="form-control" onclick='this.style.height = this.scrollHeight + "px"'></textarea>
+                        <div *ngIf="videoUploadsInProgress > 0" class="vid-progress">
+                            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Uploading video… please wait before saving.
                         </div>
 
-                        <div class="btn-group-sm me-2" role="group" >
-                            <button type="button" (click)="changeProvider('local',i)" class="btn btn-secondry" [ngClass]="{'btn-primary': item.controls.providerType.value=='local'}">Local</button>
-                            <button type="button" (click)="changeProvider('youtube',i)" class="btn btn-secondry"  [ngClass]="{'btn-primary': item.controls.providerType.value=='youtube'}">Youtube</button>
-                        </div>
-                        <div *ngIf="item.controls.providerType.value=='local'">
-                            <div class="form-group">
-                                <label>Video</label>
-                                <br>
-                                <input type="file" name="video" accept="video/*" (change)="videofileProgress($event,i)" />
-                            </div>
-                            <div *ngIf="videoUploadsInProgress > 0" class="text-primary small mb-2">
-                                Uploading video… Please wait before clicking Update.
-                            </div>
-<div class="image-preview mb-3" *ngIf="item.controls.videoLink.value">
-                                    <video width="320" height="240" controls crossorigin="anonymous" playsinline>
-                                    <source [src]="getVideoSrc(item.controls.videoLink.value) | safeUrl" type="video/mp4">
+                        <div class="vid-preview" *ngIf="item.controls.videoLink.value">
+                            <video controls crossorigin="anonymous" playsinline>
+                                <source [src]="getVideoSrc(item.controls.videoLink.value) | safeUrl" type="video/mp4">
                                 Your browser does not support the video tag.
-                                </video>
+                            </video>
+                            <div class="vid-preview__bar">
+                                <span class="vid-preview__name"><i class="fa fa-check-circle" aria-hidden="true"></i> Video uploaded</span>
+                                <label class="vid-preview__replace" [attr.for]="'vidfilereplace-' + i">
+                                    <i class="fa fa-refresh" aria-hidden="true"></i> Replace
+                                </label>
+                                <input type="file" class="vid-dropzone__input" id="vidfilereplace-{{i}}" accept="video/*" (change)="videofileProgress($event,i)" />
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="mb-3" *ngIf="item.controls.videoLink.value">
-                                {{item.controls.videoLink.value}}
-                            </div>
+                    <!-- YouTube -->
+                    <div *ngIf="item.controls.providerType.value=='youtube'">
+                        <div class="vid-url" [class.vid-url--invalid]="submitted && item.controls.videoLink.errors">
+                            <span class="vid-url__icon"><i class="fa fa-youtube-play" aria-hidden="true"></i></span>
+                            <input type="text" formControlName="url" class="vid-url__input" placeholder="Paste a YouTube video URL" />
+                            <button class="vid-url__btn" (click)="uploadLink(item.controls.url.value,i)" type="button" [disabled]="!item.controls.url.value?.trim()">
+                                <i class="fa fa-link" aria-hidden="true"></i> Add
+                            </button>
                         </div>
-                        <div *ngIf="item.controls.providerType.value=='youtube'">
-                            <div class="form-group">
-                                <label>Video</label>
-                                <br>
-                                <div class="input-group">
-                                    <input type="text" formControlName="url" class="form-control"
-                                    [ngClass]="{ 'is-invalid': submitted && item.controls.videoLink.errors }" />
-                                    <div class="input-group-append">
-                                        <button class="btn btn-sm btn-outline-primary" (click)="uploadLink(item.controls.url.value,i)" type="button">Upload</button>
-                                    </div>
-                                </div>
-                                
-                            </div>
-                            <div class="image-preview mb-3" *ngIf="item.controls.videoLink.value">
-                                <iframe width="320" height="240" [src]="item.controls.videoLink.value | safeUrl" frameborder="0" ></iframe>
-                            </div>
+
+                        <div class="vid-preview" *ngIf="item.controls.videoLink.value">
+                            <iframe [src]="item.controls.videoLink.value | safeUrl" frameborder="0" allowfullscreen></iframe>
                         </div>
-                        
+                    </div>
+
+                    <div class="form-group vid-section__content">
+                        <app-custom-rich-text-editor
+                            [title]="item.controls.title.value"
+                            (titleChange)="item.controls.title.setValue($event)"
+                            [html]="item.controls.description.value"
+                            (htmlChange)="item.controls.description.setValue($event)"
+                            titlePlaceholder="Title"
+                            bodyPlaceholder="Write hear"
+                            [uploadImage]="uploadImageFn"
+                            (uploadInProgressChange)="uploadInProgress = $event"
+                        ></app-custom-rich-text-editor>
                     </div>
                 </div>
             </div>
         </div>
 
-        <button type="button" class="btn w-100 btn-success ml-2 mb-2" (click)="addCourseVideoLectureItems()">Add
-            Video Lecture</button>
+        <button type="button" class="btn w-100 btn-success ml-2 mb-2" (click)="addCourseVideoLectureItems()">
+            <i class="fa fa-plus"></i> Add Video Lecture
+        </button>
     </form>
       <!-- Sticky footer so Update/Cancel are always visible -->
       <div class="question-editor__sticky-footer">
@@ -544,83 +407,84 @@
       </div>
       <form [formGroup]="questionForm" class="question-editor__form">
         <section class="question-editor__section question-editor__section--main">
-          <h5 class="question-editor__section-title">Question</h5>
           <div class="form-group">
-            <label class="question-editor__label">Title</label>
-            <input type="text" formControlName="title" class="form-control question-editor__input"
-              placeholder="Enter question title"
-              [ngClass]="{ 'is-invalid': submitted && qf.title?.errors }" />
+            <div class="question-editor__title-card" [class.is-invalid]="submitted && qf.title?.errors">
+              <input type="text" formControlName="title" class="question-editor__title-input"
+                placeholder="Enter question title" />
+            </div>
             <div *ngIf="submitted && qf.title?.errors" class="invalid-feedback d-block">
               <div *ngIf="qf.title.errors?.required">Title is required</div>
-            </div>
-          </div>
-          <div class="form-group question-editor__solution-editor">
-            <label class="question-editor__label">Description</label>
-            <div class="lesson-editor-container">
-              <app-lesson-editor
-                [content]="qf.description?.value"
-                mode="author"
-                [allowedBlockTypes]="questionEditorBlockTypes"
-                [uploadImage]="uploadImageFn"
-                [deleteImage]="deleteImageFn"
-                (uploadInProgressChange)="uploadInProgress = $event"
-                (jsonChange)="onQuestionDescriptionJsonChange($event)"
-              ></app-lesson-editor>
-            </div>
-            <div *ngIf="submitted && qf.description?.errors" class="invalid-feedback d-block">
-              <div *ngIf="qf.description.errors?.required">Description is required</div>
             </div>
           </div>
         </section>
 
         <section formArrayName="options" class="question-editor__section question-editor__section--options">
-          <h5 class="question-editor__section-title">Answer options</h5>
           <div *ngFor="let item of questionOptionArray?.controls; let i = index; trackBy: trackByIndex" class="question-editor__option-card" [formGroupName]="i">
-            <!-- Row 1: Option N + Answer text (left), Remove (right) -->
+            <!-- Row 1: Option N (left); Correct answer + Remove (right) -->
             <div class="question-editor__option-row-1">
               <div class="question-editor__option-header">
                 <span class="question-editor__option-badge">Option {{i + 1}}</span>
               </div>
-              <label class="question-editor__field-label question-editor__option-label">Answer</label>
-              <button type="button" class="question-editor__option-remove" (click)="removeQuestionOptionsItems(i)" title="Remove option">
-                <i class="fa fa-trash-o"></i> Remove
-              </button>
+              <div class="question-editor__option-actions">
+                <div class="question-editor__correct-answer question-editor__correct-answer--inline">
+                  <label class="question-editor__field-label">Correct answer?</label>
+                  <div class="question-editor__radio-group">
+                    <label class="question-editor__radio-item">
+                      <input type="radio" [value]="true" formControlName="isCorrect" class="question-editor__radio-input">
+                      <span class="question-editor__radio-label">Yes</span>
+                    </label>
+                    <label class="question-editor__radio-item">
+                      <input type="radio" [value]="false" formControlName="isCorrect" class="question-editor__radio-input">
+                      <span class="question-editor__radio-label">No</span>
+                    </label>
+                  </div>
+                </div>
+                <button type="button" class="question-editor__option-remove" (click)="removeQuestionOptionsItems(i)" title="Remove option">
+                  <i class="fa fa-trash-o"></i> Remove
+                </button>
+              </div>
             </div>
-            <!-- Row 2: Add block toolbar + editor content -->
-            <div class="lesson-editor-container question-editor__option-editor-area">
-              <app-lesson-editor
-                [content]="item.controls.description?.value"
-                mode="author"
-                [allowedBlockTypes]="questionEditorBlockTypes"
+            <!-- Row 2: rich text editor content -->
+            <div class="question-editor__option-editor-area">
+              <app-custom-rich-text-editor
+                [html]="item.controls.description?.value"
+                [showTitle]="false"
+                [compact]="true"
+                bodyPlaceholder="Write answer"
                 [uploadImage]="uploadImageFn"
-                [deleteImage]="deleteImageFn"
+                (htmlChange)="onQuestionOptionJsonChange($event, i)"
                 (uploadInProgressChange)="uploadInProgress = $event"
-                (jsonChange)="onQuestionOptionJsonChange($event, i)"
-              ></app-lesson-editor>
+              ></app-custom-rich-text-editor>
             </div>
             <div class="form-group question-editor__option-editor question-editor__option-editor-feedback" *ngIf="submitted && item.controls.description?.errors">
               <div class="invalid-feedback d-block">
                 <div *ngIf="item.controls.description?.errors?.required">Answer text is required</div>
               </div>
             </div>
-            <div class="form-group question-editor__correct-answer">
-              <label class="question-editor__field-label">Correct answer?</label>
-              <div class="question-editor__radio-group">
-                <label class="question-editor__radio-item">
-                  <input type="radio" [value]="true" formControlName="isCorrect" class="question-editor__radio-input">
-                  <span class="question-editor__radio-label">Yes</span>
-                </label>
-                <label class="question-editor__radio-item">
-                  <input type="radio" [value]="false" formControlName="isCorrect" class="question-editor__radio-input">
-                  <span class="question-editor__radio-label">No</span>
-                </label>
-              </div>
-            </div>
           </div>
-          <div class="question-editor__add-option-row">
-            <button type="button" class="question-editor__add-option" (click)="addQuestionOptionsItems()">
-              <i class="fa fa-plus"></i> Add Option
-            </button>
+          <button type="button" class="btn w-100 btn-success mb-2" (click)="addQuestionOptionsItems()">
+            <i class="fa fa-plus"></i> Add Option
+          </button>
+        </section>
+
+        <section class="question-editor__section question-editor__section--solution">
+          <div class="form-group question-editor__solution-editor" [class.question-editor__solution-editor--disabled]="!hasCorrectAnswer">
+            <app-custom-rich-text-editor
+              [html]="qf.description?.value"
+              [showTitle]="false"
+              [compact]="true"
+              [readonly]="!hasCorrectAnswer"
+              bodyPlaceholder="Explain Why this is correct (optional)"
+              [uploadImage]="uploadImageFn"
+              (htmlChange)="onQuestionDescriptionJsonChange($event)"
+              (uploadInProgressChange)="uploadInProgress = $event"
+            ></app-custom-rich-text-editor>
+            <small class="text-muted d-block mt-1" *ngIf="!hasCorrectAnswer">
+              <i class="fa fa-lock"></i> Mark an option as the correct answer to enable this.
+            </small>
+            <div *ngIf="submitted && qf.description?.errors" class="invalid-feedback d-block">
+              <div *ngIf="qf.description.errors?.required">Description is required</div>
+            </div>
           </div>
         </section>
       </form>

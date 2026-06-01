@@ -16,8 +16,7 @@
         <span class="curriculum-sidebar__num">{{ i + 1 }}</span>
         <div class="curriculum-sidebar__body">
           <span class="curriculum-sidebar__name">{{ item?.title }}</span>
-          <div class="curriculum-sidebar__meta" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
-            <span *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+          <div class="curriculum-sidebar__meta" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
             <span *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
             <span *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
             <span *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>
@@ -37,19 +36,12 @@
      <h1 class="curriculum-page-title" *ngIf="curriculumDetails?.title">{{ curriculumDetails.title }}</h1>
 
      <!-- Student: no sections below header – friendly empty state -->
-      <div class="curriculum-empty-state" *ngIf="!showConceptTab && !showStudyTab && !showVideoTab && !showQuestionTab">
+      <div class="curriculum-empty-state" *ngIf="!showStudyTab && !showVideoTab && !showQuestionTab">
         <div class="curriculum-empty-state__content">
           <p class="curriculum-empty-state__text">Use the buttons below to move between topics.</p>
           <p class="curriculum-empty-state__sub">Previous & Next navigate through the course structure.</p>
         </div>
       </div>
-      <!-- Concepts Tab -->
-      <div class="content-section" *ngIf="showConceptTab">
-        <div class="section-content">
-          <app-shared-curriculum-concepts [curriculumId]="curriculumId" id="KeyPoints"></app-shared-curriculum-concepts>
-        </div>
-      </div>
-
       <!-- Study Material Tab -->
       <div class="content-section" *ngIf="showStudyTab">
         <div class="section-content">

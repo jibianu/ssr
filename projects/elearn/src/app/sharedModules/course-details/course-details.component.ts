@@ -258,12 +258,10 @@ export class CourseDetailsComponent implements OnInit, DoCheck, OnDestroy {
   itemOptions(item: any): void {
     this.selectedCurriculumItem = item;
     const obj = {
-      curriculumConceptCount: (item.curriculumConceptCount ?? 0) > 0,
       curriculumQuestionCount: (item.curriculumQuestionCount ?? 0) > 0,
       curriculumStudyMaterialCount: (item.curriculumStudyMaterialCount ?? 0) > 0,
       curriculumTopicCount: (item.curriculumTopicCount ?? 0) > 0,
       curriculumVideoLectureCount: (item.curriculumVideoLectureCount ?? 0) > 0,
-      curriculumConceptTotal: item.curriculumConceptCount ?? 0,
       curriculumQuestionTotal: item.curriculumQuestionCount ?? 0,
       curriculumStudyMaterialTotal: item.curriculumStudyMaterialCount ?? 0,
       curriculumVideoLectureTotal: item.curriculumVideoLectureCount ?? 0,
@@ -303,8 +301,7 @@ export class CourseDetailsComponent implements OnInit, DoCheck, OnDestroy {
   /** True when this topic has at least one content type (concepts, study, videos, questions) – used to show/hide "This topic" block. */
   hasAnyTopicContent(item: any): boolean {
     if (!item) return false;
-    return ((item.curriculumConceptCount ?? 0) > 0) ||
-           ((item.curriculumStudyMaterialCount ?? 0) > 0) ||
+    return ((item.curriculumStudyMaterialCount ?? 0) > 0) ||
            ((item.curriculumVideoLectureCount ?? 0) > 0) ||
            ((item.curriculumQuestionCount ?? 0) > 0);
   }

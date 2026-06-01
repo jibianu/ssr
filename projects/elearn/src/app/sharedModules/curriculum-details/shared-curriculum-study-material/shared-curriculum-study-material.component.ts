@@ -1,47 +1,53 @@
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
-import { Component, Input, OnInit, OnChanges, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { isLessonContentJson } from 'src/app/shared/models/lesson-content.model';
+import {
+  CurriculumStudyMaterialGroupDto,
+  normalizeStudyMaterialGroups
+} from 'src/app/shared/models/study-material.model';
 
 @Component({
-    selector: 'app-shared-curriculum-study-material',
-    templateUrl: './shared-curriculum-study-material.component.html',
-    styleUrls: ['./shared-curriculum-study-material.component.scss'],
-    standalone: false
+  selector: 'app-shared-curriculum-study-material',
+  templateUrl: './shared-curriculum-study-material.component.html',
+  styleUrls: ['./shared-curriculum-study-material.component.scss'],
+  standalone: false
 })
-export class SharedCurriculumStudyMaterialComponent implements OnInit, OnDestroy {
-
+export class SharedCurriculumStudyMaterialComponent implements OnChanges, OnDestroy {
   @Input() curriculumId: string;
-  studyMaterials = [];
-  subscription: Subscription = new Subscription();
-  isLessonContent = isLessonContentJson;
 
-  constructor(
-    private appService: AdminAppService,
-  ) { }
+  studyMaterials: CurriculumStudyMaterialGroupDto[] = [];
+  loading = true;
+  loadError = '';
 
-  ngOnInit(): void {
-  }
+  private subscription = new Subscription();
 
-  ngOnChanges() {
+  constructor(private appService: AdminAppService) {}
+
+  ngOnChanges(): void {
     if (this.curriculumId) {
-      this.getStudyMaterialByCurriculumId(this.curriculumId);
+      this.loadStudyMaterials(this.curriculumId);
     }
   }
 
-
-  getStudyMaterialByCurriculumId(id) {
-    this.subscription.add(this.appService.getCurriculumStudyMaterialByCurriculumId(id).subscribe((res: any) => {
-      if (res) {
-        this.studyMaterials = res;
-      }
-    }));
+  loadStudyMaterials(id: string): void {
+    this.loading = true;
+    this.loadError = '';
+    this.subscription.add(
+      this.appService.getCurriculumStudyMaterialByCurriculumId(id).subscribe({
+        next: (res: unknown) => {
+          this.studyMaterials = normalizeStudyMaterialGroups(res);
+          this.loading = false;
+        },
+        error: () => {
+          this.studyMaterials = [];
+          this.loadError = 'Could not load study materials.';
+          this.loading = false;
+        }
+      })
+    );
   }
 
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
-
 }

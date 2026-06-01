@@ -25,8 +25,7 @@
             <div class="trainer-curriculum-page__card-body">
               <h3 class="trainer-curriculum-page__card-title">{{ item?.title }}</h3>
               <p class="trainer-curriculum-page__card-desc" *ngIf="item?.description">{{ item?.description }}</p>
-              <div class="trainer-curriculum-page__card-meta" aria-label="Curriculum content types" *ngIf="(item?.curriculumConceptCount ?? 0) > 0 || (item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
-                <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumConceptCount ?? 0) > 0"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Key Points{{ item?.firstConceptTitle ? ' : ' + item.firstConceptTitle : ' (' + item.curriculumConceptCount + ')' }}</span>
+              <div class="trainer-curriculum-page__card-meta" aria-label="Curriculum content types" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0 || (item?.curriculumVideoLectureCount ?? 0) > 0 || (item?.curriculumQuestionCount ?? 0) > 0">
                 <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumStudyMaterialCount ?? 0) > 0"><i class="fa fa-book" aria-hidden="true"></i> Study Materials{{ item?.firstStudyMaterialTitle ? ' : ' + item.firstStudyMaterialTitle : ' (' + item.curriculumStudyMaterialCount + ')' }}</span>
                 <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumVideoLectureCount ?? 0) > 0"><i class="fa fa-video-camera" aria-hidden="true"></i> Video{{ item?.firstVideoLectureTitle ? ' : ' + item.firstVideoLectureTitle : ' (' + item.curriculumVideoLectureCount + ')' }}</span>
                 <span class="trainer-curriculum-page__card-meta-item" *ngIf="(item?.curriculumQuestionCount ?? 0) > 0"><i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ item.curriculumQuestionCount }})</span>
@@ -103,11 +102,8 @@
         </div>
       </div>
       <!-- Row 2: Tab buttons (same visibility as admin – hide when inline editing title) -->
-      <div class="curriculum-modal-header__tabs-row" *ngIf="(operationOnModal==='view' && !isEditingCurriculum) || operationOnModal==='concepts' || operationOnModal==='add-concepts' || operationOnModal==='study-material' || operationOnModal==='add-study-material' || operationOnModal==='videos' || operationOnModal==='add-videos' || operationOnModal==='questions' || operationOnModal==='add-questions'">
+      <div class="curriculum-modal-header__tabs-row" *ngIf="(operationOnModal==='view' && !isEditingCurriculum) || operationOnModal==='study-material' || operationOnModal==='add-study-material' || operationOnModal==='videos' || operationOnModal==='add-videos' || operationOnModal==='questions' || operationOnModal==='add-questions'">
         <div class="curriculum-modal-header__tabs">
-          <button type="button" (click)="scrollToContent('KeyPoint')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='concepts' || operationOnModal==='add-concepts'" title="Key Points">
-            <i class="fa fa-lightbulb-o"></i> Key Points <span *ngIf="hasKeyPointData" class="curriculum-modal-header__count">({{ keyPointCount }})</span>
-          </button>
           <button type="button" (click)="scrollToContent('StudyMaterials')" class="curriculum-modal-header__tab" [class.curriculum-modal-header__tab--active]="operationOnModal==='study-material' || operationOnModal==='add-study-material'" title="Study Materials">
             <i class="fa fa-book"></i> Study Materials <span *ngIf="hasStudyMaterialData" class="curriculum-modal-header__count">({{ studyMaterialCount }})</span>
           </button>
@@ -126,42 +122,6 @@
       <div class="card curriculum-view__card">
         <div class="card-body pt-0 pb-1 curriculum-view__card-body">
           <div class="col-md-12 p-0 customScroll">
-            <!-- Key Points: show section only when there is actual concept data (hide Edit/Add Concept when no key points) -->
-            <div class="curriculum-view__section" id="KeyPoint" *ngIf="hasKeyPointData">
-              <div class="curriculum-view__section-header" [class.curriculum-view__section-header--with-action]="canEdit">
-                <div class="curriculum-view__section-title">
-                  <i class="fa fa-lightbulb-o"></i>
-                  <span>Key Points</span>
-                </div>
-                <div class="curriculum-view__section-actions" *ngIf="canEdit">
-                  <button *ngIf="hasKeyPointData" type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('concepts', concepts[0]); $event.preventDefault(); $event.stopPropagation()" title="Edit Concept">
-                    <i class="fa fa-pencil"></i> Edit
-                  </button>
-                  <button *ngIf="hasKeyPointData" type="button" class="btn btn-outline-light btn-sm curriculum-view__header-delete-btn" (click)="deleteConceptSection(concepts[0])" title="Delete this section"><i class="fa fa-trash"></i></button>
-                  <button type="button" class="btn btn-success btn-sm curriculum-view__add-btn" (click)="editCurriculum('add-concepts')" title="Add Concept">
-                    <i class="fa fa-plus"></i> Add Concept
-                  </button>
-                </div>
-              </div>
-              <div class="curriculum-view__content-list" *ngFor="let item of uniqueConcepts; let conceptIndex = index; trackBy: trackByCurriculumId">
-                <div class="curriculum-view__content-card">
-                  <div class="curriculum-view__card-header d-flex justify-content-between align-items-center">
-                    <h5 class="curriculum-view__card-title mb-0">{{item?.title}}</h5>
-                    <button *ngIf="canEdit && conceptIndex !== 0" type="button" class="btn btn-outline-danger btn-sm" (click)="deleteConceptSection(item)" title="Delete this section"><i class="fa fa-trash"></i></button>
-                  </div>
-                  <div class="curriculum-view__card-body" *ngFor="let x of item.concepts; trackBy: trackByConceptId">
-                    <h6 class="curriculum-view__item-title">{{x?.title}}</h6>
-                    <div class="curriculum-view__item-image" *ngIf="x.imageLink">
-                      <img [src]="x.imageLink" alt="Concept" />
-                    </div>
-                    <div class="curriculum-view__item-content">
-                      <app-lesson-editor *ngIf="isLessonContent(x?.description)" [content]="x.description" mode="student"></app-lesson-editor>
-                      <div class="ck-content post-body" *ngIf="!isLessonContent(x?.description)" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <!-- Study Materials: show section only when there is actual study material data -->
             <div class="curriculum-view__section" id="StudyMaterials" *ngIf="hasStudyMaterialData">
               <div class="curriculum-view__section-header" [class.curriculum-view__section-header--with-action]="canEdit">
@@ -239,7 +199,7 @@
                           <div class="curriculum-view__card-header">
                             <h5 class="curriculum-view__card-title">{{videoObj?.title}}</h5>
                           </div>
-                          <p class="curriculum-view__video-desc">{{videoObj?.description}}</p>
+                          <div class="curriculum-view__video-desc post-body" [innerHTML]="videoObj?.description | fixMojibakeSafeHtml"></div>
                           <button *ngIf="canEdit" type="button" class="btn btn-outline-light btn-sm curriculum-view__header-edit-btn" (click)="editSpecificCurriculum('videos', item)" title="Edit Video"><i class="fa fa-pencil"></i> Edit</button>
                         </div>
                       </div>
@@ -294,81 +254,9 @@
     </div>
     <div *ngIf="canEdit && operationOnModal=='edit'" class="d-flex edit-menu-wrapper curriculum-view__edit-menu">
       <div class="edit-menu">
-        <p class="editOperation" (click)="editCurriculum('add-concepts')">Add Concepts</p>
         <p class="editOperation" (click)="editCurriculum('add-study-material')">Add Study Material</p>
         <p class="editOperation" (click)="editCurriculum('add-videos')">Add Videos</p>
         <p class="editOperation" (click)="editCurriculum('add-questions')">Add Questions</p>
-      </div>
-    </div>
-    <div *ngIf="operationOnModal=='concepts' || operationOnModal=='add-concepts'" class="curriculum-editor-page" id="conceptEditorSection">
-      <form [formGroup]="conceptForm">
-        <div class="form-group">
-          <label>Title <span class="text-muted small">(optional)</span></label>
-          <textarea type="text" formControlName="title" class="form-control addshowmore"
-            onkeydown=' this.style.height=""; this.style.height = this.scrollHeight + "px"'
-            [ngClass]="{ 'is-invalid': submitted && cf.title.errors }"> </textarea>
-        </div>
-  
-        <div formArrayName="concepts">
-          <div *ngFor="let item of courseConceptsArray?.controls; let i = index; trackBy: trackByIndex" class="mb-3">
-            <div class="w-100 mb-2">
-              <a class="d-flex justify-content-between w-100 btn btn-primary shadow-sm"
-                (click)="removeCourseConceptItems(i)">
-                <span>Concept Section {{i + 1}}</span> <span>
-                  <i class="fa fa-times-circle-o fa-sm text-white-50"></i> Remove</span></a>
-            </div>
-  
-            <div class="mb-3">
-              <div [formGroupName]="i" class="h-100">
-                <div class="form-group">
-                  <label>Title <span class="text-muted small">(optional)</span></label>
-                  <input type="text" formControlName="title" class="form-control" />
-                </div>
-  
-                <div class="form-group lesson-editor-form-group">
-                  <label>Content (block-based lesson editor)</label>
-                  <div class="lesson-editor-container">
-                    <app-lesson-editor
-                      [content]="item.controls.description.value"
-                      [mode]="sectionViewMode('c-' + i)"
-                      [uploadImage]="uploadImageFn"
-                      [deleteImage]="deleteImageFn"
-                      (uploadInProgressChange)="uploadInProgress = $event"
-                      (jsonChange)="item.controls.description.setValue($event)"
-                    ></app-lesson-editor>
-                  </div>
-                  <div *ngIf="submitted && item.controls.description.errors" class="invalid-feedback d-block">
-                    <div *ngIf="item.controls.description.errors.required">Content is required (add at least one block)</div>
-                  </div>
-                </div>
-  
-                <div class="form-group">
-                  <label>Image</label>
-                  <br>
-                  <input type="file" name="image" accept="image/*" (change)="conceptfileProgress($event, i)" />
-                </div>
-                <div *ngIf="fileUploadProgress">
-                  Upload progress: {{ fileUploadProgress }}
-                </div>
-                <div class="image-preview mb-3" *ngIf="item.controls.imageLink.value">
-                  <img [src]="item.controls.imageLink.value" height="200" />
-                </div>
-  
-                <div class="mb-3" *ngIf="item.controls.imageLink.value">
-                  {{item.controls.imageLink.value}}
-                </div>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="btn btn-success w-100 ml-2 mb-2" (click)="addCourseConceptItems()">Add
-            Concept</button>
-        </div>
-      </form>
-      <div class="question-editor__sticky-footer">
-        <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onConceptSubmit()" [disabled]="uploadInProgress">
-          <i class="fa fa-check"></i> {{btntext}}
-        </button>
-        <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="closeModal()">Cancel</button>
       </div>
     </div>
     <div *ngIf="operationOnModal=='study-material' || operationOnModal=='add-study-material'" class="curriculum-editor-page" id="studyMaterialEditorSection">

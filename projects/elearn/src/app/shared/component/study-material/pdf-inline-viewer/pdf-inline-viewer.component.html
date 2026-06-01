@@ -1,0 +1,27 @@
+<div class="pdf-inline" (contextmenu)="onContextMenu($event)">
+  <div class="pdf-inline__loading" *ngIf="loading">
+    <div class="spinner-border text-secondary" role="status"></div>
+    <span>{{ loadProgress || 'Loading document…' }}</span>
+  </div>
+  <p class="text-danger" *ngIf="error && !loading">{{ error }}</p>
+  <div class="pdf-inline__pages" *ngIf="!loading && !error">
+    <div
+      #pageEl
+      class="pdf-inline__page-wrap"
+      *ngFor="let p of pages"
+      [attr.data-page]="p.pageNumber"
+      [style.aspect-ratio]="p.width + ' / ' + p.height"
+    >
+      <img
+        *ngIf="p.src"
+        class="pdf-inline__page"
+        [src]="p.src"
+        [alt]="'Page ' + p.pageNumber"
+        draggable="false"
+      />
+      <div class="pdf-inline__page-placeholder" *ngIf="!p.src">
+        <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+      </div>
+    </div>
+  </div>
+</div>

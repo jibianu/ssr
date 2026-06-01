@@ -12,7 +12,6 @@ import { PracticeQuestionsComponent } from './practice-questions/practice-questi
 import { CurriculumDetailsComponent } from './curriculum-details/curriculum-details.component';
 import { CurriculumVideosComponent } from './curriculum-details/curriculum-videos-component/curriculum-videos.component';
 import { SharedCurriculumStudyMaterialComponent } from './curriculum-details/shared-curriculum-study-material/shared-curriculum-study-material.component';
-import { SharedCurriculumConceptsComponent } from './curriculum-details/shared-curriculum-concepts-component/shared-curriculum-concepts.component';
 // import { CurriculumQuestionsComponent } from './curriculum-details/curriculum-questions/curriculum-questions.component';
 import { CommonCourseComponent } from './common-course/common-course.component';
 import { CommonCategoryComponent } from './common-category/common-category.component';
@@ -26,6 +25,7 @@ import { PurchaseHistoryComponent } from './purchase-history/purchase-history.co
 import { NotificationsComponent } from './notifications/notifications.component';
 import { StudentSearchPageComponent } from './student-search-page/student-search-page.component';
 import { LessonEditorModule } from '../shared/component/lesson-editor/lesson-editor.module';
+import { StudyMaterialModule } from '../shared/component/study-material/study-material.module';
 import { LessonPlayerShellComponent } from './course-player/course-player-layout/course-player-layout.component';
 import { CurriculumSidebarComponent } from './course-player/curriculum-sidebar/curriculum-sidebar.component';
 import { LessonVideoComponent } from './course-player/video-player/video-player.component';
@@ -47,7 +47,6 @@ import { StudentEventDetailComponent } from './student-events/student-event-deta
     CurriculumDetailsComponent,
     CurriculumVideosComponent,
     SharedCurriculumStudyMaterialComponent,
-    SharedCurriculumConceptsComponent,
     // CurriculumQuestionsComponent,
     CommonCourseComponent,
     CommonCategoryComponent,
@@ -67,7 +66,8 @@ import { StudentEventDetailComponent } from './student-events/student-event-deta
     CommonModule,
     SharedModuleRoutingModule,
     SharedModule,
-    LessonEditorModule
+    LessonEditorModule,
+    StudyMaterialModule
   ],
   schemas:[
     CUSTOM_ELEMENTS_SCHEMA

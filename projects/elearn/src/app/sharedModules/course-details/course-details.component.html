@@ -85,11 +85,6 @@
               <div class="sidebar-counts" *ngIf="selectedCurriculumItem && isCurriculum && hasAnyTopicContent(selectedCurriculumItem)">
                 <div class="sidebar-counts__title">This topic</div>
                 <div class="sidebar-counts__grid">
-                  <div class="sidebar-counts__item" *ngIf="(selectedCurriculumItem.curriculumConceptCount ?? 0) > 0">
-                    <i class="fa fa-lightbulb-o sidebar-counts__icon"></i>
-                    <span class="sidebar-counts__label">Concepts</span>
-                    <span class="sidebar-counts__value">{{ selectedCurriculumItem.curriculumConceptCount }}</span>
-                  </div>
                   <div class="sidebar-counts__item" *ngIf="(selectedCurriculumItem.curriculumStudyMaterialCount ?? 0) > 0">
                     <i class="fa fa-book sidebar-counts__icon"></i>
                     <span class="sidebar-counts__label">Study Material</span>

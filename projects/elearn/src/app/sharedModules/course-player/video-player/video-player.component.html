@@ -1,7 +1,7 @@
 <div class="player-video">
   <div class="player-video__header">
     <div class="player-video__title-row">
-      <h1 class="player-video__title">{{ lessonTitle || title || 'Loading...' }}</h1>
+      <h1 class="player-video__title">{{ title || lessonTitle || 'Loading...' }}</h1>
       <p class="player-video__duration" *ngIf="durationMinutes != null">Duration: {{ durationMinutes }} min</p>
     </div>
     <div class="player-video__actions">
@@ -65,6 +65,9 @@
       <div class="player-video__lesson-meta">
         <span class="player-video__lesson-title">
           {{ lessonTitle || title || 'Lesson' }}
+        </span>
+        <span class="player-video__lesson-count" *ngIf="videoCount > 1">
+          Video {{ currentVideoNumber }} of {{ videoCount }}
         </span>
         <span class="player-video__lesson-count">
           Lesson {{ currentLessonNumber }} of {{ totalLessons }} ({{ progressPercent }}%)

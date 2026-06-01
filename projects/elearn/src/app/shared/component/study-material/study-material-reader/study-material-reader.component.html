@@ -1,0 +1,76 @@
+<div class="sm-reader" [class.sm-reader--student]="studentView" *ngIf="flatSections.length; else empty">
+  <aside class="sm-reader__sidebar" *ngIf="!studentView">
+    <div class="sm-reader__progress">
+      <div class="sm-reader__progress-bar">
+        <div class="sm-reader__progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+      <span class="sm-reader__progress-text">{{ progressPercent }}% complete</span>
+    </div>
+    <nav class="sm-reader__nav">
+      <ng-container *ngFor="let entry of flatSections">
+        <button
+          type="button"
+          class="sm-reader__nav-item"
+          [class.sm-reader__nav-item--active]="entry.section.id === activeSectionId"
+          (click)="selectSection(entry.section.id)"
+        >
+          <span class="sm-reader__nav-group" *ngIf="entry.groupTitle">{{ entry.groupTitle }}</span>
+          <span class="sm-reader__nav-title">{{ entry.section.title || 'Untitled section' }}</span>
+        </button>
+      </ng-container>
+    </nav>
+  </aside>
+
+  <main class="sm-reader__main">
+    <article
+      *ngFor="let entry of flatSections"
+      class="sm-reader__article"
+      [id]="'sm-section-' + entry.section.id"
+    >
+      <header class="sm-reader__article-header" *ngIf="entry.section.title || entry.groupTitle">
+        <p class="sm-reader__group-label" *ngIf="entry.groupTitle && !studentView">{{ entry.groupTitle }}</p>
+        <h2 class="sm-reader__article-title" *ngIf="entry.section.title">{{ entry.section.title }}</h2>
+      </header>
+
+      <div class="sm-reader__content" *ngIf="hasTextContent(entry.section)">
+        <app-lesson-editor
+          *ngIf="isLegacyJson(entry.section.description)"
+          [content]="entry.section.description"
+          [mode]="studentView ? 'student' : 'preview'"
+          [allowedBlockTypes]="['text']"
+        ></app-lesson-editor>
+        <div
+          *ngIf="isHtml(entry.section.description)"
+          class="sm-reader__html post-body"
+          [innerHTML]="entry.section.description | fixMojibakeSafeHtml"
+        ></div>
+      </div>
+
+      <div class="sm-reader__attachments" *ngIf="entry.section.files?.length">
+        <h3 class="sm-reader__attachments-title" *ngIf="!studentView">Documents</h3>
+        <app-document-preview
+          *ngFor="let f of entry.section.files"
+          [file]="f"
+          [readingMode]="studentView ? 'inline' : 'panel'"
+          [allowDownload]="allowDownload && !studentView"
+        ></app-document-preview>
+      </div>
+    </article>
+
+    <footer class="sm-reader__footer" *ngIf="!studentView && flatSections.length > 1">
+      <button type="button" class="btn btn-outline-secondary" (click)="prev()" [disabled]="activeIndex <= 0">
+        <i class="fa fa-chevron-left"></i> Previous
+      </button>
+      <button type="button" class="btn btn-primary" (click)="next()" [disabled]="activeIndex >= flatSections.length - 1">
+        Next <i class="fa fa-chevron-right"></i>
+      </button>
+    </footer>
+  </main>
+</div>
+
+<ng-template #empty>
+  <div class="sm-reader__empty">
+    <i class="fa fa-book"></i>
+    <p>No study materials available yet.</p>
+  </div>
+</ng-template>

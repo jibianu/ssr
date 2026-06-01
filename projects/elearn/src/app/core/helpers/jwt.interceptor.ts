@@ -19,7 +19,11 @@ export class JwtInterceptor implements HttpInterceptor {
         return (
             u.includes('/api/analytics/') ||
             u.includes('/api/student/session/') ||
-            u.includes('savecurriculumwatchprogress')
+            u.includes('savecurriculumwatchprogress') ||
+            // Large media/file streams have their own inline loaders – don't block the
+            // whole page with the fullscreen overlay while they download.
+            (u.includes('/api/studymaterialfile/') && (u.includes('/content') || u.includes('stream'))) ||
+            u.includes('streamvideo')
         );
     }
 

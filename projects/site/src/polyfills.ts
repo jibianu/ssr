@@ -47,6 +47,14 @@
  */
 import 'zone.js';  // Included with Angular CLI.
 
+/** pdfjs-dist v5 requires Promise.try (Bluebird-style); not provided by native Promise / Zone.js */
+if (typeof (Promise as PromiseConstructor & { try?: unknown }).try !== 'function') {
+  (Promise as PromiseConstructor & { try: (fn: (...a: unknown[]) => unknown, ...a: unknown[]) => Promise<unknown> }).try =
+    function (fn: (...args: unknown[]) => unknown, ...args: unknown[]) {
+      return Promise.resolve().then(() => fn(...args));
+    };
+}
+
 
 /***************************************************************************************************
  * APPLICATION IMPORTS

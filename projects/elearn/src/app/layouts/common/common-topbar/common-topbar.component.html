@@ -48,14 +48,6 @@
             <div class="content-tabs curriculum-type-tabs" *ngIf="cd">
               <div
                 class="tab"
-                *ngIf="cd.curriculumConceptCount"
-                [class.active]="selectedContent === 'KeyPoint'"
-                (click)="scrollToContent('KeyPoint')">
-                Keypoints
-                <span class="tab-count">({{ cd.curriculumConceptTotal || 0 }})</span>
-              </div>
-              <div
-                class="tab"
                 *ngIf="cd.curriculumStudyMaterialCount"
                 [class.active]="selectedContent === 'StudyMaterials'"
                 (click)="scrollToContent('StudyMaterials')">

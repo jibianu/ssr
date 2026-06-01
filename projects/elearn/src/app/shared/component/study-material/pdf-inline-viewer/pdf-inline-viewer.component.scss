@@ -1,0 +1,57 @@
+.pdf-inline {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.pdf-inline__loading,
+.pdf-inline__progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.pdf-inline__progress {
+  padding-top: 0;
+}
+
+.pdf-inline__pages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pdf-inline__page-wrap {
+  position: relative;
+  width: 100%;
+  background: #fff;
+}
+
+.pdf-inline__page {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: #fff;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pdf-inline__page-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f4f5;
+  border: 1px solid #ececef;
+}

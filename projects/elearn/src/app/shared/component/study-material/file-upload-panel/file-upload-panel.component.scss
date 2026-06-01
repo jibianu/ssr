@@ -1,0 +1,55 @@
+.sm-upload__dropzone {
+  border: 2px dashed #d0d0d0;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.sm-upload--drag .sm-upload__dropzone {
+  border-color: #f07d22;
+  background: #fff8f3;
+}
+
+.sm-upload__icon {
+  font-size: 32px;
+  color: #f07d22;
+  margin-bottom: 8px;
+}
+
+.sm-upload__hint {
+  font-size: 12px;
+  color: #888;
+  margin: 8px 0 0;
+}
+
+.sm-upload__progress {
+  margin-top: 12px;
+}
+
+.sm-upload__progress-name {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sm-upload__list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.sm-upload__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.sm-upload__fname {
+  flex: 1;
+  font-size: 14px;
+  word-break: break-word;
+}

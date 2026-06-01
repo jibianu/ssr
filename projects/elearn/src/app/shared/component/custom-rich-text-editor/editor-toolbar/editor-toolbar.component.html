@@ -1,0 +1,162 @@
+<div class="rte-toolbar" role="toolbar" aria-label="Formatting toolbar">
+  <div class="rte-toolbar__group">
+    <label class="rte-toolbar__select-wrap">
+      <span class="visually-hidden">Text style</span>
+      <select
+        class="rte-toolbar__select"
+        [disabled]="disabled"
+        [value]="state.blockFormat"
+        (mousedown)="$event.preventDefault()"
+        (change)="onFormatChange($event)"
+        aria-label="Text style"
+      >
+        <option *ngFor="let f of formatOptions" [value]="f">{{ formatLabels[f] }}</option>
+      </select>
+      <span class="rte-toolbar__chevron" aria-hidden="true"></span>
+    </label>
+  </div>
+
+  <span class="rte-toolbar__divider" aria-hidden="true"></span>
+
+  <div class="rte-toolbar__group" role="group" aria-label="Text style">
+    <button
+      type="button"
+      class="rte-toolbar__btn"
+      [class.rte-toolbar__btn--active]="state.bold"
+      [disabled]="disabled"
+      title="Bold (Ctrl+B)"
+      aria-label="Bold"
+      [attr.aria-pressed]="state.bold"
+      (mousedown)="onCommand('bold', $event)"
+    >
+      <strong>B</strong>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn"
+      [class.rte-toolbar__btn--active]="state.italic"
+      [disabled]="disabled"
+      title="Italic (Ctrl+I)"
+      aria-label="Italic"
+      [attr.aria-pressed]="state.italic"
+      (mousedown)="onCommand('italic', $event)"
+    >
+      <em>I</em>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn"
+      [class.rte-toolbar__btn--active]="state.underline"
+      [disabled]="disabled"
+      title="Underline (Ctrl+U)"
+      aria-label="Underline"
+      [attr.aria-pressed]="state.underline"
+      (mousedown)="onCommand('underline', $event)"
+    >
+      <span class="rte-toolbar__underline">U</span>
+    </button>
+  </div>
+
+  <span class="rte-toolbar__divider" aria-hidden="true"></span>
+
+  <div class="rte-toolbar__group" role="group" aria-label="Lists and blocks">
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [class.rte-toolbar__btn--active]="state.bulletList"
+      [disabled]="disabled"
+      title="Bullet list"
+      aria-label="Bullet list"
+      [attr.aria-pressed]="state.bulletList"
+      (mousedown)="onCommand('bulletList', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 6h2v2H4V6zm0 5h2v2H4v-2zm0 5h2v2H4v-2zm4-10h14v2H8V6zm0 5h14v2H8v-2zm0 5h14v2H8v-2z"/></svg>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [class.rte-toolbar__btn--active]="state.orderedList"
+      [disabled]="disabled"
+      title="Numbered list"
+      aria-label="Numbered list"
+      [attr.aria-pressed]="state.orderedList"
+      (mousedown)="onCommand('orderedList', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2 17h2v.5H3v1h1V20H2v-1.5H1v-2h1V15zm1-9h1V6H2V5h2v3zm-1 4h1.8L2 13.1V14h3v-1H3.2L5 10.9V10H2v1zm5-6h14v2H7V6zm0 5h14v2H7v-2zm0 5h14v2H7v-2z"/></svg>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [class.rte-toolbar__btn--active]="state.blockquote"
+      [disabled]="disabled"
+      title="Blockquote"
+      aria-label="Blockquote"
+      [attr.aria-pressed]="state.blockquote"
+      (mousedown)="onCommand('blockquote', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M7.17 6L6 4H2v6h4l1.17-2H4V6h3.17zM17 4h-4l-1.17 2H16v2h-3.17L14 10h4V4zm-6 8l-1.17 2H10v2h3.17L14 14h-4v-2zm6 0h-3.17L15 14h4v-6h-4l1.17 2H18v4z"/></svg>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [class.rte-toolbar__btn--active]="state.codeBlock"
+      [disabled]="disabled"
+      title="Code block"
+      aria-label="Code block"
+      [attr.aria-pressed]="state.codeBlock"
+      (mousedown)="onCommand('codeBlock', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M9.4 16.6 4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0 4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+    </button>
+  </div>
+
+  <span class="rte-toolbar__divider" aria-hidden="true"></span>
+
+  <div class="rte-toolbar__group" role="group" aria-label="Insert">
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [disabled]="disabled"
+      title="Insert link"
+      aria-label="Insert link"
+      (mousedown)="onCommand('link', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [disabled]="disabled || !imageEnabled"
+      title="Insert image"
+      aria-label="Insert image"
+      (mousedown)="onCommand('image', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+    </button>
+  </div>
+
+  <span class="rte-toolbar__divider" aria-hidden="true"></span>
+
+  <div class="rte-toolbar__group" role="group" aria-label="History">
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [disabled]="disabled || !state.canUndo"
+      title="Undo"
+      aria-label="Undo"
+      (mousedown)="onCommand('undo', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05 1.04-6.9 2.74L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+    </button>
+    <button
+      type="button"
+      class="rte-toolbar__btn rte-toolbar__btn--icon"
+      [disabled]="disabled || !state.canRedo"
+      title="Redo"
+      aria-label="Redo"
+      (mousedown)="onCommand('redo', $event)"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg>
+    </button>
+  </div>
+</div>

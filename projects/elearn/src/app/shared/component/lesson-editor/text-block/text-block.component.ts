@@ -19,6 +19,7 @@ export type TextBlockMode = 'author' | 'preview' | 'student';
 export class TextBlockComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() block: TextBlock;
   @Input() mode: TextBlockMode = 'author';
+  @Input() placeholder?: string;
   /** Optional: (file) => Observable<url>. When provided, enables inline + block image upload. */
   @Input() uploadImage?: (file: File) => Observable<string>;
   /** Optional: (url) => Observable<void>. When provided, enables block image delete from S3. */

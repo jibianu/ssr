@@ -31,13 +31,11 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
   showQuestionTab: any;
   showStudyTab: any;
   showVideoTab: any;
-  showConceptTab: any;
-  CurriculumConceptsEnum: CurriculamStatus;
   CurriumStudyMateialEnum: CurriculamStatus;
   CurriculumVideoLecturesEnum: CurriculamStatus;
   QuestionsEnum: CurriculamStatus;
   courseName: string;
-  selectedTab = 'C'
+  selectedTab = 'S'
   curriculamNextPrev:any;
   Curriculams:any;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
@@ -58,10 +56,6 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
       this._authService.curriculumDetails.subscribe(key => {
         if (!key) { return; }
         switch (key) {
-          case 'KeyPoint':
-            this.scrollToSection('KeyPoints');
-            this.setCourseProgressDetails(this.CurriculumConceptsEnum, 'C');
-            break;
           case 'StudyMaterials':
             this.scrollToSection('StudyMaterials');
             this.setCourseProgressDetails(this.CurriumStudyMateialEnum, 'S');
@@ -176,32 +170,24 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
   showHideTab() {
     let obj = {
       title:  this.curriculumDetails.title,
-      curriculumConceptCount: this.curriculumDetails.curriculumConceptCount>0 ? true : false,
       curriculumQuestionCount :  this.curriculumDetails.curriculumQuestionCount>0 ? true : false,
       curriculumStudyMaterialCount :  this.curriculumDetails.curriculumStudyMaterialCount>0 ? true : false,
       curriculumVideoLectureCount :  this.curriculumDetails.curriculumVideoLectureCount>0 ? true : false,
-      curriculumConceptTotal: this.curriculumDetails.curriculumConceptCount || 0,
       curriculumQuestionTotal: this.curriculumDetails.curriculumQuestionCount || 0,
       curriculumStudyMaterialTotal: this.curriculumDetails.curriculumStudyMaterialCount || 0,
       curriculumVideoLectureTotal: this.curriculumDetails.curriculumVideoLectureCount || 0,
     };
     this._authService.curriculumData.next(obj);
 
-    this.showConceptTab = this.curriculumDetails.curriculumConceptCount > 0 ? true : false;
     this.showStudyTab = this.curriculumDetails.curriculumStudyMaterialCount > 0 ? true : false;
     this.showVideoTab = this.curriculumDetails.curriculumVideoLectureCount > 0 ? true : false;
     this.showQuestionTab = this.curriculumDetails.curriculumQuestionCount > 0 ? true : false;
-    this.CurriculumConceptsEnum = CurriculamStatus.CurriculumConcepts;
     this.CurriumStudyMateialEnum = CurriculamStatus.CurriculumStudyMaterials;
     this.CurriculumVideoLecturesEnum = CurriculamStatus.CurriculumVideoLectures;
     this.QuestionsEnum = CurriculamStatus.Questions;
     var QuestionTab = false;
     //add course progress details for 1st hit
-    if (this.showConceptTab) {
-      this.selectedTab = 'C'
-      this.setCourseProgressDetails(this.CurriculumConceptsEnum, this.selectedTab);
-    }
-    else if (this.showStudyTab) {
+    if (this.showStudyTab) {
       this.selectedTab = 'S'
       this.setCourseProgressDetails(this.CurriumStudyMateialEnum, this.selectedTab);
     }
@@ -233,12 +219,10 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
       this.subscription.unsubscribe();
     }
     this._authService.curriculumData.next({
-      curriculumConceptCount: false,
       curriculumQuestionCount : false,
       curriculumStudyMaterialCount : false,
       curriculumTopicCount : false,
       curriculumVideoLectureCount : false,
-      curriculumConceptTotal: 0,
       curriculumQuestionTotal: 0,
       curriculumStudyMaterialTotal: 0,
       curriculumVideoLectureTotal: 0,
@@ -268,23 +252,17 @@ export class CurriculumDetailsComponent implements OnInit, OnDestroy {
 
   /**
    * Header tab click handler:
-   * C = Keypoints (Concepts), S = Study Material, V = Video, Q = QA/Questions.
+   * S = Study Material, V = Video, Q = QA/Questions.
    * Shows only the selected section and updates course progress where applicable.
    */
-  onTabClick(tab: 'C' | 'S' | 'V' | 'Q'): void {
+  onTabClick(tab: 'S' | 'V' | 'Q'): void {
     this.selectedTab = tab;
 
-    this.showConceptTab = tab === 'C';
     this.showStudyTab = tab === 'S';
     this.showVideoTab = tab === 'V';
     this.showQuestionTab = tab === 'Q';
 
     switch (tab) {
-      case 'C':
-        if (this.showConceptTab) {
-          this.setCourseProgressDetails(this.CurriculumConceptsEnum, tab);
-        }
-        break;
       case 'S':
         if (this.showStudyTab) {
           this.setCourseProgressDetails(this.CurriumStudyMateialEnum, tab);

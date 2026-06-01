@@ -781,27 +781,6 @@ export class AdminAppService {
         return this.http.put<any>(this.apiUrl + `api/becomecourse/course/` + courseId, obj);
     }
 
-    // Curriculum Concept
-
-    addCurriculumConcept(obj, curriculumId) {
-        return this.http.post<any>(this.apiUrl + `api/CurriculumConcept/` + curriculumId, obj);
-    }
-
-    deleteCurriculumConcept(curriculumId) {
-        return this.http.delete<any>(this.apiUrl + `api/CurriculumConcept/` + curriculumId);
-    }
-
-    getCurriculumConceptById(curriculumConceptId) {
-        return this.http.get<any>(this.apiUrl + `api/CurriculumConcept/` + curriculumConceptId);
-    }
-
-    updateCurriculumConcept(obj, curriculumConceptId) {
-        return this.http.put<any>(this.apiUrl + `api/CurriculumConcept/` + curriculumConceptId, obj);
-    }
-
-    getCurriculumConceptByCurriculumId(curriculumId) {
-        return this.http.get<any>(this.apiUrl + `api/CurriculumConcept/curriculum/` + curriculumId);
-    }
 
     // Curriculum Topics
 

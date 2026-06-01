@@ -26,6 +26,13 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
   loading = true;
   error = false;
 
+  /** All video lectures in the current curriculum, flattened in order. */
+  playlist: any[] = [];
+  /** Index of the video currently playing within {@link playlist}. */
+  currentVideoIndex = 0;
+  /** Curriculum (lesson) title, used as a fallback for video title. */
+  private curriculumTitle = '';
+
   /** Show "Swipe for prev/next" hint on mobile; dismissed on tap or after first swipe. */
   showSwipeHint = false;
 
@@ -100,6 +107,10 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
     const duration = Number.isFinite(video.duration) && video.duration > 0 ? Math.floor(video.duration) : undefined;
     this.lastSavedSeconds = duration ?? 0;
     this.saveWatchProgress(this.lastSavedSeconds, duration);
+    // Auto-advance to the next video within the same curriculum.
+    if (this.currentVideoIndex < this.playlist.length - 1) {
+      this.goNext();
+    }
   }
 
   private saveWatchProgress(secondsWatched: number, videoDurationSeconds?: number): void {
@@ -140,24 +151,28 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
     this.videoProvider = null;
     this.lastSavedSeconds = -1;
     this.didAutoplay = false;
+    this.playlist = [];
+    this.currentVideoIndex = 0;
+    this.curriculumTitle = '';
     const id = this.curriculumId;
     this.subscription.add(
       this.appService.getCurriculumVideoByCurriculumId(id).subscribe({
         next: (res: any) => {
           this.loading = false;
-          if (res && Array.isArray(res) && res.length > 0) {
-            const first = res[0];
-            const lectures = first?.videoLectures;
-            if (lectures && lectures.length > 0) {
-              const v = lectures[0];
-              this.title = v.title || first.title || 'Video';
-              const link = v.videoLink || null;
-              this.videoProvider = (link || '').includes('https://www.youtube.com') ? 'youtube' : 'local';
-              this.videoSrc = this.videoProvider === 'local'
-                ? this.getVideoSrc(link)
-                : this.addYoutubeAutoplay(link);
-              return;
+          // Flatten every video lecture across all groups into one ordered playlist.
+          const groups = Array.isArray(res) ? res : [];
+          this.curriculumTitle = groups[0]?.title || '';
+          const playlist: any[] = [];
+          for (const group of groups) {
+            for (const lecture of (group?.videoLectures || [])) {
+              playlist.push(lecture);
             }
+          }
+          this.playlist = playlist;
+          if (playlist.length > 0) {
+            this.currentVideoIndex = 0;
+            this.loadCurrentVideo();
+            return;
           }
           this.error = true;
           this.autoExitToCurriculum();
@@ -169,6 +184,26 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
         },
       })
     );
+  }
+
+  /** Loads the video at {@link currentVideoIndex} from the playlist into the player. */
+  private loadCurrentVideo(): void {
+    const v = this.playlist[this.currentVideoIndex];
+    if (!v) {
+      this.error = true;
+      this.autoExitToCurriculum();
+      return;
+    }
+    this.error = false;
+    this.didAutoplay = false;
+    this.lastSavedSeconds = -1;
+    this.durationMinutes = null;
+    this.title = v.title || this.curriculumTitle || 'Video';
+    const link = v.videoLink || null;
+    this.videoProvider = (link || '').includes('youtube') ? 'youtube' : 'local';
+    this.videoSrc = this.videoProvider === 'local'
+      ? this.getVideoSrc(link)
+      : this.addYoutubeAutoplay(link);
   }
 
   getVideoSrc(url: string): string {
@@ -193,6 +228,8 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
     this.videoSrc = null;
     this.videoProvider = null;
     this.didAutoplay = false;
+    this.playlist = [];
+    this.currentVideoIndex = 0;
   }
 
   /** When no video is available or load fails, exit focus mode and go to curriculum page after a short delay. */
@@ -210,6 +247,12 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
   }
 
   goNext(): void {
+    // Step through the videos in this curriculum first, then move to the next lesson.
+    if (this.currentVideoIndex < this.playlist.length - 1) {
+      this.currentVideoIndex++;
+      this.loadCurrentVideo();
+      return;
+    }
     const nextId = this.playerState.getNextLessonId();
     if (nextId) {
       this.playerState.setCurrentLessonId(nextId);
@@ -218,6 +261,11 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
   }
 
   goPrev(): void {
+    if (this.currentVideoIndex > 0) {
+      this.currentVideoIndex--;
+      this.loadCurrentVideo();
+      return;
+    }
     const prevId = this.playerState.getPrevLessonId();
     if (prevId) {
       this.playerState.setCurrentLessonId(prevId);
@@ -230,11 +278,21 @@ export class LessonVideoComponent implements OnChanges, OnDestroy {
   }
 
   get hasNext(): boolean {
-    return this.playerState.getNextLessonId() != null;
+    return this.currentVideoIndex < this.playlist.length - 1 || this.playerState.getNextLessonId() != null;
   }
 
   get hasPrev(): boolean {
-    return this.playerState.getPrevLessonId() != null;
+    return this.currentVideoIndex > 0 || this.playerState.getPrevLessonId() != null;
+  }
+
+  /** Number of videos in the current curriculum's playlist. */
+  get videoCount(): number {
+    return this.playlist.length;
+  }
+
+  /** 1-based position of the current video within the curriculum playlist. */
+  get currentVideoNumber(): number {
+    return this.currentVideoIndex + 1;
   }
 
   /** 1-based lesson number for display; falls back to 1 when index is unknown. */

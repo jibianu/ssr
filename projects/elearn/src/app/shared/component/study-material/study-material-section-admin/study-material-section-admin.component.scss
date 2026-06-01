@@ -1,0 +1,83 @@
+.sm-section {
+  margin-bottom: 24px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sm-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f07d22;
+  color: #fff;
+}
+
+.sm-section__drag-handle {
+  cursor: grab;
+  padding: 4px 6px;
+  opacity: 0.9;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.sm-section__title {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.sm-section__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+}
+
+.sm-section__action-btn {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.sm-section__action-label {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.sm-section__body {
+  padding: 16px;
+}
+
+.sm-section__preview {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed #ddd;
+}
+
+.sm-section__preview-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.sm-section__status {
+  margin-top: 12px;
+}
+
+@media (max-width: 576px) {
+  .sm-section__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

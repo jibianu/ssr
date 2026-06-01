@@ -50,12 +50,10 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   questionLength:number = 0;
   questionItem:any[]= [];
   showQuestionTab: boolean = false;
-  showConceptTab: boolean = false;
   showStudyTab: boolean = false;
   showVideoTab: boolean = false;
   curriculumDetailstitle:string;
   studyMaterials = [];
-  concepts = [];
   videos = [];
   videoObj = {};
   index:number = 0;
@@ -67,16 +65,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   sectionViewModes: { [key: string]: 'author' | 'preview' } = {};
   isLessonContent = isLessonContentJson;
 
-  /** True only when there is at least one actual concept (not just empty topics). Used to hide Key Points section when no data. */
-  get hasKeyPointData(): boolean {
-    return (this.concepts?.some((c: any) => (c?.concepts?.length ?? 0) > 0) ?? false);
-  }
-
-  /** Actual count of key point concepts (from loaded data). Use this for tab badge instead of curriculumConceptCount. */
-  get keyPointCount(): number {
-    return (this.concepts?.reduce((sum: number, topic: any) => sum + (topic?.concepts?.length ?? 0), 0) ?? 0);
-  }
-
   /** True only when there is at least one actual study material item (not just empty sections). */
   get hasStudyMaterialData(): boolean {
     return (this.studyMaterials?.some((s: any) => (s?.studyMaterials?.length ?? 0) > 0) ?? false);
@@ -85,12 +73,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   /** Actual count of study material items (from loaded data). */
   get studyMaterialCount(): number {
     return (this.studyMaterials?.reduce((sum: number, section: any) => sum + (section?.studyMaterials?.length ?? 0), 0) ?? 0);
-  }
-
-  /** Key point sections deduped by id so we show only one card (and one delete) per section. */
-  get uniqueConcepts(): any[] {
-    if (!this.concepts?.length) return [];
-    return this.concepts.filter((c: any, i: number, a: any[]) => a.findIndex((x: any) => String(x?.id) === String(c?.id)) === i);
   }
 
   /** Study material sections deduped by id so we show only one card (and one delete) per section. */
@@ -134,7 +116,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
 
   questionEditorBlockTypes: LessonBlockType[] = ['text'];
 
-  private initialConceptDescriptions: string[] = [];
   private initialStudyMaterialDescriptions: string[] = [];
 
   //curriculum study-material
@@ -142,9 +123,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   guid = '00000000-0000-0000-0000-000000000000';
   submitted: boolean = false;
   btntext:string;
-
-  //curriculum concepts
-  conceptForm: UntypedFormGroup;
 
   //curriculum videos
   videoForm: UntypedFormGroup;
@@ -436,7 +414,7 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
     if (!idToOpen || !this.contentTemplate) return;
     let item = this.curriculumList?.find((c: any) => String(c.id) === String(idToOpen));
     if (!item && Array.isArray(this.curriculumList)) {
-      item = { id: idToOpen, title: 'New Curriculum', description: '', curriculumConceptCount: 0, curriculumStudyMaterialCount: 0, curriculumVideoLectureCount: 0, curriculumQuestionCount: 0, curriculumTopicCount: 0 };
+      item = { id: idToOpen, title: 'New Curriculum', description: '', curriculumStudyMaterialCount: 0, curriculumVideoLectureCount: 0, curriculumQuestionCount: 0, curriculumTopicCount: 0 };
       this.curriculumList = [...this.curriculumList, item];
     }
     if (item) {
@@ -668,34 +646,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
     }).catch(() => {});
   }
 
-  deleteConceptSection(item: any): void {
-    const id = item?.id;
-    if (!id) return;
-    const modalRef = this.modalService.open(ConfirmationModalComponent);
-    modalRef.componentInstance.title = 'Delete Key Points Section';
-    modalRef.componentInstance.descText = 'Are you sure you want to delete this key points section?';
-    modalRef.result.then((result) => {
-      if (result === 'ok') {
-        this.subscription.add(this.appService.deleteCurriculumConcept(id).subscribe({
-          next: () => {
-            this.toasterService.showSuccess('Key points section deleted successfully');
-            this.getConceptByCurriculumId(this.curriculumId);
-            if (this.courseId) {
-              this.appService.getCurriculumByCourseId(this.courseId).subscribe((res: any) => {
-                const list = res?.curriculumResponseList ?? [];
-                this.curriculumList = list;
-                const updated = list.find((c: any) => c.id === this.selectedCurriculumItem?.id);
-                if (updated) this.selectedCurriculumItem = updated;
-                this.cdr.markForCheck();
-              });
-            }
-          },
-          error: () => this.toasterService.showError('Failed to delete key points section')
-        }));
-      }
-    }).catch(() => {});
-  }
-
   deleteVideoSection(item: any): void {
     const id = item?.id;
     if (!id) return;
@@ -730,17 +680,13 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
 
     this.selectedCurriculumItem = this.selectedCurriculumItem;
     // Always show all tabs so same curriculum page opens with or without data (user can add from any section)
-    this.showConceptTab = true;
     this.showStudyTab = true;
     this.showVideoTab = true;
     this.showQuestionTab = true;
-    if (!this.selectedContent) this.selectedContent = 'KeyPoint';
+    if (!this.selectedContent) this.selectedContent = 'StudyMaterials';
 
     if (this.showStudyTab) {
       this.getStudyMaterialByCurriculumId(this.curriculumId);
-    }
-    if (this.showConceptTab) {
-      this.getConceptByCurriculumId(this.curriculumId);
     }
     if (this.showVideoTab) {
       this.getvideoByCurriculumId(this.curriculumId);
@@ -761,14 +707,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
       }
     }));
   }
-  getConceptByCurriculumId(id) {
-    this.subscription.add(this.appService.getCurriculumConceptByCurriculumId(id).subscribe((res: any) => {
-      if (res) {
-        this.concepts = res;
-      }
-    }));
-  }
-
   getvideoByCurriculumId(id) {
     this.subscription.add(this.appService.getCurriculumVideoByCurriculumId(id).subscribe((res: any) => {
       if (res) {
@@ -821,9 +759,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
     this.operationOnModal = task;
     this.btntext = 'Update';
     switch (task) {
-      case 'concepts':
-        this.setConceptvalue(item);
-        break;
       case 'study-material':
         this.setvalue(item);
         break;
@@ -844,9 +779,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
     this.operationOnModal = task;
     this.btntext = 'Save';
     switch (task) {
-      case 'add-concepts':
-        this.setConceptvalue(null);
-        break;
       case 'add-study-material':
         this.setvalue(null);
         break;
@@ -866,8 +798,7 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   private scrollToEditorSection(task: string): void {
     const scroll = () => {
       const modalBody = document.querySelector('.curriculum-detail-modal .modal-body') as HTMLElement;
-      const sectionId = task === 'concepts' || task === 'add-concepts' ? 'conceptEditorSection'
-        : task === 'study-material' || task === 'add-study-material' ? 'studyMaterialEditorSection'
+      const sectionId = task === 'study-material' || task === 'add-study-material' ? 'studyMaterialEditorSection'
         : task === 'videos' || task === 'add-videos' ? 'videoEditorSection'
         : task === 'questions' || task === 'add-questions' ? 'questionEditorSection'
         : null;
@@ -895,13 +826,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
       id: [this.guid],
       sortOrder:0,
       studyMaterials: this.formBuilder.array([])
-    });
-
-    this.conceptForm = this.formBuilder.group({
-      title: [''],
-      id: [this.guid],
-      sortOrder:0,
-      concepts: this.formBuilder.array([])
     });
 
     this.videoForm = this.formBuilder.group({
@@ -1013,103 +937,6 @@ export class TrainerCourseDetailsComponent implements OnInit, OnDestroy {
   }
 
   studyMaterialfileProgress(fileInput: any, index) {
-    this.fileData = <File>fileInput.target.files[0];
-    this.appService.uploadDocumnet(this.fileData,'curriculum_studyMaterial').subscribe(res => {
-      this.uploadedFilePath = res.documentPath;
-      this.courseStudyMaterialsArray.at(index).patchValue({
-        imageLink: this.uploadedFilePath
-      });
-    });
-  }
-
-
-  /**
-   * Operation of curriculam Concept option
-   * Some method we are re-using of study-material
-   * Inside formInit() method we have declared conceptForm controller
-   * */ 
-  get cf() { return this.conceptForm.controls; }
-
-  get courseConceptsArray() {
-    return this.conceptForm.get('concepts') as UntypedFormArray;
-  }
-
-  courseConceptsArrayControls(): AbstractControl[] {
-    return (<UntypedFormArray>this.conceptForm.get('concepts')).controls;
-  }
-
-  setConceptvalue(res) {
-    this.initialConceptDescriptions = [];
-    this.conceptForm.patchValue({
-      title: res?.title ? res.title : '',
-      id: res?.id ? res.id : this.guid,
-      sortOrder:res?.sortOrder ? res.sortOrder : 0
-    });
-    if (res && res.concepts && res.concepts.length > 0) {
-      let array = [];
-      res.concepts.forEach((x) => {
-        const desc = x.description ? x.description : '';
-        this.initialConceptDescriptions.push(desc);
-        array.push(this.formBuilder.group(
-          {
-            description: new UntypedFormControl(desc, []),
-            title: new UntypedFormControl(x.title ? x.title : ''),
-            id: x.id ? x.id : this.guid,
-            imageLink: x.imageLink ? x.imageLink : '',sortOrder:array.length+1
-          }))
-      })
-      const FormArray: UntypedFormArray = this.formBuilder.array(array);
-      this.conceptForm.setControl('concepts', FormArray);
-    } else {
-      this.formInit();
-      this.submitted = false;
-    }
-  }
-
-  createConceptItems() {
-    let group = {};
-    group['title'] = new UntypedFormControl('');
-    group['description'] = new UntypedFormControl('{"version":1,"blocks":[]}', []);
-    group['imageLink'] = new UntypedFormControl('');
-    group['sortOrder']=this.courseConceptsArray.length+1;
-    group['id'] = new UntypedFormControl(this.guid);
-    return this.formBuilder.group(group);
-  }
-
-  addCourseConceptItems(): void {
-    this.courseConceptsArray.push(this.createConceptItems())
-  }
-
-  removeCourseConceptItems(index) {
-    this.courseConceptsArray.removeAt(index);
-  }
-
-  onConceptSubmit() {
-    this.submitted = true;
-    // stop here if form is invalid
-    if (this.conceptForm.invalid) {
-      return;
-    }
-    if (this.cf.id.value !== this.guid) {
-     
-      this.subscription.add(this.appService.updateCurriculumConcept(this.conceptForm.value, this.cf.id.value).subscribe(() => {
-        this.toasterService.showSuccess('Concept updated successfully');
-        this.sharedMethodAfterSaveOrUpdate();
-        this.conceptForm.reset()
-      }));
-    } else {
-      this.conceptForm.patchValue({
-       sortOrder:this.concepts.length+1
-      });
-      this.subscription.add(this.appService.addCurriculumConcept(this.conceptForm.value, this.curriculumId).subscribe(() => {
-        this.toasterService.showSuccess('Concept created successfully');
-        this.sharedMethodAfterSaveOrUpdate();
-        this.conceptForm.reset()
-      }));
-    }
-  }
-
-  conceptfileProgress(fileInput: any, index) {
     this.fileData = <File>fileInput.target.files[0];
     this.appService.uploadDocumnet(this.fileData,'curriculum_studyMaterial').subscribe(res => {
       this.uploadedFilePath = res.documentPath;
@@ -1248,9 +1075,8 @@ changeProvider(provider:string,index:number){
   }
 
    /**
-   * Operation of curriculam Concept option
-   * Some method we are re-using of questions
-   * Inside formInit() method we have declared conceptForm controller
+   * Operation of curriculam Questions option
+   * Inside formInit() method we have declared questionForm controller
    * */ 
    get qf() { return this.questionForm.controls; }
 
@@ -1366,7 +1192,6 @@ changeProvider(provider:string,index:number){
   scrollToContent(elementId: string): void {
     const hasData = (id: string): boolean => {
       switch (id) {
-        case 'KeyPoint': return this.hasKeyPointData;
         case 'StudyMaterials': return this.hasStudyMaterialData;
         case 'VideoLectures': return (this.videos?.length ?? 0) > 0;
         case 'Questions': return (this.questionItem?.length ?? 0) > 0 || (this.questionLength ?? 0) > 0;
@@ -1375,7 +1200,6 @@ changeProvider(provider:string,index:number){
     };
     const openAddForm = (id: string): void => {
       switch (id) {
-        case 'KeyPoint': this.editCurriculum('add-concepts'); break;
         case 'StudyMaterials': this.editCurriculum('add-study-material'); break;
         case 'VideoLectures': this.editCurriculum('add-videos'); break;
         case 'Questions': this.editCurriculum('add-questions'); break;
@@ -1420,7 +1244,6 @@ changeProvider(provider:string,index:number){
     this.getCourseById(this.courseId);
     this.getCurriculumList(this.courseId, () => {
       this.getStudyMaterialByCurriculumId(this.curriculumId);
-      this.getConceptByCurriculumId(this.curriculumId);
       this.getvideoByCurriculumId(this.curriculumId);
       if (this.showQuestionTab) {
         this.appService.getQuestionsByCurriculumId(this.curriculumId).subscribe((res: any) => {
@@ -1434,13 +1257,10 @@ changeProvider(provider:string,index:number){
   }
 
   closeModal(){
-    if (this.operationOnModal === 'concepts' || this.operationOnModal === 'add-concepts') {
-      this.deleteUnsavedConceptBlockImages();
-    } else if (this.operationOnModal === 'study-material' || this.operationOnModal === 'add-study-material') {
+    if (this.operationOnModal === 'study-material' || this.operationOnModal === 'add-study-material') {
       this.deleteUnsavedStudyMaterialBlockImages();
     }
     this.studyMaterialForm.reset();
-    this.conceptForm.reset();
     this.videoForm.reset();
     this.selectedContent = '';
     if(this.operationOnModal == 'view'){
@@ -1448,14 +1268,6 @@ changeProvider(provider:string,index:number){
     }else{
       this.editCurriculum('view');
     }
-  }
-
-  private deleteUnsavedConceptBlockImages(): void {
-    const arr = this.courseConceptsArrayControls() || [];
-    const currentDescs = arr.map(c => (c.get('description')?.value || '') as string);
-    const initialUrls = new Set(this.extractImageUrlsFromDescriptions(this.initialConceptDescriptions));
-    this.extractImageUrlsFromDescriptions(currentDescs).filter(u => !initialUrls.has(u))
-      .forEach(url => this.appService.deleteImage(url).subscribe({ error: () => {} }));
   }
 
   private deleteUnsavedStudyMaterialBlockImages(): void {
@@ -1537,7 +1349,6 @@ changeProvider(provider:string,index:number){
     this.editCurriculumTitle = '';
     this.editCurriculumDescription = '';
     this.studyMaterialForm.reset();
-    this.conceptForm.reset();
     this.modalService.dismissAll();
     this.selectedContent = '';
   }

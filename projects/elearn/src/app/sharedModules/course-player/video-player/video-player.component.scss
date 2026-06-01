@@ -110,14 +110,25 @@
 }
 
 /* Default: desktop / large screens */
-.player-video__element,
-.player-video__iframe {
+.player-video__element {
   /* Slightly smaller than full area so it doesn't touch all edges */
   width: 94%;
   height: 90%;
   max-width: 94%;
   max-height: 90%;
   object-fit: contain;
+}
+
+/* YouTube iframe: keep a true 16:9 box so the player doesn't add black bars.
+   object-fit does not apply to iframes, so we size the iframe itself to 16:9
+   and cap it by both the available width (94%) and height (~viewport minus the
+   header + footer chrome) so it always fits inside the dark panel. */
+.player-video__iframe {
+  aspect-ratio: 16 / 9;
+  width: min(94%, calc((100vh - 150px) * 16 / 9));
+  height: auto;
+  max-width: 94%;
+  border: 0;
 }
 
 .player-video__loading,

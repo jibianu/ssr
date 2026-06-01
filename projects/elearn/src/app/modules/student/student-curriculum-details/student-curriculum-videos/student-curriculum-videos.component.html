@@ -42,7 +42,7 @@
                     <dl class="item-property">
                         <dt>Description</dt>
                         <dd>
-                            <p>{{videoObj?.description}}</p>
+                            <div class="post-body" [innerHTML]="videoObj?.description | fixMojibakeSafeHtml"></div>
                         </dd>
                     </dl>
                 </div>

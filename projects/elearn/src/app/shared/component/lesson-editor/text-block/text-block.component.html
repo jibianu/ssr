@@ -11,7 +11,7 @@
     *ngIf="isEditable"
     #editableEl
     class="text-block__content text-block__content--editable"
-    data-placeholder="Type your text here..."
+    [attr.data-placeholder]="placeholder || 'Type your text here...'"
     appAutoGrow
   ></div>
   <input
