@@ -24,7 +24,7 @@ export class FileUploadPanelComponent {
   uploadProgress: Record<string, number> = {};
   errorMessage = '';
 
-  readonly allowedLabel = 'PDF, PPT, PPTX, DOC, DOCX, XLS, XLSX (max 50 MB)';
+  readonly allowedLabel = 'PDF, PPT, PPTX, DOC, DOCX, XLS, XLSX (max 100 MB)';
 
   constructor(private fileService: StudyMaterialFileService) {}
 

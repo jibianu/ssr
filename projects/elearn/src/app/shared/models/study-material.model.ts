@@ -39,7 +39,7 @@ export const STUDY_MATERIAL_ALLOWED_EXTENSIONS = [
   '.pdf', '.ppt', '.pptx', '.doc', '.docx', '.xls', '.xlsx'
 ];
 
-export const STUDY_MATERIAL_MAX_FILE_BYTES = 50 * 1024 * 1024;
+export const STUDY_MATERIAL_MAX_FILE_BYTES = 100 * 1024 * 1024;
 
 export function isHtmlStudyContent(description: string | null | undefined): boolean {
   if (!description) return true;
