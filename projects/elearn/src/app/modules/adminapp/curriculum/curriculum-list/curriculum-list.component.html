@@ -195,7 +195,7 @@
                     {{loadVideo(x)}}
                     <div class="curriculum-view__video-wrapper">
                       <div class="curriculum-view__video-player">
-                        <video width="100%" controls controlsList="nodownload" crossorigin="anonymous" playsinline *ngIf="videoObj?.providerType=='local'"
+                        <video width="100%" controls controlsList="nodownload" playsinline *ngIf="videoObj?.providerType=='local'"
                           (error)="onVideoError()" (loadeddata)="onVideoLoaded()">
                           <source [src]="getVideoSrc(videoObj?.videoLink) | safeUrl" type="video/mp4">
                           Your browser does not support the video tag.
@@ -341,7 +341,7 @@
                         </div>
 
                         <div class="vid-preview" *ngIf="item.controls.videoLink.value">
-                            <video controls crossorigin="anonymous" playsinline>
+                            <video controls playsinline>
                                 <source [src]="getVideoSrc(item.controls.videoLink.value) | safeUrl" type="video/mp4">
                                 Your browser does not support the video tag.
                             </video>
@@ -778,7 +778,7 @@
           </div>
           <p class="text-danger small mb-1" *ngIf="promoVideoUploadError">{{ promoVideoUploadError }}</p>
           <div class="edit-landing-media-preview mb-2" *ngIf="landingEditForm.promoVideoUrl">
-            <video width="100%" controls class="edit-landing-media-preview__img" *ngIf="landingEditForm.promoVideoUrl" crossorigin="anonymous" playsinline>
+            <video width="100%" controls class="edit-landing-media-preview__img" *ngIf="landingEditForm.promoVideoUrl" playsinline>
               <source [src]="getVideoSrc(landingEditForm.promoVideoUrl) | safeUrl" type="video/mp4">
               Your browser does not support the video tag.
             </video>

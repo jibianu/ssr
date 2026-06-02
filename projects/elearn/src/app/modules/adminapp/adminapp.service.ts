@@ -1,4 +1,4 @@
-import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
+import { map, switchMap, catchError, shareReplay, tap } from 'rxjs/operators';
 import { Category } from './category/category.model';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from './../../../environments/environment';
@@ -640,6 +640,39 @@ export class AdminAppService {
             { reportProgress: true }
         );
     }
+    /**
+     * Upload large files (e.g. videos) straight to S3 via a presigned PUT URL so the bytes never pass
+     * through API Gateway / Lambda (which rejects bodies over ~10 MB with a 413). The API only issues
+     * the presigned URL (tiny request); the browser PUTs the file directly to S3.
+     * Requires the S3 bucket to allow cross-origin PUT/GET from this site.
+     * Returns the final public document path to store as the video link.
+     */
+    uploadDocumentDirect(file: File, docType: string): Observable<string> {
+        const contentType = file.type || 'application/octet-stream';
+        const data: FormData = new FormData();
+        data.append('DocType', docType);
+        data.append('userId', 'b9d1cec3-d0ee-4723-bbab-45de466b5cef');
+        data.append('fileName', file.name);
+        data.append('fileType', contentType);
+        return this.http
+            .post<{ documentPath?: string; documentComments?: string; isPreSignedUrl?: boolean }>(
+                this.apiUrl + 'api/Document/UploadDocument',
+                data
+            )
+            .pipe(
+                switchMap((res) => {
+                    if (res?.isPreSignedUrl && res.documentComments) {
+                        return this.http
+                            .put(res.documentComments, file, {
+                                headers: new HttpHeaders({ 'Content-Type': contentType })
+                            })
+                            .pipe(map(() => res.documentPath || ''));
+                    }
+                    return of(res?.documentPath || '');
+                })
+            );
+    }
+
     uploadDocumnetLink(fileLink, docType) {
         var obj = {
             "fileLink": fileLink,
@@ -721,11 +754,14 @@ export class AdminAppService {
 
     // Curriculum
     addCurriculum(obj, courseId) {
-        return this.http.post<any>(this.apiUrl + `api/curriculum/` + courseId, obj);
+        // New curriculum must show up immediately (e.g. to auto-open its panel), so drop the cached list.
+        return this.http.post<any>(this.apiUrl + `api/curriculum/` + courseId, obj)
+            .pipe(tap(() => this.invalidateCurriculumListCache(courseId)));
     }
 
     deleteCurriculum(curriculumId) {
-        return this.http.delete<any>(this.apiUrl + `api/curriculum/` + curriculumId);
+        return this.http.delete<any>(this.apiUrl + `api/curriculum/` + curriculumId)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     getCurriculumByCurriculumId(curriculumId) {
@@ -733,7 +769,8 @@ export class AdminAppService {
     }
 
     updateCurriculum(obj, curriculumId) {
-        return this.http.put<any>(this.apiUrl + `api/curriculum/` + curriculumId, obj);
+        return this.http.put<any>(this.apiUrl + `api/curriculum/` + curriculumId, obj)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     // Course FAQ (public landing sidebar)
@@ -840,11 +877,13 @@ export class AdminAppService {
     // Curriculum Study material
 
     addCurriculumStudyMaterial(obj, curriculumId) {
-        return this.http.post<any>(this.apiUrl + `api/CurriculumStudyMaterial/` + curriculumId, obj);
+        return this.http.post<any>(this.apiUrl + `api/CurriculumStudyMaterial/` + curriculumId, obj)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     deleteCurriculumStudyMaterial(sutdyMateialId) {
-        return this.http.delete<any>(this.apiUrl + `api/CurriculumStudyMaterial/` + sutdyMateialId);
+        return this.http.delete<any>(this.apiUrl + `api/CurriculumStudyMaterial/` + sutdyMateialId)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     getCurriculumStudyMaterialById(sutdyMateialId) {
@@ -862,11 +901,13 @@ export class AdminAppService {
     // Curriculum Video
 
     addCurriculumVideo(obj, curriculumId) {
-        return this.http.post<any>(this.apiUrl + `api/CurriculumVideoLecture/` + curriculumId, obj);
+        return this.http.post<any>(this.apiUrl + `api/CurriculumVideoLecture/` + curriculumId, obj)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     deleteCurriculumVideo(videoId) {
-        return this.http.delete<any>(this.apiUrl + `api/CurriculumVideoLecture/` + videoId);
+        return this.http.delete<any>(this.apiUrl + `api/CurriculumVideoLecture/` + videoId)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     getCurriculumVideoById(videoId) {
@@ -906,11 +947,14 @@ export class AdminAppService {
     //add questions
 
     addQuestion(obj) {
-        return this.http.post<any>(this.apiUrl + `api/question`, obj);
+        // Questions can belong to a curriculum; counts in the curriculum list depend on them.
+        return this.http.post<any>(this.apiUrl + `api/question`, obj)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     deleteQuestion(questionId) {
-        return this.http.delete<any>(this.apiUrl + `api/question/` + questionId);
+        return this.http.delete<any>(this.apiUrl + `api/question/` + questionId)
+            .pipe(tap(() => this.invalidateCurriculumListCache()));
     }
 
     getQuestionById(questionId) {

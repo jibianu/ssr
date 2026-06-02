@@ -1848,22 +1848,31 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
 
   private tryOpenSidebarForNewCurriculum(): void {
     const idToOpen = this.pendingOpenCurriculumId || this.curriculumOpenService.getAndClearCurriculumToOpen();
-    if (!idToOpen || !this.contentTemplate || !this.curriculumList?.length) {
+    if (!idToOpen) {
+      return;
+    }
+    // Keep the id pending until we can actually open it. This method is called from both
+    // ngAfterViewInit and after every getCurriculumList(); the view template or the (re)fetched
+    // list may not be ready on the first call, so we must not drop the id prematurely.
+    this.pendingOpenCurriculumId = idToOpen;
+    if (!this.contentTemplate || !this.curriculumList?.length) {
       return;
     }
     const item = this.curriculumList.find((c: any) => String(c.id) === String(idToOpen));
-    if (item) {
-      this.pendingOpenCurriculumId = null;
-      if (this.activatedRoute.snapshot.queryParams?.openCurriculum) {
-        this.router.navigate([], { relativeTo: this.activatedRoute, queryParams: {}, queryParamsHandling: '' });
-      }
-      // Close existing curriculum detail modal so the new one shows fresh data
-      if (this.modalReference) {
-        this.modalReference.close();
-        this.modalReference = null;
-      }
-      setTimeout(() => this.checkCourse(this.contentTemplate, item), 0);
+    if (!item) {
+      // New curriculum not in the current list yet (e.g. stale fetch); retry on the next list load.
+      return;
     }
+    this.pendingOpenCurriculumId = null;
+    if (this.activatedRoute.snapshot.queryParams?.openCurriculum) {
+      this.router.navigate([], { relativeTo: this.activatedRoute, queryParams: {}, queryParamsHandling: '' });
+    }
+    // Close existing curriculum detail modal so the new one shows fresh data
+    if (this.modalReference) {
+      this.modalReference.close();
+      this.modalReference = null;
+    }
+    setTimeout(() => this.checkCourse(this.contentTemplate, item), 0);
   }
 
   pageChanged(event) {
@@ -2554,9 +2563,10 @@ changeProvider(provider:string,index:number){
     if (!file) return;
     this.fileData = file;
     this.videoUploadsInProgress++;
-    this.appService.uploadDocumnet(this.fileData, 'curriculum_Vedios').subscribe({
-      next: (res) => {
-        this.uploadedFilePath = res?.documentPath ?? '';
+    // Direct-to-S3 upload bypasses the API Gateway/Lambda ~10 MB body limit that breaks large videos.
+    this.appService.uploadDocumentDirect(this.fileData, 'curriculum_Vedios').subscribe({
+      next: (documentPath) => {
+        this.uploadedFilePath = documentPath ?? '';
         this.courseVideoLectureArray!.at(index).patchValue({
           videoLink: this.uploadedFilePath
         });

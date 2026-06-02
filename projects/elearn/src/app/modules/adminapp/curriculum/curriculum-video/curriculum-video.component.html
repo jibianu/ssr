@@ -127,7 +127,7 @@
                                     Upload progress: {{ fileUploadProgress }}
                                 </div>
                                 <div class="image-preview mb-3" *ngIf="item.controls.videoLink.value">
-                                    <video width="320" height="240" controls crossorigin="anonymous" playsinline>
+                                    <video width="320" height="240" controls playsinline>
                                         <source [src]="getVideoSrc(item.controls.videoLink.value) | safeUrl" type="video/mp4">
                                     Your browser does not support the video tag.
                                     </video>

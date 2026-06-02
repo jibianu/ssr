@@ -372,7 +372,7 @@
       <button type="button" class="promo-video-overlay__close" (click)="closePromoVideo()" aria-label="Close">
         <i class="fa fa-times"></i>
       </button>
-      <video class="promo-video-overlay__video" controls controlsList="nodownload" playsinline crossorigin="anonymous" #promoVideoPlayer>
+      <video class="promo-video-overlay__video" controls controlsList="nodownload" playsinline #promoVideoPlayer>
         <source [src]="getPromoVideoSrc(courseDetails.promoVideoUrl) | safeUrl" type="video/mp4">
         Your browser does not support the video tag.
       </video>
