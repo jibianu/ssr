@@ -5,6 +5,7 @@ import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
 import { environment } from 'src/environments/environment';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { StripePaymentService } from '../../../services/stripe-payment.service';
+import { RazorpayPaymentService } from '../../../services/razorpay-payment.service';
 import { UtmService } from '../../../services/utm.service';
 import { AuthenticationService } from '../../auth/auth.service';
 import { resolveCourseId, resolveCourseSlug } from 'src/app/core/helpers/course-id.helper';
@@ -43,11 +44,22 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   /** True while create-order request is in progress */
   creatingIntent = false;
 
+  /** Selected payment gateway: 'stripe' (default) keeps existing behavior; 'razorpay' opens Razorpay Checkout. */
+  selectedGateway: 'stripe' | 'razorpay' = 'stripe';
+
+  /** Feature flag: only offer Razorpay when a public key id is configured for this environment. */
+  razorpayEnabled = !!(environment as { razorpayKeyId?: string }).razorpayKeyId
+    && !(environment as { razorpayKeyId?: string }).razorpayKeyId!.includes('xxxx');
+
+  /** True while a Razorpay order is being created / checkout is opening. */
+  razorpayLoading = false;
+
   private subscription = new Subscription();
 
   constructor(
     private appService: AdminAppService,
     private stripePaymentService: StripePaymentService,
+    private razorpayPaymentService: RazorpayPaymentService,
     private utmService: UtmService,
     private authService: AuthenticationService,
     private route: ActivatedRoute,
@@ -129,6 +141,144 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     const ref = this.route.snapshot.queryParamMap.get('ref')?.trim();
     if (ref) return ref;
     return this.route.snapshot.queryParamMap.get('aff')?.trim() || undefined;
+  }
+
+  /** Build the shared create-order options (coupon + UTM/affiliate) used by both gateways. */
+  private buildOrderOptions(): Record<string, string | undefined> {
+    const user = this.authService.currentUser();
+    const utm = this.utmService.getStoredUtm();
+    return {
+      userId: user?.userId ?? user?.id ?? undefined,
+      utmSource: utm.utmSource,
+      utmMedium: utm.utmMedium,
+      utmCampaign: utm.utmCampaign,
+      campaignCode: utm.campaignCode,
+      affiliateCode: this.affiliateCodeForOrder() ?? utm.affiliateCode,
+      couponCode: this.couponCode?.trim() || undefined
+    };
+  }
+
+  /** Dispatch to the selected gateway when the user clicks "Proceed to payment". */
+  proceedToPayment(): void {
+    if (this.selectedGateway === 'razorpay') {
+      this.payWithRazorpay();
+    } else {
+      this.createIntentAndMountPayment();
+    }
+  }
+
+  /** Razorpay path: create order on backend, open Checkout, verify on success, then go to course. */
+  async payWithRazorpay(): Promise<void> {
+    if (this.data?.course?.discountedPrice == null) return;
+    this.amountPaise = Math.round(Number(this.data.course.discountedPrice) * 100);
+    this.razorpayLoading = true;
+    this.loadError = null;
+    this.cdr.detectChanges();
+
+    const options = this.buildOrderOptions();
+    this.subscription.add(
+      this.razorpayPaymentService.createOrder(this.amountPaise, this.courseId, options).subscribe({
+        next: async (res) => {
+          // Already enrolled / free after discounts: go straight to the course.
+          if (res?.alreadyEnrolled || res?.enrolledFree) {
+            this.razorpayLoading = false;
+            this.router.navigate(['/app/student/details/curriculum-list', this.courseId]);
+            return;
+          }
+
+          const ready = await this.razorpayPaymentService.loadCheckoutScript();
+          if (!ready || !window.Razorpay) {
+            this.razorpayLoading = false;
+            this.loadError = 'Could not load Razorpay Checkout. Please try again.';
+            this.cdr.detectChanges();
+            return;
+          }
+          this.openRazorpayCheckout(res);
+        },
+        error: (err) => {
+          this.razorpayLoading = false;
+          const msg = err?.error?.error ?? err?.error?.message ?? err?.message;
+          this.loadError = msg || 'Failed to initialize Razorpay payment.';
+          this.cdr.detectChanges();
+        }
+      })
+    );
+  }
+
+  /**
+   * Razorpay's modal is an HTTPS iframe, so the logo must be a PUBLIC, HTTPS URL.
+   * A localhost/http image is blocked (mixed content) and unreachable by Razorpay, so we
+   * never use the local origin here — prefer a configured absolute logo, else the public site logo.
+   */
+  private razorpayLogoUrl(): string {
+    const configured = (environment as { logoUrl?: string }).logoUrl;
+    if (configured && /^https:\/\//i.test(configured)) return configured;
+    return 'https://oilandgasclub.com/assets/img/oilandgas_club.svg';
+  }
+
+  private openRazorpayCheckout(res: {
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+    courseTitle?: string;
+  }): void {
+    const user = this.authService.currentUser();
+    const checkout = new window.Razorpay!({
+      key: res.keyId,
+      amount: res.amount,
+      currency: res.currency,
+      // Empty name → Razorpay shows only the logo image (no business-name text) in the modal header.
+      name: '',
+      description: res.courseTitle || this.data?.course?.title || 'Course purchase',
+      image: this.razorpayLogoUrl(),
+      order_id: res.orderId,
+      prefill: {
+        name: user?.name || user?.username || '',
+        email: user?.email || ''
+      },
+      theme: { color: '#f57722' },
+      handler: (response: unknown) => {
+        const r = response as { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
+        this.razorpayLoading = true;
+        this.cdr.detectChanges();
+        this.subscription.add(
+          this.razorpayPaymentService
+            .verify({
+              razorpayOrderId: r.razorpay_order_id,
+              razorpayPaymentId: r.razorpay_payment_id,
+              razorpaySignature: r.razorpay_signature,
+              courseId: this.courseId
+            })
+            .subscribe({
+              next: () => this.router.navigateByUrl(`/app/payment/success?entityId=${this.courseId}`),
+              error: () => {
+                this.razorpayLoading = false;
+                this.loadError = 'Payment verification failed. If you were charged, contact support.';
+                this.cdr.detectChanges();
+              }
+            })
+        );
+      },
+      modal: {
+        ondismiss: () => {
+          this.razorpayLoading = false;
+          this.subscription.add(this.razorpayPaymentService.cancel(res.orderId, this.courseId).subscribe({ next: () => {}, error: () => {} }));
+          this.cdr.detectChanges();
+        }
+      }
+    });
+
+    checkout.on('payment.failed', (resp: unknown) => {
+      const e = resp as { error?: { description?: string } };
+      this.razorpayLoading = false;
+      this.loadError = e?.error?.description || 'Payment failed. Please try again.';
+      this.cdr.detectChanges();
+    });
+
+    this.razorpayLoading = false;
+    this.cdr.detectChanges();
+    checkout.open();
   }
 
   /** Call this when user clicks "Proceed to payment" so optional coupon is included. */

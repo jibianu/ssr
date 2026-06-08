@@ -33,15 +33,29 @@
 
         <p class="checkout__error" *ngIf="loadError">{{ loadError }}</p>
 
+        <!-- Choose payment gateway -->
+        <div class="checkout__gateways" *ngIf="!clientSecret">
+          <h2 class="checkout__order-heading">Payment Method</h2>
+          <label class="checkout__gateway" [class.checkout__gateway--active]="selectedGateway === 'stripe'">
+            <input type="radio" name="gateway" value="stripe" [(ngModel)]="selectedGateway" />
+            <span class="checkout__gateway-label">Credit / Debit Card <small>(Stripe)</small></span>
+          </label>
+          <label class="checkout__gateway" [class.checkout__gateway--active]="selectedGateway === 'razorpay'"
+            *ngIf="razorpayEnabled">
+            <input type="radio" name="gateway" value="razorpay" [(ngModel)]="selectedGateway" />
+            <span class="checkout__gateway-label">UPI / Cards / Net Banking <small>(Razorpay)</small></span>
+          </label>
+        </div>
+
         <!-- Optional instructor discount code; apply before proceeding to payment -->
         <div class="checkout__coupon" *ngIf="!clientSecret">
           <label for="coupon-code" class="checkout__coupon-label">Discount code (optional)</label>
           <div class="checkout__coupon-row">
             <input id="coupon-code" type="text" class="checkout__coupon-input" [(ngModel)]="couponCode"
               placeholder="e.g. save 18" maxlength="50" />
-            <button type="button" class="checkout__btn checkout__btn--secondary" (click)="createIntentAndMountPayment()"
-              [disabled]="creatingIntent" aria-label="Proceed to payment">
-              {{ creatingIntent ? 'Loading…' : 'Proceed to payment' }}
+            <button type="button" class="checkout__btn checkout__btn--secondary" (click)="proceedToPayment()"
+              [disabled]="creatingIntent || razorpayLoading" aria-label="Proceed to payment">
+              {{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}
             </button>
           </div>
           <p class="checkout__coupon-hint">If your instructor gave you a code, enter it above. The discount will be applied when you proceed.</p>

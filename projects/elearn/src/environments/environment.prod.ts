@@ -11,6 +11,8 @@ export const environment = {
   logoUrl: '',
   certificateBrandName: 'Oil and Gas Club',
   stripeKey: 'pk_live_N0CVrqPSTq9ECjQxRSODpGUE00Jg3I2H71',
+  /** Razorpay public key id. Safe to expose; secret stays on the server only. */
+  razorpayKeyId: 'rzp_live_Sz68YoMQ2H2Imh',
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
   cognitoRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/callback',

@@ -27,6 +27,8 @@ export const environment = {
   /** Brand name for certificate page */
   certificateBrandName: 'Oil and Gas Club',
   stripeKey: 'pk_live_N0CVrqPSTq9ECjQxRSODpGUE00Jg3I2H71',
+  /** Razorpay public key id (LIVE). Secret stays on the server only. */
+  razorpayKeyId: 'rzp_live_Sz68YoMQ2H2Imh',
   /** Cognito Hosted UI (Google federation). Must match AWS Cognito domain. */
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
