@@ -5,7 +5,7 @@ import { AuthenticationService } from '../auth.service';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { environment } from 'src/environments/environment';
 import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
-import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
+import { getGoogleOAuthRedirectUri, launchGoogleOAuth, isEmbeddedBrowser } from 'src/app/core/google-oauth-redirect.util';
 
 @Component({
   selector: 'app-register',
@@ -24,6 +24,11 @@ export class RegisterComponent implements OnInit {
   logoUrl = environment.logoUrl || getDefaultLogoUrl();
   /** True when Google OAuth (code flow) is configured; same custom button as Login. */
   googleEnabled = !!environment.oauthKey?.trim();
+
+  /** True when inside an in-app browser / WebView; Google blocks OAuth here (Error 403: disallowed_useragent). */
+  inAppBrowser = false;
+  /** Shown after we ask the user to open the page in their system browser. */
+  showOpenInBrowserHint = false;
 
   constructor(
     private router: Router,
@@ -45,6 +50,7 @@ export class RegisterComponent implements OnInit {
   private static readonly AFFILIATE_REF_DAYS = 30;
 
   ngOnInit(): void {
+    this.inAppBrowser = isEmbeddedBrowser();
     this.activatedRoute.queryParams.subscribe(params => {
       const ref = params['ref'];
       const course = params['course'];
@@ -70,13 +76,22 @@ export class RegisterComponent implements OnInit {
     const clientId = environment.oauthKey?.trim();
     const redirectUri = getGoogleOAuthRedirectUri();
     if (!clientId || !redirectUri) return;
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid email profile'
-    });
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const result = launchGoogleOAuth(clientId, redirectUri);
+    if (!result.launched && result.embedded) {
+      this.inAppBrowser = true;
+      this.showOpenInBrowserHint = true;
+    }
+  }
+
+  /** Copy current page URL so the user can open it in Chrome/Safari to use Google sign-in. */
+  async copyOpenInBrowserUrl(): Promise<void> {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    try {
+      await navigator.clipboard.writeText(url);
+      this.toaster.showSuccess('Link copied. Open Chrome or Safari and paste it to continue with Google.');
+    } catch {
+      this.toaster.showError('Open this page in Chrome or Safari to continue with Google.');
+    }
   }
 
   register(): void {
@@ -130,21 +145,44 @@ export class RegisterComponent implements OnInit {
             this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
           },
           error: (err) => {
-            const msg = err?.error?.message ?? err?.message ?? '';
-            const isAlreadyExists =
-              err?.status === 409 ||
-              /already exists|user already exist|(user|username|email).*exists/i.test(msg);
-            if (isAlreadyExists) {
-              this.toaster.showError('User already exists. Please log in.');
-              this.router.navigate(['/login']);
-            } else {
-              console.log('error signing up:', err);
-            }
+            this.handleRegisterError(err);
           }
         });
     } catch (error) {
       console.log('error signing up:', error);
     }
+  }
+
+  /**
+   * Show an accurate signup error. Only a genuine duplicate account routes to login;
+   * everything else (e.g. weak password, invalid email) shows the real backend message.
+   * Backend error shape is { StatusCode, Messages: string[] } (see ErrorResponse / ExceptionMiddleware).
+   */
+  private handleRegisterError(err: any): void {
+    const backendMsg =
+      err?.error?.messages?.[0] ??
+      err?.error?.Messages?.[0] ??
+      err?.error?.message ??
+      err?.error?.Message ??
+      (typeof err?.error === 'string' ? err.error : '') ??
+      err?.message ??
+      '';
+    const msg = (backendMsg || '').toString().trim();
+
+    // Duplicate account: backend returns 409 (RegistrationException) for genuine duplicates only.
+    const isAlreadyExists =
+      err?.status === 409 ||
+      /already exist|already registered|user.*exist|email.*exist|username.*exist/i.test(msg);
+
+    if (isAlreadyExists) {
+      this.toaster.showError(msg || 'An account with this email already exists. Please log in.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Any other failure (400 validation, weak password, server error): show the real reason.
+    console.error('Registration failed:', err?.status, err?.error ?? err);
+    this.toaster.showError(msg || 'Registration failed. Please check your details and try again.');
   }
 
   private getCookie(name: string): string | undefined {

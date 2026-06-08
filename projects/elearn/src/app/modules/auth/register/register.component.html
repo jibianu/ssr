@@ -14,6 +14,18 @@
       <p class="login-info-box__text">Over 250k+ learners trust us for their preparation. Join and get access to industry-recognized courses.</p>
     </div>
 
+    <div class="login-inapp-warning" *ngIf="inAppBrowser && googleEnabled" role="alert">
+      <p class="login-inapp-warning__text">
+        Google sign-up doesn’t work inside in-app browsers (Instagram, LinkedIn, Gmail, etc.).
+        Open this page in <strong>Chrome</strong> or <strong>Safari</strong> to continue with Google,
+        or sign up with your email and password below.
+      </p>
+      <button type="button" class="login-inapp-warning__btn" (click)="copyOpenInBrowserUrl()">Copy link to open in browser</button>
+      <p class="login-inapp-warning__hint" *ngIf="showOpenInBrowserHint">
+        Use your browser’s menu (⋮ or share icon) and choose “Open in browser”.
+      </p>
+    </div>
+
     <form class="login-form" (ngSubmit)="register()" aria-label="Sign up">
       <div class="login-form__field login-form__google-wrap" *ngIf="googleEnabled">
         <button type="button" class="login-form__google-btn" (click)="continueWithGoogle()" [disabled]="!googleEnabled" aria-label="Continue with Google">

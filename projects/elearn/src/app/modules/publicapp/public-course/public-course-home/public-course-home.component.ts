@@ -5,7 +5,7 @@ import { first } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { AuthenticationService, ROLE_LANDING_ROUTES } from '../../../auth/auth.service';
 import { environment } from 'src/environments/environment';
-import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
+import { getGoogleOAuthRedirectUri, launchGoogleOAuth, isEmbeddedBrowser } from 'src/app/core/google-oauth-redirect.util';
 
 @Component({
     selector: 'app-public-course-home',
@@ -82,17 +82,18 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** True when inside an in-app browser / WebView; Google blocks OAuth here (Error 403: disallowed_useragent). */
+  inAppBrowser = isEmbeddedBrowser();
+
   continueWithGoogle(): void {
     const clientId = environment.oauthKey?.trim();
     const redirectUri = getGoogleOAuthRedirectUri();
     if (!clientId || !redirectUri) return;
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid email profile'
-    });
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const result = launchGoogleOAuth(clientId, redirectUri);
+    if (!result.launched && result.embedded) {
+      this.inAppBrowser = true;
+      alert('Google sign-in is blocked inside in-app browsers. Please open this page in Chrome or Safari to continue with Google, or sign in with your email and password.');
+    }
   }
 
   isVisible: boolean = false; 

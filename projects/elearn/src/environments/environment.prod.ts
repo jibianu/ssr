@@ -6,7 +6,7 @@ export const environment = {
   forcePublicCourseIframe: false,
   exploreOpenMarketingSiteInSameTab: false,
   oauthKey: '9001690783-2at0k49u0nkoe8qb3ucn8d76qv9ls073.apps.googleusercontent.com',
-  seoUrl: 'https://elearn.oilandgasclub.com/',
+  seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300',
   logoUrl: '',
   certificateBrandName: 'Oil and Gas Club',
@@ -15,9 +15,9 @@ export const environment = {
   razorpayKeyId: 'rzp_live_Sz68YoMQ2H2Imh',
   cognitoHostedUiDomain: 'https://your-domain.auth.us-east-1.amazoncognito.com',
   cognitoClientId: '',
-  cognitoRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/callback',
+  cognitoRedirectUri: 'https://oilandgasclub.com/callback',
   /** Tenant apex for company portals. With companyPortalLoginPath=/login → https://{subdomain}.oilandgasclub.com/login after register. */
   companyPortalHost: 'oilandgasclub.com' as string | undefined,
   companyPortalLoginPath: '/login',
-  googleRedirectUri: 'https://elearn.oilandgasclub.com/Elearn/google-callback'
+  googleRedirectUri: 'https://oilandgasclub.com/google-callback'
 };

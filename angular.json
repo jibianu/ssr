@@ -130,7 +130,7 @@
           "configurations": {
             "production": {
               "fileReplacements": [{ "replace": "projects/elearn/src/environments/environment.ts", "with": "projects/elearn/src/environments/environment.prod.ts" }],
-              "baseHref": "/Elearn/",
+              "baseHref": "/",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false

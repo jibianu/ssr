@@ -21,13 +21,13 @@ export interface PageMetadata {
   canonicalUrl?: string;
 }
 
-const seoOrigin = (environment.seoUrl || 'https://elearn.oilandgasclub.com/').replace(/\/+$/, '');
+const seoOrigin = (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/+$/, '');
 
 function defaultPublicHost(): string {
   try {
     return new URL(seoOrigin + '/').hostname;
   } catch {
-    return 'elearn.oilandgasclub.com';
+    return 'oilandgasclub.com';
   }
 }
 

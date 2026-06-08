@@ -20,7 +20,7 @@ export const environment = {
    */
   exploreOpenMarketingSiteInSameTab: false,
   oauthKey: '9001690783-2at0k49u0nkoe8qb3ucn8d76qv9ls073.apps.googleusercontent.com',
-  seoUrl: 'https://elearn.oilandgasclub.com/',
+  seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300',
   /** Certificate/brand logo (e.g. S3 public URL: https://your-bucket.s3.region.amazonaws.com/certificate/logo.png) */
   logoUrl: '',

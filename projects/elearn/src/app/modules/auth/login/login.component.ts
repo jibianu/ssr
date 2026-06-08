@@ -7,7 +7,7 @@ import { isCompanyTenantLoginHost, getTenantSubdomainFromHostname } from 'src/ap
 import { tryRedirectToCompanyPortalAfterLogin } from 'src/app/core/helpers/company-portal-redirect.helper';
 import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
-import { getGoogleOAuthRedirectUri } from 'src/app/core/google-oauth-redirect.util';
+import { getGoogleOAuthRedirectUri, launchGoogleOAuth, isEmbeddedBrowser } from 'src/app/core/google-oauth-redirect.util';
 import { jsonProp } from 'src/app/core/api-json.util';
 
 @Component({
@@ -42,6 +42,13 @@ export class LoginComponent implements OnInit {
     showAlert = false;
     alertMessage = '';
 
+    /** True when the app is open inside an in-app browser / WebView. Google blocks OAuth here (Error 403: disallowed_useragent). */
+    inAppBrowser = false;
+    /** Authorize URL shown for "open in your browser" guidance when inAppBrowser is true. */
+    oauthOpenInBrowserUrl = '';
+    /** Shown after we ask the user to open the page in their system browser. */
+    showOpenInBrowserHint = false;
+
     constructor(
         private router: Router,
         private route: ActivatedRoute,
@@ -54,6 +61,7 @@ export class LoginComponent implements OnInit {
     const onCompanyTenant = isCompanyTenantLoginHost(host);
     this.tenantSubdomain = getTenantSubdomainFromHostname(host);
     this.showGoogleOAuthButton = this.googleEnabled && !onCompanyTenant;
+    this.inAppBrowser = isEmbeddedBrowser();
 
     if (onCompanyTenant && this.tenantSubdomain) {
       this.loadingSsoConfig = true;
@@ -215,16 +223,27 @@ export class LoginComponent implements OnInit {
     const redirectUri = getGoogleOAuthRedirectUri();
     if (!clientId || !redirectUri) return;
     const redirect = (this.route.snapshot.queryParams['redirect'] ?? this.route.snapshot.queryParams['returnUrl'] ?? '').toString().trim();
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid email profile'
-    });
-    if (redirect) {
-      params.set('state', redirect);
+    const result = launchGoogleOAuth(clientId, redirectUri, redirect || undefined);
+    if (!result.launched && result.embedded) {
+      // In-app browser (Instagram/LinkedIn/Gmail/etc.): Google blocks OAuth here.
+      // Guide the user to open the page in their secure system browser.
+      this.inAppBrowser = true;
+      this.oauthOpenInBrowserUrl = window.location.href;
+      this.showOpenInBrowserHint = true;
     }
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
+  /** Copy the current page URL so the user can paste it into Chrome/Safari. */
+  async copyOpenInBrowserUrl(): Promise<void> {
+    const url = this.oauthOpenInBrowserUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    try {
+      await navigator.clipboard.writeText(url);
+      this.alertMessage = 'Link copied. Open your browser (Chrome or Safari) and paste it to sign in with Google.';
+      this.showAlert = true;
+    } catch {
+      this.alertMessage = 'Please copy this link and open it in Chrome or Safari to sign in with Google: ' + url;
+      this.showAlert = true;
+    }
   }
 
   /**

@@ -9,7 +9,7 @@ export class CanonicalService {
   constructor(@Inject(DOCUMENT) private readonly document: Document) {}
 
   private getMarketingOrigin(): string {
-    return (environment.seoUrl || 'https://elearn.oilandgasclub.com/').replace(/\/+$/, '');
+    return (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/+$/, '');
   }
 
   private toAbsoluteCanonicalHref(input: string): string {
