@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from '../auth.service';
+import { parseRegistrationError } from '../auth-error.util';
 
 @Component({
   selector: 'app-register-management',
@@ -61,13 +62,14 @@ export class RegisterManagementComponent implements OnInit {
           }
         },
         error: (err) => {
-          const msg = err?.error?.message ?? err?.error?.Message ?? err?.error?.Messages?.[0] ?? err?.message ?? '';
-          const isUserExists = typeof msg === 'string' && msg.toLowerCase().includes('user already exists');
-          if (isUserExists) {
+          const { message, isAlreadyExists } = parseRegistrationError(err);
+          if (isAlreadyExists) {
             this.alertMessage = 'User already exists. You can log in. If you forgot your password, use the Forgot password link.';
             this.showAlert = true;
           } else {
-            console.log('error signing up:', err);
+            console.error('error signing up:', err?.status, err?.error ?? err);
+            this.alertMessage = message || 'Registration failed. Please check your details and try again.';
+            this.showAlert = true;
           }
         }
       });

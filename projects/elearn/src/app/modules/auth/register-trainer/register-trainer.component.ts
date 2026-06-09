@@ -4,6 +4,8 @@ import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { AuthenticationService } from '../auth.service';
+import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
+import { parseRegistrationError } from '../auth-error.util';
 
 @Component({
   selector: 'app-register-trainer',
@@ -22,7 +24,8 @@ export class RegisterTrainerComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authenticationService: AuthenticationService
+    private authenticationService: AuthenticationService,
+    private toaster: ToasterService
   ) {}
 
   ngOnInit(): void {}
@@ -42,27 +45,39 @@ export class RegisterTrainerComponent implements OnInit {
   }
 
   registerTrainer(): void {
+    const email = (this.email || '').trim();
+    if (!email || !this.password) {
+      this.toaster.showError('Please enter your email and password.');
+      return;
+    }
     try {
-      const defaultUserName = this.usernameFromEmail(this.email) || this.email;
+      const defaultUserName = this.usernameFromEmail(email) || email;
       const request = {
-        LastName: this.email,
-        FirstName: this.email,
+        LastName: email,
+        FirstName: email,
         UserName: defaultUserName,
-        Email: this.email,
+        Email: email,
         Password: this.password
       };
       this.authenticationService.registerTrainer(request).pipe(first()).subscribe({
-        next: (data) => {
-          if (data) {
-            this.router.navigate(['/verification'], { queryParams: { code: btoa(this.email) } });
-          }
+        next: () => {
+          this.router.navigate(['/verification'], { queryParams: { code: btoa(email) } });
         },
         error: (err) => {
-          console.log('error signing up:', err);
+          const { message, isAlreadyExists } = parseRegistrationError(err);
+          if (isAlreadyExists) {
+            this.toaster.showError(message || 'An account with this email already exists. Please log in.');
+            this.router.navigate(['/login']);
+            return;
+          }
+          // Surface the real reason (weak password, invalid details, server error) instead of failing silently.
+          console.error('Trainer registration failed:', err?.status, err?.error ?? err);
+          this.toaster.showError(message || 'Registration failed. Please check your details and try again.');
         }
       });
     } catch (error) {
-      console.log('error signing up:', error);
+      console.error('error signing up:', error);
+      this.toaster.showError('Registration failed. Please try again.');
     }
   }
 }

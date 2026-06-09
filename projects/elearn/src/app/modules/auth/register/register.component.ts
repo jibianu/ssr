@@ -6,6 +6,7 @@ import { ToasterService } from 'src/app/shared/component/toaster/toaster.service
 import { environment } from 'src/environments/environment';
 import { getDefaultLogoUrl } from 'src/app/core/logo-url.util';
 import { getGoogleOAuthRedirectUri, launchGoogleOAuth, isEmbeddedBrowser } from 'src/app/core/google-oauth-redirect.util';
+import { parseRegistrationError } from '../auth-error.util';
 
 @Component({
   selector: 'app-register',
@@ -159,30 +160,15 @@ export class RegisterComponent implements OnInit {
    * Backend error shape is { StatusCode, Messages: string[] } (see ErrorResponse / ExceptionMiddleware).
    */
   private handleRegisterError(err: any): void {
-    const backendMsg =
-      err?.error?.messages?.[0] ??
-      err?.error?.Messages?.[0] ??
-      err?.error?.message ??
-      err?.error?.Message ??
-      (typeof err?.error === 'string' ? err.error : '') ??
-      err?.message ??
-      '';
-    const msg = (backendMsg || '').toString().trim();
-
-    // Duplicate account: backend returns 409 (RegistrationException) for genuine duplicates only.
-    const isAlreadyExists =
-      err?.status === 409 ||
-      /already exist|already registered|user.*exist|email.*exist|username.*exist/i.test(msg);
-
+    const { message, isAlreadyExists } = parseRegistrationError(err);
     if (isAlreadyExists) {
-      this.toaster.showError(msg || 'An account with this email already exists. Please log in.');
+      this.toaster.showError(message || 'An account with this email already exists. Please log in.');
       this.router.navigate(['/login']);
       return;
     }
-
     // Any other failure (400 validation, weak password, server error): show the real reason.
     console.error('Registration failed:', err?.status, err?.error ?? err);
-    this.toaster.showError(msg || 'Registration failed. Please check your details and try again.');
+    this.toaster.showError(message || 'Registration failed. Please check your details and try again.');
   }
 
   private getCookie(name: string): string | undefined {
