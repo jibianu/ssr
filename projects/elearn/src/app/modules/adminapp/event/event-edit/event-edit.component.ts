@@ -12,6 +12,8 @@ import { SubmitForReviewModalComponent } from '../../course/course-review/submit
 import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
 import { CourseRejectModalComponent } from '../../course/course-review/course-reject-modal/course-reject-modal.component';
 
+export type EventEditSectionPanel = 'curriculum' | 'bonuses' | 'salary' | 'qa' | 'organized';
+
 @Component({
   selector: 'app-event-edit',
   templateUrl: './event-edit.component.html',
@@ -31,17 +33,22 @@ export class EventEditComponent implements OnInit, OnDestroy {
   titleImageUploadedUrl: string | null = null;
   videoUploading = false;
   mediaDeleting = false;
-  curriculumExpanded = true;
-  bonusesExpanded = false;
-  salaryExpanded = false;
-  qaExpanded = false;
-  organizedByExpanded = false;
-  optionsExpanded = true;
   eventStatus = 0;
+  activeSectionPanel: EventEditSectionPanel = 'curriculum';
+  selectedCurriculumIndex: number | null = null;
   @ViewChild('eventReviewSidebar') eventReviewSidebarRef: TemplateRef<any>;
+  @ViewChild('eventSectionSidebar') eventSectionSidebarRef: TemplateRef<any>;
   reviewSidebarModalRef: NgbModalRef;
+  sectionSidebarModalRef: NgbModalRef | null = null;
   reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
   reviewActionInProgress = false;
+  /** Non-curriculum event details (image, format, organized, etc.) preserved across curriculum edits. */
+  private preservedEventDetails: Record<string, unknown>[] = [];
+  private readonly curriculumSection = 'curriculum';
+  private readonly formatSection = 'format';
+  private readonly supportSection = 'support';
+  private static readonly DEFAULT_HELP_PHONE = '+91 98402 87919';
+  private static readonly DEFAULT_HELP_EMAIL = 'event@oilandgasclub.com';
   private sub = new Subscription();
 
   constructor(
@@ -109,6 +116,8 @@ export class EventEditComponent implements OnInit, OnDestroy {
       skillLevel: [''],
       certification: [''],
       mode: [''],
+      helpPhones: this.fb.array([this.fb.control(EventEditComponent.DEFAULT_HELP_PHONE)]),
+      helpEmails: this.fb.array([this.fb.control(EventEditComponent.DEFAULT_HELP_EMAIL)]),
       startDate: ['', Validators.required],
       endDate: ['', Validators.required],
       duration: [''],
@@ -129,18 +138,63 @@ export class EventEditComponent implements OnInit, OnDestroy {
   get f() { return this.form.controls; }
   get eventDetailsArray(): FormArray { return this.form.get('eventDetails') as FormArray; }
   get qaSectionsArray(): FormArray { return this.form.get('qaSections') as FormArray; }
+  get helpPhonesArray(): FormArray { return this.form.get('helpPhones') as FormArray; }
+  get helpEmailsArray(): FormArray { return this.form.get('helpEmails') as FormArray; }
+
+  addHelpPhone(): void {
+    this.helpPhonesArray.push(this.fb.control(''));
+  }
+
+  removeHelpPhone(index: number): void {
+    if (this.helpPhonesArray.length > 1) {
+      this.helpPhonesArray.removeAt(index);
+    }
+  }
+
+  addHelpEmail(): void {
+    this.helpEmailsArray.push(this.fb.control(''));
+  }
+
+  removeHelpEmail(index: number): void {
+    if (this.helpEmailsArray.length > 1) {
+      this.helpEmailsArray.removeAt(index);
+    }
+  }
 
   addCurriculumSection(): void {
     this.eventDetailsArray.push(this.fb.group({
-      section: [''],
-      sortOrder: [this.eventDetailsArray.length],
       title: [''],
-      description: [''],
-      tag: [''],
-      amount: [null],
-      imageUrl: [''],
-      count: [null]
+      description: ['']
     }));
+  }
+
+  addCurriculumSectionAndOpen(): void {
+    this.addCurriculumSection();
+    this.openSectionSidebar('curriculum', this.eventDetailsArray.length - 1);
+  }
+
+  getCurriculumDescription(index: number): string {
+    const desc = this.eventDetailsArray.at(index)?.get('description')?.value;
+    return desc != null ? String(desc).trim() : '';
+  }
+
+  /** Bullet-style preview shown under the title (course table shows content under title). */
+  getCurriculumDescriptionPreview(index: number): string {
+    const raw = this.getCurriculumDescription(index);
+    if (!raw) return '';
+    const preview = raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => (line.startsWith('•') ? line : `• ${line.replace(/^[-*]\s*/, '')}`))
+      .join(' ');
+    const maxLen = 140;
+    return preview.length > maxLen ? `${preview.slice(0, maxLen - 3)}...` : preview;
+  }
+
+  getSectionPreview(field: 'bonuses' | 'salaryInfo' | 'organizedBy'): string {
+    const value = this.form?.get(field)?.value;
+    return value != null ? String(value).trim() : '';
   }
 
   removeCurriculumSection(index: number): void {
@@ -194,25 +248,162 @@ export class EventEditComponent implements OnInit, OnDestroy {
     return eventInfo.replace(/\n?\[TitleImage:[^\]]*\]/g, '').trim();
   }
 
+  private normalizeEventDetail(d: any): Record<string, unknown> {
+    return {
+      section: d.section ?? d.Section ?? '',
+      sortOrder: d.sortOrder ?? d.SortOrder ?? 0,
+      title: d.title ?? d.Title ?? '',
+      description: d.description ?? d.Description ?? '',
+      tag: d.tag ?? d.Tag ?? '',
+      amount: d.amount ?? d.Amount ?? null,
+      imageUrl: d.imageUrl ?? d.ImageUrl ?? '',
+      count: d.count ?? d.Count ?? null
+    };
+  }
+
   private patchEventDetails(details: any[]): void {
+    const normalized = (details || []).map((d) => this.normalizeEventDetail(d));
+    this.preservedEventDetails = normalized.filter((d) => {
+      const section = ((d.section as string) || '').trim();
+      return section.length > 0 && section !== this.curriculumSection;
+    });
+    const curriculum = normalized.filter((d) => {
+      const section = ((d.section as string) || '').trim();
+      return !section || section === this.curriculumSection;
+    });
     const arr = this.eventDetailsArray;
     arr.clear();
-    (details || []).forEach((d: any) => {
+    curriculum.forEach((d) => {
       arr.push(this.fb.group({
-        section: [d.section ?? d.Section ?? ''],
-        sortOrder: [d.sortOrder ?? d.SortOrder ?? arr.length],
-        title: [d.title ?? d.Title ?? ''],
-        description: [d.description ?? d.Description ?? ''],
-        tag: [d.tag ?? d.Tag ?? ''],
-        amount: [d.amount ?? d.Amount ?? null],
-        imageUrl: [d.imageUrl ?? d.ImageUrl ?? ''],
-        count: [d.count ?? d.Count ?? null]
+        title: [d.title],
+        description: [d.description]
       }));
     });
   }
 
-  loadEvent(): void {
-    this.loading = true;
+  private buildCurriculumPayload(details: any[]): Record<string, unknown>[] {
+    return (details || []).map((d: any, index: number) => ({
+      section: this.curriculumSection,
+      sortOrder: index,
+      title: d.title ?? '',
+      description: d.description ?? '',
+      tag: '',
+      amount: null,
+      imageUrl: '',
+      count: null
+    }));
+  }
+
+  private getFormatFieldFromDetails(details: any[], title: string): string {
+    const match = (details || []).find((d) => {
+      const section = (d?.section ?? d?.Section ?? '').trim();
+      const itemTitle = (d?.title ?? d?.Title ?? '').trim();
+      return section === this.formatSection && itemTitle === title;
+    });
+    return String(match?.description ?? match?.Description ?? '').trim();
+  }
+
+  private patchFormatFields(details: any[]): void {
+    this.form.patchValue({
+      skillLevel: this.getFormatFieldFromDetails(details, 'Level'),
+      certification: this.getFormatFieldFromDetails(details, 'Certification'),
+      mode: this.getFormatFieldFromDetails(details, 'Mode')
+    });
+  }
+
+  private buildFormatPayload(skillLevel: string, certification: string, mode: string): Record<string, unknown>[] {
+    const items = [
+      { title: 'Level', value: (skillLevel ?? '').trim() },
+      { title: 'Certification', value: (certification ?? '').trim() },
+      { title: 'Mode', value: (mode ?? '').trim() }
+    ];
+    return items
+      .filter((item) => item.value.length > 0)
+      .map((item, index) => ({
+        section: this.formatSection,
+        sortOrder: index,
+        title: item.title,
+        description: item.value,
+        tag: '',
+        amount: null,
+        imageUrl: '',
+        count: null
+      }));
+  }
+
+  private getPreservedEventDetails(): Record<string, unknown>[] {
+    return this.preservedEventDetails.filter((d) => {
+      const section = ((d.section as string) || '').trim();
+      return section !== this.formatSection && section !== this.supportSection;
+    });
+  }
+
+  private getSupportEntriesFromDetails(details: any[], title: string): string[] {
+    return (details || [])
+      .filter((d) => {
+        const section = (d?.section ?? d?.Section ?? '').trim();
+        const itemTitle = (d?.title ?? d?.Title ?? '').trim();
+        return section === this.supportSection && itemTitle === title;
+      })
+      .sort(
+        (a, b) =>
+          Number(a?.sortOrder ?? a?.SortOrder ?? 0) - Number(b?.sortOrder ?? b?.SortOrder ?? 0)
+      )
+      .map((d) => String(d?.description ?? d?.Description ?? '').trim())
+      .filter(Boolean);
+  }
+
+  private patchSupportFields(details: any[]): void {
+    const phones = this.getSupportEntriesFromDetails(details, 'Phone');
+    const emails = this.getSupportEntriesFromDetails(details, 'Email');
+    this.helpPhonesArray.clear();
+    this.helpEmailsArray.clear();
+    const phoneList = phones.length ? phones : [EventEditComponent.DEFAULT_HELP_PHONE];
+    const emailList = emails.length ? emails : [EventEditComponent.DEFAULT_HELP_EMAIL];
+    phoneList.forEach((phone) => this.helpPhonesArray.push(this.fb.control(phone)));
+    emailList.forEach((email) => this.helpEmailsArray.push(this.fb.control(email)));
+  }
+
+  private buildSupportPayload(helpPhones: string[], helpEmails: string[]): Record<string, unknown>[] {
+    const payload: Record<string, unknown>[] = [];
+    let sortOrder = 0;
+    const addEntry = (title: string, value: string) => {
+      payload.push({
+        section: this.supportSection,
+        sortOrder: sortOrder++,
+        title,
+        description: value,
+        tag: '',
+        amount: null,
+        imageUrl: '',
+        count: null
+      });
+    };
+
+    (helpPhones || []).map((v) => String(v ?? '').trim()).filter(Boolean).forEach((phone) => addEntry('Phone', phone));
+    (helpEmails || []).map((v) => String(v ?? '').trim()).filter(Boolean).forEach((email) => addEntry('Email', email));
+
+    if (!payload.length) {
+      addEntry('Phone', EventEditComponent.DEFAULT_HELP_PHONE);
+      addEntry('Email', EventEditComponent.DEFAULT_HELP_EMAIL);
+    }
+
+    return payload;
+  }
+
+  private buildEventDetailsPayload(formValue: any): Record<string, unknown>[] {
+    return [
+      ...this.getPreservedEventDetails(),
+      ...this.buildFormatPayload(formValue.skillLevel, formValue.certification, formValue.mode),
+      ...this.buildSupportPayload(formValue.helpPhones, formValue.helpEmails),
+      ...this.buildCurriculumPayload(formValue.eventDetails)
+    ];
+  }
+
+  loadEvent(options?: { silent?: boolean }): void {
+    if (!options?.silent) {
+      this.loading = true;
+    }
     this.appService.getEventById(this.eventId).subscribe({
       next: (res) => {
         this.loadedEvent = res;
@@ -239,6 +430,8 @@ export class EventEditComponent implements OnInit, OnDestroy {
         });
         const details = e.eventDetails ?? e.EventDetails ?? [];
         this.patchEventDetails(details);
+        this.patchFormatFields(details);
+        this.patchSupportFields(details);
         const eventInfoRaw = e.eventInfo ?? e.EventInfo ?? '';
         const qaList = this.parseQaFromEventInfo(eventInfoRaw);
         const eventInfoWithoutQa = this.stripQaJsonFromEventInfo(eventInfoRaw);
@@ -258,12 +451,18 @@ export class EventEditComponent implements OnInit, OnDestroy {
         this.eventStatus = e?.status ?? e?.Status ?? 0;
         this.form.markAsPristine();
         this.sharedService.eventReviewContext.next({ eventId: this.eventId, status: this.eventStatus });
-        this.loading = false;
+        if (!options?.silent) {
+          this.loading = false;
+        }
+        this.saving = false;
       },
       error: () => {
-        this.toaster.showError('Failed to load event.');
-        this.loading = false;
-        this.router.navigate([this.eventsListPath]);
+        this.toaster.showError(options?.silent ? 'Event saved but failed to refresh.' : 'Failed to load event.');
+        if (!options?.silent) {
+          this.loading = false;
+          this.router.navigate([this.eventsListPath]);
+        }
+        this.saving = false;
       }
     });
   }
@@ -357,7 +556,7 @@ export class EventEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSubmit(): void {
+  onSubmit(onSuccess?: () => void, options?: { skipReload?: boolean }): void {
     this.submitted = true;
     if (this.form.invalid) return;
     this.saving = true;
@@ -387,22 +586,26 @@ export class EventEditComponent implements OnInit, OnDestroy {
         location: v.location?.trim() ?? '',
         showOnDashboard: !!v.showOnDashboard,
         registrationCompleted: !!v.registrationCompleted,
-        eventDetails: (v.eventDetails || []).map((d: any) => ({
-          section: d.section ?? '',
-          sortOrder: Number(d.sortOrder) || 0,
-          title: d.title ?? '',
-          description: d.description ?? '',
-          tag: d.tag ?? '',
-          amount: d.amount != null && d.amount !== '' ? Number(d.amount) : null,
-          imageUrl: d.imageUrl ?? '',
-          count: d.count != null && d.count !== '' ? Number(d.count) : null
-        }))
+        eventDetails: this.buildEventDetailsPayload(v)
       };
       this.appService.updateEvent(this.eventId, payload).subscribe({
         next: () => {
-          this.toaster.showSuccess('Event updated successfully.');
+          this.saving = false;
           this.submitted = false;
-          this.loadEvent();
+          this.titleImageFile = null;
+          this.toaster.showSuccess('Event updated successfully.');
+          const keepSidebarOpen = options?.skipReload || !!this.sectionSidebarModalRef;
+          if (keepSidebarOpen) {
+            this.preservedEventDetails = this.buildEventDetailsPayload(v).filter((d) => {
+              const section = ((d.section as string) || '').trim();
+              return section !== this.curriculumSection;
+            });
+            this.form.markAsPristine();
+            this.cdr.markForCheck();
+          } else {
+            this.loadEvent({ silent: true });
+          }
+          onSuccess?.();
         },
         error: (err) => {
           this.saving = false;
@@ -441,6 +644,73 @@ export class EventEditComponent implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.router.navigate([this.eventsListPath]);
+  }
+
+  onSectionSidebarUpdate(_modal: { dismiss: (reason?: string) => void }): void {
+    this.onSubmit(undefined, { skipReload: true });
+  }
+
+  onSectionSidebarCancel(modal: { dismiss: (reason?: string) => void }): void {
+    modal.dismiss('cancel');
+  }
+
+  getSectionPanelTitle(section: EventEditSectionPanel): string {
+    const titles: Record<EventEditSectionPanel, string> = {
+      curriculum: 'Event Curriculum Information',
+      bonuses: 'Event Bonuses',
+      salary: 'Salary Information',
+      qa: 'Questions & Answers',
+      organized: 'Organized By'
+    };
+    return titles[section];
+  }
+
+  getCurriculumItemTitle(index: number): string {
+    const title = this.eventDetailsArray.at(index)?.get('title')?.value;
+    const trimmed = title != null ? String(title).trim() : '';
+    return trimmed || `Information Section ${index + 1}`;
+  }
+
+  openSectionSidebar(section: EventEditSectionPanel, curriculumIndex?: number): void {
+    this.activeSectionPanel = section;
+    this.selectedCurriculumIndex = curriculumIndex ?? null;
+
+    setTimeout(() => {
+      if (!this.eventSectionSidebarRef) {
+        this.cdr.detectChanges();
+      }
+      if (!this.eventSectionSidebarRef) return;
+
+      if (this.sectionSidebarModalRef) {
+        this.cdr.markForCheck();
+        if (section === 'curriculum' && curriculumIndex != null) {
+          setTimeout(() => this.scrollToCurriculumItem(curriculumIndex), 80);
+        }
+        return;
+      }
+
+      this.sectionSidebarModalRef = this.modalService.open(this.eventSectionSidebarRef, {
+        size: 'xl',
+        scrollable: true,
+        windowClass: 'modal-right event-section-sidebar-modal curriculum-detail-modal',
+        backdrop: true,
+        keyboard: true
+      });
+      this.sectionSidebarModalRef.result.catch(() => {}).finally(() => {
+        this.sectionSidebarModalRef = null;
+        this.selectedCurriculumIndex = null;
+      });
+      this.cdr.markForCheck();
+
+      if (section === 'curriculum' && curriculumIndex != null) {
+        setTimeout(() => this.scrollToCurriculumItem(curriculumIndex), 120);
+      }
+    }, 0);
+  }
+
+  private scrollToCurriculumItem(index: number): void {
+    const el = document.getElementById(`event-curriculum-item-${index}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   openReviewSidebar(): void {

@@ -12,7 +12,7 @@
   <div *ngIf="loading" class="event-edit__loading">Loading event…</div>
 
   <div class="card-body" *ngIf="!loading">
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" id="eventEditForm">
     <div class="event-section">
       <h5 class="event-section__title">Event Basic Details</h5>
       <div class="row">
@@ -208,151 +208,291 @@
       </div>
     </div>
 
-    <!-- Event Curriculum Information -->
-    <div class="event-edit__card">
-      <div class="event-edit__card-header event-edit__card-header--toggle" (click)="curriculumExpanded = !curriculumExpanded">
-        <i class="fas fa-list-alt event-edit__card-icon"></i>
-        <span>Event Curriculum Information</span>
-        <i class="fas fa-chevron-down event-edit__card-chevron" [class.event-edit__card-chevron--open]="curriculumExpanded"></i>
+    <div class="event-section">
+      <h5 class="event-section__title">Need Help?</h5>
+      <p class="text-muted small mb-3">Shown in the event sidebar on the public event page.</p>
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label d-block">Support phone numbers</label>
+          <div formArrayName="helpPhones">
+            <div
+              class="event-help-contact-row"
+              *ngFor="let _ of helpPhonesArray.controls; let i = index"
+            >
+              <input
+                type="text"
+                class="form-control"
+                [formControlName]="i"
+                placeholder="+91 98402 87919"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                title="Remove phone"
+                (click)="removeHelpPhone(i)"
+                [disabled]="helpPhonesArray.length <= 1"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-add btn-sm mt-2" (click)="addHelpPhone()">
+            <i class="fas fa-plus"></i> Add phone
+          </button>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label d-block">Support email addresses</label>
+          <div formArrayName="helpEmails">
+            <div
+              class="event-help-contact-row"
+              *ngFor="let _ of helpEmailsArray.controls; let i = index"
+            >
+              <input
+                type="email"
+                class="form-control"
+                [formControlName]="i"
+                placeholder="event@oilandgasclub.com"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                title="Remove email"
+                (click)="removeHelpEmail(i)"
+                [disabled]="helpEmailsArray.length <= 1"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-add btn-sm mt-2" (click)="addHelpEmail()">
+            <i class="fas fa-plus"></i> Add email
+          </button>
+        </div>
       </div>
-      <div class="event-edit__card-body" *ngIf="curriculumExpanded">
-        <button type="button" class="btn btn-outline-add mb-3" (click)="addCurriculumSection()">
+    </div>
+
+    <!-- Event curriculum & sections – course-style table (no orange accordion headers) -->
+    <div class="event-curriculum-page">
+      <div class="event-curriculum-page__toolbar">
+        <button type="button" class="btn btn-outline-add btn-sm" (click)="addCurriculumSectionAndOpen()">
           <i class="fas fa-plus"></i> Add Curriculum Section
         </button>
-        <div formArrayName="eventDetails" *ngFor="let item of eventDetailsArray.controls; let i = index" class="event-edit__curriculum-card mb-3">
-          <div class="event-edit__curriculum-card-header">
-            <span>Information Section {{ i + 1 }}</span>
-            <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeCurriculumSection(i)">
-              <i class="fas fa-trash"></i> Remove
-            </button>
-          </div>
-          <div [formGroupName]="i" class="event-edit__curriculum-card-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label">Title <span class="text-danger">*</span></label>
-                <input type="text" formControlName="title" class="form-control" placeholder="Enter curriculum title" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Description <span class="text-danger">*</span></label>
-                <textarea formControlName="description" class="form-control" rows="2" placeholder="Enter curriculum description"></textarea>
-              </div>
-              <div class="col-12">
-                <details class="event-edit__curriculum-extra">
-                  <summary class="small text-muted">Optional: Section, Sort, Tag, Amount</summary>
-                  <div class="row g-2 mt-2">
-                    <div class="col-md-3"><label class="form-label small">Section</label><input type="text" formControlName="section" class="form-control form-control-sm" /></div>
-                    <div class="col-md-2"><label class="form-label small">Sort</label><input type="number" formControlName="sortOrder" class="form-control form-control-sm" /></div>
-                    <div class="col-md-3"><label class="form-label small">Tag</label><input type="text" formControlName="tag" class="form-control form-control-sm" /></div>
-                    <div class="col-md-2"><label class="form-label small">Amount</label><input type="number" formControlName="amount" class="form-control form-control-sm" /></div>
+      </div>
+      <div class="curriculum-page__table-wrap">
+        <div class="table-responsive">
+          <table class="curriculum-page__table">
+            <thead>
+              <tr>
+                <th class="curriculum-page__th">Title</th>
+                <th class="curriculum-page__th">Description</th>
+                <th class="curriculum-page__th curriculum-page__th--actions">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!eventDetailsArray.length" class="curriculum-page__empty-row">
+                <td colspan="3">
+                  <div class="curriculum-page__empty">
+                    <i class="fa fa-book curriculum-page__empty-icon"></i>
+                    <p class="curriculum-page__empty-text">No curriculum yet. Click "Add Curriculum Section" to create one.</p>
                   </div>
-                </details>
-              </div>
-            </div>
-          </div>
+                </td>
+              </tr>
+              <tr *ngFor="let item of eventDetailsArray.controls; let i = index" class="curriculum-page__row">
+                <td class="curriculum-page__cell">
+                  <a href="javascript:void(0)" class="curriculum-page__link" (click)="openSectionSidebar('curriculum', i)">
+                    {{ getCurriculumItemTitle(i) }}
+                  </a>
+                  <div class="curriculum-page__meta" *ngIf="getCurriculumDescriptionPreview(i) as preview">
+                    <span>{{ preview }}</span>
+                  </div>
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--desc curriculum-page__cell--section-label">
+                  SECTION {{ i + 1 }}
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--actions">
+                  <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--danger" title="Delete" (click)="removeCurriculumSection(i); $event.stopPropagation()">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr class="curriculum-page__row curriculum-page__row--meta" (click)="openSectionSidebar('bonuses')">
+                <td class="curriculum-page__cell">
+                  <a href="javascript:void(0)" class="curriculum-page__link" (click)="openSectionSidebar('bonuses'); $event.stopPropagation()">Event Bonuses</a>
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--desc">{{ getSectionPreview('bonuses') || '—' }}</td>
+                <td class="curriculum-page__cell curriculum-page__cell--actions">
+                  <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--edit" title="Edit" (click)="openSectionSidebar('bonuses'); $event.stopPropagation()">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr class="curriculum-page__row curriculum-page__row--meta" (click)="openSectionSidebar('salary')">
+                <td class="curriculum-page__cell">
+                  <a href="javascript:void(0)" class="curriculum-page__link" (click)="openSectionSidebar('salary'); $event.stopPropagation()">Salary Information</a>
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--desc">{{ getSectionPreview('salaryInfo') || '—' }}</td>
+                <td class="curriculum-page__cell curriculum-page__cell--actions">
+                  <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--edit" title="Edit" (click)="openSectionSidebar('salary'); $event.stopPropagation()">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr class="curriculum-page__row curriculum-page__row--meta" (click)="openSectionSidebar('qa')">
+                <td class="curriculum-page__cell">
+                  <a href="javascript:void(0)" class="curriculum-page__link" (click)="openSectionSidebar('qa'); $event.stopPropagation()">Questions &amp; Answers</a>
+                  <div class="curriculum-page__subtitles" *ngIf="qaSectionsArray.length">
+                    <span class="curriculum-page__subtitle">
+                      <i class="fa fa-question-circle" aria-hidden="true"></i> Q/A ({{ qaSectionsArray.length }})
+                    </span>
+                  </div>
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--desc">{{ qaSectionsArray.length ? (qaSectionsArray.length + ' item(s)') : '—' }}</td>
+                <td class="curriculum-page__cell curriculum-page__cell--actions">
+                  <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--edit" title="Edit" (click)="openSectionSidebar('qa'); $event.stopPropagation()">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr class="curriculum-page__row curriculum-page__row--meta" (click)="openSectionSidebar('organized')">
+                <td class="curriculum-page__cell">
+                  <a href="javascript:void(0)" class="curriculum-page__link" (click)="openSectionSidebar('organized'); $event.stopPropagation()">Organized By</a>
+                </td>
+                <td class="curriculum-page__cell curriculum-page__cell--desc">{{ getSectionPreview('organizedBy') || '—' }}</td>
+                <td class="curriculum-page__cell curriculum-page__cell--actions">
+                  <button type="button" class="curriculum-page__icon-btn curriculum-page__icon-btn--edit" title="Edit" (click)="openSectionSidebar('organized'); $event.stopPropagation()">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- Event Bonuses -->
-    <div class="event-edit__card">
-      <div class="event-edit__card-header event-edit__card-header--toggle" (click)="bonusesExpanded = !bonusesExpanded">
-        <i class="fas fa-gift event-edit__card-icon"></i>
-        <span>Event Bonuses</span>
-        <i class="fas fa-chevron-down event-edit__card-chevron" [class.event-edit__card-chevron--open]="bonusesExpanded"></i>
+    <div class="event-section event-section--options">
+      <h5 class="event-section__title">Options</h5>
+      <div class="form-check mb-2">
+        <input type="checkbox" formControlName="registrationCompleted" class="form-check-input" id="regCompleted" />
+        <label class="form-check-label" for="regCompleted">Registration is completed?</label>
       </div>
-      <div class="event-edit__card-body" *ngIf="bonusesExpanded">
-        <label class="form-label">Bonuses / Extra information</label>
-        <textarea formControlName="bonuses" class="form-control" rows="3" placeholder="Add bonus content or offers"></textarea>
-      </div>
-    </div>
-
-    <!-- Salary Information -->
-    <div class="event-edit__card">
-      <div class="event-edit__card-header event-edit__card-header--toggle" (click)="salaryExpanded = !salaryExpanded">
-        <i class="fas fa-id-card event-edit__card-icon"></i>
-        <span>Salary Information</span>
-        <i class="fas fa-chevron-down event-edit__card-chevron" [class.event-edit__card-chevron--open]="salaryExpanded"></i>
-      </div>
-      <div class="event-edit__card-body" *ngIf="salaryExpanded">
-        <textarea formControlName="salaryInfo" class="form-control" rows="2" placeholder="Salary or compensation details"></textarea>
+      <div class="form-check mb-0">
+        <input type="checkbox" formControlName="showOnDashboard" class="form-check-input" id="showDashboard" />
+        <label class="form-check-label" for="showDashboard">Show On Dashboard?</label>
       </div>
     </div>
 
-    <!-- Questions & Answers -->
-    <div class="event-edit__card">
-      <div class="event-edit__card-header event-edit__card-header--toggle" (click)="qaExpanded = !qaExpanded">
-        <i class="fas fa-question-circle event-edit__card-icon"></i>
-        <span>Questions & Answers</span>
-        <i class="fas fa-chevron-down event-edit__card-chevron" [class.event-edit__card-chevron--open]="qaExpanded"></i>
-      </div>
-      <div class="event-edit__card-body" *ngIf="qaExpanded">
-        <button type="button" class="btn btn-outline-add mb-3" (click)="addQaSection()">
-          <i class="fas fa-plus"></i> Add Q&A Section
-        </button>
-        <div formArrayName="qaSections" *ngFor="let item of qaSectionsArray.controls; let i = index" class="event-edit__qa-card mb-3">
-          <div class="event-edit__qa-card-header">
-            <span>Q&A Section {{ i + 1 }}</span>
-            <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeQaSection(i)">
-              <i class="fas fa-trash"></i> Remove
-            </button>
-          </div>
-          <div [formGroupName]="i" class="event-edit__qa-card-body">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label">Question <span class="text-danger">*</span></label>
-                <input type="text" formControlName="question" class="form-control" placeholder="Enter question" />
-              </div>
-              <div class="col-12">
-                <label class="form-label">Answer <span class="text-danger">*</span></label>
-                <textarea formControlName="answer" class="form-control" rows="3" placeholder="Enter answer"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </form>
+  </div>
 
-    <!-- Organized By -->
-    <div class="event-edit__card">
-      <div class="event-edit__card-header event-edit__card-header--toggle" (click)="organizedByExpanded = !organizedByExpanded">
-        <i class="fas fa-users event-edit__card-icon"></i>
-        <span>Organized By</span>
-        <i class="fas fa-chevron-down event-edit__card-chevron" [class.event-edit__card-chevron--open]="organizedByExpanded"></i>
-      </div>
-      <div class="event-edit__card-body" *ngIf="organizedByExpanded">
-        <input type="text" formControlName="organizedBy" class="form-control" placeholder="Organizer name or organization" />
-      </div>
-    </div>
-
-    <!-- Options -->
-    <div class="event-edit__card">
-      <div class="event-edit__card-header">
-        <i class="fas fa-cog event-edit__card-icon"></i>
-        <span>Options</span>
-      </div>
-      <div class="event-edit__card-body">
-        <div class="form-check mb-2">
-          <input type="checkbox" formControlName="registrationCompleted" class="form-check-input" id="regCompleted" />
-          <label class="form-check-label" for="regCompleted">Registration is completed?</label>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" formControlName="showOnDashboard" class="form-check-input" id="showDashboard" />
-          <label class="form-check-label" for="showDashboard">Show On Dashboard?</label>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group d-flex">
-      <button class="btn btn-outline-add" type="submit" [disabled]="saving">
+  <div class="form-actions form-actions--fixed" *ngIf="!loading">
+    <button class="btn btn-outline-add" type="submit" form="eventEditForm" [disabled]="saving">
         <span *ngIf="!saving">Update Event</span>
         <span *ngIf="saving"><i class="fas fa-spinner fa-spin"></i> Updating...</span>
       </button>
-      <button type="button" class="btn btn-outline-add ml-2" (click)="onReset()">Reset</button>
-      <button type="button" class="btn btn-outline-add ml-2" (click)="onCancel()">Cancel</button>
-    </div>
-    </form>
+      <button type="button" class="btn btn-outline-add" (click)="onReset()" [disabled]="saving">Reset</button>
+      <button type="button" class="btn btn-outline-add" (click)="onCancel()" [disabled]="saving">Cancel</button>
   </div>
 </div>
+
+<ng-template #eventSectionSidebar let-modal>
+  <div class="event-section-sidebar">
+    <div class="event-section-sidebar__header">
+      <h4 class="event-section-sidebar__title">{{ getSectionPanelTitle(activeSectionPanel) }}</h4>
+      <div class="event-section-sidebar__header-actions">
+        <button
+          *ngIf="activeSectionPanel === 'curriculum'"
+          type="button"
+          class="btn btn-success btn-sm event-section-sidebar__add-btn"
+          (click)="addCurriculumSection()">
+          <i class="fa fa-plus"></i> Add Curriculum Section
+        </button>
+        <button type="button" class="event-section-sidebar__close" aria-label="Close" (click)="modal.dismiss('Close')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+    <div class="event-section-sidebar__body" [formGroup]="form">
+      <ng-container [ngSwitch]="activeSectionPanel">
+        <div *ngSwitchCase="'curriculum'">
+          <div formArrayName="eventDetails" *ngFor="let item of eventDetailsArray.controls; let i = index"
+            [id]="'event-curriculum-item-' + i"
+            class="event-edit__curriculum-card mb-3"
+            [class.event-edit__curriculum-card--highlight]="selectedCurriculumIndex === i">
+            <div class="event-edit__curriculum-card-header">
+              <span>{{ getCurriculumItemTitle(i) }}</span>
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeCurriculumSection(i)">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+            <div [formGroupName]="i" class="event-edit__curriculum-card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label">Title <span class="text-danger">*</span></label>
+                  <input type="text" formControlName="title" class="form-control" placeholder="Enter curriculum title" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Description <span class="text-danger">*</span></label>
+                  <textarea formControlName="description" class="form-control" rows="3" placeholder="Enter curriculum description"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-muted small mb-0" *ngIf="!eventDetailsArray.length">No curriculum sections yet. Use the button above to add one.</p>
+        </div>
+
+        <div *ngSwitchCase="'bonuses'">
+          <label class="form-label">Bonuses / Extra information</label>
+          <textarea formControlName="bonuses" class="form-control" rows="6" placeholder="Add bonus content or offers"></textarea>
+        </div>
+
+        <div *ngSwitchCase="'salary'">
+          <label class="form-label">Salary / compensation details</label>
+          <textarea formControlName="salaryInfo" class="form-control" rows="6" placeholder="Salary or compensation details"></textarea>
+        </div>
+
+        <div *ngSwitchCase="'qa'">
+          <button type="button" class="btn btn-outline-add mb-3" (click)="addQaSection()">
+            <i class="fas fa-plus"></i> Add Q&A Section
+          </button>
+          <div formArrayName="qaSections" *ngFor="let item of qaSectionsArray.controls; let i = index" class="event-edit__qa-card mb-3">
+            <div class="event-edit__qa-card-header">
+              <span>Q&A Section {{ i + 1 }}</span>
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeQaSection(i)">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+            <div [formGroupName]="i" class="event-edit__qa-card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label">Question <span class="text-danger">*</span></label>
+                  <input type="text" formControlName="question" class="form-control" placeholder="Enter question" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Answer <span class="text-danger">*</span></label>
+                  <textarea formControlName="answer" class="form-control" rows="3" placeholder="Enter answer"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="'organized'">
+          <label class="form-label">Organizer</label>
+          <input type="text" formControlName="organizedBy" class="form-control" placeholder="Organizer name or organization" />
+        </div>
+      </ng-container>
+    </div>
+    <div class="question-editor__sticky-footer">
+      <button class="btn btn-primary question-editor__footer-btn" type="button" (click)="onSectionSidebarUpdate(modal)" [disabled]="saving">
+        <span *ngIf="!saving"><i class="fa fa-check"></i> Update</span>
+        <span *ngIf="saving"><i class="fas fa-spinner fa-spin"></i> Updating...</span>
+      </button>
+      <button type="button" class="btn btn-secondary question-editor__footer-btn" (click)="onSectionSidebarCancel(modal)" [disabled]="saving">Cancel</button>
+    </div>
+  </div>
+</ng-template>
 
 <ng-template #eventReviewSidebar let-modal>
   <div class="review-sidebar__header">

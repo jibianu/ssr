@@ -130,6 +130,44 @@ $eco-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   margin: 0 0 1rem;
 }
 
+.event-checkout__gateways {
+  margin: 0 0 1.25rem;
+}
+.event-checkout__gateway {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-top: 0.6rem;
+  border: 1px solid $eco-border;
+  border-radius: $eco-radius;
+  background: $eco-card;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.event-checkout__gateway:hover {
+  border-color: $eco-primary;
+}
+.event-checkout__gateway--active {
+  border-color: $eco-primary;
+  box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.15);
+}
+.event-checkout__gateway input {
+  accent-color: $eco-primary;
+  width: 18px;
+  height: 18px;
+}
+.event-checkout__gateway-label {
+  font-weight: 600;
+  color: $eco-text;
+}
+.event-checkout__gateway-label small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: $eco-text-muted;
+}
+
 .event-checkout__methods {
   display: flex;
   flex-direction: column;

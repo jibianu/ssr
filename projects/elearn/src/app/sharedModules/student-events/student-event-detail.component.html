@@ -100,10 +100,6 @@
             <dd>{{ event.startTime }}</dd>
           </div>
           <div>
-            <dt>Format</dt>
-            <dd>{{ getValue('format', 'Mode', 'description') || 'Instructor-led, live' }}</dd>
-          </div>
-          <div>
             <dt>Seats left</dt>
             <dd>{{ getValue('pricing', 'Seat Capacity', 'description') || 'Limited' }}</dd>
           </div>
@@ -340,7 +336,6 @@
       <section class="event-card" id="learning" *ngIf="getInfo('curriculum')?.length">
         <header>
           <h2>What you'll learn</h2>
-          <p class="section-subtitle">Real-world playbooks, tools and frameworks.</p>
         </header>
         <div class="learning-grid">
           <article class="learning-item" *ngFor="let item of getLearningItems(); trackBy: trackByCurriculumId">
@@ -477,7 +472,6 @@
                   <div class="role">{{ testimonial.role }}</div>
                 </div>
               </div>
-              <img class="brand" [src]="testimonial.brand" [alt]="testimonial.brandAlt" loading="lazy" />
             </div>
             <p class="quote">“{{ testimonial.quote }}”</p>
           </article>
@@ -564,10 +558,24 @@
           <header>
             <h3>Need help?</h3>
           </header>
-          <p>
-            Call <a href="tel:+919840287919">+91 98402 87919</a> or email
-            <a href="mailto:event@oilandgasclub.com">event@oilandgasclub.com</a>
-          </p>
+          <div class="support-card__contacts">
+            <div class="support-card__group" *ngIf="getHelpPhones().length">
+              <span class="support-card__label">Call</span>
+              <a
+                *ngFor="let phone of getHelpPhones()"
+                class="support-card__link"
+                [href]="'tel:' + getHelpPhoneHref(phone)"
+              >{{ phone }}</a>
+            </div>
+            <div class="support-card__group" *ngIf="getHelpEmails().length">
+              <span class="support-card__label">Email</span>
+              <a
+                *ngFor="let email of getHelpEmails()"
+                class="support-card__link"
+                [href]="'mailto:' + email"
+              >{{ email }}</a>
+            </div>
+          </div>
         </section>
           </div>
         </div>

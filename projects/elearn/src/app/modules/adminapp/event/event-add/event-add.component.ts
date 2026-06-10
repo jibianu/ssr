@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -15,6 +15,9 @@ import { SharedService } from 'src/app/shared/service/shared-service.service';
   imports: [CommonModule, ReactiveFormsModule]
 })
 export class EventAddComponent implements OnInit {
+  private static readonly DEFAULT_HELP_PHONE = '+91 98402 87919';
+  private static readonly DEFAULT_HELP_EMAIL = 'event@oilandgasclub.com';
+
   form: UntypedFormGroup;
   submitted = false;
   saving = false;
@@ -61,6 +64,53 @@ export class EventAddComponent implements OnInit {
     return (this.router?.url ?? '').includes('/trainer/events') ? '/app/trainer/events' : '/app/admin/events';
   }
 
+  private buildFormatPayload(skillLevel: string, certification: string, mode: string): Record<string, unknown>[] {
+    const items = [
+      { title: 'Level', value: (skillLevel ?? '').trim() },
+      { title: 'Certification', value: (certification ?? '').trim() },
+      { title: 'Mode', value: (mode ?? '').trim() }
+    ];
+    return items
+      .filter((item) => item.value.length > 0)
+      .map((item, index) => ({
+        section: 'format',
+        sortOrder: index,
+        title: item.title,
+        description: item.value,
+        tag: '',
+        amount: null,
+        imageUrl: '',
+        count: null
+      }));
+  }
+
+  private buildSupportPayload(helpPhones: string[], helpEmails: string[]): Record<string, unknown>[] {
+    const payload: Record<string, unknown>[] = [];
+    let sortOrder = 0;
+    const addEntry = (title: string, value: string) => {
+      payload.push({
+        section: 'support',
+        sortOrder: sortOrder++,
+        title,
+        description: value,
+        tag: '',
+        amount: null,
+        imageUrl: '',
+        count: null
+      });
+    };
+
+    (helpPhones || []).map((v) => String(v ?? '').trim()).filter(Boolean).forEach((phone) => addEntry('Phone', phone));
+    (helpEmails || []).map((v) => String(v ?? '').trim()).filter(Boolean).forEach((email) => addEntry('Email', email));
+
+    if (!payload.length) {
+      addEntry('Phone', EventAddComponent.DEFAULT_HELP_PHONE);
+      addEntry('Email', EventAddComponent.DEFAULT_HELP_EMAIL);
+    }
+
+    return payload;
+  }
+
   private buildForm(): void {
     this.form = this.fb.group({
       title: ['', Validators.required],
@@ -74,6 +124,8 @@ export class EventAddComponent implements OnInit {
       skillLevel: [''],
       certification: [''],
       mode: [''],
+      helpPhones: this.fb.array([this.fb.control(EventAddComponent.DEFAULT_HELP_PHONE)]),
+      helpEmails: this.fb.array([this.fb.control(EventAddComponent.DEFAULT_HELP_EMAIL)]),
       startDate: ['', Validators.required],
       endDate: ['', Validators.required],
       duration: [''],
@@ -85,6 +137,28 @@ export class EventAddComponent implements OnInit {
   }
 
   get f() { return this.form.controls; }
+  get helpPhonesArray(): FormArray { return this.form.get('helpPhones') as FormArray; }
+  get helpEmailsArray(): FormArray { return this.form.get('helpEmails') as FormArray; }
+
+  addHelpPhone(): void {
+    this.helpPhonesArray.push(this.fb.control(''));
+  }
+
+  removeHelpPhone(index: number): void {
+    if (this.helpPhonesArray.length > 1) {
+      this.helpPhonesArray.removeAt(index);
+    }
+  }
+
+  addHelpEmail(): void {
+    this.helpEmailsArray.push(this.fb.control(''));
+  }
+
+  removeHelpEmail(index: number): void {
+    if (this.helpEmailsArray.length > 1) {
+      this.helpEmailsArray.removeAt(index);
+    }
+  }
 
   onTitleImageChange(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -199,7 +273,10 @@ export class EventAddComponent implements OnInit {
         amount: isNaN(amount) || amount < 0 ? 0 : amount,
         discount: v.discount != null && v.discount !== '' ? Number(v.discount) : null,
         location: v.location?.trim() ?? '',
-        eventDetails: [] as any[]
+        eventDetails: [
+          ...this.buildFormatPayload(v.skillLevel, v.certification, v.mode),
+          ...this.buildSupportPayload(v.helpPhones, v.helpEmails)
+        ]
       };
       this.appService.createEvent(payload).subscribe({
         next: () => {

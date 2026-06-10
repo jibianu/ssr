@@ -161,4 +161,12 @@ export class EventsComponent implements OnInit, OnDestroy {
     return m ? m[1].trim() : '';
   }
 
+  onEventImageError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (img) {
+      img.removeAttribute('src');
+      img.classList.add('event-card__image--error');
+    }
+  }
+
 }

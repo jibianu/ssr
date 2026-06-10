@@ -36,18 +36,28 @@
 
         <p class="event-checkout__error" *ngIf="loadError">{{ loadError }}</p>
 
-        <!-- Paid: Proceed to payment first (mounts Stripe Payment Element), then Complete purchase -->
+        <!-- Paid: choose gateway, then proceed -->
         <ng-container *ngIf="!event.isFree">
-          <div class="event-checkout__methods" *ngIf="!clientSecret">
+          <div class="event-checkout__gateways" *ngIf="!clientSecret">
+            <h2 class="event-checkout__order-heading">Payment Method</h2>
+            <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'stripe'">
+              <input type="radio" name="gateway" value="stripe" [(ngModel)]="selectedGateway" />
+              <span class="event-checkout__gateway-label">Credit / Debit Card <small>(Stripe)</small></span>
+            </label>
+            <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'razorpay'"
+              *ngIf="razorpayEnabled">
+              <input type="radio" name="gateway" value="razorpay" [(ngModel)]="selectedGateway" />
+              <span class="event-checkout__gateway-label">UPI / Cards / Net Banking <small>(Razorpay)</small></span>
+            </label>
             <button
               type="button"
               class="event-checkout__btn event-checkout__btn--primary"
-              [disabled]="creatingIntent"
+              [disabled]="creatingIntent || razorpayLoading"
               (click)="proceedToPayment()"
               aria-label="Proceed to payment"
             >
-              <i class="fas fa-ticket-alt event-checkout__btn-icon" *ngIf="!creatingIntent"></i>
-              <span class="event-checkout__btn-text">{{ creatingIntent ? 'Loading…' : 'Proceed to payment' }}</span>
+              <i class="fas fa-ticket-alt event-checkout__btn-icon" *ngIf="!creatingIntent && !razorpayLoading"></i>
+              <span class="event-checkout__btn-text">{{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}</span>
             </button>
           </div>
           <div class="event-checkout__methods" *ngIf="clientSecret">
@@ -80,7 +90,7 @@
 
         <div class="event-checkout__trust">
           <p class="event-checkout__trust-line"><i class="fas fa-lock"></i> 100% secure payment</p>
-          <p class="event-checkout__trust-note">Powered by Stripe. Your payment details are encrypted and secure.</p>
+          <p class="event-checkout__trust-note">Powered by Stripe or Razorpay. Your payment details are encrypted and secure.</p>
         </div>
 
         <p class="event-checkout__help">
@@ -135,7 +145,7 @@
     </div>
 
     <footer class="event-checkout__footer">
-      <p>&copy; {{ appName }} {{ currentYear }}. Secure checkout powered by Stripe.</p>
+      <p>&copy; {{ appName }} {{ currentYear }}. Secure checkout powered by Stripe &amp; Razorpay.</p>
     </footer>
   </div>
 </section>

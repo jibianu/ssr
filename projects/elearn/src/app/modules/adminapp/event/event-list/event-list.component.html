@@ -128,29 +128,29 @@
                   </button>
                 </td>
                 <td class="list-table-modern__td list-table-modern__td--action">
-                  <div class="list-table-modern__actions">
+                  <div class="event-list__actions list-table-modern__actions">
                     <ng-container *ngIf="!isTrainerPage">
                       <button
                         *ngIf="!item.isPublished"
                         type="button"
-                        class="list-table-modern__btn list-table-modern__btn--success"
+                        class="list-table-modern__btn event-list__status-btn event-list__status-btn--draft"
                         (click)="setPublishStatus(item, true); $event.stopPropagation()"
                         [disabled]="isPublishing(item.id)"
-                        [title]="isPublishing(item.id) ? 'Updating...' : 'Publish (show on site and elearn)'"
+                        [title]="isPublishing(item.id) ? 'Publishing…' : 'Not published — click to publish'"
+                        aria-label="Publish event"
                       >
                         <i class="fa" [ngClass]="isPublishing(item.id) ? 'fa-spinner fa-spin' : 'fa-globe'"></i>
-                        <span class="event-list__btn-publish-text">Publish</span>
                       </button>
                       <button
                         *ngIf="item.isPublished"
                         type="button"
-                        class="list-table-modern__btn list-table-modern__btn--success event-list__btn-published"
+                        class="list-table-modern__btn event-list__status-btn event-list__status-btn--live"
                         (click)="setPublishStatus(item, false); $event.stopPropagation()"
                         [disabled]="isPublishing(item.id)"
-                        [title]="isPublishing(item.id) ? 'Updating...' : 'Published. Click to unpublish (hide from site and elearn).'"
+                        [title]="isPublishing(item.id) ? 'Updating…' : 'Published — click to unpublish'"
+                        aria-label="Unpublish event"
                       >
                         <i class="fa" [ngClass]="isPublishing(item.id) ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
-                        <span class="event-list__btn-unpublish-text">Unpublish</span>
                       </button>
                     </ng-container>
                     <button
@@ -158,18 +158,21 @@
                       class="list-table-modern__btn list-table-modern__btn--danger"
                       (click)="deleteEvent(item.id); $event.stopPropagation()"
                       [disabled]="isDeleting(item.id)"
-                      [title]="isDeleting(item.id) ? 'Deleting...' : 'Delete Event'"
+                      [title]="isDeleting(item.id) ? 'Deleting…' : 'Delete event'"
+                      aria-label="Delete event"
                     >
                       <i class="fa" [ngClass]="isDeleting(item.id) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
                     </button>
                     <button
                       type="button"
                       class="list-table-modern__btn list-table-modern__btn--primary event-list__btn-registrations"
+                      [class.event-list__btn-registrations--has-count]="getRegistrationCount(item.id) > 0"
                       (click)="openRegistrationsModal(item); $event.stopPropagation()"
-                      title="View registrations"
+                      [title]="'View registrations' + (getRegistrationCount(item.id) ? ' (' + getRegistrationCount(item.id) + ')' : '')"
+                      aria-label="View registrations"
                     >
                       <i class="fa fa-user-friends"></i>
-                      <span class="event-list__btn-registrations-text">View registrations</span>
+                      <span class="event-list__registrations-count" *ngIf="getRegistrationCount(item.id) > 0">{{ getRegistrationCount(item.id) }}</span>
                     </button>
                   </div>
                 </td>

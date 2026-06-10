@@ -51,19 +51,88 @@
   background: linear-gradient(135deg, #6d28d9 0%, #5a32a3 100%);
   color: #fff;
 }
-/* View registrations button: same design as student list, with text label */
+/* Action column: compact icon toolbar (matches student list) */
+:host ::ng-deep .event-list-page.list-table-modern {
+  .list-table-modern__td--action,
+  .list-table-modern__th--action {
+    width: auto !important;
+    min-width: 160px !important;
+    max-width: none !important;
+    overflow: visible !important;
+    text-align: right;
+  }
+
+  .list-table-modern__td--action {
+    padding-right: 1.25rem;
+  }
+
+  .list-table-modern__btn {
+    flex-shrink: 0;
+    min-width: 32px;
+    max-width: 32px;
+    overflow: visible;
+  }
+
+  .list-table-modern__btn.event-list__btn-registrations--has-count {
+    min-width: auto !important;
+    max-width: none !important;
+    width: auto !important;
+    padding: 0 0.5rem;
+    gap: 0.3rem;
+  }
+}
+
+.event-list__actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.event-list__status-btn--draft {
+  background: #fff !important;
+  color: #64748b !important;
+  box-shadow: inset 0 0 0 1px #cbd5e1;
+
+  &:hover:not(:disabled) {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    box-shadow: inset 0 0 0 1px #94a3b8;
+  }
+}
+
+.event-list__status-btn--live {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.35);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: #fff !important;
+  }
+}
+
 .event-list__btn-registrations {
-  width: auto;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  min-width: 32px;
+  position: relative;
 }
-.event-list__btn-registrations-text {
-  margin-left: 0.35rem;
-  font-size: 0.8rem;
+
+.event-list__registrations-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  min-width: 0.75rem;
+  text-align: center;
 }
-@media (max-width: 768px) {
-  .event-list__btn-registrations-text { display: none; }
+
+.event-list-page .list-table-modern__btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Progress bar button: circular progress (orange ring, percentage in center) */
@@ -114,17 +183,6 @@
   justify-content: center;
 }
 /* Published state: green button (admin only can publish/unpublish) */
-.event-list__btn-published.list-table-modern__btn--success {
-  background: #198754;
-  border-color: #198754;
-  color: #fff;
-}
-.event-list__btn-published.list-table-modern__btn--success:hover:not(:disabled) {
-  background: #157347;
-  border-color: #146c43;
-  color: #fff;
-}
-
 /* Action links as buttons (a.list-table-modern__btn) */
 .event-list-page .list-table-modern__btn[routerLink] {
   text-decoration: none;

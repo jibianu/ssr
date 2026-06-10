@@ -5,6 +5,7 @@ import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from '../../auth/auth.service';
 import { StudentDashboardApiService } from '../../student/student-dashboard-api.service';
+import { RazorpayPaymentService } from '../../../services/razorpay-payment.service';
 import { getAbsoluteAppBaseUrlForStripeReturn } from 'src/app/core/helpers/app-url.helper';
 
 @Component({
@@ -31,12 +32,21 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   paying = false;
   creatingIntent = false;
 
+  /** Selected payment gateway: 'stripe' (default) or 'razorpay'. */
+  selectedGateway: 'stripe' | 'razorpay' = 'stripe';
+
+  razorpayEnabled = !!(environment as { razorpayKeyId?: string }).razorpayKeyId
+    && !(environment as { razorpayKeyId?: string }).razorpayKeyId!.includes('xxxx');
+
+  razorpayLoading = false;
+
   private subscription = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private studentApi: StudentDashboardApiService,
+    private razorpayPaymentService: RazorpayPaymentService,
     private authService: AuthenticationService,
     private cdr: ChangeDetectorRef
   ) {
@@ -98,6 +108,11 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     return !!(this.event && !this.event.isFree && this.event.discount > 0);
   }
 
+  get amountPaise(): number {
+    if (!this.event || this.event.isFree) return 0;
+    return Math.round(Number(this.event.finalAmount ?? this.event.amount) * 100);
+  }
+
   goToEventDetail(): void {
     if (this.event?.id) {
       this.router.navigate(['/app/student/events/event', this.event.id]);
@@ -106,9 +121,18 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Proceed to payment: create PaymentIntent and mount Stripe Payment Element (mirror course checkout). */
+  /** Dispatch to Stripe or Razorpay when user clicks "Proceed to payment". */
   proceedToPayment(): void {
     if (!this.eventId || !this.event || this.event.isFree) return;
+    if (this.selectedGateway === 'razorpay') {
+      this.payWithRazorpay();
+    } else {
+      this.proceedToStripePayment();
+    }
+  }
+
+  /** Stripe: create PaymentIntent and mount Payment Element. */
+  proceedToStripePayment(): void {
     this.creatingIntent = true;
     this.loadError = null;
     this.cdr.detectChanges();
@@ -136,6 +160,120 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  /** Razorpay: create order on backend, open Checkout, verify on success, then redirect. */
+  async payWithRazorpay(): Promise<void> {
+    if (!this.event || this.event.isFree) return;
+    this.razorpayLoading = true;
+    this.loadError = null;
+    this.cdr.detectChanges();
+
+    const user = this.authService.currentUser();
+    this.subscription.add(
+      this.razorpayPaymentService
+        .createOrder(this.amountPaise, '', { eventId: this.eventId, userId: user?.userId ?? user?.id })
+        .subscribe({
+          next: async (res) => {
+            if (res?.alreadyEnrolled || res?.enrolledFree) {
+              this.razorpayLoading = false;
+              this.router.navigate(['/app/student/events/event', this.eventId], { queryParams: { registered: 'true' } });
+              return;
+            }
+
+            const ready = await this.razorpayPaymentService.loadCheckoutScript();
+            if (!ready || !window.Razorpay) {
+              this.razorpayLoading = false;
+              this.loadError = 'Could not load Razorpay Checkout. Please try again.';
+              this.cdr.detectChanges();
+              return;
+            }
+            this.openRazorpayCheckout(res);
+          },
+          error: (err) => {
+            this.razorpayLoading = false;
+            const msg = err?.error?.error ?? err?.error?.message ?? err?.message;
+            this.loadError = msg || 'Failed to initialize Razorpay payment.';
+            this.cdr.detectChanges();
+          }
+        })
+    );
+  }
+
+  private razorpayLogoUrl(): string {
+    const configured = (environment as { logoUrl?: string }).logoUrl;
+    if (configured && /^https:\/\//i.test(configured)) return configured;
+    return 'https://oilandgasclub.com/assets/img/oilandgas_club.svg';
+  }
+
+  private openRazorpayCheckout(res: {
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+    courseTitle?: string;
+  }): void {
+    const user = this.authService.currentUser();
+    const checkout = new window.Razorpay!({
+      key: res.keyId,
+      amount: res.amount,
+      currency: res.currency,
+      name: '',
+      description: res.courseTitle || this.event?.title || 'Event registration',
+      image: this.razorpayLogoUrl(),
+      order_id: res.orderId,
+      prefill: {
+        name: user?.name || user?.username || '',
+        email: user?.email || ''
+      },
+      theme: { color: '#f57722' },
+      handler: (response: unknown) => {
+        const r = response as { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
+        this.razorpayLoading = true;
+        this.cdr.detectChanges();
+        this.subscription.add(
+          this.razorpayPaymentService
+            .verify({
+              razorpayOrderId: r.razorpay_order_id,
+              razorpayPaymentId: r.razorpay_payment_id,
+              razorpaySignature: r.razorpay_signature,
+              eventId: this.eventId
+            })
+            .subscribe({
+              next: () =>
+                this.router.navigateByUrl(`/app/payment/success?entityId=${this.eventId}&entityType=event`),
+              error: (err) => {
+                this.razorpayLoading = false;
+                const reason = err?.error?.reason;
+                this.loadError = reason
+                  ? `Payment verification failed (${reason}). If you were charged, contact support.`
+                  : 'Payment verification failed. If you were charged, contact support.';
+                this.cdr.detectChanges();
+              }
+            })
+        );
+      },
+      modal: {
+        ondismiss: () => {
+          this.razorpayLoading = false;
+          this.subscription.add(
+            this.razorpayPaymentService.cancel(res.orderId, this.eventId, 'event').subscribe({ next: () => {}, error: () => {} })
+          );
+          this.cdr.detectChanges();
+        }
+      }
+    });
+
+    checkout.on('payment.failed', (resp: unknown) => {
+      const e = resp as { error?: { description?: string } };
+      this.razorpayLoading = false;
+      this.loadError = e?.error?.description || 'Payment failed. Please try again.';
+      this.cdr.detectChanges();
+    });
+
+    this.razorpayLoading = false;
+    this.cdr.detectChanges();
+    checkout.open();
   }
 
   private getEventSuccessUrl(): string {

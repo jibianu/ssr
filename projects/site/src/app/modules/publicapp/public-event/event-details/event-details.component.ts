@@ -32,6 +32,7 @@ interface EventDetail {
   section: string;
   id?: string;
   title?: string;
+  sortOrder?: number;
   amount?: number;
   description?: string;
   tag?: string;
@@ -42,8 +43,6 @@ interface Testimonial {
   name: string;
   role: string;
   avatar: string;
-  brand: string;
-  brandAlt: string;
   quote: string;
 }
 
@@ -77,6 +76,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   eventUserForm!: FormGroup;
   modalRef: NgbModalRef | null = null;
   isSubmitting = false;
+  eventCoverImageError = false;
 
   // ✅ Sticky sidebar positioning state
   isSidebarFixed = true; // ✅ Start as fixed, switch to constrained when near Certificate section
@@ -85,39 +85,31 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   testimonials: Testimonial[] = [
     {
       name: 'Ekta',
-      role: 'Placement at IBM',
-      avatar: 'assets/avatars/ekta.jpg',
-      brand: 'assets/logos/ibm.svg',
-      brandAlt: 'IBM',
+      role: 'Process Engineer, ExxonMobil',
+      avatar: 'assets/avatars/ekta.png',
       quote:
-        'The hands-on focus stood out for me. Live labs and constant feedback helped me master the tools quickly.'
+        'I attended the online workshop conducted by OilandGasClub and found it highly informative and well-structured. The sessions provided practical insights into current industry practices and emerging trends in the oil and gas sector. The speakers explained complex concepts clearly, making the workshop valuable for both experienced professionals and those looking to expand their technical knowledge. I appreciate the efforts of OilandGasClub in organizing such quality learning opportunities.'
     },
     {
       name: 'Rupall',
-      role: 'Placement at Cognizant',
-      avatar: 'assets/avatars/rupall.jpg',
-      brand: 'assets/logos/cognizant.svg',
-      brandAlt: 'Cognizant',
+      role: 'Process Simulation Engineer, Shell India',
+      avatar: 'assets/avatars/rupall.png',
       quote:
-        'Mentors were extremely approachable. They bridged theory with real projects, which gave me clarity and confidence.'
+        'The OilandGasClub online workshop was an excellent platform for professional development. The content was relevant to industry requirements and covered important technical aspects with real-world applications. The interactive approach of the presenters kept the sessions engaging throughout. I would recommend these workshops to professionals seeking to enhance their understanding of oil and gas engineering practices.'
     },
     {
       name: 'Nishant',
-      role: 'Placement at TCS',
-      avatar: 'assets/avatars/nishant.jpg',
-      brand: 'assets/logos/tcs.svg',
-      brandAlt: 'TCS',
+      role: 'Mechanical & Static Equipment Engineer, Petrofac',
+      avatar: 'assets/avatars/nishant.png',
       quote:
-        'Oilandgasclub helped me with resume building and mock interviews. I’m grateful for their assistance in launching my IT career.'
+        'I had a great experience attending the online workshop organized by OilandGasClub. The workshop delivered valuable technical knowledge and practical perspectives from industry experts. The topics were thoughtfully selected and presented in a manner that encouraged active participation and learning. Such initiatives significantly contribute to continuous professional growth within the industry.'
     },
     {
       name: 'Aparna',
-      role: 'DevOps Engineer at Accenture',
-      avatar: 'assets/avatars/aparna.jpg',
-      brand: 'assets/logos/accenture.svg',
-      brandAlt: 'Accenture',
+      role: 'Structural & Skid Design Engineer, TechnipFMC',
+      avatar: 'assets/avatars/aparna.png',
       quote:
-        'Loved the accountability pods and weekly checkpoints. It kept me on track, and I picked up best practices fast.'
+        'The online workshop conducted by OilandGasClub was insightful and professionally executed. The sessions offered useful knowledge on industry best practices and highlighted current developments in engineering and design within the oil and gas sector. The workshop environment encouraged learning and knowledge sharing, making it a worthwhile experience. I look forward to participating in more such programs in the future.'
     }
   ];
 
@@ -177,6 +169,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.event = resolvedEvent ? { ...resolvedEvent } : null;
         this.events = resolvedEvent?.upcomingEvents ? [...(resolvedEvent.upcomingEvents)] : [];
         this.eventId = resolvedEvent?.id ?? '';
+        this.eventCoverImageError = false;
         this.isRegisteredForEvent = false;
         this.registrationCheckDone = false;
         if (this.eventId && this.isBrowser && this.authenticationService.hasValidAccessToken()) {
@@ -195,6 +188,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
           );
         } else {
           this.registrationCheckDone = true;
+          this.cdr.markForCheck();
         }
         
         // ✅ DEBUG: Log metaDescription to verify it's being received
@@ -558,6 +552,37 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.event?.eventDetails?.find(
       (detail: EventDetail) => detail.section === section && detail.title === title
     )?.[key] ?? '';
+  }
+
+  getHelpPhone(): string {
+    return this.getHelpPhones()[0];
+  }
+
+  getHelpEmail(): string {
+    return this.getHelpEmails()[0];
+  }
+
+  getHelpPhones(): string[] {
+    return this.getHelpContacts('Phone', '+91 98402 87919');
+  }
+
+  getHelpEmails(): string[] {
+    return this.getHelpContacts('Email', 'event@oilandgasclub.com');
+  }
+
+  getHelpPhoneHref(phone?: string): string {
+    const value = phone ?? this.getHelpPhone();
+    return value.replace(/[\s()-]/g, '');
+  }
+
+  private getHelpContacts(title: string, fallback: string): string[] {
+    const details = this.event?.eventDetails ?? [];
+    const values = details
+      .filter((d: EventDetail) => d.section === 'support' && d.title === title)
+      .sort((a: EventDetail, b: EventDetail) => Number(a.sortOrder ?? 0) - Number(b.sortOrder ?? 0))
+      .map((d: EventDetail) => String(d.description ?? '').trim())
+      .filter(Boolean);
+    return values.length ? values : [fallback];
   }
 
   getEventDt(event: any, section: string, index: number): EventDetail | undefined {
@@ -1466,6 +1491,11 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     const fromEventInfo = this.getTitleImageFromEventInfo(eventToCheck?.eventInfo ?? eventToCheck?.EventInfo);
     if (fromEventInfo) return fromEventInfo;
     return eventToCheck.bannerImage || eventToCheck.imageUrl || eventToCheck.image || eventToCheck.titleImageUrl || eventToCheck.titleImage || '';
+  }
+
+  onEventImageError(_event: Event): void {
+    this.eventCoverImageError = true;
+    this.cdr.markForCheck();
   }
 
   private getTitleImageFromEventInfo(eventInfo: string | undefined): string {

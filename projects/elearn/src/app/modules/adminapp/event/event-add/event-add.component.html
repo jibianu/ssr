@@ -207,6 +207,69 @@
       </div>
     </div>
 
+    <div class="event-section">
+      <h5 class="event-section__title">Need Help?</h5>
+      <p class="text-muted small mb-3">Shown in the event sidebar on the public event page.</p>
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label d-block">Support phone numbers</label>
+          <div formArrayName="helpPhones">
+            <div
+              class="event-help-contact-row"
+              *ngFor="let _ of helpPhonesArray.controls; let i = index"
+            >
+              <input
+                type="text"
+                class="form-control"
+                [formControlName]="i"
+                placeholder="+91 98402 87919"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                title="Remove phone"
+                (click)="removeHelpPhone(i)"
+                [disabled]="helpPhonesArray.length <= 1"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-add btn-sm mt-2" (click)="addHelpPhone()">
+            <i class="fas fa-plus"></i> Add phone
+          </button>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label d-block">Support email addresses</label>
+          <div formArrayName="helpEmails">
+            <div
+              class="event-help-contact-row"
+              *ngFor="let _ of helpEmailsArray.controls; let i = index"
+            >
+              <input
+                type="email"
+                class="form-control"
+                [formControlName]="i"
+                placeholder="event@oilandgasclub.com"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                title="Remove email"
+                (click)="removeHelpEmail(i)"
+                [disabled]="helpEmailsArray.length <= 1"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-add btn-sm mt-2" (click)="addHelpEmail()">
+            <i class="fas fa-plus"></i> Add email
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="form-group d-flex">
       <button class="btn btn-outline-add" type="submit" [disabled]="saving">
         <span *ngIf="!saving">Create Event</span>

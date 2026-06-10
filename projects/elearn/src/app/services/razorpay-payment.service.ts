@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 /** Options for Razorpay create-order (shared revenue-share fields: UTM, coupon, referral, campaign, affiliate). */
 export interface RazorpayCreateOrderOptions {
   userId?: string;
+  eventId?: string;
   couponCode?: string;
   referralInstructorId?: string;
   utmSource?: string;
@@ -30,7 +31,8 @@ export interface RazorpayVerifyRequest {
   razorpayOrderId: string;
   razorpayPaymentId: string;
   razorpaySignature: string;
-  courseId: string;
+  courseId?: string;
+  eventId?: string;
 }
 
 /** Minimal typing for the Razorpay Checkout global injected by checkout.js. */
@@ -56,7 +58,8 @@ export class RazorpayPaymentService {
   ): Observable<RazorpayCreateOrderResponse> {
     const body: Record<string, unknown> = {
       amount: amountPaise,
-      courseId,
+      courseId: options?.eventId ? '' : courseId,
+      eventId: options?.eventId ?? '',
       userId: options?.userId ?? '',
       couponCode: options?.couponCode ?? '',
       referralInstructorId: options?.referralInstructorId ?? '',
@@ -75,10 +78,11 @@ export class RazorpayPaymentService {
   }
 
   /** Best-effort: record a dismissed/cancelled checkout so the order is not left dangling. */
-  cancel(razorpayOrderId: string, courseId: string): Observable<{ cancelled: boolean }> {
+  cancel(razorpayOrderId: string, entityId: string, entityType: 'course' | 'event' = 'course'): Observable<{ cancelled: boolean }> {
     return this.http.post<{ cancelled: boolean }>(`${this.apiUrl}api/Razorpay/cancel`, {
       razorpayOrderId,
-      courseId,
+      courseId: entityType === 'course' ? entityId : '',
+      eventId: entityType === 'event' ? entityId : '',
       razorpayPaymentId: '',
       razorpaySignature: ''
     });

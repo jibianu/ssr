@@ -58,12 +58,14 @@
             *ngFor="let event of eventsList; trackBy: trackByEventId"
           >
             <a class="event-card__link" [routerLink]="['/events', event.canonicalUrl]">
-              <div
-                class="event-card__media"
-                role="img"
-                [attr.aria-label]="event?.title || 'Event image'"
-                [style.background-image]="'url(' + getEventImage(event) + ')'"
-              >
+              <div class="event-card__media">
+                <img
+                  class="event-card__image"
+                  [src]="getEventImage(event)"
+                  [alt]="event?.title || 'Event thumbnail'"
+                  loading="lazy"
+                  (error)="onEventImageError($event)"
+                />
                 <span class="event-card__badge" *ngIf="event?.badge">{{ event.badge }}</span>
               </div>
               <div class="event-card__content">

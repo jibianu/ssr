@@ -68,3 +68,14 @@
 .invalid-feedback.d-block {
   display: block;
 }
+
+.event-help-contact-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  .form-control {
+    flex: 1;
+  }
+}
