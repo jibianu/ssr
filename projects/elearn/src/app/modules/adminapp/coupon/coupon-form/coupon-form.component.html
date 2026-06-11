@@ -1,0 +1,85 @@
+<div class="coupon-form-page">
+  <h2>{{ couponId ? 'Edit Coupon' : 'Create Coupon' }}</h2>
+  <p *ngIf="loading" class="text-muted">Loading…</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loading" class="card p-4">
+    <div class="row">
+      <div class="col-md-6 form-group mb-3">
+        <label>Coupon Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" formControlName="couponName"
+          [class.is-invalid]="submitted && f.couponName.errors" />
+      </div>
+      <div class="col-md-6 form-group mb-3">
+        <label>Coupon Code <span class="text-danger">*</span></label>
+        <input type="text" class="form-control text-uppercase" formControlName="couponCode"
+          [class.is-invalid]="submitted && f.couponCode.errors" />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Coupon Type</label>
+        <select class="form-control" formControlName="couponType">
+          <option value="Percentage">Percentage</option>
+          <option value="FixedAmount">Fixed Amount</option>
+        </select>
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Discount Value {{ isPercentage ? '(%)' : '(₹)' }} <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" formControlName="discountValue" min="0.01" step="0.01"
+          [class.is-invalid]="submitted && f.discountValue.errors" />
+        <small class="text-info d-block mt-1" *ngIf="discountPreview">{{ discountPreview }}</small>
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Usage Limit (0 = unlimited)</label>
+        <input type="number" class="form-control" formControlName="usageLimit" min="0" />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Minimum Purchase (₹)</label>
+        <input type="number" class="form-control" formControlName="minimumPurchaseAmount" min="0" />
+      </div>
+      <div class="col-md-4 form-group mb-3">
+        <label>Applicable To</label>
+        <select class="form-control" formControlName="applicableType">
+          <option value="Event">Events</option>
+          <option value="Course">Courses</option>
+          <option value="Both">Both</option>
+        </select>
+      </div>
+      <div class="col-md-6 form-group mb-3">
+        <label>Start Date <span class="text-danger">*</span></label>
+        <input type="date" class="form-control" formControlName="startDate"
+          [class.is-invalid]="submitted && f.startDate.errors" />
+      </div>
+      <div class="col-md-6 form-group mb-3">
+        <label>End Date <span class="text-danger">*</span></label>
+        <input type="date" class="form-control" formControlName="endDate"
+          [class.is-invalid]="submitted && f.endDate.errors" />
+      </div>
+      <div class="col-md-6 form-group mb-3" *ngIf="form.get('applicableType')?.value !== 'Course'">
+        <label>Select Events <small class="text-muted">(published only)</small></label>
+        <select class="form-control" multiple size="6" formControlName="eventIds" [compareWith]="compareIds">
+          <option *ngFor="let e of events" [ngValue]="e.id">{{ e.title }}</option>
+        </select>
+        <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple events.</small>
+      </div>
+      <div class="col-md-6 form-group mb-3" *ngIf="form.get('applicableType')?.value !== 'Event'">
+        <label>Select Courses <small class="text-muted">(published only)</small></label>
+        <select class="form-control" multiple size="6" formControlName="courseIds" [compareWith]="compareIds">
+          <option *ngFor="let c of courses" [ngValue]="c.id">{{ c.title }}</option>
+        </select>
+        <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple courses.</small>
+      </div>
+      <div class="col-12 form-group mb-3">
+        <label class="d-flex align-items-center gap-2">
+          <input type="checkbox" formControlName="status" />
+          Active
+        </label>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        {{ saving ? 'Saving…' : (couponId ? 'Update Coupon' : 'Create Coupon') }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+    </div>
+  </form>
+</div>

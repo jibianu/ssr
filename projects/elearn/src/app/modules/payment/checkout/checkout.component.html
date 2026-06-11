@@ -47,18 +47,31 @@
           </label>
         </div>
 
-        <!-- Optional instructor discount code; apply before proceeding to payment -->
         <div class="checkout__coupon" *ngIf="!clientSecret">
-          <label for="coupon-code" class="checkout__coupon-label">Discount code (optional)</label>
+          <label for="coupon-code" class="checkout__coupon-label">Coupon Code</label>
           <div class="checkout__coupon-row">
             <input id="coupon-code" type="text" class="checkout__coupon-input" [(ngModel)]="couponCode"
-              placeholder="e.g. save 18" maxlength="50" />
-            <button type="button" class="checkout__btn checkout__btn--secondary" (click)="proceedToPayment()"
-              [disabled]="creatingIntent || razorpayLoading" aria-label="Proceed to payment">
-              {{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}
+              placeholder="e.g. COURSE20" maxlength="50" />
+            <button type="button" class="checkout__btn checkout__btn--secondary" (click)="applyCoupon()"
+              [disabled]="couponApplying || !couponCode?.trim()">
+              {{ couponApplying ? 'Applying…' : 'Apply' }}
             </button>
           </div>
-          <p class="checkout__coupon-hint">If your instructor gave you a code, enter it above. The discount will be applied when you proceed.</p>
+          <p class="checkout__coupon-hint" *ngIf="couponMessage" [class.text-success]="couponValid" [class.text-danger]="!couponValid">
+            {{ couponMessage }}
+          </p>
+          <div class="checkout__order-row" *ngIf="couponValid">
+            <span>Discount</span>
+            <span>₹{{ couponDiscountAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="checkout__order-row checkout__order-total" *ngIf="couponValid">
+            <span>Final Amount</span>
+            <span>₹{{ displayPayableAmount | number:'1.2-2' }}</span>
+          </div>
+          <button type="button" class="checkout__btn checkout__btn--primary mt-2" (click)="proceedToPayment()"
+            [disabled]="creatingIntent || razorpayLoading">
+            {{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}
+          </button>
         </div>
 
         <!-- Payment Element – cards and UPI (Google Pay, PhonePe, Paytm apps) -->

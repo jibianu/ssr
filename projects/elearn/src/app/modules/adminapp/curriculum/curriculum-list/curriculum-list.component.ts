@@ -21,6 +21,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { isHtmlStudyContent } from 'src/app/shared/models/study-material.model';
 import type { StudyMaterialSectionSnapshot } from 'src/app/shared/component/study-material/study-material-section-admin/study-material-section-admin.component';
 import { studyMaterialDescriptionToHtml } from 'src/app/shared/component/custom-rich-text-editor/utils/content-converter.util';
+import { CouponApiService } from 'src/app/services/coupon-api.service';
 
 /** Tab identifiers for lesson sections; data remains in memory when switching */
 export type LessonTab = 'questions' | 'studyMaterials' | 'videoLectures';
@@ -100,6 +101,7 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
   courseForm: UntypedFormGroup;
   categories = [];
   priceForm: UntypedFormGroup;
+  courseAvailableCoupons: { id: string; couponCode: string; couponName: string }[] = [];
 
   @ViewChild('content') contentTemplate: TemplateRef<any>;
   @ViewChild('cContent') cContentRef: TemplateRef<any>;
@@ -231,7 +233,8 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
     private router: Router,
     @Inject(DOCUMENT) private document: Document,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private couponApi: CouponApiService
   ) { }
 
   ngOnInit(): void {
@@ -324,7 +327,9 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
       startDate: [''],
       endDate: [''],
       courseId: [this.courseId ? this.courseId : this.guid],
-      id: ['']
+      id: [''],
+      allowCoupons: [false],
+      applicableCouponIds: [[] as string[]]
     });
     this.updatePriceValidatorsForType(this.priceForm.get('coursePricingType')?.value);
     this.priceForm.get('coursePricingType')?.valueChanges.subscribe((t: string) => this.updatePriceValidatorsForType(t));
@@ -2113,7 +2118,46 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
   }
   priceContent(content:any, item:any) {
     this.priceSetvalue(item);
+    this.loadCourseCouponSettings();
     this.modalReference = this.modalService.open(content, { size: 'lg', scrollable: true, windowClass: 'modal-right update-price-modal', backdrop: 'static', keyboard: false });  
+  }
+
+  loadCourseCouponSettings(): void {
+    if (!this.courseId) return;
+    this.couponApi.getCourseCouponSettings(this.courseId).subscribe({
+      next: (s) => {
+        this.courseAvailableCoupons = (s.availableCoupons || []).map((c) => ({
+          id: String(c.id),
+          couponCode: c.couponCode,
+          couponName: c.couponName
+        }));
+        this.priceForm.patchValue({
+          allowCoupons: !!s.allowCoupons,
+          applicableCouponIds: (s.applicableCouponIds || []).map((x) => String(x))
+        });
+      }
+    });
+  }
+
+  onCourseCouponSelectionChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const selected = Array.from(select.selectedOptions).map((o) => o.value);
+    this.priceForm.patchValue({ applicableCouponIds: selected });
+  }
+
+  private saveCourseCouponSettings(onDone?: () => void): void {
+    if (!this.courseId) {
+      onDone?.();
+      return;
+    }
+    const v = this.priceForm.value;
+    this.couponApi.updateCourseCouponSettings(this.courseId, {
+      allowCoupons: !!v.allowCoupons,
+      applicableCouponIds: v.applicableCouponIds || []
+    }).subscribe({
+      next: () => onDone?.(),
+      error: () => onDone?.()
+    });
   }
 
   tabData(){
@@ -2433,19 +2477,18 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
       startDate: this.priceForm.get('startDate')?.value || this.datePipe.transform(new Date(), 'yyyy-MM-dd'),
       endDate: this.priceForm.get('endDate')?.value || this.datePipe.transform(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd')
     };
-    if (this.priceF.id.value === this.guid) {
-      this.subscription.add(this.appService.addCoursePrices(this.courseId, payload).subscribe(() => {
+    const finishPriceUpdate = () => {
+      this.saveCourseCouponSettings(() => {
         this.getAllPricesByCourseId(this.courseId);
-        this.toasterService.showSuccess(isFree ? 'Course set as free.' : 'Price updated successfully.');
+        this.toasterService.showSuccess(isFree ? 'Course set as free.' : 'Price and coupon settings updated.');
         this.modalReference.close();
-      }));
+      });
+    };
+    if (this.priceF.id.value === this.guid) {
+      this.subscription.add(this.appService.addCoursePrices(this.courseId, payload).subscribe(() => finishPriceUpdate()));
       return;
     }
-    this.subscription.add(this.appService.updateCoursePrices(payload, this.priceF.id.value).subscribe(() => {
-      this.getAllPricesByCourseId(this.courseId);
-      this.toasterService.showSuccess(isFree ? 'Course set as free.' : 'Price updated successfully.');
-      this.modalReference.close();
-    }));
+    this.subscription.add(this.appService.updateCoursePrices(payload, this.priceF.id.value).subscribe(() => finishPriceUpdate()));
   }
 
   updateCourse(){

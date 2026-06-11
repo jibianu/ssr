@@ -1,0 +1,111 @@
+<div class="coupon-page">
+  <div class="coupon-page__header">
+    <h2>Coupon Management</h2>
+    <button type="button" class="btn btn-primary" (click)="createCoupon()">Create Coupon</button>
+  </div>
+
+  <div class="coupon-page__analytics" *ngIf="analytics">
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Total Coupons</span>
+      <strong>{{ analytics.totalCoupons }}</strong>
+    </div>
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Active</span>
+      <strong>{{ analytics.activeCoupons }}</strong>
+    </div>
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Expired</span>
+      <strong>{{ analytics.expiredCoupons }}</strong>
+    </div>
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Total Discount Given</span>
+      <strong>₹{{ analytics.totalDiscountGiven | number:'1.0-0' }}</strong>
+    </div>
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Most Used</span>
+      <strong>{{ analytics.mostUsedCoupon || '—' }} ({{ analytics.mostUsedCouponCount }})</strong>
+    </div>
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Top Event Coupon</span>
+      <strong>{{ analytics.topEventCoupon || '—' }}</strong>
+    </div>
+    <div class="coupon-widget">
+      <span class="coupon-widget__label">Top Course Coupon</span>
+      <strong>{{ analytics.topCourseCoupon || '—' }}</strong>
+    </div>
+  </div>
+
+  <div class="coupon-page__filters card p-3 mb-3">
+    <div class="row g-2">
+      <div class="col-md-3">
+        <input type="text" class="form-control" placeholder="Coupon code" [(ngModel)]="filterCode" />
+      </div>
+      <div class="col-md-2">
+        <select class="form-control" [(ngModel)]="filterStatus">
+          <option value="">All statuses</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" placeholder="Event ID (filter)" [(ngModel)]="filterEventId" />
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" placeholder="Course ID (filter)" [(ngModel)]="filterCourseId" />
+      </div>
+      <div class="col-md-1">
+        <button type="button" class="btn btn-secondary w-100" (click)="onSearch()">Search</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="list-table-modern">
+    <table class="list-table-modern__table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Events / Courses</th>
+          <th>Discount</th>
+          <th>Usage</th>
+          <th>Expiry</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of coupons">
+          <td><code>{{ c.couponCode }}</code></td>
+          <td>{{ c.couponName }}</td>
+          <td class="coupon-page__applies-to" [title]="formatApplicableTo(c)">{{ formatApplicableTo(c) }}</td>
+          <td>{{ formatDiscount(c) }}</td>
+          <td>{{ c.usedCount }}<span *ngIf="c.usageLimit > 0"> / {{ c.usageLimit }}</span></td>
+          <td>{{ c.endDate | date:'mediumDate' }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="c.status" [class.bg-secondary]="!c.status">
+              {{ c.status ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="coupon-page__actions">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="editCoupon(c.id)">Edit</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="toggleStatus(c)">
+              {{ c.status ? 'Deactivate' : 'Activate' }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-info" (click)="viewUsage(c.id)">Usage</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteCoupon(c)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="!coupons.length">
+          <td colspan="8" class="text-center text-muted py-4">No coupons found.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="loading" class="text-muted">Loading coupons…</p>
+  </div>
+
+  <div class="coupon-page__pagination mt-3" *ngIf="total > pageSize">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onPageChange(-1)" [disabled]="pageNumber <= 1">Previous</button>
+    <span class="mx-2">Page {{ pageNumber }}</span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onPageChange(1)" [disabled]="pageNumber * pageSize >= total">Next</button>
+  </div>
+</div>

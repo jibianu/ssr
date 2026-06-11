@@ -568,6 +568,24 @@
               [ngClass]="{ 'is-invalid': submitted && priceF.endDate.errors }" />
           </div>
         </ng-container>
+
+        <div class="form-group update-price-modal__field mt-3 pt-3 border-top">
+          <label class="update-price-modal__label">Allow Coupons</label>
+          <select class="form-control update-price-modal__input" formControlName="allowCoupons">
+            <option [ngValue]="false">No</option>
+            <option [ngValue]="true">Yes</option>
+          </select>
+        </div>
+        <div class="form-group update-price-modal__field" *ngIf="priceForm.get('allowCoupons')?.value">
+          <label class="update-price-modal__label">Applicable Coupons</label>
+          <select class="form-control update-price-modal__input" multiple size="5"
+            (change)="onCourseCouponSelectionChange($event)">
+            <option *ngFor="let c of courseAvailableCoupons" [value]="c.id"
+              [selected]="priceForm.get('applicableCouponIds')?.value?.includes(c.id)">
+              {{ c.couponCode }} — {{ c.couponName }}
+            </option>
+          </select>
+        </div>
       </form>
     </div>
     <div class="update-price-modal__actions">
@@ -812,6 +830,7 @@
               </li>
               <li class="list-group-item py-2 px-2" *ngIf="!landingPricesList?.length"><span class="text-muted">No prices.</span></li>
             </ul>
+            <p class="small text-muted mt-2 mb-0">Coupon settings are managed in the PRICES tab (Update Price modal).</p>
           </div>
         </div>
       </div>

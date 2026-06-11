@@ -19,8 +19,8 @@
             <span><span aria-label="INR">₹</span>{{ event.amount | number:'1.2-2' }}</span>
           </div>
           <div class="event-checkout__order-row" *ngIf="!event.isFree && hasDiscount">
-            <span>Discount</span>
-            <span><span aria-label="INR">₹</span>{{ event.discount | number:'1.2-2' }}</span>
+            <span>Coupon Discount</span>
+            <span><span aria-label="INR">₹</span>{{ couponDiscountAmount | number:'1.2-2' }}</span>
           </div>
           <div class="event-checkout__order-row" *ngIf="event.isFree">
             <span>{{ event.title }}</span>
@@ -29,7 +29,7 @@
           <div class="event-checkout__order-divider"></div>
           <div class="event-checkout__order-row event-checkout__order-total">
             <span>Total (Incl. taxes)</span>
-            <span *ngIf="!event.isFree"><span aria-label="INR">₹</span>{{ event.finalAmount ?? event.amount | number:'1.2-2' }}</span>
+            <span *ngIf="!event.isFree"><span aria-label="INR">₹</span>{{ displayPayableAmount | number:'1.2-2' }}</span>
             <span *ngIf="event.isFree">Free</span>
           </div>
         </div>
@@ -49,6 +49,16 @@
               <input type="radio" name="gateway" value="razorpay" [(ngModel)]="selectedGateway" />
               <span class="event-checkout__gateway-label">UPI / Cards / Net Banking <small>(Razorpay)</small></span>
             </label>
+            <div class="event-checkout__coupon mt-3">
+              <label for="event-coupon-code" class="small d-block mb-1">Coupon Code</label>
+              <div class="d-flex gap-2">
+                <input id="event-coupon-code" type="text" class="form-control" [(ngModel)]="couponCode" placeholder="e.g. EVENT1000" maxlength="50" />
+                <button type="button" class="btn btn-outline-secondary" (click)="applyCoupon()" [disabled]="couponApplying || !couponCode?.trim()">
+                  {{ couponApplying ? 'Applying…' : 'Apply' }}
+                </button>
+              </div>
+              <p class="small mt-1 mb-0" *ngIf="couponMessage" [class.text-success]="couponValid" [class.text-danger]="!couponValid">{{ couponMessage }}</p>
+            </div>
             <button
               type="button"
               class="event-checkout__btn event-checkout__btn--primary"

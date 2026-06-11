@@ -25,6 +25,9 @@ export interface RazorpayCreateOrderResponse {
   alreadyEnrolled?: boolean;
   enrolledFree?: boolean;
   appliedDiscounts?: string[];
+  originalAmountRupees?: number;
+  discountAmountRupees?: number;
+  finalAmountRupees?: number;
 }
 
 export interface RazorpayVerifyRequest {

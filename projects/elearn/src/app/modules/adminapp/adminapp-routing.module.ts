@@ -19,6 +19,7 @@ const routes: Routes = [
   { path: 'chat', component: ChatComponent },
   { path: 'trainer-payouts', loadChildren: () => import('./trainer-payouts/admin-trainer-payouts.module').then(m => m.AdminTrainerPayoutsModule) },
   { path: 'affiliates', loadChildren: () => import('./affiliates/admin-affiliates.module').then(m => m.AdminAffiliatesModule) },
+  { path: 'coupons', loadChildren: () => import('./coupon/coupon.module').then(m => m.CouponModule) },
 ];
 
 @NgModule({

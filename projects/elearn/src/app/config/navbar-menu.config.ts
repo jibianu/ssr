@@ -32,6 +32,7 @@ export const NAVBAR_MENU: Record<number, NavbarMenuItem[]> = {
     { link: `${APP}/admin/category`, label: 'Category List', icon: 'fa fa-folder' },
     { link: `${APP}/admin/course`, label: 'Course List', icon: 'fa fa-book' },
     { link: `${APP}/admin/events`, label: 'Events', icon: 'fa fa-calendar-alt' },
+    { link: `${APP}/admin/coupons`, label: 'Coupons', icon: 'fa fa-ticket-alt' },
     { link: `${APP}/admin/newsletter-subscriptions`, label: 'NewsletterSubscriptions', icon: 'fa fa-envelope' },
     { link: `${APP}/admin/chat`, label: 'Chat', icon: 'fa fa-comments' },
     { link: `${APP}/admin/notification-list`, label: 'Notifications', icon: 'fa fa-bell' },

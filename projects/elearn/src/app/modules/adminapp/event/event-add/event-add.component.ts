@@ -131,7 +131,8 @@ export class EventAddComponent implements OnInit {
       duration: [''],
       timing: [''],
       amount: [0, [Validators.required, Validators.min(0)]],
-      discount: [null as number | null, Validators.min(0)],
+      allowCoupons: [false],
+      applicableCouponIds: [[] as string[]],
       location: ['', Validators.required]
     });
   }
@@ -271,7 +272,8 @@ export class EventAddComponent implements OnInit {
         duration: v.duration?.trim() || null,
         timeing: v.timing?.trim() || null,
         amount: isNaN(amount) || amount < 0 ? 0 : amount,
-        discount: v.discount != null && v.discount !== '' ? Number(v.discount) : null,
+        allowCoupons: !!v.allowCoupons,
+        applicableCouponIds: v.applicableCouponIds || [],
         location: v.location?.trim() ?? '',
         eventDetails: [
           ...this.buildFormatPayload(v.skillLevel, v.certification, v.mode),

@@ -7,6 +7,7 @@ import { AuthenticationService } from '../../auth/auth.service';
 import { StudentDashboardApiService } from '../../student/student-dashboard-api.service';
 import { RazorpayPaymentService } from '../../../services/razorpay-payment.service';
 import { getAbsoluteAppBaseUrlForStripeReturn } from 'src/app/core/helpers/app-url.helper';
+import { CouponApiService } from 'src/app/services/coupon-api.service';
 
 @Component({
   selector: 'app-event-checkout',
@@ -40,6 +41,13 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
 
   razorpayLoading = false;
 
+  couponCode = '';
+  couponApplying = false;
+  couponMessage: string | null = null;
+  couponValid = false;
+  couponDiscountAmount = 0;
+  couponFinalAmount: number | null = null;
+
   private subscription = new Subscription();
 
   constructor(
@@ -48,7 +56,8 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     private studentApi: StudentDashboardApiService,
     private razorpayPaymentService: RazorpayPaymentService,
     private authService: AuthenticationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private couponApi: CouponApiService
   ) {
     const id = this.route.snapshot.paramMap.get('eventId');
     if (id) this.eventId = id;
@@ -85,16 +94,115 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   private normalizeEvent(e: any): any {
     if (!e) return e;
     const amount = e.amount ?? e.Amount ?? 0;
-    const discount = e.discount ?? e.Discount ?? 0;
-    const finalAmount = amount - discount;
     return {
       id: e.id ?? e.Id,
       title: e.title ?? e.Title,
       amount: Number(amount),
-      discount: Number(discount),
-      finalAmount: finalAmount > 0 ? finalAmount : amount,
+      finalAmount: Number(amount),
       isFree: !amount || amount === 0
     };
+  }
+
+  get displayPayableAmount(): number {
+    return this.couponFinalAmount != null ? this.couponFinalAmount : (this.event?.finalAmount ?? this.event?.amount ?? 0);
+  }
+
+  applyCoupon(): void {
+    const code = this.couponCode?.trim();
+    if (!code || !this.eventId || !this.event) return;
+    this.couponApplying = true;
+    this.couponMessage = null;
+    this.couponValid = false;
+    this.couponApi.validateCoupon({
+      couponCode: code,
+      referenceId: this.eventId,
+      referenceType: 'Event',
+      amount: this.event.amount
+    }).subscribe({
+      next: (res) => {
+        this.couponApplying = false;
+        this.applyCouponResult(res);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.couponApplying = false;
+        this.couponValid = false;
+        this.couponFinalAmount = null;
+        this.couponMessage = this.extractApiError(err, 'Could not validate coupon.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private applyCouponAsync(): Promise<boolean> {
+    const code = this.couponCode?.trim();
+    if (!code || !this.eventId || !this.event) return Promise.resolve(true);
+    if (this.couponValid) return Promise.resolve(true);
+
+    this.couponApplying = true;
+    this.couponMessage = null;
+    this.couponValid = false;
+    return new Promise((resolve) => {
+      this.couponApi.validateCoupon({
+        couponCode: code,
+        referenceId: this.eventId,
+        referenceType: 'Event',
+        amount: this.event.amount
+      }).subscribe({
+        next: (res) => {
+          this.couponApplying = false;
+          this.applyCouponResult(res);
+          this.cdr.detectChanges();
+          resolve(!!res.isValid);
+        },
+        error: (err) => {
+          this.couponApplying = false;
+          this.couponValid = false;
+          this.couponFinalAmount = null;
+          this.couponMessage = this.extractApiError(err, 'Could not validate coupon.');
+          this.cdr.detectChanges();
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  private applyCouponResult(res: { isValid?: boolean; message?: string; discountAmount?: number; finalAmount?: number }): void {
+    this.couponValid = !!res.isValid;
+    this.couponMessage = res.message ?? null;
+    this.couponDiscountAmount = Number(res.discountAmount ?? 0);
+    this.couponFinalAmount = res.isValid ? Number(res.finalAmount) : null;
+    if (res.isValid && this.event) {
+      this.event.finalAmount = this.couponFinalAmount;
+    }
+  }
+
+  private syncAmountsFromOrder(res: {
+    originalAmountRupees?: number;
+    discountAmountRupees?: number;
+    finalAmountRupees?: number;
+    appliedDiscounts?: string[];
+  }): void {
+    const original = Number(res.originalAmountRupees ?? this.event?.amount ?? 0);
+    const discount = Number(res.discountAmountRupees ?? 0);
+    const final = Number(res.finalAmountRupees ?? (original - discount));
+    if (discount > 0 && this.event) {
+      this.couponValid = true;
+      this.couponDiscountAmount = discount;
+      this.couponFinalAmount = final;
+      this.event.finalAmount = final;
+      if (res.appliedDiscounts?.length) {
+        this.couponMessage = res.appliedDiscounts[0];
+      }
+    }
+  }
+
+  private extractApiError(err: any, fallback: string): string {
+    const body = err?.error;
+    if (typeof body === 'string' && body.trim()) return body;
+    if (body?.message) return String(body.message);
+    if (body?.error) return String(body.error);
+    return fallback;
   }
 
   get displayPrice(): string {
@@ -105,12 +213,12 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   }
 
   get hasDiscount(): boolean {
-    return !!(this.event && !this.event.isFree && this.event.discount > 0);
+    return this.couponValid && this.couponDiscountAmount > 0;
   }
 
   get amountPaise(): number {
     if (!this.event || this.event.isFree) return 0;
-    return Math.round(Number(this.event.finalAmount ?? this.event.amount) * 100);
+    return Math.round(this.displayPayableAmount * 100);
   }
 
   goToEventDetail(): void {
@@ -122,8 +230,17 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   }
 
   /** Dispatch to Stripe or Razorpay when user clicks "Proceed to payment". */
-  proceedToPayment(): void {
+  async proceedToPayment(): Promise<void> {
     if (!this.eventId || !this.event || this.event.isFree) return;
+    if (this.couponCode?.trim()) {
+      const ok = await this.applyCouponAsync();
+      if (!ok) {
+        this.loadError = this.couponMessage || 'Coupon could not be applied. Fix the coupon or remove the code.';
+        this.cdr.detectChanges();
+        return;
+      }
+    }
+    this.loadError = null;
     if (this.selectedGateway === 'razorpay') {
       this.payWithRazorpay();
     } else {
@@ -137,7 +254,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     this.loadError = null;
     this.cdr.detectChanges();
     this.subscription.add(
-      this.studentApi.createEventPaymentIntent(this.eventId).subscribe({
+      this.studentApi.createEventPaymentIntent(this.eventId, this.couponCode?.trim() || undefined).subscribe({
         next: (res) => {
           this.creatingIntent = false;
           const secret = res?.clientSecret ?? (res as any)?.ClientSecret;
@@ -172,7 +289,11 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     const user = this.authService.currentUser();
     this.subscription.add(
       this.razorpayPaymentService
-        .createOrder(this.amountPaise, '', { eventId: this.eventId, userId: user?.userId ?? user?.id })
+        .createOrder(this.amountPaise, '', {
+          eventId: this.eventId,
+          userId: user?.userId ?? user?.id,
+          couponCode: this.couponCode?.trim() || undefined
+        })
         .subscribe({
           next: async (res) => {
             if (res?.alreadyEnrolled || res?.enrolledFree) {
@@ -180,6 +301,9 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
               this.router.navigate(['/app/student/events/event', this.eventId], { queryParams: { registered: 'true' } });
               return;
             }
+
+            this.syncAmountsFromOrder(res);
+            this.cdr.detectChanges();
 
             const ready = await this.razorpayPaymentService.loadCheckoutScript();
             if (!ready || !window.Razorpay) {

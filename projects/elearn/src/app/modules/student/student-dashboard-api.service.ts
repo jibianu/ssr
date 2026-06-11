@@ -137,8 +137,10 @@ export class StudentDashboardApiService {
   }
 
   /** Create PaymentIntent for embedded event checkout (Payment Element). POST api/events/create-payment-intent */
-  createEventPaymentIntent(eventId: string): Observable<{ clientSecret: string; paymentIntentId: string }> {
-    return this.http.post<any>(`${this.apiUrl}api/events/create-payment-intent`, { eventId });
+  createEventPaymentIntent(eventId: string, couponCode?: string): Observable<{ clientSecret: string; paymentIntentId: string }> {
+    const body: { eventId: string; couponCode?: string } = { eventId };
+    if (couponCode?.trim()) body.couponCode = couponCode.trim();
+    return this.http.post<any>(`${this.apiUrl}api/events/create-payment-intent`, body);
   }
 
   /** Confirm event payment after Payment Element success. POST api/events/confirm-payment-intent */

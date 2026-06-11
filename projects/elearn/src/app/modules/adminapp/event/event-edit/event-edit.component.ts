@@ -11,6 +11,7 @@ import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { SubmitForReviewModalComponent } from '../../course/course-review/submit-for-review-modal/submit-for-review-modal.component';
 import { CourseApproveModalComponent } from '../../course/course-review/course-approve-modal/course-approve-modal.component';
 import { CourseRejectModalComponent } from '../../course/course-review/course-reject-modal/course-reject-modal.component';
+import { CouponApiService } from 'src/app/services/coupon-api.service';
 
 export type EventEditSectionPanel = 'curriculum' | 'bonuses' | 'salary' | 'qa' | 'organized';
 
@@ -42,6 +43,9 @@ export class EventEditComponent implements OnInit, OnDestroy {
   sectionSidebarModalRef: NgbModalRef | null = null;
   reviewHistoryList: { eventType: number; eventDate: string; message?: string | null }[] = [];
   reviewActionInProgress = false;
+  allowCoupons = false;
+  availableCoupons: { id: string; couponCode: string; couponName: string }[] = [];
+  selectedCouponIds: string[] = [];
   /** Non-curriculum event details (image, format, organized, etc.) preserved across curriculum edits. */
   private preservedEventDetails: Record<string, unknown>[] = [];
   private readonly curriculumSection = 'curriculum';
@@ -60,7 +64,8 @@ export class EventEditComponent implements OnInit, OnDestroy {
     private sharedService: SharedService,
     private sanitizer: DomSanitizer,
     private modalService: NgbModal,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private couponApi: CouponApiService
   ) {}
 
   /** Use backend stream proxy for S3 URLs so video plays (avoids CORS). */
@@ -123,7 +128,8 @@ export class EventEditComponent implements OnInit, OnDestroy {
       duration: [''],
       timing: [''],
       amount: [0, [Validators.required, Validators.min(0)]],
-      discount: [null as number | null, Validators.min(0)],
+      allowCoupons: [false],
+      applicableCouponIds: [[] as string[]],
       location: ['', Validators.required],
       showOnDashboard: [false],
       registrationCompleted: [false],
@@ -423,7 +429,8 @@ export class EventEditComponent implements OnInit, OnDestroy {
           duration: e.duration ?? e.Duration ?? '',
           timing: e.timeing ?? e.Timeing ?? '',
           amount: e.amount ?? e.Amount ?? 0,
-          discount: e.discount ?? e.Discount ?? null,
+          allowCoupons: !!(e.allowCoupons ?? e.AllowCoupons),
+          applicableCouponIds: (e.applicableCouponIds ?? e.ApplicableCouponIds ?? []).map((x: any) => String(x)),
           location: e.location ?? e.Location ?? '',
           showOnDashboard: e.showOnDashboard ?? e.ShowOnDashboard ?? false,
           registrationCompleted: e.registrationCompleted ?? e.RegistrationCompleted ?? false
@@ -449,6 +456,9 @@ export class EventEditComponent implements OnInit, OnDestroy {
         });
         if (titleImageUrl) this.titleImageUploadedUrl = titleImageUrl;
         this.eventStatus = e?.status ?? e?.Status ?? 0;
+        this.allowCoupons = !!(e.allowCoupons ?? e.AllowCoupons);
+        this.selectedCouponIds = (e.applicableCouponIds ?? e.ApplicableCouponIds ?? []).map((x: any) => String(x));
+        this.loadCouponSettings();
         this.form.markAsPristine();
         this.sharedService.eventReviewContext.next({ eventId: this.eventId, status: this.eventStatus });
         if (!options?.silent) {
@@ -582,7 +592,8 @@ export class EventEditComponent implements OnInit, OnDestroy {
         duration: v.duration?.trim() || null,
         timeing: v.timing?.trim() || null,
         amount: isNaN(amount) || amount < 0 ? 0 : amount,
-        discount: v.discount != null && v.discount !== '' ? Number(v.discount) : null,
+        allowCoupons: !!v.allowCoupons,
+        applicableCouponIds: (v.applicableCouponIds || []).map((x: string) => x),
         location: v.location?.trim() ?? '',
         showOnDashboard: !!v.showOnDashboard,
         registrationCompleted: !!v.registrationCompleted,
@@ -644,6 +655,31 @@ export class EventEditComponent implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.router.navigate([this.eventsListPath]);
+  }
+
+  private loadCouponSettings(): void {
+    if (!this.eventId) return;
+    this.couponApi.getEventCouponSettings(this.eventId).subscribe({
+      next: (s) => {
+        this.availableCoupons = (s.availableCoupons || []).map((c) => ({
+          id: String(c.id),
+          couponCode: c.couponCode,
+          couponName: c.couponName
+        }));
+        if (!this.form.get('applicableCouponIds')?.value?.length && s.applicableCouponIds?.length) {
+          const ids = s.applicableCouponIds.map((x) => String(x));
+          this.form.patchValue({ applicableCouponIds: ids });
+          this.selectedCouponIds = ids;
+        }
+      }
+    });
+  }
+
+  onCouponSelectionChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const selected = Array.from(select.selectedOptions).map((o) => o.value);
+    this.form.patchValue({ applicableCouponIds: selected });
+    this.selectedCouponIds = selected;
   }
 
   onSectionSidebarUpdate(_modal: { dismiss: (reason?: string) => void }): void {

@@ -1,0 +1,35 @@
+<div class="coupon-usage-page">
+  <h2>Coupon Usage History</h2>
+  <p *ngIf="couponId" class="text-muted small">Filtered by coupon ID: {{ couponId }}</p>
+
+  <div class="list-table-modern mt-3">
+    <table class="list-table-modern__table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Coupon Code</th>
+          <th>User</th>
+          <th>Order Id</th>
+          <th>Original</th>
+          <th>Discount</th>
+          <th>Final</th>
+          <th>Used Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of usages">
+          <td><code>{{ u.couponCode }}</code></td>
+          <td>{{ u.userName || u.userEmail || '—' }}</td>
+          <td class="small">{{ u.orderId }}</td>
+          <td>₹{{ u.originalAmount | number:'1.2-2' }}</td>
+          <td>₹{{ u.discountAmount | number:'1.2-2' }}</td>
+          <td>₹{{ u.finalAmount | number:'1.2-2' }}</td>
+          <td>{{ u.usedDate | date:'medium' }}</td>
+        </tr>
+        <tr *ngIf="!usages.length">
+          <td colspan="7" class="text-center text-muted py-4">No usage records yet.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="loading" class="text-muted">Loading…</p>
+  </div>
+</div>

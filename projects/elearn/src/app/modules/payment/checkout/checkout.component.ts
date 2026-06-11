@@ -13,6 +13,7 @@ import {
   getAbsoluteAppBaseUrlForStripeReturn,
   resolveToAbsoluteAppUrl
 } from 'src/app/core/helpers/app-url.helper';
+import { CouponApiService } from 'src/app/services/coupon-api.service';
 
 @Component({
   selector: 'app-checkout',
@@ -38,8 +39,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   /** Display name for greeting (username or email) */
   userName = '';
 
-  /** Optional discount code from instructor (trainer) – applied when proceeding to payment */
+  /** Optional discount code – applied when proceeding to payment */
   couponCode = '';
+  couponApplying = false;
+  couponMessage: string | null = null;
+  couponValid = false;
+  couponDiscountAmount = 0;
+  couponFinalAmount: number | null = null;
 
   /** True while create-order request is in progress */
   creatingIntent = false;
@@ -64,7 +70,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private authService: AuthenticationService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private couponApi: CouponApiService
   ) {
     const id = this.route.snapshot.params['courseId'] ?? this.route.snapshot.params['id'];
     if (id) this.courseId = id;
@@ -143,6 +150,44 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return this.route.snapshot.queryParamMap.get('aff')?.trim() || undefined;
   }
 
+  get displayCourseFee(): number {
+    return Number(this.data?.course?.discountedPrice ?? this.data?.course?.price ?? 0);
+  }
+
+  get displayPayableAmount(): number {
+    return this.couponFinalAmount != null ? this.couponFinalAmount : this.displayCourseFee;
+  }
+
+  applyCoupon(): void {
+    const code = this.couponCode?.trim();
+    if (!code || !this.courseId) return;
+    this.couponApplying = true;
+    this.couponMessage = null;
+    this.couponValid = false;
+    this.couponApi.validateCoupon({
+      couponCode: code,
+      referenceId: this.courseId,
+      referenceType: 'Course',
+      amount: this.displayCourseFee
+    }).subscribe({
+      next: (res) => {
+        this.couponApplying = false;
+        this.couponValid = !!res.isValid;
+        this.couponMessage = res.message;
+        this.couponDiscountAmount = Number(res.discountAmount ?? 0);
+        this.couponFinalAmount = res.isValid ? Number(res.finalAmount) : null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.couponApplying = false;
+        this.couponValid = false;
+        this.couponFinalAmount = null;
+        this.couponMessage = err?.error?.message ?? 'Could not validate coupon.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   /** Build the shared create-order options (coupon + UTM/affiliate) used by both gateways. */
   private buildOrderOptions(): Record<string, string | undefined> {
     const user = this.authService.currentUser();
@@ -170,7 +215,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   /** Razorpay path: create order on backend, open Checkout, verify on success, then go to course. */
   async payWithRazorpay(): Promise<void> {
     if (this.data?.course?.discountedPrice == null) return;
-    this.amountPaise = Math.round(Number(this.data.course.discountedPrice) * 100);
+    this.amountPaise = Math.round(this.displayPayableAmount * 100);
     this.razorpayLoading = true;
     this.loadError = null;
     this.cdr.detectChanges();
@@ -284,7 +329,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   /** Call this when user clicks "Proceed to payment" so optional coupon is included. */
   createIntentAndMountPayment(): void {
     if (this.data?.course?.discountedPrice == null) return;
-    this.amountPaise = Math.round(Number(this.data.course.discountedPrice) * 100);
+    this.amountPaise = Math.round(this.displayPayableAmount * 100);
     const user = this.authService.currentUser();
     const utm = this.utmService.getStoredUtm();
     const options = {

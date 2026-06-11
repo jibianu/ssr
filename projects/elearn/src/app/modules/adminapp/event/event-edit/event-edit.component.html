@@ -191,11 +191,24 @@
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label>Discount</label>
-            <div class="input-group">
-              <input type="number" formControlName="discount" class="form-control" min="0" max="100" step="0.01" />
-              <span class="input-group-text">%</span>
-            </div>
+            <label>Allow Coupons</label>
+            <select class="form-control" formControlName="allowCoupons">
+              <option [ngValue]="false">No</option>
+              <option [ngValue]="true">Yes</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-12" *ngIf="form.get('allowCoupons')?.value">
+          <div class="form-group">
+            <label>Applicable Coupons</label>
+            <select class="form-control" multiple size="5"
+              (change)="onCouponSelectionChange($event)">
+              <option *ngFor="let c of availableCoupons" [value]="c.id"
+                [selected]="form.get('applicableCouponIds')?.value?.includes(c.id)">
+                {{ c.couponCode }} — {{ c.couponName }}
+              </option>
+            </select>
+            <small class="text-muted">Hold Ctrl/Cmd to select multiple coupons.</small>
           </div>
         </div>
         <div class="col-12">
