@@ -826,6 +826,13 @@ export class PublicAppService {
         );
     }
 
+    /** GET api/events/registration-draft/{eventId} - pending registration details before payment. */
+    getEventRegistrationDraft(eventId: string): Observable<{ hasDraft?: boolean; name?: string; email?: string; mobile?: string; companyName?: string; designation?: string; department?: string }> {
+        return this.http.get<any>(`${this.apiUrl}api/events/registration-draft/${eventId}`).pipe(
+            catchError(() => of({ hasDraft: false }))
+        );
+    }
+
     /** POST api/events/checkout-session - requires auth. Returns { paymentUrl: string }. */
     createEventCheckoutSession(eventId: string): Observable<{ paymentUrl: string }> {
         return this.http.post<{ paymentUrl: string }>(`${this.apiUrl}api/events/checkout-session`, { eventId }).pipe(

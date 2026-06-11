@@ -10,7 +10,8 @@ import {
   OnDestroy,
   OnInit,
   PLATFORM_ID,
-  ViewChild
+  ViewChild,
+  TemplateRef
 } from '@angular/core';
 import { AuthenticationService } from '../../../auth/auth.service';
 import { isPlatformBrowser } from '@angular/common';
@@ -59,6 +60,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('testimonialSlider', { static: false }) testimonialSlider?: ElementRef<HTMLDivElement>;
   @ViewChild('salarySlider', { static: false }) salarySlider?: ElementRef<HTMLDivElement>;
   @ViewChild('hostSlider', { static: false }) hostSlider?: ElementRef<HTMLDivElement>;
+  @ViewChild('longContent', { static: false }) registrationModal?: TemplateRef<unknown>;
 
   /** When set (e.g. from slug-resolver), use this instead of route resolver data. */
   @Input() set resolvedEventInput(value: any) {
@@ -72,15 +74,12 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Set when user is logged in and we've called check-registration API. */
   isRegisteredForEvent = false;
   registrationCheckDone = false;
+  showEnrollmentCongratulations = false;
 
   eventUserForm!: FormGroup;
   modalRef: NgbModalRef | null = null;
   isSubmitting = false;
   eventCoverImageError = false;
-
-  // ✅ Sticky sidebar positioning state
-  isSidebarFixed = true; // ✅ Start as fixed, switch to constrained when near Certificate section
-  isSidebarVisible = false; // ✅ Only visible when "About this event" section is in view
 
   testimonials: Testimonial[] = [
     {
@@ -123,9 +122,10 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly subscription = new Subscription();
   private readonly isBrowser: boolean;
   private expanded = false;
-  learningExpanded = false; // ✅ Public for template access
+  expandedLearningIndex = 0;
   private testimonialScrollTimeout: any = null;
   private countdownInterval: any = null;
+  sidebarStopMode = false;
 
   openTermsAndConditions(event: Event): void {
     event.preventDefault();
@@ -170,26 +170,12 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.events = resolvedEvent?.upcomingEvents ? [...(resolvedEvent.upcomingEvents)] : [];
         this.eventId = resolvedEvent?.id ?? '';
         this.eventCoverImageError = false;
-        this.isRegisteredForEvent = false;
-        this.registrationCheckDone = false;
-        if (this.eventId && this.isBrowser && this.authenticationService.hasValidAccessToken()) {
-          this.subscription.add(
-            this.publicAppService.checkEventRegistration(this.eventId).subscribe({
-              next: (r) => {
-                this.isRegisteredForEvent = !!r?.registered;
-                this.registrationCheckDone = true;
-                this.cdr.markForCheck();
-              },
-              error: () => {
-                this.registrationCheckDone = true;
-                this.cdr.markForCheck();
-              }
-            })
-          );
-        } else {
-          this.registrationCheckDone = true;
-          this.cdr.markForCheck();
+        this.expandedLearningIndex = 0;
+        if (!this.showEnrollmentCongratulations) {
+          this.isRegisteredForEvent = false;
         }
+        this.registrationCheckDone = this.showEnrollmentCongratulations;
+        this.refreshRegistrationStatus();
         
         // ✅ DEBUG: Log metaDescription to verify it's being received
         console.log('[EventDetailsComponent] Event loaded:', {
@@ -227,6 +213,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         // Use setTimeout to ensure this runs after Angular's change detection cycle
         if (this.isBrowser) {
           setTimeout(() => {
+            this.updateSidebarPosition();
             this.cdr.markForCheck();
           }, 0);
         } else {
@@ -234,7 +221,62 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
   }
 
+  private applyRegistrationFromQueryParams(): void {
+    if (this.route.snapshot.queryParamMap.get('registered') !== 'true') {
+      return;
+    }
+    this.isRegisteredForEvent = true;
+    this.showEnrollmentCongratulations = true;
+    this.registrationCheckDone = true;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { registered: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+  private refreshRegistrationStatus(): void {
+    if (!this.eventId || !this.isBrowser || !this.authenticationService.hasValidAccessToken()) {
+      if (!this.isRegisteredForEvent) {
+        this.registrationCheckDone = true;
+      }
+      this.cdr.markForCheck();
+      return;
+    }
+    this.subscription.add(
+      this.publicAppService.checkEventRegistration(this.eventId).subscribe({
+        next: (r) => {
+          if (r?.registered) {
+            this.isRegisteredForEvent = true;
+          } else if (!this.showEnrollmentCongratulations) {
+            this.isRegisteredForEvent = false;
+          }
+          this.registrationCheckDone = true;
+          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.updateSidebarPosition();
+            this.tryOpenPendingRegistrationModal();
+          }, 0);
+        },
+        error: () => {
+          if (!this.showEnrollmentCongratulations) {
+            this.isRegisteredForEvent = false;
+          }
+          this.registrationCheckDone = true;
+          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.updateSidebarPosition();
+            this.tryOpenPendingRegistrationModal();
+          }, 0);
+        }
+      })
+    );
+  }
+
   ngOnInit(): void {
+    this.applyRegistrationFromQueryParams();
+
     // SSR hydration: @Input may not replay before ngOnInit; mirror public-course-details slugPage lookup.
     const slugPage = this.findSlugPageDataInAncestors();
     if (slugPage?.type === 'event' && slugPage.eventData && !this.eventId) {
@@ -293,80 +335,43 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // ✅ Initial check for sidebar visibility
-    if (this.isBrowser) {
-      setTimeout(() => {
-        this.onWindowScroll();
-      }, 100);
-    }
     if (this.isBrowser) {
       setTimeout(() => {
         this.updateTestimonialControls();
         this.updateHostControls();
-        // #region agent log
-        // Delay to ensure DOM is fully rendered
-        setTimeout(() => this.debugStickyPositioning(), 100);
-        // #endregion
+        this.updateSidebarPosition();
+        this.tryOpenPendingRegistrationModal();
       }, 0);
     }
   }
 
-  // #region agent log
-  private debugStickyPositioning(): void {
-    const stickyEl = document.querySelector('.event-aside__sticky') as HTMLElement;
-    const asideEl = document.querySelector('.event-aside') as HTMLElement;
-    const bodyEl = document.querySelector('.event-body') as HTMLElement;
-    const detailsEl = document.querySelector('.event-details') as HTMLElement;
-    
-    const logData = (msg: string, data: any, hypothesisId: string) => {
-      const logEntry = {location:'event-details.component.ts',message:msg,data,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId};
-      console.log(`[DEBUG ${hypothesisId}]`, msg, data);
-      fetch('http://127.0.0.1:7242/ingest/8c21d979-1bc5-4e5b-9b90-47d7e4f5fcd7',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logEntry)}).catch(()=>{});
-    };
-    
-    if (stickyEl) {
-      const stickyStyles = window.getComputedStyle(stickyEl);
-      const asideStyles = asideEl ? window.getComputedStyle(asideEl) : null;
-      const bodyStyles = bodyEl ? window.getComputedStyle(bodyEl) : null;
-      const detailsStyles = detailsEl ? window.getComputedStyle(detailsEl) : null;
-      
-      logData('Sticky element computed styles',{position:stickyStyles.position,top:stickyStyles.top,display:stickyStyles.display,visibility:stickyStyles.visibility,overflow:stickyStyles.overflow,height:stickyStyles.height,width:stickyStyles.width,zIndex:stickyStyles.zIndex,classes:stickyEl.className,inlineStyle:stickyEl.style.cssText,windowWidth:window.innerWidth},'A');
-      
-      if (asideEl) {
-        logData('Aside parent computed styles',{overflow:asideStyles?.overflow,position:asideStyles?.position,height:asideStyles?.height,display:asideStyles?.display},'B');
-      }
-      
-      if (bodyEl) {
-        logData('Event-body parent computed styles',{overflow:bodyStyles?.overflow,position:bodyStyles?.position,height:bodyStyles?.height,display:bodyStyles?.display,gridTemplateColumns:bodyStyles?.gridTemplateColumns},'C');
-      }
-      
-      if (detailsEl) {
-        logData('Event-details root computed styles',{overflow:detailsStyles?.overflow,position:detailsStyles?.position,height:detailsStyles?.height},'D');
-      }
-      
-      const rect = stickyEl.getBoundingClientRect();
-      logData('Sticky element bounding rect',{top:rect.top,left:rect.left,width:rect.width,height:rect.height,windowScrollY:window.scrollY,windowInnerHeight:window.innerHeight},'E');
-      
-      const isVisible = stickyEl.offsetParent !== null && stickyStyles.display !== 'none' && stickyStyles.visibility !== 'hidden';
-      logData('Sticky element visibility check',{isVisible,offsetParent:stickyEl.offsetParent !== null,display:stickyStyles.display,visibility:stickyStyles.visibility,hasDNone:stickyEl.classList.contains('d-none'),hasDLgBlock:stickyEl.classList.contains('d-lg-block'),windowWidth:window.innerWidth},'F');
-    } else {
-      logData('Sticky element not found',{},'G');
+  private tryOpenPendingRegistrationModal(): void {
+    if (!this.isBrowser || !this.eventId || this.isRegisteredForEvent || !this.registrationModal) {
+      return;
     }
-    
-    let scrollCheckCount = 0;
-    const scrollCheck = () => {
-      if (scrollCheckCount++ < 5 && stickyEl) {
-        const rect = stickyEl.getBoundingClientRect();
-        const styles = window.getComputedStyle(stickyEl);
-        logData('Scroll check',{scrollY:window.scrollY,stickyTop:rect.top,computedPosition:styles.position,computedTop:styles.top,checkNumber:scrollCheckCount},'H');
+    let shouldOpen = false;
+    try {
+      shouldOpen = sessionStorage.getItem('openEventRegistration') === this.eventId;
+      if (shouldOpen) {
+        sessionStorage.removeItem('openEventRegistration');
       }
-    };
-    window.addEventListener('scroll', scrollCheck, { once: false, passive: true });
-    setTimeout(() => window.removeEventListener('scroll', scrollCheck), 10000);
+    } catch (_) {}
+    if (shouldOpen && this.authenticationService.hasValidAccessToken()) {
+      this.openRegisterModal(this.registrationModal);
+    }
   }
-  // #endregion
 
   ngOnDestroy(): void {
+    if (this.isBrowser) {
+      const aside = document.querySelector('.event-aside__inner') as HTMLElement | null;
+      if (aside) {
+        aside.style.position = '';
+        aside.style.top = '';
+        aside.style.bottom = '';
+        aside.style.left = '';
+        aside.style.width = '';
+      }
+    }
     if (this.testimonialScrollTimeout) {
       clearTimeout(this.testimonialScrollTimeout);
     }
@@ -474,43 +479,73 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     return [];
   }
 
-  // ✅ Get learning items - limit to 3 initially, show all when expanded
-  getLearningItems(): EventDetail[] {
-    const items = this.getInfo('curriculum');
-    if (items.length <= 3 || this.learningExpanded) {
-      return items;
-    }
-    return items.slice(0, 3);
-  }
-
-  // ✅ Check if there are more than 3 learning items
-  hasMoreLearningItems(): boolean {
-    return this.getInfo('curriculum').length > 3;
-  }
-
-  // ✅ Toggle learning items expansion
-  toggleLearningExpansion(): void {
-    this.learningExpanded = !this.learningExpanded;
+  // ✅ Learning accordion — mirror course curriculum
+  toggleLearningSection(index: number): void {
+    this.expandedLearningIndex = this.expandedLearningIndex === index ? -1 : index;
     this.cdr.markForCheck();
+  }
+
+  isLearningSectionExpanded(index: number): boolean {
+    return this.expandedLearningIndex === index;
+  }
+
+  getLearningTopicRows(item: EventDetail): { num: number; displayText: string; icon: string }[] {
+    const desc = (item?.description ?? '').trim();
+    if (!desc) {
+      return [];
+    }
+
+    const parts = desc
+      .split(/\s*[·•|\n]+\s*|\s*,\s*(?=[A-Za-z0-9])/)
+      .map((part) => part.replace(/^[-–—]\s*/, '').trim())
+      .filter(Boolean);
+
+    const topics = parts.length > 1 ? parts : [desc];
+    return topics.map((text, i) => ({
+      num: i + 1,
+      displayText: text,
+      icon: 'fas fa-check-circle'
+    }));
   }
 
   sumAmount(section: string): number {
     return this.getInfo(section).reduce((total, detail) => total + (detail.amount ?? 0), 0);
   }
 
-  getRemaining(startDate: string | Date | null): { days: number; hours: number } {
+  getRemaining(startDate: string | Date | null): { days: number; hours: number; minutes: number; seconds: number } {
     if (!startDate) {
-      return { days: 0, hours: 0 };
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
     const start = new Date(startDate);
     const now = new Date();
     if (start <= now) {
-      return { days: 0, hours: 0 };
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
     const diff = start.getTime() - now.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    return { days, hours };
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    return { days, hours, minutes, seconds };
+  }
+
+  padCountdown(value: number): string {
+    return Math.max(0, value).toString().padStart(2, '0');
+  }
+
+  getSeatsLeft(): number {
+    const raw = this.getValue('pricing', 'Seat Capacity', 'description');
+    if (!raw) {
+      return 16;
+    }
+    const parsed = parseInt(String(raw).replace(/[^\d]/g, ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 16;
+  }
+
+  getSeatsProgressPercent(): number {
+    const left = this.getSeatsLeft();
+    const max = Math.max(left, 50);
+    return Math.min(100, Math.max(8, Math.round((left / max) * 100)));
   }
 
   getTimeRemaining(startDate: string | Date | null): string {
@@ -600,20 +635,66 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     return '₹' + display.toLocaleString('en-IN', { maximumFractionDigits: 0 }) + ' onwards';
   }
 
-  /** Redirect to elearn event checkout. If not logged in on elearn, user will see login then checkout. */
+  /** Navigate to event checkout (registration details collected on checkout page). */
   goToEventCheckout(): void {
     if (this.event?.isEnded) return;
     const id = this.event?.id ?? this.eventId;
     if (!id) return;
-    const base = (environment as { elearnAppUrl?: string }).elearnAppUrl || '';
-    const url = (base.replace(/\/$/, '') + '/checkout/event/' + id);
-    if (this.isBrowser && typeof window !== 'undefined') {
-      window.location.href = url;
+    this.navigateToEventCheckout(id);
+  }
+
+  private navigateToEventCheckout(eventId: string): void {
+    const checkoutPath = `/checkout/event/${eventId}`;
+    if (!this.isBrowser) return;
+
+    const base = (environment as { elearnAppUrl?: string }).elearnAppUrl?.trim().replace(/\/$/, '') || '';
+    if (base.startsWith('/')) {
+      window.location.href = `${window.location.origin}${base}${checkoutPath}`;
+      return;
+    }
+
+    this.router.navigateByUrl(checkoutPath);
+  }
+
+  private redirectToEventCheckoutPage(): void {
+    const id = this.event?.id ?? this.eventId;
+    if (id) {
+      this.navigateToEventCheckout(id);
+    }
+  }
+
+  private prefillRegistrationForm(): void {
+    const u = this.authenticationService.currentUser();
+    if (!u) return;
+    const fullName = (u.name || u.username || `${u.firstName || ''} ${u.lastName || ''}`.trim() || '').trim();
+    const parts = fullName.split(/\s+/);
+    const firstName = u.firstName || parts[0] || '';
+    const surname = u.lastName || (parts.length > 1 ? parts.slice(1).join(' ') : '');
+    const email = u.email || u.Email || '';
+    const mobile = u.phone || u.Phone || u.mobile || u.Mobile || '';
+    this.eventUserForm.patchValue({
+      firstName,
+      surname,
+      email,
+      confirmEmail: email,
+      mobile,
+      companyName: u.companyName || u.CompanyName || '',
+      designation: u.designation || u.Designation || '',
+      department: u.department || u.Department || ''
+    });
+    if (email) {
+      this.eventUserForm.get('email')?.disable({ emitEvent: false });
+      this.eventUserForm.get('confirmEmail')?.disable({ emitEvent: false });
     }
   }
 
   openRegisterModal(content: any): void {
     if (!this.authenticationService.hasValidAccessToken()) {
+      if (this.isBrowser && this.eventId) {
+        try {
+          sessionStorage.setItem('openEventRegistration', this.eventId);
+        } catch (_) {}
+      }
       // Pass full URL so elearn login can redirect back to this site page (avoids 404 on elearn's /events/...)
       const returnUrl = this.isBrowser && typeof window !== 'undefined' && window.location?.origin
         ? window.location.origin + this.router.url
@@ -641,6 +722,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       nearbyEvents: false,
       paymentRefNo: ''
     });
+    this.prefillRegistrationForm();
     this.isSubmitting = false;
     
     // Enable all form controls to ensure they're interactive
@@ -991,13 +1073,14 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const firstName = this.eventUserForm.get('firstName')?.value?.trim() || '';
-    const surname = this.eventUserForm.get('surname')?.value?.trim() || '';
-    const email = this.eventUserForm.get('email')?.value?.trim() || '';
-    const mobile = this.eventUserForm.get('mobile')?.value?.trim() || '';
-    const companyName = this.eventUserForm.get('companyName')?.value?.trim() || '';
-    const designation = this.eventUserForm.get('designation')?.value?.trim() || '';
-    const department = this.eventUserForm.get('department')?.value?.trim() || '';
+    const raw = this.eventUserForm.getRawValue();
+    const firstName = String(raw.firstName ?? '').trim();
+    const surname = String(raw.surname ?? '').trim();
+    const email = String(raw.email ?? this.authenticationService.currentUser()?.email ?? '').trim();
+    const mobile = String(raw.mobile ?? '').trim();
+    const companyName = String(raw.companyName ?? '').trim();
+    const designation = String(raw.designation ?? '').trim();
+    const department = String(raw.department ?? '').trim();
     const name = `${firstName} ${surname}`.trim();
 
     // Validate required fields
@@ -1025,6 +1108,8 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
           next: (res) => {
             if (res.enrolled) {
               this.isRegisteredForEvent = true;
+              this.showEnrollmentCongratulations = true;
+              this.registrationCheckDone = true;
               if (this.modalRef) {
                 this.modalRef.close();
                 this.modalRef = null;
@@ -1035,29 +1120,13 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
               return;
             }
             if (res.needPayment) {
-              this.subscription.add(
-                this.publicAppService.createEventCheckoutSession(this.eventId).subscribe({
-                  next: (checkout) => {
-                    const url = checkout?.paymentUrl;
-                    if (url && this.isBrowser) {
-                      if (this.modalRef) {
-                        this.modalRef.close();
-                        this.modalRef = null;
-                      }
-                      window.location.href = url;
-                    } else {
-                      this.toasterService.showError('Payment link not available.');
-                      this.isSubmitting = false;
-                      this.cdr.markForCheck();
-                    }
-                  },
-                  error: (err) => {
-                    this.toasterService.showError(err?.error?.message || 'Could not create checkout.');
-                    this.isSubmitting = false;
-                    this.cdr.markForCheck();
-                  }
-                })
-              );
+              if (this.modalRef) {
+                this.modalRef.close();
+                this.modalRef = null;
+              }
+              this.isSubmitting = false;
+              this.cdr.markForCheck();
+              this.redirectToEventCheckoutPage();
               return;
             }
             this.isSubmitting = false;
@@ -1713,84 +1782,72 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     // User can close modal and try again, or contact support
   }
 
-  // ✅ Handle scroll to show sidebar when "About this event" is visible and stop before Certificate section
-  @HostListener('window:scroll', [])
+  /** Mirror blog sidebar: fixed while scrolling, stops before certificate section. */
+  @HostListener('window:scroll')
   onWindowScroll(): void {
-    if (!this.isBrowser || !this.event) {
+    this.updateSidebarPosition();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateSidebarPosition();
+  }
+
+  private updateSidebarPosition(): void {
+    if (!this.isBrowser || !this.event || typeof document === 'undefined') {
       return;
     }
 
-    const aboutSection = document.querySelector('#about');
-    const certificateElement = document.querySelector('.certificate-section');
-    const sidebarElement = document.querySelector('.sticky-top') as HTMLElement;
-    
-    if (!aboutSection) {
-      this.isSidebarVisible = false;
-      this.cdr.markForCheck();
+    const aside = document.querySelector('.event-aside__inner') as HTMLElement | null;
+    const sidebarCol = document.querySelector('.event-aside') as HTMLElement | null;
+    const container = document.querySelector('.event-container') as HTMLElement | null;
+    if (!aside || !sidebarCol || !container) {
       return;
     }
 
-    if (!sidebarElement) {
+    if (window.innerWidth <= 992) {
+      this.sidebarStopMode = false;
+      aside.style.position = 'static';
+      aside.style.top = 'auto';
+      aside.style.bottom = 'auto';
+      aside.style.left = 'auto';
+      aside.style.width = 'auto';
       return;
     }
 
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const aboutRect = aboutSection.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    
-    // ✅ Check if "About this event" section is visible (entered viewport)
-    // Sidebar should appear when about section enters viewport (top is at or above viewport bottom)
-    const isAboutVisible = aboutRect.top <= viewportHeight && aboutRect.bottom > 0;
-    
-    // ✅ Show sidebar only when "About this event" section is in view
-    if (!isAboutVisible) {
-      this.isSidebarVisible = false;
-      this.isSidebarFixed = true;
-      sidebarElement.style.bottom = 'auto';
-      sidebarElement.style.top = 'auto';
-      this.cdr.markForCheck();
-      return;
-    }
-    
-    // ✅ Sidebar is visible when about section is in view
-    this.isSidebarVisible = true;
+    const fixedTop = 80;
+    const buffer = 20;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    const sidebarHeight = aside.getBoundingClientRect().height;
+    const sidebarLeft = sidebarCol.getBoundingClientRect().left;
+    const sidebarWidth = sidebarCol.getBoundingClientRect().width;
 
-    // ✅ Handle stopping before Certificate section
-    if (!certificateElement) {
-      this.isSidebarFixed = true;
-      sidebarElement.style.bottom = 'auto';
-      sidebarElement.style.top = '90px';
-      this.cdr.markForCheck();
-      return;
-    }
+    const stopTarget =
+      (document.querySelector('.certificate-section') as HTMLElement | null) ||
+      (document.querySelector('app-public-footer') as HTMLElement | null);
+    const stopTop = stopTarget
+      ? stopTarget.getBoundingClientRect().top + scrollTop
+      : container.getBoundingClientRect().bottom + scrollTop;
 
-    const certificateRect = certificateElement.getBoundingClientRect();
-    const sidebarHeight = sidebarElement.getBoundingClientRect().height;
-    const sidebarTop = 90; // ✅ Fixed top position
-    const buffer = 20; // ✅ 20px buffer
-    
-    // ✅ Calculate if sidebar bottom would overlap Certificate section top
-    // When sidebar is fixed at top: 90px, its bottom is at scrollTop + 90px + sidebarHeight
-    const sidebarBottomPosition = scrollTop + sidebarTop + sidebarHeight;
-    const certificateTopPosition = certificateRect.top + scrollTop;
-    const stopPosition = certificateTopPosition - buffer;
-    
-    // ✅ Switch to constrained positioning when sidebar would overlap Certificate section
-    if (sidebarBottomPosition >= stopPosition) {
-      this.isSidebarFixed = false;
-      // ✅ Set bottom position to stop before Certificate section
-      // Calculate bottom value from viewport bottom to certificate top
-      // Ensure bottom value is positive and reasonable
-      const bottomValue = Math.max(20, window.innerHeight - certificateRect.top + buffer);
-      sidebarElement.style.bottom = `${bottomValue}px`;
-      sidebarElement.style.top = 'auto';
+    const sidebarBottomIfFixed = scrollTop + fixedTop + sidebarHeight;
+    const shouldStop = sidebarBottomIfFixed >= stopTop - buffer;
+
+    if (shouldStop) {
+      const bottomValue = Math.max(0, window.innerHeight - (stopTop - scrollTop) + buffer);
+      this.sidebarStopMode = true;
+      aside.style.position = 'fixed';
+      aside.style.top = 'auto';
+      aside.style.bottom = `${bottomValue}px`;
+      aside.style.left = `${sidebarLeft}px`;
+      aside.style.width = `${sidebarWidth}px`;
     } else {
-      this.isSidebarFixed = true;
-      sidebarElement.style.bottom = 'auto';
-      sidebarElement.style.top = '90px';
+      this.sidebarStopMode = false;
+      aside.style.position = 'fixed';
+      aside.style.top = `${fixedTop}px`;
+      aside.style.bottom = 'auto';
+      aside.style.left = `${sidebarLeft}px`;
+      aside.style.width = `${sidebarWidth}px`;
     }
-
-    this.cdr.markForCheck();
   }
 }
 

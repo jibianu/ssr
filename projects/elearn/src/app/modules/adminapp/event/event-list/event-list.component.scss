@@ -531,12 +531,47 @@ $white: #ffffff;
 }
 .event-registrations-drawer__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.75rem;
   padding: 1rem 1.25rem;
   background: linear-gradient(135deg, var(--app-primary-light, #ff9d2a) 0%, var(--app-primary, #f57722) 100%);
   color: #fff;
   flex-shrink: 0;
+}
+.event-registrations-drawer__header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.event-registrations-drawer__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.event-registrations-drawer__filter-btn {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  &--active {
+    background: #fff;
+    color: var(--app-primary, #f57722);
+    border-color: #fff;
+  }
+}
+.event-registrations-drawer__count-label {
+  color: #64748b;
 }
 .event-registrations-drawer__title {
   margin: 0;

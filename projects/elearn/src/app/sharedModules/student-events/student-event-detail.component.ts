@@ -5,11 +5,12 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  HostListener,
   ViewChild,
   ElementRef,
+  TemplateRef,
   Inject,
-  PLATFORM_ID
+  PLATFORM_ID,
+  HostListener
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -49,6 +50,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
   @ViewChild('testimonialSlider', { static: false }) testimonialSlider?: ElementRef<HTMLDivElement>;
   @ViewChild('salarySlider', { static: false }) salarySlider?: ElementRef<HTMLDivElement>;
   @ViewChild('hostSlider', { static: false }) hostSlider?: ElementRef<HTMLDivElement>;
+  @ViewChild('longContent', { static: false }) registrationModal?: TemplateRef<unknown>;
 
   event: any = null;
   events: any[] = [];
@@ -58,15 +60,15 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
 
   isRegisteredForEvent = false;
   registrationCheckDone = false;
+  showEnrollmentCongratulations = false;
 
   eventUserForm!: FormGroup;
   modalRef: NgbModalRef | null = null;
   isSubmitting = false;
+  eventCoverImageError = false;
 
-  isSidebarFixed = true;
-  isSidebarVisible = false;
   expanded = false;
-  learningExpanded = false;
+  expandedLearningIndex = 0;
 
   canScrollLeft = false;
   canScrollRight = true;
@@ -110,6 +112,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
   private readonly isBrowser: boolean;
   private testimonialScrollTimeout: any = null;
   private countdownInterval: any = null;
+  sidebarStopMode = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -139,6 +142,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       return;
     }
     this.studentBreadcrumb.setBreadcrumb([{ label: 'Events', url: '/app/student/events' }, { label: 'Details' }]);
+    this.applyRegistrationFromQueryParams();
 
     this.eventUserForm = this.formBuilder.group({
       firstName: ['', Validators.required],
@@ -157,27 +161,12 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     const onEventLoaded = (e: any) => {
       this.event = this.normalizeEventResponse(e);
       this.eventId = this.event?.id ?? '';
+      this.expandedLearningIndex = 0;
       if (this.event?.title) {
         this.studentBreadcrumb.setBreadcrumb([{ label: 'Events', url: '/app/student/events' }, { label: this.event.title }]);
       }
       this.loading = false;
-      if (this.eventId && this.authenticationService.currentToken()) {
-        this.subscription.add(
-          this.studentApi.checkEventRegistration(this.eventId).subscribe({
-            next: (r) => {
-              this.isRegisteredForEvent = !!r?.registered;
-              this.registrationCheckDone = true;
-              this.cdr.markForCheck();
-            },
-            error: () => {
-              this.registrationCheckDone = true;
-              this.cdr.markForCheck();
-            }
-          })
-        );
-      } else {
-        this.registrationCheckDone = true;
-      }
+      this.refreshRegistrationStatus();
       if (this.eventId) {
         this.studentApi.getUpcomingEvents(this.eventId).subscribe({
           next: (list) => {
@@ -186,6 +175,9 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
           },
           error: () => {}
         });
+      }
+      if (this.isBrowser) {
+        setTimeout(() => this.updateSidebarPosition(), 0);
       }
       this.cdr.markForCheck();
     };
@@ -217,18 +209,96 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     }
   }
 
+  private applyRegistrationFromQueryParams(): void {
+    if (this.route.snapshot.queryParamMap.get('registered') !== 'true') {
+      return;
+    }
+    this.isRegisteredForEvent = true;
+    this.showEnrollmentCongratulations = true;
+    this.registrationCheckDone = true;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { registered: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+  private refreshRegistrationStatus(): void {
+    if (!this.eventId || !this.authenticationService.currentToken()) {
+      if (!this.isRegisteredForEvent) {
+        this.registrationCheckDone = true;
+      }
+      return;
+    }
+    this.subscription.add(
+      this.studentApi.checkEventRegistration(this.eventId).subscribe({
+        next: (r) => {
+          if (r?.registered) {
+            this.isRegisteredForEvent = true;
+          } else if (!this.showEnrollmentCongratulations) {
+            this.isRegisteredForEvent = false;
+          }
+          this.registrationCheckDone = true;
+          this.cdr.markForCheck();
+          if (this.isBrowser) {
+            setTimeout(() => this.updateSidebarPosition(), 0);
+          }
+        },
+        error: () => {
+          if (!this.showEnrollmentCongratulations) {
+            this.isRegisteredForEvent = false;
+          }
+          this.registrationCheckDone = true;
+          this.cdr.markForCheck();
+          if (this.isBrowser) {
+            setTimeout(() => this.updateSidebarPosition(), 0);
+          }
+        }
+      })
+    );
+  }
+
   ngAfterViewInit(): void {
     if (this.isBrowser) {
       setTimeout(() => {
         this.updateTestimonialControls();
         this.updateHostControls();
         this.updateSalaryControls();
-        this.onWindowScroll();
-      }, 100);
+        this.updateSidebarPosition();
+        this.tryOpenPendingRegistrationModal();
+      }, 0);
     }
   }
 
+  private tryOpenPendingRegistrationModal(): void {
+    if (!this.isBrowser || !this.eventId || this.isRegisteredForEvent || !this.registrationModal) {
+      return;
+    }
+    const openFromQuery = this.route.snapshot.queryParamMap.get('openRegistration') === '1';
+    if (openFromQuery && this.authenticationService.currentToken()) {
+      this.openRegisterModal(this.registrationModal);
+      return;
+    }
+    try {
+      if (sessionStorage.getItem('openEventRegistration') === this.eventId && this.authenticationService.currentToken()) {
+        sessionStorage.removeItem('openEventRegistration');
+        this.openRegisterModal(this.registrationModal);
+      }
+    } catch (_) {}
+  }
+
   ngOnDestroy(): void {
+    if (this.isBrowser) {
+      const aside = document.querySelector('.event-aside__inner') as HTMLElement | null;
+      if (aside) {
+        aside.style.position = '';
+        aside.style.top = '';
+        aside.style.bottom = '';
+        aside.style.left = '';
+        aside.style.width = '';
+      }
+    }
     if (this.testimonialScrollTimeout) clearTimeout(this.testimonialScrollTimeout);
     if (this.countdownInterval) clearInterval(this.countdownInterval);
     this.subscription.unsubscribe();
@@ -372,15 +442,34 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     return result;
   }
 
-  getRemaining(startDate: string | Date | null): { days: number; hours: number } {
-    if (!startDate) return { days: 0, hours: 0 };
+  getRemaining(startDate: string | Date | null): { days: number; hours: number; minutes: number; seconds: number } {
+    if (!startDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     const start = new Date(startDate);
     const now = new Date();
-    if (start <= now) return { days: 0, hours: 0 };
+    if (start <= now) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     const diff = start.getTime() - now.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    return { days, hours };
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    return { days, hours, minutes, seconds };
+  }
+
+  padCountdown(value: number): string {
+    return Math.max(0, value).toString().padStart(2, '0');
+  }
+
+  getSeatsLeft(): number {
+    const raw = this.getValue('pricing', 'Seat Capacity', 'description');
+    if (!raw) return 16;
+    const parsed = parseInt(String(raw).replace(/[^\d]/g, ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 16;
+  }
+
+  getSeatsProgressPercent(): number {
+    const left = this.getSeatsLeft();
+    const max = Math.max(left, 50);
+    return Math.min(100, Math.max(8, Math.round((left / max) * 100)));
   }
 
   getDescription(event: any): string {
@@ -404,7 +493,6 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     return '₹' + display.toLocaleString('en-IN', { maximumFractionDigits: 0 }) + ' onwards';
   }
 
-  /** Navigate to event checkout. If not logged in, AuthGuard redirects to login then back to checkout. */
   goToEventCheckout(): void {
     if (this.event?.isEnded) return;
     const id = this.event?.id ?? this.eventId;
@@ -412,8 +500,34 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     this.router.navigate(['/checkout/event', id]);
   }
 
+  private prefillRegistrationForm(): void {
+    const u = this.authenticationService.currentUser();
+    if (!u) return;
+    const fullName = (u.name || u.username || `${u.firstName || ''} ${u.lastName || ''}`.trim() || '').trim();
+    const parts = fullName.split(/\s+/);
+    const firstName = u.firstName || parts[0] || '';
+    const surname = u.lastName || (parts.length > 1 ? parts.slice(1).join(' ') : '');
+    const email = u.email || u.Email || '';
+    const mobile = u.phone || u.Phone || u.mobile || u.Mobile || '';
+    this.eventUserForm.patchValue({
+      firstName,
+      surname,
+      email,
+      confirmEmail: email,
+      mobile,
+      companyName: u.companyName || u.CompanyName || '',
+      designation: u.designation || u.Designation || '',
+      department: u.department || u.Department || ''
+    });
+  }
+
   openRegisterModal(content: any): void {
     if (!this.authenticationService.currentToken()) {
+      if (this.isBrowser && this.eventId) {
+        try {
+          sessionStorage.setItem('openEventRegistration', this.eventId);
+        } catch (_) {}
+      }
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
@@ -434,6 +548,12 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       nearbyEvents: false,
       paymentRefNo: ''
     });
+    this.prefillRegistrationForm();
+    const email = this.authenticationService.currentUser()?.email || this.authenticationService.currentUser()?.Email || '';
+    if (email) {
+      this.eventUserForm.get('email')?.disable({ emitEvent: false });
+      this.eventUserForm.get('confirmEmail')?.disable({ emitEvent: false });
+    }
     this.isSubmitting = false;
     this.modalRef = this.modalService.open(content, {
       scrollable: true,
@@ -461,13 +581,14 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       this.cdr.markForCheck();
       return;
     }
-    const firstName = this.eventUserForm.get('firstName')?.value?.trim() || '';
-    const surname = this.eventUserForm.get('surname')?.value?.trim() || '';
-    const email = this.eventUserForm.get('email')?.value?.trim() || '';
-    const mobile = this.eventUserForm.get('mobile')?.value?.trim() || '';
-    const companyName = this.eventUserForm.get('companyName')?.value?.trim() || '';
-    const designation = this.eventUserForm.get('designation')?.value?.trim() || '';
-    const department = this.eventUserForm.get('department')?.value?.trim() || '';
+    const raw = this.eventUserForm.getRawValue();
+    const firstName = String(raw.firstName ?? '').trim();
+    const surname = String(raw.surname ?? '').trim();
+    const email = String(raw.email ?? this.authenticationService.currentUser()?.email ?? '').trim();
+    const mobile = String(raw.mobile ?? '').trim();
+    const companyName = String(raw.companyName ?? '').trim();
+    const designation = String(raw.designation ?? '').trim();
+    const department = String(raw.department ?? '').trim();
     const name = `${firstName} ${surname}`.trim();
     if (!name || !email || !mobile || !companyName || !designation || !department) {
       this.toasterService.showError('Please fill in all required fields correctly.');
@@ -490,6 +611,8 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
         next: (res) => {
           if (res.enrolled) {
             this.isRegisteredForEvent = true;
+            this.showEnrollmentCongratulations = true;
+            this.registrationCheckDone = true;
             if (this.modalRef) {
               this.modalRef.close();
               this.modalRef = null;
@@ -500,27 +623,13 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
             return;
           }
           if (res.needPayment) {
-            this.studentApi.createEventCheckoutSession(this.eventId).subscribe({
-              next: (checkout) => {
-                const url = checkout?.paymentUrl;
-                if (url) {
-                  if (this.modalRef) {
-                    this.modalRef.close();
-                    this.modalRef = null;
-                  }
-                  window.location.href = url;
-                } else {
-                  this.toasterService.showError('Payment link not available.');
-                  this.isSubmitting = false;
-                  this.cdr.markForCheck();
-                }
-              },
-              error: (err) => {
-                this.toasterService.showError(err?.error?.message || 'Could not create checkout.');
-                this.isSubmitting = false;
-                this.cdr.markForCheck();
-              }
-            });
+            if (this.modalRef) {
+              this.modalRef.close();
+              this.modalRef = null;
+            }
+            this.isSubmitting = false;
+            this.cdr.markForCheck();
+            this.router.navigate(['/checkout/event', this.eventId]);
             return;
           }
           this.isSubmitting = false;
@@ -549,6 +658,11 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     const fromEventInfo = this.getTitleImageFromEventInfo(e?.eventInfo ?? e?.EventInfo);
     if (fromEventInfo) return fromEventInfo;
     return e.bannerImage || e.imageUrl || e.image || e.titleImageUrl || e.titleImage || '';
+  }
+
+  onEventImageError(_event: Event): void {
+    this.eventCoverImageError = true;
+    this.cdr.markForCheck();
   }
 
   private getTitleImageFromEventInfo(eventInfo: string | undefined): string {
@@ -619,19 +733,32 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     return 'fa-link';
   }
 
-  getLearningItems(): EventDetail[] {
-    const items = this.getInfo('curriculum');
-    if (items.length <= 3 || this.learningExpanded) return items;
-    return items.slice(0, 3);
-  }
-
-  hasMoreLearningItems(): boolean {
-    return this.getInfo('curriculum').length > 3;
-  }
-
-  toggleLearningExpansion(): void {
-    this.learningExpanded = !this.learningExpanded;
+  toggleLearningSection(index: number): void {
+    this.expandedLearningIndex = this.expandedLearningIndex === index ? -1 : index;
     this.cdr.markForCheck();
+  }
+
+  isLearningSectionExpanded(index: number): boolean {
+    return this.expandedLearningIndex === index;
+  }
+
+  getLearningTopicRows(item: EventDetail): { num: number; displayText: string; icon: string }[] {
+    const desc = (item?.description ?? '').trim();
+    if (!desc) {
+      return [];
+    }
+
+    const parts = desc
+      .split(/\s*[·•|\n]+\s*|\s*,\s*(?=[A-Za-z0-9])/)
+      .map((part) => part.replace(/^[-–—]\s*/, '').trim())
+      .filter(Boolean);
+
+    const topics = parts.length > 1 ? parts : [desc];
+    return topics.map((text, i) => ({
+      num: i + 1,
+      displayText: text,
+      icon: 'fas fa-check-circle'
+    }));
   }
 
   sumAmount(section: string): number {
@@ -657,58 +784,6 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       }
       this.cdr.markForCheck();
     }, 1000);
-    this.cdr.markForCheck();
-  }
-
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    if (!this.isBrowser || !this.event) return;
-    const aboutSection = document.querySelector('#about');
-    const certificateElement = document.querySelector('.certificate-section');
-    const sidebarElement = document.querySelector('.sticky-top') as HTMLElement;
-    if (!aboutSection) {
-      this.isSidebarVisible = false;
-      this.cdr.markForCheck();
-      return;
-    }
-    if (!sidebarElement) return;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const aboutRect = aboutSection.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const isAboutVisible = aboutRect.top <= viewportHeight && aboutRect.bottom > 0;
-    if (!isAboutVisible) {
-      this.isSidebarVisible = false;
-      this.isSidebarFixed = true;
-      sidebarElement.style.bottom = 'auto';
-      sidebarElement.style.top = 'auto';
-      this.cdr.markForCheck();
-      return;
-    }
-    this.isSidebarVisible = true;
-    if (!certificateElement) {
-      this.isSidebarFixed = true;
-      sidebarElement.style.bottom = 'auto';
-      sidebarElement.style.top = '90px';
-      this.cdr.markForCheck();
-      return;
-    }
-    const certificateRect = certificateElement.getBoundingClientRect();
-    const sidebarHeight = sidebarElement.getBoundingClientRect().height;
-    const sidebarTop = 90;
-    const buffer = 20;
-    const sidebarBottomPosition = scrollTop + sidebarTop + sidebarHeight;
-    const certificateTopPosition = certificateRect.top + scrollTop;
-    const stopPosition = certificateTopPosition - buffer;
-    if (sidebarBottomPosition >= stopPosition) {
-      this.isSidebarFixed = false;
-      const bottomValue = Math.max(20, window.innerHeight - certificateRect.top + buffer);
-      sidebarElement.style.bottom = `${bottomValue}px`;
-      sidebarElement.style.top = 'auto';
-    } else {
-      this.isSidebarFixed = true;
-      sidebarElement.style.bottom = 'auto';
-      sidebarElement.style.top = '90px';
-    }
     this.cdr.markForCheck();
   }
 
@@ -811,5 +886,73 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     this.canScrollHostLeft = slider.scrollLeft > 1;
     this.canScrollHostRight = slider.scrollLeft < maxScrollLeft;
     this.cdr.markForCheck();
+  }
+
+  /** Mirror blog sidebar: fixed while scrolling, stops before certificate section. */
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.updateSidebarPosition();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateSidebarPosition();
+  }
+
+  private updateSidebarPosition(): void {
+    if (!this.isBrowser || !this.event || typeof document === 'undefined') {
+      return;
+    }
+
+    const aside = document.querySelector('.event-aside__inner') as HTMLElement | null;
+    const sidebarCol = document.querySelector('.event-aside') as HTMLElement | null;
+    const container = document.querySelector('.event-container') as HTMLElement | null;
+    if (!aside || !sidebarCol || !container) {
+      return;
+    }
+
+    if (window.innerWidth <= 992) {
+      this.sidebarStopMode = false;
+      aside.style.position = 'static';
+      aside.style.top = 'auto';
+      aside.style.bottom = 'auto';
+      aside.style.left = 'auto';
+      aside.style.width = 'auto';
+      return;
+    }
+
+    const fixedTop = 80;
+    const buffer = 20;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    const sidebarHeight = aside.getBoundingClientRect().height;
+    const sidebarLeft = sidebarCol.getBoundingClientRect().left;
+    const sidebarWidth = sidebarCol.getBoundingClientRect().width;
+
+    const stopTarget =
+      (document.querySelector('.certificate-section') as HTMLElement | null) ||
+      container;
+    const stopTop = stopTarget
+      ? stopTarget.getBoundingClientRect().top + scrollTop
+      : container.getBoundingClientRect().bottom + scrollTop;
+
+    const sidebarBottomIfFixed = scrollTop + fixedTop + sidebarHeight;
+    const shouldStop = sidebarBottomIfFixed >= stopTop - buffer;
+
+    if (shouldStop) {
+      const bottomValue = Math.max(0, window.innerHeight - (stopTop - scrollTop) + buffer);
+      this.sidebarStopMode = true;
+      aside.style.position = 'fixed';
+      aside.style.top = 'auto';
+      aside.style.bottom = `${bottomValue}px`;
+      aside.style.left = `${sidebarLeft}px`;
+      aside.style.width = `${sidebarWidth}px`;
+    } else {
+      this.sidebarStopMode = false;
+      aside.style.position = 'fixed';
+      aside.style.top = `${fixedTop}px`;
+      aside.style.bottom = 'auto';
+      aside.style.left = `${sidebarLeft}px`;
+      aside.style.width = `${sidebarWidth}px`;
+    }
   }
 }

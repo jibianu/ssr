@@ -10,7 +10,53 @@
     <div class="event-checkout__grid">
       <div class="event-checkout__payment-col">
         <h1 class="event-checkout__welcome">You can now complete your event registration{{ userName ? ', ' + userName : '' }}</h1>
-        <p class="event-checkout__welcome-note">Review your order on the right and click below to pay securely.</p>
+        <p class="event-checkout__welcome-note">Enter your details below, then complete payment.</p>
+
+        <div class="event-checkout__registration">
+          <h2 class="event-checkout__order-heading">Your details</h2>
+
+          <div class="event-checkout__registration-summary" *ngIf="registrationDetailsComplete && !editingRegistration">
+            <p><strong>{{ registrationForm.get('name')?.value }}</strong></p>
+            <p>{{ registrationForm.get('email')?.value }}</p>
+            <p>{{ registrationForm.get('mobile')?.value }}</p>
+            <p>{{ registrationForm.get('companyName')?.value }}</p>
+            <p>{{ registrationForm.get('designation')?.value }} · {{ registrationForm.get('department')?.value }}</p>
+            <button type="button" class="event-checkout__edit-link" (click)="editRegistrationDetails()">Edit details</button>
+          </div>
+
+          <form class="event-checkout__registration-form" [formGroup]="registrationForm" *ngIf="!registrationDetailsComplete || editingRegistration" (ngSubmit)="saveRegistrationDetails()">
+            <div class="event-checkout__field">
+              <label for="reg-name">Full name <span class="required">*</span></label>
+              <input id="reg-name" type="text" class="form-control" formControlName="name" />
+            </div>
+            <div class="event-checkout__field">
+              <label for="reg-email">Work email <span class="required">*</span></label>
+              <input id="reg-email" type="email" class="form-control" formControlName="email" readonly />
+              <p class="event-checkout__field-hint">Uses your signed-in account email.</p>
+            </div>
+            <div class="event-checkout__field">
+              <label for="reg-mobile">Mobile number <span class="required">*</span></label>
+              <input id="reg-mobile" type="text" class="form-control" formControlName="mobile" placeholder="+91 98765 43210" />
+            </div>
+            <div class="event-checkout__field">
+              <label for="reg-company">Company name <span class="required">*</span></label>
+              <input id="reg-company" type="text" class="form-control" formControlName="companyName" />
+            </div>
+            <div class="event-checkout__field-row">
+              <div class="event-checkout__field">
+                <label for="reg-designation">Designation <span class="required">*</span></label>
+                <input id="reg-designation" type="text" class="form-control" formControlName="designation" />
+              </div>
+              <div class="event-checkout__field">
+                <label for="reg-department">Department <span class="required">*</span></label>
+                <input id="reg-department" type="text" class="form-control" formControlName="department" />
+              </div>
+            </div>
+            <button type="submit" class="event-checkout__btn event-checkout__btn--secondary" [disabled]="savingRegistrationDetails">
+              {{ savingRegistrationDetails ? 'Saving…' : (event.isFree ? 'Complete registration' : (editingRegistration ? 'Update details' : 'Continue to payment')) }}
+            </button>
+          </form>
+        </div>
 
         <div class="event-checkout__order-box">
           <h2 class="event-checkout__order-heading">Order summary</h2>
@@ -38,37 +84,61 @@
 
         <!-- Paid: choose gateway, then proceed -->
         <ng-container *ngIf="!event.isFree">
-          <div class="event-checkout__gateways" *ngIf="!clientSecret">
-            <h2 class="event-checkout__order-heading">Payment Method</h2>
-            <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'stripe'">
-              <input type="radio" name="gateway" value="stripe" [(ngModel)]="selectedGateway" />
-              <span class="event-checkout__gateway-label">Credit / Debit Card <small>(Stripe)</small></span>
-            </label>
-            <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'razorpay'"
-              *ngIf="razorpayEnabled">
-              <input type="radio" name="gateway" value="razorpay" [(ngModel)]="selectedGateway" />
-              <span class="event-checkout__gateway-label">UPI / Cards / Net Banking <small>(Razorpay)</small></span>
-            </label>
-            <div class="event-checkout__coupon mt-3">
-              <label for="event-coupon-code" class="small d-block mb-1">Coupon Code</label>
-              <div class="d-flex gap-2">
-                <input id="event-coupon-code" type="text" class="form-control" [(ngModel)]="couponCode" placeholder="e.g. EVENT1000" maxlength="50" />
-                <button type="button" class="btn btn-outline-secondary" (click)="applyCoupon()" [disabled]="couponApplying || !couponCode?.trim()">
+          <div class="event-checkout__gateways" *ngIf="!clientSecret && registrationDetailsComplete">
+            <div class="event-checkout__payment-card">
+              <h2 class="event-checkout__order-heading">Payment Method</h2>
+              <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'stripe'">
+                <input type="radio" name="gateway" value="stripe" [(ngModel)]="selectedGateway" />
+                <span class="event-checkout__gateway-label">Credit / Debit Card <small>(Stripe)</small></span>
+              </label>
+              <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'razorpay'"
+                *ngIf="razorpayEnabled">
+                <input type="radio" name="gateway" value="razorpay" [(ngModel)]="selectedGateway" />
+                <span class="event-checkout__gateway-label">UPI / Cards / Net Banking <small>(Razorpay)</small></span>
+              </label>
+            </div>
+
+            <div class="event-checkout__coupon">
+              <label for="event-coupon-code" class="event-checkout__coupon-label">
+                <i class="fas fa-tag" aria-hidden="true"></i> Coupon Code
+              </label>
+              <p class="event-checkout__coupon-note">Have a promo code? Enter it below to apply a discount.</p>
+              <div class="event-checkout__coupon-row">
+                <input
+                  id="event-coupon-code"
+                  type="text"
+                  class="event-checkout__coupon-input"
+                  [(ngModel)]="couponCode"
+                  placeholder="e.g. EVENT1000"
+                  maxlength="50" />
+                <button
+                  type="button"
+                  class="event-checkout__btn event-checkout__btn--secondary event-checkout__btn--apply"
+                  (click)="applyCoupon()"
+                  [disabled]="couponApplying || !couponCode?.trim()">
                   {{ couponApplying ? 'Applying…' : 'Apply' }}
                 </button>
               </div>
-              <p class="small mt-1 mb-0" *ngIf="couponMessage" [class.text-success]="couponValid" [class.text-danger]="!couponValid">{{ couponMessage }}</p>
+              <p
+                class="event-checkout__coupon-hint"
+                *ngIf="couponMessage"
+                [class.event-checkout__coupon-hint--success]="couponValid"
+                [class.event-checkout__coupon-hint--error]="!couponValid">
+                {{ couponMessage }}
+              </p>
             </div>
-            <button
-              type="button"
-              class="event-checkout__btn event-checkout__btn--primary"
-              [disabled]="creatingIntent || razorpayLoading"
-              (click)="proceedToPayment()"
-              aria-label="Proceed to payment"
-            >
-              <i class="fas fa-ticket-alt event-checkout__btn-icon" *ngIf="!creatingIntent && !razorpayLoading"></i>
-              <span class="event-checkout__btn-text">{{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}</span>
-            </button>
+
+            <div class="event-checkout__pay-actions">
+              <button
+                type="button"
+                class="event-checkout__btn event-checkout__btn--primary"
+                [disabled]="creatingIntent || razorpayLoading"
+                (click)="proceedToPayment()"
+                aria-label="Proceed to payment">
+                <i class="fas fa-lock event-checkout__btn-icon" *ngIf="!creatingIntent && !razorpayLoading"></i>
+                <span class="event-checkout__btn-text">{{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}</span>
+              </button>
+            </div>
           </div>
           <div class="event-checkout__methods" *ngIf="clientSecret">
             <div id="event-payment-element" class="event-checkout__payment-element"></div>
@@ -84,19 +154,6 @@
             </button>
           </div>
         </ng-container>
-
-        <!-- Free: Register for free -->
-        <button
-          *ngIf="event.isFree"
-          type="button"
-          class="event-checkout__btn event-checkout__btn--primary"
-          [disabled]="creatingSession"
-          (click)="registerFree()"
-          aria-label="Register for free"
-        >
-          <i class="fas fa-ticket-alt event-checkout__btn-icon" *ngIf="!creatingSession"></i>
-          <span class="event-checkout__btn-text">{{ creatingSession ? 'Processing…' : 'Register for free' }}</span>
-        </button>
 
         <div class="event-checkout__trust">
           <p class="event-checkout__trust-line"><i class="fas fa-lock"></i> 100% secure payment</p>

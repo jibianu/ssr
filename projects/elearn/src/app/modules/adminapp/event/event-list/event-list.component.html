@@ -204,19 +204,41 @@
 <div class="event-registrations-drawer-backdrop" *ngIf="registrationsDrawerOpen" (click)="closeRegistrationsModal()" role="button" tabindex="0" aria-label="Close registrations"></div>
 <aside class="event-registrations-drawer" [class.event-registrations-drawer--open]="registrationsDrawerOpen" aria-label="Event registrations">
   <div class="event-registrations-drawer__header">
-    <h2 class="event-registrations-drawer__title"><i class="fas fa-user-friends"></i> Event registrations – {{ registrationEventTitle }}</h2>
-    <button type="button" class="event-registrations-drawer__close" (click)="closeRegistrationsModal()" aria-label="Close">
-      <i class="fas fa-times"></i>
-    </button>
+    <div class="event-registrations-drawer__header-top">
+      <h2 class="event-registrations-drawer__title"><i class="fas fa-user-friends"></i> Event registrations – {{ registrationEventTitle }}</h2>
+      <button type="button" class="event-registrations-drawer__close" (click)="closeRegistrationsModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="event-registrations-drawer__filters" *ngIf="!registrationLoading && !registrationError && registrationUsers.length > 0">
+      <button
+        type="button"
+        class="event-registrations-drawer__filter-btn"
+        [class.event-registrations-drawer__filter-btn--active]="registrationPaymentFilter === 'completed'"
+        (click)="setRegistrationPaymentFilter('completed')">
+        Payment completed ({{ registrationCompletedCount }})
+      </button>
+      <button
+        type="button"
+        class="event-registrations-drawer__filter-btn"
+        [class.event-registrations-drawer__filter-btn--active]="registrationPaymentFilter === 'pending'"
+        (click)="setRegistrationPaymentFilter('pending')">
+        Not completed ({{ registrationPendingCount }})
+      </button>
+    </div>
   </div>
   <div class="event-registrations-drawer__body">
     <div *ngIf="registrationLoading" class="event-registrations-drawer__loading">Loading…</div>
     <div *ngIf="registrationError" class="alert alert-danger m-2">{{ registrationError }}</div>
     <ng-container *ngIf="!registrationLoading && !registrationError">
       <p class="event-registrations-drawer__count" *ngIf="registrationCount > 0">
-        <strong>{{ registrationCount }}</strong> {{ registrationCount === 1 ? 'user' : 'users' }} registered
+        Showing <strong>{{ displayedRegistrationUsers.length }}</strong> of <strong>{{ registrationCount }}</strong>
+        {{ registrationCount === 1 ? 'user' : 'users' }}
+        <span class="event-registrations-drawer__count-label">
+          ({{ registrationPaymentFilter === 'completed' ? 'payment completed' : 'not completed' }})
+        </span>
       </p>
-      <div class="event-registrations-drawer__table-wrap" *ngIf="registrationUsers.length > 0">
+      <div class="event-registrations-drawer__table-wrap" *ngIf="displayedRegistrationUsers.length > 0">
         <table class="event-registrations-drawer__table">
           <thead>
             <tr>
@@ -231,7 +253,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let u of registrationUsers; let i = index">
+            <tr *ngFor="let u of displayedRegistrationUsers; let i = index">
               <td>{{ i + 1 }}</td>
               <td>{{ u.name }}</td>
               <td>{{ u.email }}</td>
@@ -244,7 +266,10 @@
           </tbody>
         </table>
       </div>
-      <p class="event-registrations-drawer__empty text-muted" *ngIf="registrationUsers.length === 0 && !registrationError">No registrations yet.</p>
+      <p class="event-registrations-drawer__empty text-muted" *ngIf="registrationCount === 0 && !registrationError">No registrations yet.</p>
+      <p class="event-registrations-drawer__empty text-muted" *ngIf="registrationCount > 0 && displayedRegistrationUsers.length === 0">
+        No {{ registrationPaymentFilter === 'completed' ? 'completed payment' : 'pending payment' }} registrations.
+      </p>
     </ng-container>
   </div>
 </aside>

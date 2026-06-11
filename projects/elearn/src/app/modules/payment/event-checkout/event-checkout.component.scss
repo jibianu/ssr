@@ -131,8 +131,115 @@ $eco-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 .event-checkout__gateways {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   margin: 0 0 1.25rem;
 }
+
+.event-checkout__payment-card {
+  background: $eco-card;
+  border-radius: $eco-radius;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid $eco-border;
+  box-shadow: $eco-shadow;
+
+  .event-checkout__order-heading {
+    margin-bottom: 0.75rem;
+  }
+
+  .event-checkout__gateway:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.event-checkout__coupon {
+  background: $eco-card;
+  border-radius: $eco-radius;
+  padding: 1.25rem 1.5rem;
+  border: 1px dashed rgba($eco-primary, 0.35);
+  box-shadow: $eco-shadow;
+}
+
+.event-checkout__coupon-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $eco-text;
+  margin: 0 0 0.35rem;
+
+  i {
+    color: $eco-primary;
+    font-size: 0.9rem;
+  }
+}
+
+.event-checkout__coupon-note {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  color: $eco-text-muted;
+  line-height: 1.45;
+}
+
+.event-checkout__coupon-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.event-checkout__coupon-input {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid $eco-border;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: $eco-text;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $eco-primary;
+    box-shadow: 0 0 0 3px rgba($eco-primary, 0.12);
+  }
+}
+
+.event-checkout__coupon-hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.85rem;
+  color: $eco-text-muted;
+
+  &--success {
+    color: #059669;
+  }
+
+  &--error {
+    color: #dc2626;
+  }
+}
+
+.event-checkout__pay-actions {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.event-checkout__btn--apply {
+  flex-shrink: 0;
+  width: auto;
+  min-width: 96px;
+  padding: 0.65rem 1.15rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
 .event-checkout__gateway {
   display: flex;
   align-items: center;
@@ -425,4 +532,87 @@ $eco-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 .event-checkout__error-page .event-checkout__link:hover {
   text-decoration: underline;
+}
+
+.event-checkout__registration {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid $eco-border;
+  border-radius: 12px;
+}
+
+.event-checkout__registration-summary {
+  p {
+    margin: 0 0 0.35rem;
+    color: $eco-text;
+  }
+}
+
+.event-checkout__edit-link {
+  margin-top: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.event-checkout__registration-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.event-checkout__field {
+  display: grid;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $eco-text;
+  }
+
+  .required {
+    color: #dc2626;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid $eco-border;
+    border-radius: 8px;
+    font-size: 0.95rem;
+
+    &[readonly] {
+      background: #f8fafc;
+      color: $eco-text-muted;
+    }
+  }
+}
+
+.event-checkout__field-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: $eco-text-muted;
+}
+
+.event-checkout__field-row {
+  display: grid;
+  gap: 0.85rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.event-checkout__btn--secondary {
+  background: #fff;
+  color: $eco-primary;
+  border: 2px solid $eco-primary;
+
+  &:hover:not(:disabled) {
+    background: rgba($eco-primary, 0.06);
+  }
 }

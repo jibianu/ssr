@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
@@ -48,6 +49,11 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   couponDiscountAmount = 0;
   couponFinalAmount: number | null = null;
 
+  registrationForm!: FormGroup;
+  registrationDetailsComplete = false;
+  savingRegistrationDetails = false;
+  editingRegistration = false;
+
   private subscription = new Subscription();
 
   constructor(
@@ -57,7 +63,8 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     private razorpayPaymentService: RazorpayPaymentService,
     private authService: AuthenticationService,
     private cdr: ChangeDetectorRef,
-    private couponApi: CouponApiService
+    private couponApi: CouponApiService,
+    private formBuilder: FormBuilder
   ) {
     const id = this.route.snapshot.paramMap.get('eventId');
     if (id) this.eventId = id;
@@ -66,6 +73,15 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const user = this.authService.currentUser();
     this.userName = user?.username || user?.email || user?.name || '';
+
+    this.registrationForm = this.formBuilder.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      mobile: ['', Validators.required],
+      companyName: ['', Validators.required],
+      designation: ['', Validators.required],
+      department: ['', Validators.required]
+    });
 
     if (!this.eventId) {
       this.loadError = 'Event not found.';
@@ -80,6 +96,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
           this.event = this.normalizeEvent(e);
           this.loading = false;
           this.loadError = null;
+          this.loadRegistrationStatus();
           this.cdr.detectChanges();
         },
         error: () => {
@@ -89,6 +106,166 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  private loadRegistrationStatus(): void {
+    this.subscription.add(
+      this.studentApi.checkEventRegistration(this.eventId).subscribe({
+        next: (status) => {
+          if (status?.registered) {
+            this.router.navigate(['/app/student/events/event', this.eventId], {
+              queryParams: { registered: 'true' }
+            });
+            return;
+          }
+          this.subscription.add(
+            this.studentApi.getEventRegistrationDraft(this.eventId).subscribe({
+              next: (draft) => {
+                if (draft?.hasDraft && draft.mobile?.trim()) {
+                  this.registrationForm.patchValue({
+                    name: draft.name || '',
+                    email: draft.email || '',
+                    mobile: draft.mobile || '',
+                    companyName: draft.companyName || '',
+                    designation: draft.designation || '',
+                    department: draft.department || ''
+                  });
+                  const email = (draft.email || this.authService.currentUser()?.email || '').trim();
+                  if (email) {
+                    this.registrationForm.get('email')?.disable({ emitEvent: false });
+                  }
+                  this.registrationDetailsComplete = true;
+                } else {
+                  this.prefillRegistrationFromUser();
+                }
+                this.cdr.detectChanges();
+              },
+              error: () => {
+                this.prefillRegistrationFromUser();
+                this.cdr.detectChanges();
+              }
+            })
+          );
+        }
+      })
+    );
+  }
+
+  private prefillRegistrationFromUser(): void {
+    const u = this.authService.currentUser();
+    if (!u) return;
+    const name = (u.name || u.username || `${u.firstName || ''} ${u.lastName || ''}`.trim() || '').trim();
+    const email = (u.email || u.Email || '').trim();
+    this.registrationForm.patchValue({
+      name,
+      email,
+      mobile: u.phone || u.Phone || u.mobile || u.Mobile || '',
+      companyName: u.companyName || u.CompanyName || '',
+      designation: u.designation || u.Designation || '',
+      department: u.department || u.Department || ''
+    });
+    if (email) {
+      this.registrationForm.get('email')?.disable({ emitEvent: false });
+    }
+  }
+
+  private getRegistrationBody(): {
+    name: string;
+    email: string;
+    mobile: string;
+    companyName: string;
+    designation: string;
+    department: string;
+  } {
+    const v = this.registrationForm.getRawValue();
+    const authEmail = (this.authService.currentUser()?.email || this.authService.currentUser()?.Email || '').trim();
+    return {
+      name: String(v.name ?? '').trim(),
+      email: String(v.email ?? authEmail ?? '').trim(),
+      mobile: String(v.mobile ?? '').trim(),
+      companyName: String(v.companyName ?? '').trim(),
+      designation: String(v.designation ?? '').trim(),
+      department: String(v.department ?? '').trim()
+    };
+  }
+
+  editRegistrationDetails(): void {
+    this.editingRegistration = true;
+    this.cdr.detectChanges();
+  }
+
+  saveRegistrationDetails(): void {
+    if (this.registrationForm.invalid) {
+      this.registrationForm.markAllAsTouched();
+      this.loadError = 'Please fill in all registration details, including your mobile number.';
+      this.cdr.detectChanges();
+      return;
+    }
+    this.savingRegistrationDetails = true;
+    this.loadError = null;
+    this.cdr.detectChanges();
+    const body = this.getRegistrationBody();
+    this.subscription.add(
+      this.studentApi.registerForEvent(this.eventId, body).subscribe({
+        next: (res) => {
+          this.savingRegistrationDetails = false;
+          if (res?.enrolled) {
+            this.router.navigate(['/app/student/events/event', this.eventId], {
+              queryParams: { registered: 'true' }
+            });
+            return;
+          }
+          this.registrationDetailsComplete = true;
+          this.editingRegistration = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.savingRegistrationDetails = false;
+          this.loadError = err?.error?.message ?? err?.message ?? 'Could not save registration details.';
+          this.cdr.detectChanges();
+        }
+      })
+    );
+  }
+
+  private ensureRegistrationDetailsSaved(): Promise<boolean> {
+    if (this.registrationDetailsComplete && !this.editingRegistration) {
+      return Promise.resolve(true);
+    }
+    if (this.registrationForm.invalid) {
+      this.registrationForm.markAllAsTouched();
+      this.loadError = 'Please fill in all registration details, including your mobile number.';
+      this.cdr.detectChanges();
+      return Promise.resolve(false);
+    }
+    this.savingRegistrationDetails = true;
+    this.loadError = null;
+    this.cdr.detectChanges();
+    const body = this.getRegistrationBody();
+    return new Promise((resolve) => {
+      this.studentApi.registerForEvent(this.eventId, body).subscribe({
+        next: (res) => {
+          this.savingRegistrationDetails = false;
+          if (res?.enrolled) {
+            this.router.navigate(['/app/student/events/event', this.eventId], {
+              queryParams: { registered: 'true' }
+            });
+            resolve(false);
+            return;
+          }
+          this.registrationDetailsComplete = true;
+          this.editingRegistration = false;
+          this.cdr.detectChanges();
+          resolve(true);
+        },
+        error: (err) => {
+          this.savingRegistrationDetails = false;
+          this.loadError = err?.error?.message ?? err?.message ?? 'Could not save registration details.';
+          this.cdr.detectChanges();
+          resolve(false);
+        }
+      });
+    });
   }
 
   private normalizeEvent(e: any): any {
@@ -232,6 +409,8 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   /** Dispatch to Stripe or Razorpay when user clicks "Proceed to payment". */
   async proceedToPayment(): Promise<void> {
     if (!this.eventId || !this.event || this.event.isFree) return;
+    const detailsOk = await this.ensureRegistrationDetailsSaved();
+    if (!detailsOk) return;
     if (this.couponCode?.trim()) {
       const ok = await this.applyCouponAsync();
       if (!ok) {
@@ -462,8 +641,10 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  completePurchase(): void {
+  async completePurchase(): Promise<void> {
     if (!this.eventId || !this.event) return;
+    const detailsOk = await this.ensureRegistrationDetailsSaved();
+    if (!detailsOk) return;
     if (this.event.isFree) {
       this.registerFree();
       return;
@@ -479,8 +660,9 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     this.creatingSession = true;
     this.loadError = null;
     this.cdr.detectChanges();
+    const body = this.getRegistrationBody();
     this.subscription.add(
-      this.studentApi.registerForEvent(this.eventId).subscribe({
+      this.studentApi.registerForEvent(this.eventId, body).subscribe({
         next: (res) => {
           this.creatingSession = false;
           if (res?.enrolled) {

@@ -92,7 +92,38 @@ export class LoginComponent implements OnInit {
       try {
         localStorage.setItem('returnUrl', returnUrl);
       } catch (_) {}
+    } else if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem('returnUrl');
+      } catch (_) {}
     }
+
+    if (this.authenticationService.currentUser() && this.authenticationService.currentToken()) {
+      this.redirectAuthenticatedUser(returnUrl);
+    }
+  }
+
+  /** Already signed in — leave login and go to returnUrl or role home. */
+  private redirectAuthenticatedUser(returnUrl: string): void {
+    if (returnUrl) {
+      if (returnUrl.startsWith('http')) {
+        window.location.href = returnUrl;
+      } else {
+        this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+      }
+      return;
+    }
+    this.authenticationService.postLogin().pipe(first()).subscribe({
+      next: (res) => {
+        if (tryRedirectToCompanyPortalAfterLogin(res, this.authenticationService.currentUser(), '')) {
+          return;
+        }
+        const route = getLandingRoute(res);
+        if (route) {
+          this.router.navigateByUrl(route, { replaceUrl: true });
+        }
+      }
+    });
   }
 
   tenantInfoTitle: string | null = null;
@@ -391,7 +422,12 @@ export class LoginComponent implements OnInit {
                 if (returnUrl.startsWith('http')) {
                   window.location.href = returnUrl;
                 } else {
-                  this.router.navigateByUrl(returnUrl);
+                  const openRegistration = queryParams['openRegistration'] === '1';
+                  const tree = this.router.parseUrl(returnUrl);
+                  if (openRegistration) {
+                    tree.queryParams = { ...tree.queryParams, openRegistration: '1' };
+                  }
+                  this.router.navigateByUrl(tree, { replaceUrl: true });
                 }
                 return;
               }

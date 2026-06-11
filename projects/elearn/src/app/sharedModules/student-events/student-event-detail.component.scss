@@ -61,31 +61,46 @@
   box-sizing: border-box;
 }
 
-// ✅ event-body defined separately with grid properties for sticky positioning
-// Following the example pattern: parent container needs enough height to allow scrolling
-// The parent container needs enough height to allow scrolling (content provides this)
-.event-body {
-  width: 100%;
-  max-width: 1140px;
+.event-page-wrap {
+  max-width: 1200px;
   margin: 0 auto;
-  padding-inline: clamp(1rem, 2.5vw, 2rem);
+  padding: clamp(1rem, 4vw, 1.5rem);
+  overflow: visible;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-  gap: clamp(2rem, 4vw, 3rem);
-  margin-top: clamp(2.5rem, 6vw, 4rem);
-  margin-bottom: clamp(2rem, 4vw, 3rem); // ✅ Bottom margin to prevent overlap with footer/certificate section
-  align-items: start; // ✅ Critical: Align items to start for sticky to work
-  position: relative; // ✅ Useful for containing the sticky element within its flow
-  overflow: visible !important; // ✅ Critical: Force no overflow clipping for sticky to work
-  min-height: 100vh; // ✅ Ensure container has enough height for sticky to work
-  // ✅ Ensure parent elements do not have 'overflow: hidden', 'scroll', or 'auto'
-  // as this can break sticky behavior
+}
 
-  @media (max-width: 991px) {
+.event-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 10px;
+  align-items: start;
+  margin-top: 1.5rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  overflow: visible;
+  width: 100%;
+
+  @media (max-width: 992px) {
     grid-template-columns: 1fr;
-    min-height: auto; // ✅ Reset min-height on smaller screens (matches d-sm-block breakpoint)
+    gap: 1.5rem;
   }
+}
+
+.event-main-column {
+  min-width: 0;
+  overflow: visible;
+  width: 100%;
+
+  .hero-container,
+  .summary-container {
+    max-width: none;
+    margin: 0;
+    padding-inline: 0;
+  }
+}
+
+.event-main {
+  min-width: 0;
+  width: 100%;
 }
 
 
@@ -100,12 +115,29 @@
 
 .event-hero {
   position: relative;
-  background-color: #e9ecef;
-  border-radius: 0.3rem;
-  margin-bottom: 2rem;
+  background-color: transparent;
+  border-radius: 0;
+  margin-bottom: 0;
   isolation: isolate;
   color: #333;
-  overflow: hidden;
+  overflow: visible;
+
+  &--blog-style {
+    background: transparent;
+
+    .hero-container {
+      padding-top: clamp(0.75rem, 2vw, 1.25rem);
+      padding-bottom: clamp(1rem, 2.5vw, 1.5rem);
+    }
+
+    .hero-title {
+      color: #333;
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+  }
 
   &.event-hero--has-image {
     color: #fff;
@@ -113,30 +145,26 @@
   }
 }
 
-.event-hero__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+.event-hero__image {
+  width: 100%;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  overflow: hidden;
 
-.event-hero__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.65) 50%, rgba(30, 41, 59, 0.4) 100%);
-  pointer-events: none;
+  .event-hero__img,
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
 }
 
 .hero-container {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.25rem, 3vw, 2.5rem);
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -214,27 +242,18 @@
   gap: 0.875rem;
   width: 100%;
   margin: 0;
-  margin-bottom: 0.5rem; // ✅ Add bottom spacing so cards don't touch bottom
 
   &__item {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.75rem;
-    padding: 0.875rem 1.125rem; // ✅ Reduced padding for smaller cards
+    padding: 0.875rem 1.125rem;
     border-radius: 12px;
-    background: #ffffff; // ✅ White background like course page cards
-    border: 1px solid rgba(226, 232, 240, 0.65); // ✅ Match course page border color
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.65);
     box-sizing: border-box;
     align-items: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 30px rgb(31 45 61 / 13%); // ✅ Match course page box-shadow
-
-    &:hover {
-      background: #ffffff;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-color: rgba(189, 35, 0, 0.2); // ✅ Red border on hover
-    }
+    box-shadow: 0 0 30px rgb(31 45 61 / 13%);
   }
 
   &__icon {
@@ -348,24 +367,43 @@
 }
 
 .event-summary {
-  margin-top: clamp(-5rem, -8vw, -6rem);
+  margin-top: clamp(0.75rem, 2vw, 1.25rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
 
   .summary-container {
     display: grid;
     gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     position: relative;
+  }
+}
+
+.summary-meta-row {
+  grid-column: 1 / -1;
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin: 0;
+  }
+
+  @media (max-width: 992px) {
+    .hero-meta {
+      grid-template-columns: 1fr;
+    }
   }
 }
 
 .summary-card {
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 20px;
   padding: clamp(1.4rem, 3vw, 2rem);
-  box-shadow: 0 32px 60px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 0 30px rgb(31 45 61 / 13%);
   display: grid;
   gap: 1rem;
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.65);
 
   h2 {
     margin: 0;
@@ -789,52 +827,75 @@
   }
 }
 
-.event-format-card {
-  order: 1; // Ensure Event Format appears on the left
-}
 
 .countdown-card {
-  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 90%);
-  color: #f8fafc;
-  order: 2; // Ensure Countdown appears on the right
+  grid-column: 1 / -1;
+  width: 100%;
+  background: #ffffff;
+  color: #4a4a4a;
+  text-align: center;
+  gap: 0;
+}
 
-  h2 {
-    color: #e0e7ff;
+.countdown-urgency {
+  margin: 0 0 1rem;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #333;
+  line-height: 1.4;
+}
+
+.countdown-stock-bar {
+  height: 10px;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-radius: 999px;
+  background: #fce8e8;
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #d9534f;
+    transition: width 0.35s ease;
   }
 }
 
 .countdown {
   display: flex;
-  gap: 1.25rem;
+  justify-content: space-between;
+  gap: 0.75rem;
 
   &__item {
-    display: grid;
-    justify-items: center;
-    background: rgba(15, 23, 42, 0.24);
-    padding: 1rem 1.4rem;
-    border-radius: 20px;
-    min-width: 120px;
-    border: 1px solid rgba(148, 163, 184, 0.25);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
 
     .count {
-      font-size: 2rem;
+      font-size: clamp(1.5rem, 4vw, 1.85rem);
       font-weight: 700;
       line-height: 1.1;
+      color: #4a4a4a;
     }
 
     .label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: rgba(226, 232, 240, 0.75);
+      margin-top: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      color: #8e8e8e;
     }
   }
-}
-
-.countdown-note {
-  margin: 0;
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.8);
 }
 
 
@@ -923,37 +984,6 @@
   }
 }
 
-.learning-show-more {
-  margin-top: 1.5rem;
-  padding: 0.75rem 1.5rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  transition: all 0.3s ease;
-  border: 2px solid rgba(37, 99, 235, 0.2);
-  background: rgba(37, 99, 235, 0.05);
-  
-  &:hover {
-    background: rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-  
-  @media (max-width: 640px) {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
-    margin-top: 1.25rem;
-  }
-}
-
 .about-metrics {
   list-style: none;
   margin: 0;
@@ -983,152 +1013,148 @@
   }
 }
 
-// ✅ Enhanced Learning Grid Design - Modern & Clean
-.learning-grid {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  
-  @media (min-width: 768px) {
-    gap: 1.75rem;
+// ✅ What you'll learn — mirror course curriculum accordion
+.course-curriculum-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.curriculum-item {
+  background: #fff7ed;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.curriculum-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  background: #fff7ed;
+  transition: background 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    background: #ffedd5;
+    text-decoration: none;
+    color: inherit;
   }
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
+
+  &.expanded {
+    background: #ffedd5;
   }
 }
 
-.learning-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  padding: 1.75rem;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 2px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+.curriculum-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+}
+
+.curriculum-section-content {
+  background: #fff7ed;
+}
+
+.course-curriculum-list--elearn .curriculum-item--elearn {
+  background: #fff7ed;
+  border-radius: 8px;
   overflow: hidden;
-  
-  // Left accent border
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+}
+
+.curriculum-section-header--elearn {
+  padding: 1rem 1.25rem;
+  background: #fff7ed;
+  width: 100%;
+  text-align: left;
+  border: none;
+
+  .curriculum-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e40af;
+    flex: 1;
   }
-  
-  // Subtle background pattern
-  &::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.03) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    transition: transform 0.4s ease;
-  }
-  
+}
+
+.curriculum-section-header--clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s ease;
+
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 32px rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.25);
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    
-    &::before {
-      opacity: 1;
-    }
-    
-    &::after {
-      transform: scale(1.2);
-    }
-    
-    h3 {
-      color: #1d4ed8;
-      transform: translateX(4px);
-    }
-    
-    p {
-      color: #334155;
-    }
+    background: #ffedd5;
   }
 
-  > div {
+  &.expanded {
+    background: #ffedd5;
+  }
+
+  .curriculum-section-chevron {
+    color: #6b7280;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  &.expanded .curriculum-section-chevron {
+    color: #1e40af;
+  }
+}
+
+.curriculum-section-content--elearn {
+  padding: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 0);
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  background: transparent;
+  transition: grid-template-rows 0.35s ease, opacity 0.2s ease;
+
+  &.show {
+    grid-template-rows: minmax(0, 1fr);
+    opacity: 1;
+    background: #fff7ed;
+  }
+
+  .curriculum-subtitle-inner {
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
-    flex: 1;
-    position: relative;
-    z-index: 1;
+    gap: 0.5rem;
+    min-height: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #495057;
+    align-content: flex-start;
   }
 
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.3;
-    letter-spacing: -0.02em;
-    transition: all 0.3s ease;
-    position: relative;
-    
-    // Subtle underline effect on hover
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-      transition: width 0.3s ease;
-    }
-  }
-  
-  &:hover h3::after {
-    width: 40px;
+  &.show .curriculum-subtitle-inner {
+    padding: 0 1.25rem 1rem 2.25rem;
   }
 
-  p {
+  .curriculum-subtitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    i {
+      color: #f97316;
+      font-size: 0.95rem;
+    }
+  }
+
+  .curriculum-subtitle-empty {
     margin: 0;
-    color: #64748b;
-    font-size: 0.9375rem;
-    line-height: 1.7;
-    transition: color 0.3s ease;
-  }
-  
-  // Responsive adjustments
-  @media (max-width: 640px) {
-    padding: 1.5rem;
-    gap: 0.75rem;
-    border-radius: 20px;
-    
-    h3 {
-      font-size: 1.125rem;
-    }
-    
-    p {
-      font-size: 0.875rem;
-      line-height: 1.6;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    padding: 1.25rem;
-    
-    h3 {
-      font-size: 1.05rem;
-    }
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-style: italic;
   }
 }
 
@@ -1527,81 +1553,44 @@
 }
 
 .event-aside {
-  align-self: start; // ✅ Critical: Align to start - matches "About this event" section
-  height: fit-content; // ✅ Fit content height
-  overflow: visible !important; // ✅ Critical: Force no overflow clipping for sticky to work
-  position: relative; // ✅ Useful for containing the sticky element within its flow
+  align-self: start;
+  width: 100%;
+  max-width: 320px;
+  justify-self: end;
+  height: fit-content;
+  overflow: visible !important;
+  position: relative;
   pointer-events: auto;
 
-  // ✅ Sticky sidebar - Appears at "About this event", stops before Certificate section
-  .sticky-top {
-    position: relative; // ✅ Default: normal flow (hidden before "About this event")
-    width: 340px; // ✅ Fixed width for sidebar (matches grid column width)
-    height: fit-content;
-    max-height: calc(100vh - 110px); // ✅ Prevent overflow viewport
-    z-index: 1000; // ✅ High z-index to stay above other content
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    overflow: visible !important;
-    transition: opacity 0.2s ease; // ✅ Smooth visibility transition
-    pointer-events: auto;
-    
-    // ✅ Fixed position - visible when "About this event" is in view
-    &.sidebar-fixed {
-      position: fixed !important;
-      top: 90px !important; // ✅ Position from top (accounts for site header ~80px + spacing)
-      bottom: auto !important;
-      
-      // ✅ Position calculation for centered container layout
-      right: max(calc((100vw - min(1140px, calc(100vw - 2 * clamp(1rem, 2.5vw, 2rem)))) / 2), clamp(1rem, 2.5vw, 2rem));
-      
-      // ✅ Simplified positioning for medium screens
-      @media (min-width: 1200px) {
-        right: calc((100vw - 1140px) / 2 + clamp(1rem, 2.5vw, 2rem));
-      }
-      
-      @media (max-width: 1199px) and (min-width: 992px) {
-        right: clamp(1rem, 2.5vw, 2rem); // ✅ Use container padding
-      }
-    }
-    
-    // ✅ Fixed position with bottom constraint - stops before Certificate section
-    &.sidebar-absolute {
-      position: fixed !important; // ✅ Still fixed, but with bottom constraint
-      top: auto !important; // ✅ Remove top when using bottom
-      bottom: auto; // ✅ Will be set dynamically via JavaScript
-      
-      // ✅ Keep same right positioning
-      right: max(calc((100vw - min(1140px, calc(100vw - 2 * clamp(1rem, 2.5vw, 2rem)))) / 2), clamp(1rem, 2.5vw, 2rem));
-      
-      @media (min-width: 1200px) {
-        right: calc((100vw - 1140px) / 2 + clamp(1rem, 2.5vw, 2rem));
-      }
-      
-      @media (max-width: 1199px) and (min-width: 992px) {
-        right: clamp(1rem, 2.5vw, 2rem);
-      }
-    }
-    
-    // ✅ Hide when not visible (before "About this event")
-    &:not(.sidebar-fixed):not(.sidebar-absolute) {
-      position: relative;
-      top: auto;
-      bottom: auto;
-      right: auto;
-    }
-    
-    // ✅ Disable fixed/absolute on mobile
-    @media (max-width: 991.98px) {
-      position: static !important;
-      top: auto !important;
-      bottom: auto !important;
-      right: auto !important;
-      width: 100%;
-      max-width: 100%;
-      max-height: none;
-    }
+  @media (max-width: 992px) {
+    max-width: 100%;
+    justify-self: stretch;
+  }
+
+}
+
+/* Mirror blog-aside: fixed via JS, no inner scrollbar */
+.event-aside__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 0;
+  position: static;
+  top: auto;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  z-index: 10;
+  will-change: top, bottom, left;
+  transition: top 120ms ease, bottom 120ms ease, left 120ms ease;
+
+  @media (max-width: 992px) {
+    position: static !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: auto !important;
   }
 }
 
@@ -1758,6 +1747,47 @@
   position: relative;
   z-index: 2;
 }
+
+.enrollment-success-banner {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.12);
+
+  &__icon {
+    flex-shrink: 0;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  &__content {
+    p {
+      margin: 0 0 0.75rem;
+      color: #14532d;
+      line-height: 1.6;
+      font-size: 0.95rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__lead {
+    font-size: 1.05rem !important;
+    font-weight: 600;
+    color: #166534 !important;
+  }
+
+  &__closing {
+    font-weight: 600;
+    color: #15803d !important;
+  }
+}
 .book-now-row {
   display: flex;
   align-items: center;
@@ -1835,24 +1865,21 @@ a.book-now-btn:hover {
 
 @media (max-width: 768px) {
   .event-hero {
-    min-height: clamp(320px, 55vh, 400px);
-    border-radius: var(--event-header-radius);
-    -webkit-border-radius: var(--event-header-radius);
-    -moz-border-radius: var(--event-header-radius);
-    
+    min-height: 0;
+    border-radius: 0;
+
     &:hover {
-      transform: none; // Disable hover transform on mobile
+      transform: none;
     }
-    
-    &__overlay {
-      border-radius: var(--event-header-radius);
-      -webkit-border-radius: var(--event-header-radius);
-      -moz-border-radius: var(--event-header-radius);
-    }
+  }
+
+  .event-hero__image {
+    margin-bottom: 1.25rem;
+    border-radius: 6px;
   }
   
   .hero-container {
-    padding: clamp(2rem, 5vw, 3rem) clamp(1.25rem, 3vw, 2rem);
+    padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.25rem);
   }
   
   .hero-main {
@@ -1887,11 +1914,10 @@ a.book-now-btn:hover {
 
   .countdown-card {
     .countdown {
-      flex-direction: column;
-      align-items: stretch;
+      gap: 0.5rem;
 
-      &__item {
-        width: 100%;
+      &__item .count {
+        font-size: 1.35rem;
       }
     }
   }

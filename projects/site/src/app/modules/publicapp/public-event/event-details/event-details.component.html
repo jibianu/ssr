@@ -1,6 +1,31 @@
 <div class="event-details" *ngIf="event">
-  <section class="event-hero" role="banner" aria-label="Event header">
+  <section *ngIf="showEnrollmentCongratulations && isRegisteredForEvent" class="enrollment-success-banner" role="status" aria-live="polite">
+    <div class="enrollment-success-banner__icon" aria-hidden="true">🎉</div>
+    <div class="enrollment-success-banner__content">
+      <p class="enrollment-success-banner__lead">
+        Congratulations! You are officially enrolled in the <strong>"{{ event?.title }}"</strong> workshop program.
+      </p>
+      <p>We are excited to welcome you to this batch and look forward to learning, growing, and achieving success together.</p>
+      <p>Your registration has been confirmed. Further details, including the schedule and joining instructions, will be shared with you shortly.</p>
+      <p class="enrollment-success-banner__closing">Welcome aboard! We look forward to seeing you at the workshop.</p>
+    </div>
+  </section>
+
+  <div class="event-page-wrap">
+    <div class="event-container">
+      <div class="event-main-column">
+  <section class="event-hero event-hero--blog-style" role="banner" aria-label="Event header">
     <div class="hero-container">
+      <div class="event-hero__image" *ngIf="getEventImage() && !eventCoverImageError">
+        <img
+          [src]="getEventImage()"
+          [alt]="event?.title || 'Event cover image'"
+          class="event-hero__img"
+          loading="eager"
+          (error)="onEventImageError($event)"
+        />
+      </div>
+
       <div class="hero-content">
         <div class="hero-header">
           <span class="hero-badge" *ngIf="event?.badge">
@@ -9,7 +34,13 @@
           </span>
           <h1 class="hero-title">{{ event?.title }}</h1>
         </div>
+      </div>
+    </div>
+  </section>
 
+  <section class="event-summary">
+    <div class="summary-container">
+      <div class="summary-meta-row">
         <div class="hero-meta">
           <div class="hero-meta__item" *ngIf="event?.startDate">
             <div class="hero-meta__icon hero-meta__icon--calendar">
@@ -61,11 +92,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="event-summary">
-    <div class="summary-container">
       <ng-template #whyAttend>
         <article class="summary-card">
           <h2>Why attend</h2>
@@ -119,24 +145,40 @@
         </dl>
       </article>
       <article class="summary-card countdown-card" *ngIf="event?.startDate">
-        <h2>Countdown</h2>
+        <p class="countdown-urgency">Last Few Seats Remaining – Register Today!</p>
+        <div
+          class="countdown-stock-bar"
+          role="progressbar"
+          [attr.aria-valuenow]="getSeatsProgressPercent()"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-label="Seats filling quickly"
+        >
+          <div class="countdown-stock-bar__fill" [style.width.%]="getSeatsProgressPercent()"></div>
+        </div>
         <div class="countdown">
           <div class="countdown__item">
-            <span class="count">{{ getRemaining(event.startDate).days }}</span>
+            <span class="count">{{ padCountdown(getRemaining(event.startDate).days) }}</span>
             <span class="label">Days</span>
           </div>
           <div class="countdown__item">
-            <span class="count">{{ getRemaining(event.startDate).hours }}</span>
+            <span class="count">{{ padCountdown(getRemaining(event.startDate).hours) }}</span>
             <span class="label">Hours</span>
           </div>
+          <div class="countdown__item">
+            <span class="count">{{ padCountdown(getRemaining(event.startDate).minutes) }}</span>
+            <span class="label">Mins</span>
+          </div>
+          <div class="countdown__item">
+            <span class="count">{{ padCountdown(getRemaining(event.startDate).seconds) }}</span>
+            <span class="label">Secs</span>
+          </div>
         </div>
-        <p class="countdown-note">Seats fill fast—reserve yours today.</p>
       </article>
     </div>
   </section>
 
-  <div class="event-body">
-    <main class="event-main">
+      <main class="event-main">
       <section class="event-card event-card--video" id="event-video" *ngIf="getVideoUrl()">
         <header>
           <h2>Watch</h2>
@@ -168,14 +210,6 @@
         >
           {{ isExpanded() ? 'Show less' : 'Show more' }}
         </button>
-        <figure class="event-cover-image" *ngIf="getEventImage() && !eventCoverImageError">
-          <img
-            [src]="getEventImage()"
-            [alt]="event?.title || 'Event cover image'"
-            loading="lazy"
-            (error)="onEventImageError($event)"
-          />
-        </figure>
       </section>
 
       <!-- ✅ FIX: Meet your host - Full width event card (Multiple organizers support with slider) -->
@@ -320,21 +354,42 @@
         <header>
           <h2>What you'll learn</h2>
         </header>
-        <div class="learning-grid">
-          <article class="learning-item" *ngFor="let item of getLearningItems(); trackBy: trackByCurriculumId">
-            <div>
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.description }}</p>
+        <div class="course-curriculum-list course-curriculum-list--elearn">
+          <div
+            class="curriculum-item curriculum-item--elearn"
+            *ngFor="let item of getInfo('curriculum'); let i = index; trackBy: trackByCurriculumId">
+            <button
+              type="button"
+              class="curriculum-section-header curriculum-section-header--elearn curriculum-section-header--clickable"
+              [class.expanded]="isLearningSectionExpanded(i)"
+              [attr.aria-expanded]="isLearningSectionExpanded(i)"
+              [attr.aria-controls]="'learningContent' + i"
+              [id]="'learningHead' + i"
+              (click)="toggleLearningSection(i)">
+              <i
+                class="fa curriculum-section-chevron"
+                [class.fa-chevron-down]="isLearningSectionExpanded(i)"
+                [class.fa-chevron-right]="!isLearningSectionExpanded(i)"
+                aria-hidden="true"></i>
+              <span class="curriculum-section-title">{{ item.title }}</span>
+            </button>
+            <div
+              [id]="'learningContent' + i"
+              class="curriculum-section-content curriculum-section-content--elearn"
+              [class.show]="isLearningSectionExpanded(i)"
+              role="region"
+              [attr.aria-labelledby]="'learningHead' + i">
+              <div class="curriculum-subtitle-inner">
+                <ng-container *ngIf="getLearningTopicRows(item) as topicRows">
+                  <span class="curriculum-subtitle" *ngFor="let row of topicRows">
+                    <i class="{{ row.icon }}" aria-hidden="true"></i> {{ row.num }}. {{ row.displayText }}
+                  </span>
+                  <p class="curriculum-subtitle-empty" *ngIf="topicRows.length === 0">No topics listed for this module.</p>
+                </ng-container>
+              </div>
             </div>
-          </article>
+          </div>
         </div>
-        <button
-          class="btn-link learning-show-more"
-          type="button"
-          (click)="toggleLearningExpansion()"
-          *ngIf="hasMoreLearningItems()">
-          {{ learningExpanded ? 'Show less' : 'Show more' }}
-        </button>
       </section>
 
       <section class="event-card" *ngIf="getInfo('bonuse')?.length">
@@ -479,11 +534,10 @@
       </section>
     </main>
 
+      </div>
+
     <aside class="event-aside">
-      <div class="sticky-top d-none d-sm-block" 
-           [class.sidebar-fixed]="isSidebarFixed && isSidebarVisible" 
-           [class.sidebar-absolute]="!isSidebarFixed && isSidebarVisible"
-           [style.display]="isSidebarVisible ? 'flex' : 'none'">
+      <div class="event-aside__inner d-none d-sm-block" [class.event-aside__inner--stop]="sidebarStopMode">
         <div class="card box-shadow mb-3 mb-4">
           <div class="p-0">
             <section class="aside-card price-card">
@@ -515,13 +569,18 @@
           <div *ngIf="registrationCheckDone && isRegisteredForEvent" class="alert alert-success mb-0">
             <i class="fa fa-check-circle"></i> Registration Completed
           </div>
-          <div *ngIf="!isRegisteredForEvent" class="book-now-block">
+          <div *ngIf="registrationCheckDone && !isRegisteredForEvent" class="book-now-block">
             <div class="book-now-row">
               <span class="book-now-price">{{ getEventPriceText() }}</span>
               <span class="book-now-available">Available</span>
             </div>
             <button type="button" class="btn btn-danger btn-block book-now-btn" (click)="goToEventCheckout()" [disabled]="event?.isEnded">
               Book Now
+            </button>
+          </div>
+          <div *ngIf="registrationCheckDone && isRegisteredForEvent" class="book-now-block">
+            <button type="button" class="btn btn-success btn-block book-now-btn" disabled title="You have already booked this event.">
+              <i class="fa fa-check-circle"></i> Already booked
             </button>
           </div>
         </section>
@@ -553,6 +612,7 @@
         </div>
       </div>
     </aside>
+    </div>
   </div>
 
   <!-- Certificate Section -->
@@ -615,18 +675,21 @@
     </span>
   </ng-container>
   <ng-template #mobileBookNow>
-    <div class="book-now-row">
-      <span class="book-now-price">{{ getEventPriceText() }}</span>
-      <span class="book-now-available">Available</span>
-    </div>
-    <button
-      type="button"
-      class="btn btn-danger btn-block book-now-btn"
-      (click)="goToEventCheckout()"
-      [disabled]="event?.isEnded"
-    >
-      Book Now
-    </button>
+    <ng-container *ngIf="registrationCheckDone; else mobileBookLoading">
+      <div class="book-now-row">
+        <span class="book-now-price">{{ getEventPriceText() }}</span>
+        <span class="book-now-available">Available</span>
+      </div>
+      <button
+        type="button"
+        class="btn btn-danger btn-block book-now-btn"
+        (click)="goToEventCheckout()"
+        [disabled]="event?.isEnded"
+      >
+        Book Now
+      </button>
+    </ng-container>
+    <ng-template #mobileBookLoading></ng-template>
   </ng-template>
 </div>
 
@@ -1051,7 +1114,7 @@
       </span>
     </button>
     <button 
-      *ngIf="fromSide && event?.isEnded != true && !isRegisteredForEvent" 
+      *ngIf="fromSide && event?.isEnded != true && registrationCheckDone && !isRegisteredForEvent" 
       type="button" 
       class="btn btn-light form-control mt-3" 
       (click)="openRegisterModal(longContent)"

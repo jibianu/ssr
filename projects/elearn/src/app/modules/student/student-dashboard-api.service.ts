@@ -131,6 +131,11 @@ export class StudentDashboardApiService {
     return this.http.post<any>(`${this.apiUrl}api/events/register`, { eventId, ...body });
   }
 
+  /** GET api/events/registration-draft/{eventId} */
+  getEventRegistrationDraft(eventId: string): Observable<{ hasDraft?: boolean; name?: string; email?: string; mobile?: string; companyName?: string; designation?: string; department?: string }> {
+    return this.http.get<any>(`${this.apiUrl}api/events/registration-draft/${eventId}`);
+  }
+
   /** Create Stripe checkout session for paid event (redirect flow). POST api/events/checkout-session */
   createEventCheckoutSession(eventId: string): Observable<{ paymentUrl: string }> {
     return this.http.post<any>(`${this.apiUrl}api/events/checkout-session`, { eventId });

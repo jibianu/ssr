@@ -26,7 +26,8 @@ function norm(e: any): any {
     completionPercent,
     status: Number(status),
     createdByName: e?.createdByName ?? e?.CreatedByName ?? null,
-    createdByRole: e?.createdByRole ?? e?.CreatedByRole ?? null
+    createdByRole: e?.createdByRole ?? e?.CreatedByRole ?? null,
+    amount: Number(e?.amount ?? e?.Amount ?? 0)
   };
 }
 
@@ -63,11 +64,14 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   // Registrations: admin = side drawer with full details; trainer = modal with count only
   registrationEventTitle = '';
+  registrationEventAmount = 0;
   registrationUsers: any[] = [];
   registrationCount = 0;
   registrationLoading = false;
   registrationError: string | null = null;
   registrationsDrawerOpen = false;
+  /** Admin registrations drawer: filter by payment status. */
+  registrationPaymentFilter: 'completed' | 'pending' = 'completed';
   private registrationModalRef: any = null;
 
   /** Event id -> registration count (for View registrations). */
@@ -315,8 +319,10 @@ export class EventListComponent implements OnInit, OnDestroy {
     if (!eventId) return;
     this.registrationEventId = String(eventId);
     this.registrationEventTitle = item?.title ?? item?.Title ?? 'Event';
+    this.registrationEventAmount = Number(item?.amount ?? item?.Amount ?? 0);
     this.registrationUsers = [];
     this.registrationCount = 0;
+    this.registrationPaymentFilter = 'completed';
     this.registrationError = null;
     this.registrationLoading = true;
 
@@ -339,7 +345,7 @@ export class EventListComponent implements OnInit, OnDestroy {
           ? response
           : (response?.data ?? response?.items ?? response?.Items ?? response?.result ?? []);
         const raw = Array.isArray(list) ? list : [];
-        this.registrationUsers = raw.map((u: any) => this.normalizeRegistrationUser(u));
+        this.registrationUsers = raw.map((u: any) => this.normalizeRegistrationUser(u, this.registrationEventAmount));
         this.registrationCount = this.registrationUsers.length;
         this.registrationLoading = false;
         this.registrationError = null;
@@ -358,7 +364,7 @@ export class EventListComponent implements OnInit, OnDestroy {
   }
 
   /** Normalize API user (camelCase or PascalCase) so template always has consistent keys and Payment Ref displays. */
-  private normalizeRegistrationUser(u: any): any {
+  private normalizeRegistrationUser(u: any, eventAmount = 0): any {
     const name = u?.name ?? u?.Name ?? '—';
     const email = u?.email ?? u?.Email ?? '—';
     const mobile = u?.mobile ?? u?.Mobile ?? '—';
@@ -367,7 +373,8 @@ export class EventListComponent implements OnInit, OnDestroy {
     const department = u?.department ?? u?.Department ?? '—';
     const paymentRefNo = u?.paymentRefNo ?? u?.PaymentRefNo ?? '';
     const isPaymentCompleted = u?.isPaymentCompleted ?? u?.IsPaymentCompleted;
-    const paymentRefDisplay = (paymentRefNo && String(paymentRefNo).trim()) ? String(paymentRefNo).trim() : (isPaymentCompleted === true ? '—' : 'Free');
+    const paymentRefDisplay = this.formatPaymentRefDisplay(paymentRefNo, isPaymentCompleted, eventAmount);
+    const paymentCompleted = this.isRegistrationPaymentCompleted(paymentRefNo, isPaymentCompleted, paymentRefDisplay, eventAmount);
     return {
       name,
       email,
@@ -376,8 +383,67 @@ export class EventListComponent implements OnInit, OnDestroy {
       designation,
       department,
       paymentRefNo: paymentRefNo || null,
-      paymentRefDisplay
+      paymentRefDisplay,
+      paymentCompleted
     };
+  }
+
+  /** Paid events: pending checkout rows have no ref — not "Free". Free events: completed enrollments show "Free". */
+  private formatPaymentRefDisplay(
+    paymentRefNo: string,
+    isPaymentCompleted: boolean | null | undefined,
+    eventAmount: number
+  ): string {
+    const ref = String(paymentRefNo ?? '').trim();
+    if (ref) {
+      if (/^https?:\/\//i.test(ref)) {
+        return isPaymentCompleted === true ? 'Paid (legacy)' : 'Pending payment';
+      }
+      return ref;
+    }
+    const isFreeEvent = eventAmount <= 0;
+    if (isPaymentCompleted === true) {
+      return isFreeEvent ? 'Free' : 'Paid (no reference)';
+    }
+    if (isPaymentCompleted === false) {
+      return isFreeEvent ? 'Incomplete' : 'Pending payment';
+    }
+    return isFreeEvent ? 'Free' : 'Pending payment';
+  }
+
+  private isRegistrationPaymentCompleted(
+    paymentRefNo: string,
+    isPaymentCompleted: boolean | null | undefined,
+    paymentRefDisplay: string,
+    eventAmount: number
+  ): boolean {
+    if (isPaymentCompleted === true) return true;
+    const ref = String(paymentRefNo ?? '').trim();
+    if (ref && !/^https?:\/\//i.test(ref)) return true;
+    const display = paymentRefDisplay.trim().toLowerCase();
+    if (display === 'pending payment' || display === 'incomplete') return false;
+    if (eventAmount <= 0 && display === 'free') return true;
+    return false;
+  }
+
+  get displayedRegistrationUsers(): any[] {
+    if (!this.registrationUsers?.length) return [];
+    return this.registrationUsers.filter((u) =>
+      this.registrationPaymentFilter === 'completed' ? u.paymentCompleted : !u.paymentCompleted
+    );
+  }
+
+  get registrationCompletedCount(): number {
+    return this.registrationUsers.filter((u) => u.paymentCompleted).length;
+  }
+
+  get registrationPendingCount(): number {
+    return this.registrationUsers.filter((u) => !u.paymentCompleted).length;
+  }
+
+  setRegistrationPaymentFilter(filter: 'completed' | 'pending'): void {
+    this.registrationPaymentFilter = filter;
+    this.cdr.markForCheck();
   }
 
   closeRegistrationsModal(): void {
