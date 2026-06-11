@@ -165,8 +165,9 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private applyResolvedEvent(resolvedEvent: any): void {
+        const normalized = this.normalizeEventPayload(resolvedEvent);
         // ✅ FIX: Create new object reference to trigger change detection
-        this.event = resolvedEvent ? { ...resolvedEvent } : null;
+        this.event = normalized ? { ...normalized } : null;
         this.events = resolvedEvent?.upcomingEvents ? [...(resolvedEvent.upcomingEvents)] : [];
         this.eventId = resolvedEvent?.id ?? '';
         this.eventCoverImageError = false;
@@ -414,7 +415,11 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getInfo(section: string): EventDetail[] {
-    const result = this.event?.eventDetails?.filter((detail: EventDetail) => detail.section === section) ?? [];
+    const details = this.event?.eventDetails ?? (this.event as any)?.EventDetails ?? [];
+    const result = details.filter(
+      (detail: EventDetail) =>
+        String(detail?.section ?? (detail as any)?.Section ?? '').trim().toLowerCase() === section.toLowerCase()
+    );
     // ✅ DEBUG: Log social links specifically
     if (section === 'organized_soc' && this.isBrowser) {
       console.log('[EventDetailsComponent] Social links debug:', {
@@ -458,6 +463,137 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       );
     }
     return result;
+  }
+
+  /** FAQs from eventDetails (section qa) or [QAJSON] embedded in eventInfo (elearn admin). */
+  getFaqItems(): EventDetail[] {
+    const fromDetails = this.getInfo('qa');
+    const fromJson = this.parseQaFromEventInfo();
+    if (fromJson.length > fromDetails.length) {
+      return fromJson;
+    }
+    return fromDetails.length ? fromDetails : fromJson;
+  }
+
+  getBonusItems(): EventDetail[] {
+    const fromDetails = this.getInfo('bonuse');
+    if (fromDetails.length) {
+      return fromDetails;
+    }
+    const text = (this.parseEventMeta().bonuses ?? '').trim();
+    if (!text) {
+      return [];
+    }
+    return [{
+      id: 'bonus-meta',
+      section: 'bonuse',
+      title: 'Included Bonus',
+      description: text,
+      tag: 'Bonus'
+    } as EventDetail];
+  }
+
+  getSalaryItems(): EventDetail[] {
+    const fromDetails = this.getInfo('slary');
+    if (fromDetails.length) {
+      return fromDetails;
+    }
+    const text = (this.parseEventMeta().salary ?? '').trim();
+    if (!text) {
+      return [];
+    }
+    return [{
+      id: 'salary-meta',
+      section: 'slary',
+      title: 'Salary Information',
+      description: text
+    } as EventDetail];
+  }
+
+  getOrganizerItems(): EventDetail[] {
+    const fromDetails = this.getInfo('organized');
+    if (fromDetails.length) {
+      return fromDetails;
+    }
+    const text = (this.parseEventMeta().organizedBy ?? '').trim();
+    if (!text) {
+      return [];
+    }
+    return [{
+      id: 'organized-meta',
+      section: 'organized',
+      title: text,
+      description: '',
+      tag: 'Organizer'
+    } as EventDetail];
+  }
+
+  private normalizeEventPayload(event: any): any {
+    if (!event) {
+      return null;
+    }
+    const rawDetails = event.eventDetails ?? event.EventDetails ?? [];
+    return {
+      ...event,
+      eventInfo: event.eventInfo ?? event.EventInfo ?? '',
+      eventDetails: Array.isArray(rawDetails)
+        ? rawDetails.map((d: any, index: number) => ({
+            ...d,
+            id: d.id ?? d.Id ?? `detail-${index}`,
+            section: String(d.section ?? d.Section ?? '').trim(),
+            title: d.title ?? d.Title ?? '',
+            description: d.description ?? d.Description ?? '',
+            tag: d.tag ?? d.Tag ?? '',
+            amount: d.amount ?? d.Amount ?? null,
+            imageUrl: d.imageUrl ?? d.ImageUrl ?? '',
+            sortOrder: d.sortOrder ?? d.SortOrder ?? index
+          }))
+        : []
+    };
+  }
+
+  private parseEventMeta(): { bonuses?: string; salary?: string; organizedBy?: string } {
+    const eventInfo = this.event?.eventInfo ?? (this.event as any)?.EventInfo ?? '';
+    if (!eventInfo || typeof eventInfo !== 'string') {
+      return {};
+    }
+    try {
+      const match = eventInfo.match(/\[EventMetaJSON\]([\s\S]*?)(?=\n\[|$)/);
+      if (match) {
+        return JSON.parse(match[1].trim());
+      }
+    } catch {
+      return {};
+    }
+    return {};
+  }
+
+  private parseQaFromEventInfo(): EventDetail[] {
+    const eventInfo = this.event?.eventInfo ?? (this.event as any)?.EventInfo ?? '';
+    if (!eventInfo || typeof eventInfo !== 'string') {
+      return [];
+    }
+
+    try {
+      const match = eventInfo.match(/\[QAJSON\](.+)$/s);
+      if (!match) {
+        return [];
+      }
+      const parsed = JSON.parse(match[1].trim()) as { question?: string; answer?: string }[];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed
+        .map((qa, index) => ({
+          id: `qa-json-${index}`,
+          section: 'qa',
+          title: (qa.question ?? '').trim(),
+          description: (qa.answer ?? '').trim()
+        }))
+        .filter((qa) => qa.title || qa.description);
+    } catch {
+      return [];
+    }
   }
 
   // ✅ NEW: Get social links for a specific organizer by index

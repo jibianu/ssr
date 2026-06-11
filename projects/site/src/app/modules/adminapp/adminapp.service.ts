@@ -604,8 +604,7 @@ export class AdminAppService {
     }
 
     getEventByCanonicalURL(url): Observable<any> {
-        return this.http.get<any>(this.apiUrl + `api/events/event/` + url).pipe(
-            shareReplay({ bufferSize: 1, refCount: true }),
+        return this.http.get<any>(this.apiUrl + `api/events/event/` + encodeURIComponent(url)).pipe(
             catchError(error => {
                 // ✅ SSR-FRIENDLY: Suppress verbose error logging for network errors during SSR
                 // Network errors during SSR are expected if backend is not running

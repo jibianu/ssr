@@ -213,7 +213,7 @@
       </section>
 
       <!-- ✅ FIX: Meet your host - Full width event card (Multiple organizers support with slider) -->
-      <ng-container *ngIf="(getInfo('organized') || []) as hostList">
+      <ng-container *ngIf="getOrganizerItems() as hostList">
         <section class="event-card" id="host" *ngIf="hostList.length > 0 || getInfo('organized_soc')?.length">
           <header>
             <div>
@@ -392,90 +392,9 @@
         </div>
       </section>
 
-      <section class="event-card" *ngIf="getInfo('bonuse')?.length">
-        <header>
-          <h2>Included bonuses</h2>
-          <p class="section-subtitle">
-            Worth ₹{{ sumAmount('bonuse') | number: '1.0-0' }} for early registrations
-          </p>
-        </header>
-        <div class="bonus-grid">
-          <article class="bonus-item" *ngFor="let bonus of getInfo('bonuse'); trackBy: trackByBonusId">
-            <span class="bonus-tag">{{ bonus.tag }}</span>
-            <h3>{{ bonus.title }}</h3>
-            <p>{{ bonus.description }}</p>
-            <strong class="bonus-value" *ngIf="bonus.amount">₹{{ bonus.amount | number: '1.0-0' }}</strong>
-          </article>
-        </div>
-      </section>
-
-      <section class="event-card salary-section" *ngIf="getInfo('slary')?.length">
-        <header>
-          <div>
-            <h2>Salary Information</h2>
-            <p class="section-subtitle">
-              Expected salary ranges and career opportunities
-            </p>
-          </div>
-          <div class="slider-controls" *ngIf="getInfo('slary')?.length > 1">
-            <button
-              class="slider-btn"
-              type="button"
-              (click)="scrollSalary(-1)"
-              [disabled]="!canScrollSalaryLeft"
-              aria-label="Previous salary"
-            >
-              <i class="fa fa-chevron-left" aria-hidden="true"></i>
-            </button>
-            <button
-              class="slider-btn"
-              type="button"
-              (click)="scrollSalary(1)"
-              [disabled]="!canScrollSalaryRight"
-              aria-label="Next salary"
-            >
-              <i class="fa fa-chevron-right" aria-hidden="true"></i>
-            </button>
-          </div>
-        </header>
-        <div class="salary-slider" #salarySlider (scroll)="updateSalaryControls()">
-          <article class="salary-card" *ngFor="let salary of getInfo('slary'); trackBy: trackBySalaryId">
-            <div class="salary-card__content">
-              <div class="salary-card__header">
-                <h3 class="salary-card__title">Salary Range</h3>
-                <div class="salary-card__amount" *ngIf="salary.amount">
-                  <span class="salary-currency">₹</span>
-                  <span class="salary-value">{{ salary.amount | number: '1.0-0' }}</span>
-                  <span class="salary-period">/year</span>
-                </div>
-              </div>
-              <p class="salary-card__description" *ngIf="salary.description">{{ salary.description }}</p>
-              <div class="salary-card__footer">
-                <span class="salary-badge">
-                  <i class="fa fa-chart-line"></i>
-                  <span>Competitive Package</span>
-                </span>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="event-card" *ngIf="getInfo('qa')?.length">
-        <header>
-          <h2>Frequently asked questions</h2>
-        </header>
-        <div class="faq">
-          <details class="faq-item" *ngFor="let faq of getInfo('qa'); trackBy: trackByQaId">
-            <summary>{{ faq.title }}</summary>
-            <p>{{ faq.description }}</p>
-          </details>
-        </div>
-      </section>
-
       <section class="event-card testimonials" *ngIf="testimonials?.length">
         <header>
-          <div>
+          <div class="testimonials-header-text">
             <h2>Learners love the experience</h2>
             <p class="section-subtitle">Stories from professionals who moved ahead faster.</p>
           </div>
@@ -500,19 +419,102 @@
             </button>
           </div>
         </header>
-        <div class="testimonial-slider" #testimonialSlider (scroll)="updateTestimonialControls()">
-          <article class="testimonial-card" *ngFor="let testimonial of testimonials; trackBy: trackByTestimonial">
-            <div class="testimonial-card__header">
-              <div class="person">
-                <img [src]="testimonial.avatar" [alt]="testimonial.name" loading="lazy" />
-                <div>
-                  <div class="name">{{ testimonial.name }}</div>
-                  <div class="role">{{ testimonial.role }}</div>
+        <div class="testimonial-slider-outer">
+          <div class="testimonial-slider" #testimonialSlider (scroll)="updateTestimonialControls()">
+            <article class="testimonial-card" *ngFor="let testimonial of testimonials; trackBy: trackByTestimonial">
+              <div class="testimonial-card__header">
+                <div class="person">
+                  <img [src]="testimonial.avatar" [alt]="testimonial.name" loading="lazy" />
+                  <div>
+                    <div class="name">{{ testimonial.name }}</div>
+                    <div class="role">{{ testimonial.role }}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <p class="quote">“{{ testimonial.quote }}”</p>
+              <p class="quote">“{{ testimonial.quote }}”</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="event-card" *ngIf="getBonusItems()?.length">
+        <header>
+          <h2>Included bonuses</h2>
+          <p class="section-subtitle">
+            Worth ₹{{ sumAmount('bonuse') | number: '1.0-0' }} for early registrations
+          </p>
+        </header>
+        <div class="bonus-grid">
+          <article class="bonus-item" *ngFor="let bonus of getBonusItems(); trackBy: trackByBonusId">
+            <span class="bonus-tag">{{ bonus.tag }}</span>
+            <h3>{{ bonus.title }}</h3>
+            <p>{{ bonus.description }}</p>
+            <strong class="bonus-value" *ngIf="bonus.amount">₹{{ bonus.amount | number: '1.0-0' }}</strong>
           </article>
+        </div>
+      </section>
+
+      <section class="event-card salary-section" *ngIf="getSalaryItems()?.length">
+        <header>
+          <div>
+            <h2>Salary Information</h2>
+            <p class="section-subtitle">
+              Expected salary ranges and career opportunities
+            </p>
+          </div>
+          <div class="slider-controls" *ngIf="getSalaryItems()?.length > 1">
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollSalary(-1)"
+              [disabled]="!canScrollSalaryLeft"
+              aria-label="Previous salary"
+            >
+              <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              class="slider-btn"
+              type="button"
+              (click)="scrollSalary(1)"
+              [disabled]="!canScrollSalaryRight"
+              aria-label="Next salary"
+            >
+              <i class="fa fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <div class="salary-slider" #salarySlider (scroll)="updateSalaryControls()">
+          <article class="salary-card" *ngFor="let salary of getSalaryItems(); trackBy: trackBySalaryId">
+            <div class="salary-card__content">
+              <div class="salary-card__header">
+                <h3 class="salary-card__title">Salary Range</h3>
+                <div class="salary-card__amount" *ngIf="salary.amount">
+                  <span class="salary-currency">₹</span>
+                  <span class="salary-value">{{ salary.amount | number: '1.0-0' }}</span>
+                  <span class="salary-period">/year</span>
+                </div>
+              </div>
+              <p class="salary-card__description" *ngIf="salary.description">{{ salary.description }}</p>
+              <div class="salary-card__footer">
+                <span class="salary-badge">
+                  <i class="fa fa-chart-line"></i>
+                  <span>Competitive Package</span>
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="event-card" *ngIf="getFaqItems()?.length">
+        <header>
+          <h2>Frequently asked questions</h2>
+        </header>
+        <div class="faq">
+          <details class="faq-item" *ngFor="let faq of getFaqItems(); trackBy: trackByQaId">
+            <summary>{{ faq.title }}</summary>
+            <p>{{ faq.description }}</p>
+          </details>
         </div>
       </section>
 

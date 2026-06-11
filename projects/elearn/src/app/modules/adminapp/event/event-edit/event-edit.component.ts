@@ -51,6 +51,7 @@ export class EventEditComponent implements OnInit, OnDestroy {
   private readonly curriculumSection = 'curriculum';
   private readonly formatSection = 'format';
   private readonly supportSection = 'support';
+  private readonly managedDetailSections = new Set(['qa', 'bonuse', 'slary', 'organized']);
   private static readonly DEFAULT_HELP_PHONE = '+91 98402 87919';
   private static readonly DEFAULT_HELP_EMAIL = 'event@oilandgasclub.com';
   private sub = new Subscription();
@@ -232,6 +233,45 @@ export class EventEditComponent implements OnInit, OnDestroy {
     return eventInfo.replace(/\n?\[QAJSON\][\s\S]*$/, '').trim();
   }
 
+  private stripEventMetaFromEventInfo(eventInfo: string): string {
+    if (!eventInfo || typeof eventInfo !== 'string') return eventInfo;
+    return eventInfo.replace(/\n?\[EventMetaJSON\][\s\S]*?(?=\n\[|$)/, '').trim();
+  }
+
+  private parseEventMetaFromEventInfo(eventInfo: string): { bonuses?: string; salary?: string; organizedBy?: string } {
+    if (!eventInfo || typeof eventInfo !== 'string') return {};
+    try {
+      const match = eventInfo.match(/\[EventMetaJSON\]([\s\S]*?)(?=\n\[|$)/);
+      if (match) {
+        return JSON.parse(match[1].trim());
+      }
+    } catch (_) {}
+    return {};
+  }
+
+  private buildEventMetaJson(formValue: any): string {
+    const meta = {
+      bonuses: (formValue.bonuses ?? '').trim(),
+      salary: (formValue.salaryInfo ?? '').trim(),
+      organizedBy: (formValue.organizedBy ?? '').trim()
+    };
+    if (!meta.bonuses && !meta.salary && !meta.organizedBy) {
+      return '';
+    }
+    return '\n[EventMetaJSON]' + JSON.stringify(meta);
+  }
+
+  private removeEmptyQaSections(): void {
+    for (let i = this.qaSectionsArray.length - 1; i >= 0; i--) {
+      const group = this.qaSectionsArray.at(i) as UntypedFormGroup;
+      const question = (group.get('question')?.value ?? '').trim();
+      const answer = (group.get('answer')?.value ?? '').trim();
+      if (!question && !answer) {
+        this.qaSectionsArray.removeAt(i);
+      }
+    }
+  }
+
   private parseVideoUrlFromEventInfo(eventInfo: string): string {
     if (!eventInfo || typeof eventInfo !== 'string') return '';
     const m = eventInfo.match(/\[VideoUrl:(.+?)\]/);
@@ -271,7 +311,7 @@ export class EventEditComponent implements OnInit, OnDestroy {
     const normalized = (details || []).map((d) => this.normalizeEventDetail(d));
     this.preservedEventDetails = normalized.filter((d) => {
       const section = ((d.section as string) || '').trim();
-      return section.length > 0 && section !== this.curriculumSection;
+      return section.length > 0 && section !== this.curriculumSection && !this.managedDetailSections.has(section);
     });
     const curriculum = normalized.filter((d) => {
       const section = ((d.section as string) || '').trim();
@@ -397,9 +437,112 @@ export class EventEditComponent implements OnInit, OnDestroy {
     return payload;
   }
 
+  private buildQaPayload(qaSections: any[]): Record<string, unknown>[] {
+    return (qaSections || []).map((qa: any, index: number) => ({
+      section: 'qa',
+      sortOrder: index,
+      title: (qa?.question ?? '').trim(),
+      description: (qa?.answer ?? '').trim(),
+      tag: '',
+      amount: null,
+      imageUrl: '',
+      count: null
+    })).filter((item) => item.title || item.description);
+  }
+
+  private buildBonusesPayload(text: string): Record<string, unknown>[] {
+    const value = (text ?? '').trim();
+    if (!value) {
+      return [];
+    }
+    return [{
+      section: 'bonuse',
+      sortOrder: 0,
+      title: 'Included Bonus',
+      description: value,
+      tag: 'Bonus',
+      amount: null,
+      imageUrl: '',
+      count: null
+    }];
+  }
+
+  private buildSalaryPayload(text: string): Record<string, unknown>[] {
+    const value = (text ?? '').trim();
+    if (!value) {
+      return [];
+    }
+    return [{
+      section: 'slary',
+      sortOrder: 0,
+      title: 'Salary Information',
+      description: value,
+      tag: '',
+      amount: null,
+      imageUrl: '',
+      count: null
+    }];
+  }
+
+  private buildOrganizedPayload(text: string): Record<string, unknown>[] {
+    const value = (text ?? '').trim();
+    if (!value) {
+      return [];
+    }
+    return [{
+      section: 'organized',
+      sortOrder: 0,
+      title: value,
+      description: '',
+      tag: 'Organizer',
+      amount: null,
+      imageUrl: '',
+      count: null
+    }];
+  }
+
+  private patchMetaSectionFields(details: any[], eventInfoRaw = ''): void {
+    const list = details || [];
+    const bonusItems = list.filter((d) => (d?.section ?? d?.Section ?? '').trim() === 'bonuse');
+    const salaryItems = list.filter((d) => (d?.section ?? d?.Section ?? '').trim() === 'slary');
+    const organizedItems = list.filter((d) => (d?.section ?? d?.Section ?? '').trim() === 'organized');
+    const meta = this.parseEventMetaFromEventInfo(eventInfoRaw);
+
+    const bonusesText = bonusItems
+      .map((d) => {
+        const title = String(d?.title ?? d?.Title ?? '').trim();
+        const desc = String(d?.description ?? d?.Description ?? '').trim();
+        if (title && desc && title !== 'Included Bonus') {
+          return `${title}: ${desc}`;
+        }
+        return desc || title;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    const salaryText = salaryItems
+      .map((d) => String(d?.description ?? d?.Description ?? d?.title ?? d?.Title ?? '').trim())
+      .filter(Boolean)
+      .join('\n');
+
+    const organizedNames = organizedItems
+      .map((d) => String(d?.title ?? d?.Title ?? '').trim())
+      .filter(Boolean);
+
+    this.form.patchValue({
+      bonuses: bonusesText || meta.bonuses || '',
+      salaryInfo: salaryText || meta.salary || '',
+      organizedBy: organizedNames.join(', ') || meta.organizedBy || ''
+    });
+  }
+
   private buildEventDetailsPayload(formValue: any): Record<string, unknown>[] {
     return [
-      ...this.getPreservedEventDetails(),
+      ...this.getPreservedEventDetails().filter((d) => !this.managedDetailSections.has(((d.section as string) || '').trim())),
+      ...this.buildQaPayload(formValue.qaSections),
+      ...this.buildBonusesPayload(formValue.bonuses),
+      ...this.buildSalaryPayload(formValue.salaryInfo),
+      ...this.buildOrganizedPayload(formValue.organizedBy),
       ...this.buildFormatPayload(formValue.skillLevel, formValue.certification, formValue.mode),
       ...this.buildSupportPayload(formValue.helpPhones, formValue.helpEmails),
       ...this.buildCurriculumPayload(formValue.eventDetails)
@@ -432,17 +575,32 @@ export class EventEditComponent implements OnInit, OnDestroy {
           allowCoupons: !!(e.allowCoupons ?? e.AllowCoupons),
           applicableCouponIds: (e.applicableCouponIds ?? e.ApplicableCouponIds ?? []).map((x: any) => String(x)),
           location: e.location ?? e.Location ?? '',
-          showOnDashboard: e.showOnDashboard ?? e.ShowOnDashboard ?? false,
+          showOnDashboard: !!(e.showOnDashboard ?? e.ShowOnDashboard ?? e.isPublished ?? e.IsPublished ?? false),
           registrationCompleted: e.registrationCompleted ?? e.RegistrationCompleted ?? false
         });
         const details = e.eventDetails ?? e.EventDetails ?? [];
+        const eventInfoRaw = e.eventInfo ?? e.EventInfo ?? '';
         this.patchEventDetails(details);
+        this.patchMetaSectionFields(details, eventInfoRaw);
         this.patchFormatFields(details);
         this.patchSupportFields(details);
-        const eventInfoRaw = e.eventInfo ?? e.EventInfo ?? '';
-        const qaList = this.parseQaFromEventInfo(eventInfoRaw);
+        let qaList = this.parseQaFromEventInfo(eventInfoRaw);
+        if (!qaList.length) {
+          qaList = (details || [])
+            .filter((d: any) => (d?.section ?? d?.Section ?? '').trim() === 'qa')
+            .sort(
+              (a: any, b: any) =>
+                Number(a?.sortOrder ?? a?.SortOrder ?? 0) - Number(b?.sortOrder ?? b?.SortOrder ?? 0)
+            )
+            .map((d: any) => ({
+              question: d?.title ?? d?.Title ?? '',
+              answer: d?.description ?? d?.Description ?? ''
+            }))
+            .filter((qa: { question: string; answer: string }) => qa.question || qa.answer);
+        }
         const eventInfoWithoutQa = this.stripQaJsonFromEventInfo(eventInfoRaw);
-        const eventInfoWithoutVideo = this.stripVideoUrlFromEventInfo(eventInfoWithoutQa);
+        const eventInfoWithoutMeta = this.stripEventMetaFromEventInfo(eventInfoWithoutQa);
+        const eventInfoWithoutVideo = this.stripVideoUrlFromEventInfo(eventInfoWithoutMeta);
         const eventInfoForForm = this.stripTitleImageFromEventInfo(eventInfoWithoutVideo);
         const videoUrl = this.parseVideoUrlFromEventInfo(eventInfoRaw);
         const titleImageUrl = this.parseTitleImageFromEventInfo(eventInfoRaw) || (e.titleImageUrl ?? e.TitleImageUrl);
@@ -567,18 +725,30 @@ export class EventEditComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(onSuccess?: () => void, options?: { skipReload?: boolean }): void {
+    this.removeEmptyQaSections();
     this.submitted = true;
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.saving = false;
+      this.toaster.showError('Please complete required fields before saving.');
+      return;
+    }
     this.saving = true;
     const v = this.form.value;
     const amount = Number(v.amount);
     const qaJson = (v.qaSections || []).length ? '\n[QAJSON]' + JSON.stringify((v.qaSections || []).map((qa: any) => ({ question: qa.question ?? '', answer: qa.answer ?? '' }))) : '';
-    const eventInfoMain = (v.eventInfo?.trim() ?? '') || '';
+    const eventInfoMain = this.stripEventMetaFromEventInfo(
+      this.stripQaJsonFromEventInfo(
+        this.stripVideoUrlFromEventInfo(
+          this.stripTitleImageFromEventInfo((v.eventInfo?.trim() ?? '') || '')
+        )
+      )
+    );
     const videoUrlPart = (v.videoUrl?.trim()) ? `\n[VideoUrl:${v.videoUrl.trim()}]` : '';
+    const metaJson = this.buildEventMetaJson(v);
 
     const doUpdate = (titleImageUrl: string | null) => {
       const titleImagePart = titleImageUrl ? `\n[TitleImage:${titleImageUrl}]` : '';
-      const eventInfo = eventInfoMain + titleImagePart + videoUrlPart + qaJson;
+      const eventInfo = eventInfoMain + titleImagePart + videoUrlPart + metaJson + qaJson;
       const payload = {
         title: v.title?.trim() ?? '',
         canonicalUrl: v.canonicalUrl?.trim() ?? '',
@@ -595,7 +765,7 @@ export class EventEditComponent implements OnInit, OnDestroy {
         allowCoupons: !!v.allowCoupons,
         applicableCouponIds: (v.applicableCouponIds || []).map((x: string) => x),
         location: v.location?.trim() ?? '',
-        showOnDashboard: !!v.showOnDashboard,
+        showOnDashboard: !!v.showOnDashboard || !!(this.loadedEvent?.isPublished ?? this.loadedEvent?.IsPublished),
         registrationCompleted: !!v.registrationCompleted,
         eventDetails: this.buildEventDetailsPayload(v)
       };

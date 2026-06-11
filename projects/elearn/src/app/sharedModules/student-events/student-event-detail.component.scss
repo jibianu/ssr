@@ -1427,18 +1427,57 @@
 .testimonials {
   header {
     align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .testimonials-header-text {
+    flex: 1;
+    text-align: center;
+
+    .section-subtitle {
+      max-width: none;
+      margin-inline: auto;
+    }
+  }
+
+  .slider-controls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  @media (max-width: 576px) {
+    header {
+      flex-direction: column;
+      gap: 1.25rem;
+      padding-bottom: 0;
+    }
+
+    .slider-controls {
+      position: static;
+      transform: none;
+      justify-content: center;
+    }
   }
 }
 
+.testimonial-slider-outer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
+
 .testimonial-slider {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(260px, 320px);
+  display: inline-flex;
   gap: 1.2rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-bottom: 0.4rem;
   scrollbar-width: none;
+  max-width: 100%;
 
   &::-webkit-scrollbar {
     display: none;
@@ -1446,7 +1485,8 @@
 }
 
 .testimonial-card {
-  scroll-snap-align: start;
+  flex: 0 0 min(320px, calc(100vw - 4rem));
+  scroll-snap-align: center;
   background: #f8fafc;
   border-radius: 20px;
   padding: 1.4rem;

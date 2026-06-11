@@ -22,7 +22,12 @@ function norm(e: any): any {
     startDate: e?.startDate ?? e?.StartDate,
     endDate: e?.endDate ?? e?.EndDate,
     location: e?.location ?? e?.Location ?? '',
-    isPublished: e?.isPublished ?? e?.IsPublished ?? false,
+    isPublished: (() => {
+      const raw = e?.isPublished ?? e?.IsPublished;
+      if (raw === true || raw === 'true' || raw === 1 || raw === '1') return true;
+      if (raw === false || raw === 'false' || raw === 0 || raw === '0') return false;
+      return Number(status) === 2;
+    })(),
     completionPercent,
     status: Number(status),
     createdByName: e?.createdByName ?? e?.CreatedByName ?? null,

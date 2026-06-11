@@ -435,11 +435,84 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
   }
 
   getInfo(section: string): EventDetail[] {
-    const result = this.event?.eventDetails?.filter((d: EventDetail) => d.section === section) ?? [];
+    const details = this.event?.eventDetails ?? [];
+    const result = details.filter(
+      (d: EventDetail) =>
+        String(d?.section ?? (d as any)?.Section ?? '').trim().toLowerCase() === section.toLowerCase()
+    );
     if (section === 'organized_soc' || section?.startsWith('organized_soc_')) {
       return result.filter((d: EventDetail) => d.title?.trim() !== '' && d.tag?.trim() !== '');
     }
     return result;
+  }
+
+  getBonusItems(): EventDetail[] {
+    const fromDetails = this.getInfo('bonuse');
+    if (fromDetails.length) return fromDetails;
+    const text = (this.parseEventMeta().bonuses ?? '').trim();
+    if (!text) return [];
+    return [{ id: 'bonus-meta', section: 'bonuse', title: 'Included Bonus', description: text, tag: 'Bonus' } as EventDetail];
+  }
+
+  getSalaryItems(): EventDetail[] {
+    const fromDetails = this.getInfo('slary');
+    if (fromDetails.length) return fromDetails;
+    const text = (this.parseEventMeta().salary ?? '').trim();
+    if (!text) return [];
+    return [{ id: 'salary-meta', section: 'slary', title: 'Salary Information', description: text } as EventDetail];
+  }
+
+  getOrganizerItems(): EventDetail[] {
+    const fromDetails = this.getInfo('organized');
+    if (fromDetails.length) return fromDetails;
+    const text = (this.parseEventMeta().organizedBy ?? '').trim();
+    if (!text) return [];
+    return [{ id: 'organized-meta', section: 'organized', title: text, description: '', tag: 'Organizer' } as EventDetail];
+  }
+
+  private parseEventMeta(): { bonuses?: string; salary?: string; organizedBy?: string } {
+    const eventInfo = this.event?.eventInfo ?? (this.event as any)?.EventInfo ?? '';
+    if (!eventInfo || typeof eventInfo !== 'string') return {};
+    try {
+      const match = eventInfo.match(/\[EventMetaJSON\]([\s\S]*?)(?=\n\[|$)/);
+      if (match) return JSON.parse(match[1].trim());
+    } catch { }
+    return {};
+  }
+
+  getFaqItems(): EventDetail[] {
+    const fromDetails = this.getInfo('qa');
+    const fromJson = this.parseQaFromEventInfo();
+    if (fromJson.length > fromDetails.length) return fromJson;
+    return fromDetails.length ? fromDetails : fromJson;
+  }
+
+  private parseQaFromEventInfo(): EventDetail[] {
+    const eventInfo = this.event?.eventInfo ?? (this.event as any)?.EventInfo ?? '';
+    if (!eventInfo || typeof eventInfo !== 'string') {
+      return [];
+    }
+
+    try {
+      const match = eventInfo.match(/\[QAJSON\](.+)$/s);
+      if (!match) {
+        return [];
+      }
+      const parsed = JSON.parse(match[1].trim()) as { question?: string; answer?: string }[];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed
+        .map((qa, index) => ({
+          id: `qa-json-${index}`,
+          section: 'qa',
+          title: (qa.question ?? '').trim(),
+          description: (qa.answer ?? '').trim()
+        }))
+        .filter((qa) => qa.title || qa.description);
+    } catch {
+      return [];
+    }
   }
 
   getRemaining(startDate: string | Date | null): { days: number; hours: number; minutes: number; seconds: number } {
@@ -478,6 +551,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     return raw
       .replace(/\n?\[TitleImage:[^\]]*\]/g, '')
       .replace(/\n?\[VideoUrl:[^\]]*\]/g, '')
+      .replace(/\n?\[EventMetaJSON\][\s\S]*?(?=\n\[|$)/g, '')
       .replace(/\n?\[QAJSON\][\s\S]*$/g, '')
       .trim();
   }
