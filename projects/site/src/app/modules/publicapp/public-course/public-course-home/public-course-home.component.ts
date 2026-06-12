@@ -8,6 +8,7 @@ import { AuthenticationService } from '../../../auth/auth.service';
 import { BackendHealthService } from 'src/app/core/services/backend-health.service';
 import { environment } from 'src/environments/environment';
 import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
+import { resolveCourseCheckoutUrl } from 'src/app/core/helpers/course-checkout-url.helper';
 
 interface HomeCourseFeature {
   id?: string;
@@ -397,29 +398,14 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
   /**
    * Legacy Buy URL (used when enrollment bulk failed or guest).
+   * Uses same-origin /checkout/:id so CheckoutGuard handles login and redirects to payment.
    */
   getBuyButtonUrl(course: HomeCourse | null | undefined): string {
     if (!course) return '#';
 
     const courseIdString = this.getCourseIdString(course);
-
     if (courseIdString) {
-      const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
-      if (!elearnBase) return '#';
-
-      if (isPlatformBrowser(this.platformId)) {
-        this.authService.ensureTokensLoaded();
-        if (this.authService.hasJwtForAuthenticatedApi()) {
-          const amount = Number(course.amount ?? 0);
-          if (amount === 0) {
-            return `${elearnBase}/app/student/course/${encodeURIComponent(courseIdString)}`;
-          }
-          return `${elearnBase}/checkout/${encodeURIComponent(courseIdString)}`;
-        }
-      }
-
-      const returnUrl = '/app/student/course/' + courseIdString;
-      return buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(returnUrl)}`, elearnBase);
+      return resolveCourseCheckoutUrl(courseIdString);
     }
 
     if (course.canonicalUrl) {
@@ -429,6 +415,40 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     return '#';
   }
 
+  private slugFromCourse(course: HomeCourse): string {
+    const canonical = (course?.canonicalUrl || '').trim().replace(/^\/+/, '');
+    return (
+      this.publicAppService.normalizePublicCourseSlug(canonical) ||
+      this.publicAppService.normalizeSlugRouteParam(canonical) ||
+      canonical
+    );
+  }
+
+  private navigateToCheckout(courseId: string): void {
+    this.navigateHard(resolveCourseCheckoutUrl(courseId));
+  }
+
+  /** Resolve course id (or slug → id) then open checkout. */
+  private openCheckoutForCourse(course: HomeCourse): void {
+    const id = this.getCourseIdString(course);
+    if (id) {
+      this.navigateToCheckout(id);
+      return;
+    }
+    const slug = this.slugFromCourse(course);
+    if (!slug) {
+      console.warn('[PublicCourseHome] Buy: course id and slug missing');
+      return;
+    }
+    this.publicAppService.getCourseBySlugForCheckout(slug).subscribe({
+      next: res => {
+        if (res?.id) this.navigateToCheckout(res.id);
+        else console.warn('[PublicCourseHome] Buy: could not resolve course id from slug', slug);
+      },
+      error: () => console.warn('[PublicCourseHome] Buy: slug lookup failed', slug)
+    });
+  }
+
   getCourseActionHref(course: HomeCourse | null | undefined): string {
     if (!course) return '#';
     if (this.displayVm?.enrollmentFailed || !this.isLoggedIn()) {
@@ -436,15 +456,21 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     }
     const id = this.getCourseIdString(course);
     const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
-    if (!id || !elearnBase) return '#';
 
     if (this.isEnrolled(course)) {
-      return `${elearnBase}/app/student/course/${encodeURIComponent(id)}`;
+      if (!id) return '#';
+      if (elearnBase.startsWith('http://') || elearnBase.startsWith('https://')) {
+        return `${elearnBase}/app/student/course/${encodeURIComponent(id)}`;
+      }
+      return `/app/student/course/${encodeURIComponent(id)}`;
     }
     if (this.isFreeCourse(course)) {
       return '#';
     }
-    return `${elearnBase}/checkout/${encodeURIComponent(id)}`;
+    if (id) {
+      return resolveCourseCheckoutUrl(id);
+    }
+    return '#';
   }
 
   private navigateHard(url: string): void {
@@ -471,37 +497,48 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     if (this.displayVm?.enrollmentFailed || !this.isLoggedIn()) {
       event.preventDefault();
       event.stopPropagation();
-      const url = this.getBuyButtonUrl(course);
-      if (url && url !== '#') this.navigateHard(url);
+      if (this.isFreeCourse(course)) {
+        const id = this.getCourseIdString(course);
+        const returnUrl = id ? `/app/student/course/${id}` : (course.canonicalUrl || '/courses');
+        const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
+        this.navigateHard(buildElearnAuthUrl('login', `returnUrl=${encodeURIComponent(returnUrl)}`, elearnBase));
+        return;
+      }
+      this.openCheckoutForCourse(course);
       return;
     }
 
     const id = this.getCourseIdString(course);
     const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
-    if (!id || !elearnBase) {
-      event.preventDefault();
-      return;
-    }
 
     if (this.isEnrolled(course)) {
       event.preventDefault();
       event.stopPropagation();
-      this.navigateHard(`${elearnBase}/app/student/course/${encodeURIComponent(id)}`);
+      if (!id) return;
+      const resumeUrl =
+        elearnBase.startsWith('http://') || elearnBase.startsWith('https://')
+          ? `${elearnBase}/app/student/course/${encodeURIComponent(id)}`
+          : `/app/student/course/${encodeURIComponent(id)}`;
+      this.navigateHard(resumeUrl);
       return;
     }
 
     if (this.isFreeCourse(course)) {
       event.preventDefault();
       event.stopPropagation();
-      if (this.enrollingCourseId === id) return;
+      if (!id || this.enrollingCourseId === id) return;
       this.enrollingCourseId = id;
       this.cdr.markForCheck();
+      const resumeUrl =
+        elearnBase.startsWith('http://') || elearnBase.startsWith('https://')
+          ? `${elearnBase}/app/student/course/${encodeURIComponent(id)}`
+          : `/app/student/course/${encodeURIComponent(id)}`;
       this.publicAppService.enrollFreeCourse(id).subscribe({
         next: res => {
           this.enrollingCourseId = null;
           if (res?.success || res?.alreadyEnrolled) {
             this.enrollmentLocalPatch[id.toLowerCase()] = true;
-            this.navigateHard(`${elearnBase}/app/student/course/${encodeURIComponent(id)}`);
+            this.navigateHard(resumeUrl);
           } else {
             const path = course.canonicalUrl?.startsWith('/') ? course.canonicalUrl : `/${course.canonicalUrl || ''}`;
             if (path && path !== '/') this.navigateHard(path);
@@ -520,7 +557,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
 
     event.preventDefault();
     event.stopPropagation();
-    this.navigateHard(`${elearnBase}/checkout/${encodeURIComponent(id)}`);
+    this.openCheckoutForCourse(course);
   }
 
   ngOnDestroy(): void {

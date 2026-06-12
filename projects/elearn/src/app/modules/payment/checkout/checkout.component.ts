@@ -92,6 +92,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             this.loadCheckoutData();
             return;
           }
+          if (res?.status === 'error' || res?.status === 'not_found') {
+            this.loadError = 'This course is not available for purchase.';
+            this.cdr.detectChanges();
+            return;
+          }
           this.loadCheckoutData();
         },
         error: () => {
@@ -105,8 +110,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.appService.getCheckout(this.courseId).subscribe(
         (res) => {
-          if (res?.message) {
+          // Only skip checkout when the user is already enrolled (code 0). Other messages = show error.
+          if (res?.code === '0' || (res?.message && /already enrolled/i.test(res.message))) {
             this.router.navigate(['app/student/details/curriculum-list/', this.courseId]);
+            return;
+          }
+          if (res?.message) {
+            this.loadError = res.message;
+            this.cdr.detectChanges();
             return;
           }
           this.data = res;
@@ -158,6 +169,36 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return this.couponFinalAmount != null ? this.couponFinalAmount : this.displayCourseFee;
   }
 
+  /** Strikethrough price in cart when a sale and/or coupon reduces the payable amount. */
+  get cartStrikePrice(): number | null {
+    const list = Number(this.data?.course?.price ?? 0);
+    const payable = this.displayPayableAmount;
+    if (this.couponValid && payable < this.displayCourseFee) {
+      return this.displayCourseFee;
+    }
+    if (list > 0 && list !== Number(this.data?.course?.discountedPrice ?? list)) {
+      return list;
+    }
+    return null;
+  }
+
+  /** Price shown as the current charge in cart and summaries. */
+  get cartCurrentPrice(): number {
+    return this.displayPayableAmount;
+  }
+
+  /** Course-level markdown (list → sale price), excluding promo coupon. */
+  get courseSaleDiscountAmount(): number {
+    const list = Number(this.data?.course?.price ?? 0);
+    const sale = Number(this.data?.course?.discountedPrice ?? list);
+    return list > sale ? list - sale : 0;
+  }
+
+  /** Amount sent to create-order: base course price; coupon is applied server-side. */
+  get orderAmountPaise(): number {
+    return Math.round(this.displayCourseFee * 100);
+  }
+
   applyCoupon(): void {
     const code = this.couponCode?.trim();
     if (!code || !this.courseId) return;
@@ -205,6 +246,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   /** Dispatch to the selected gateway when the user clicks "Proceed to payment". */
   proceedToPayment(): void {
+    const code = this.couponCode?.trim();
+    if (code && !this.couponValid) {
+      this.loadError = 'Please apply a valid coupon code before proceeding, or clear the coupon field.';
+      this.cdr.detectChanges();
+      return;
+    }
     if (this.selectedGateway === 'razorpay') {
       this.payWithRazorpay();
     } else {
@@ -215,7 +262,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   /** Razorpay path: create order on backend, open Checkout, verify on success, then go to course. */
   async payWithRazorpay(): Promise<void> {
     if (this.data?.course?.discountedPrice == null) return;
-    this.amountPaise = Math.round(this.displayPayableAmount * 100);
+    this.amountPaise = this.orderAmountPaise;
     this.razorpayLoading = true;
     this.loadError = null;
     this.cdr.detectChanges();
@@ -329,7 +376,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   /** Call this when user clicks "Proceed to payment" so optional coupon is included. */
   createIntentAndMountPayment(): void {
     if (this.data?.course?.discountedPrice == null) return;
-    this.amountPaise = Math.round(this.displayPayableAmount * 100);
+    this.amountPaise = this.orderAmountPaise;
     const user = this.authService.currentUser();
     const utm = this.utmService.getStoredUtm();
     const options = {
@@ -348,6 +395,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.stripePaymentService.createOrder(this.amountPaise, this.courseId, options).subscribe({
         next: (res) => {
           this.creatingIntent = false;
+          if (res?.enrolledFree) {
+            this.router.navigate(['/app/student/details/curriculum-list', this.courseId]);
+            return;
+          }
           this.clientSecret = res.clientSecret;
           if (res.paymentIntentId) {
             sessionStorage.setItem('paymentIntentId_' + this.courseId, res.paymentIntentId);

@@ -379,7 +379,7 @@
             <i class="fa fa-play" aria-hidden="true"></i> Resume
           </a>
           <a *ngIf="courseDetails && !isEnrolledForSidebar && !(isUserLoggedIn && enrollmentStatusLoading)"
-             [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
+             [href]="isFreeCourse ? '#' : checkoutHrefForCourse"
              class="pricing-buy-btn"
              [class.pricing-buy-btn--enroll]="sidebarSecondaryUsesEnrollStyle"
              [class.pricing-buy-btn-disabled]="(!isFreeCourse && isCountdownExpired) || (isFreeCourse && enrollInProgress)"
@@ -469,7 +469,7 @@
           <span class="course-detail__cta-text">Resume</span>
         </a>
         <a *ngIf="courseDetails && !isEnrolledForSidebar && !(isUserLoggedIn && enrollmentStatusLoading)"
-          [href]="isFreeCourse ? '#' : (courseId ? '/checkout/' + courseId : '#')"
+          [href]="isFreeCourse ? '#' : checkoutHrefForCourse"
           class="course-detail__cta"
           [class.course-detail__cta--enroll]="sidebarSecondaryUsesEnrollStyle"
           [class.course-detail__cta--buy]="!sidebarSecondaryUsesEnrollStyle"

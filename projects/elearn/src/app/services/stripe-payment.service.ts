@@ -36,6 +36,8 @@ export interface CreateOrderOptions {
 export interface CreateOrderResponse {
   paymentIntentId: string;
   clientSecret: string;
+  enrolledFree?: boolean;
+  finalAmountPaise?: number;
 }
 
 @Injectable({ providedIn: 'root' })

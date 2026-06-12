@@ -1,8 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-import { PublicAppService } from '../publicapp.service';
+import { environment } from 'src/environments/environment';
 
+/**
+ * Legacy route: /checkout/:courseId on the public site.
+ * Redirects to the Elearn checkout page (/course/checkout/:id on unified) which supports
+ * Stripe + Razorpay and never auto-enrolls paid courses without payment.
+ */
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
@@ -17,7 +22,6 @@ export class CheckoutComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private publicApp: PublicAppService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -33,26 +37,19 @@ export class CheckoutComponent implements OnInit {
       this.loading = false;
       return;
     }
+
     const q = this.route.snapshot.queryParamMap;
-    const couponCode = q.get('coupon') || q.get('code') || '';
-    const affiliateRef = q.get('ref') || '';
-    const referralCode = q.get('referral') || '';
-    const options = (couponCode || affiliateRef || referralCode)
-      ? { couponCode: couponCode || undefined, referralCode: referralCode || undefined, affiliateRef: affiliateRef || undefined }
-      : undefined;
-    this.publicApp.createPaymentSessionByCourseId(courseId, options).subscribe({
-      next: (res) => {
-        this.loading = false;
-        if (res?.paymentUrl) {
-          window.location.href = res.paymentUrl;
-        } else {
-          this.error = 'Unable to start checkout. Course may be unavailable or you may already be enrolled.';
-        }
-      },
-      error: () => {
-        this.loading = false;
-        this.error = 'Unable to start checkout. Please try again.';
-      }
-    });
+    const params = new URLSearchParams();
+    const ref = q.get('ref');
+    const coupon = q.get('coupon') || q.get('code');
+    const referral = q.get('referral');
+    if (ref) params.set('ref', ref);
+    if (coupon) params.set('coupon', coupon);
+    if (referral) params.set('referral', referral);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    const elearnBase = (environment.elearnAppUrl || '/course').trim().replace(/\/$/, '');
+    const target = `${elearnBase}/checkout/${encodeURIComponent(courseId)}${qs}`;
+    window.location.replace(target);
   }
 }

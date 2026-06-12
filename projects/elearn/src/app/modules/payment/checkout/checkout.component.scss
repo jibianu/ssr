@@ -668,6 +668,14 @@ $co-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   color: $co-primary;
 }
 
+.checkout__cart-summary {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba($co-primary, 0.04);
+  border: 1px dashed rgba($co-primary, 0.25);
+  border-radius: 10px;
+}
+
 /* What are you buying? */
 .checkout__what-you-get {
   padding: 1.25rem;

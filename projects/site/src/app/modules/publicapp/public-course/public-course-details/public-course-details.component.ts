@@ -980,6 +980,15 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     );
   }
 
+  /** Checkout URL for paid courses (uses Elearn checkout on unified: /course/checkout/:id). */
+  get checkoutHrefForCourse(): string {
+    const c = this.course ?? this.courseDetails;
+    const cid = this.courseId || (c?.id ?? c?.Id);
+    if (!cid) return '#';
+    const base = (environment.elearnAppUrl || '/course').trim().replace(/\/$/, '');
+    return `${base}/checkout/${encodeURIComponent(String(cid))}`;
+  }
+
   /** Logged in with token (site + API auth). */
   get isUserLoggedIn(): boolean {
     if (!this.isBrowser) return false;

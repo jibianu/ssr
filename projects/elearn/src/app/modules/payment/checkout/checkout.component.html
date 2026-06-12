@@ -20,14 +20,18 @@
             <span>Subtotal</span>
             <span><span aria-label="INR">₹</span>{{ data.course.price | number:'1.2-2' }}</span>
           </div>
-          <div class="checkout__order-row" *ngIf="data.course.price != data.course.discountedPrice">
-            <span>Discount</span>
-            <span><span aria-label="INR">₹</span>{{ data.course.price - data.course.discountedPrice | number:'1.2-2' }}</span>
+          <div class="checkout__order-row" *ngIf="courseSaleDiscountAmount > 0">
+            <span>Course discount</span>
+            <span>− <span aria-label="INR">₹</span>{{ courseSaleDiscountAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="checkout__order-row" *ngIf="couponValid">
+            <span>Coupon ({{ couponCode }})</span>
+            <span>− <span aria-label="INR">₹</span>{{ couponDiscountAmount | number:'1.2-2' }}</span>
           </div>
           <div class="checkout__order-divider"></div>
           <div class="checkout__order-row checkout__order-total">
             <span>Total (Incl. taxes)</span>
-            <span><span aria-label="INR">₹</span>{{ data.course.discountedPrice | number:'1.2-2' }}</span>
+            <span><span aria-label="INR">₹</span>{{ cartCurrentPrice | number:'1.2-2' }}</span>
           </div>
         </div>
 
@@ -121,10 +125,25 @@
               <p class="checkout__item-desc" *ngIf="data.course.description">{{ (data.course.description | slice:0:120) }}{{ (data.course.description?.length > 120) ? '...' : '' }}</p>
             </div>
             <div class="checkout__item-prices">
-              <span class="checkout__price-old" *ngIf="data.course.price != data.course.discountedPrice">
-                <span aria-label="INR">₹</span>{{ data.course.price | number:'1.2-2' }}
+              <span class="checkout__price-old" *ngIf="cartStrikePrice != null">
+                <span aria-label="INR">₹</span>{{ cartStrikePrice | number:'1.2-2' }}
               </span>
-              <span class="checkout__price-current"><span aria-label="INR">₹</span>{{ data.course.discountedPrice | number:'1.2-2' }}</span>
+              <span class="checkout__price-current"><span aria-label="INR">₹</span>{{ cartCurrentPrice | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="checkout__cart-summary" *ngIf="couponValid">
+            <div class="checkout__order-row">
+              <span>Coupon applied</span>
+              <span class="text-success">{{ couponCode }}</span>
+            </div>
+            <div class="checkout__order-row">
+              <span>You save</span>
+              <span>₹{{ couponDiscountAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="checkout__order-row checkout__order-total">
+              <span>Amount to pay</span>
+              <span>₹{{ cartCurrentPrice | number:'1.2-2' }}</span>
             </div>
           </div>
 
