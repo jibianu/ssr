@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-import { environment } from 'src/environments/environment';
+import { resolveCourseCheckoutUrl, withQueryString } from 'src/app/core/helpers/course-checkout-url.helper';
 
 /**
  * Legacy route: /checkout/:courseId on the public site.
- * Redirects to the Elearn checkout page (/course/checkout/:id on unified) which supports
- * Stripe + Razorpay and never auto-enrolls paid courses without payment.
+ * On unified production, Elearn checkout is served at the same path (/checkout/:id).
+ * On split dev (site 4200 + elearn 4201), redirects to the elearn origin checkout URL.
  */
 @Component({
   selector: 'app-checkout',
@@ -47,9 +47,7 @@ export class CheckoutComponent implements OnInit {
     if (coupon) params.set('coupon', coupon);
     if (referral) params.set('referral', referral);
     const qs = params.toString() ? `?${params.toString()}` : '';
-
-    const elearnBase = (environment.elearnAppUrl || '/course').trim().replace(/\/$/, '');
-    const target = `${elearnBase}/checkout/${encodeURIComponent(courseId)}${qs}`;
+    const target = withQueryString(resolveCourseCheckoutUrl(courseId), qs);
     window.location.replace(target);
   }
 }

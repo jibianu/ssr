@@ -10,6 +10,7 @@ import { PublicAppService } from '../../publicapp.service';
 import { AuthenticationService } from '../../../auth/auth.service';
 import { environment } from './../../../../../environments/environment';
 import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
+import { resolveCourseCheckoutUrl, withQueryString } from 'src/app/core/helpers/course-checkout-url.helper';
 import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
 import { HttpClient } from '@angular/common/http';
 
@@ -980,13 +981,12 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     );
   }
 
-  /** Checkout URL for paid courses (uses Elearn checkout on unified: /course/checkout/:id). */
+  /** Checkout URL for paid courses (unified: /checkout/:id on same domain). */
   get checkoutHrefForCourse(): string {
     const c = this.course ?? this.courseDetails;
     const cid = this.courseId || (c?.id ?? c?.Id);
     if (!cid) return '#';
-    const base = (environment.elearnAppUrl || '/course').trim().replace(/\/$/, '');
-    return `${base}/checkout/${encodeURIComponent(String(cid))}`;
+    return resolveCourseCheckoutUrl(String(cid));
   }
 
   /** Logged in with token (site + API auth). */
@@ -1843,10 +1843,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
             })()
           : '');
       const refQs = ref ? `?ref=${encodeURIComponent(ref)}` : '';
-      const checkoutUrl = elearnBase
-        ? `${elearnBase}/checkout/${encodeURIComponent(String(cid))}${refQs}`
-        : `/checkout/${encodeURIComponent(String(cid))}${refQs}`;
-      this.navigateToUrl(checkoutUrl);
+      this.navigateToUrl(withQueryString(resolveCourseCheckoutUrl(String(cid)), refQs));
       return;
     }
     const slug = this.courseSlugForCheckout.replace(/^-+/, '').trim();
@@ -1876,10 +1873,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
                   })()
                 : '');
             const refQs = ref ? `?ref=${encodeURIComponent(ref)}` : '';
-            const checkoutUrl = base
-              ? `${base}/checkout/${encodeURIComponent(res.id)}${refQs}`
-              : `/checkout/${encodeURIComponent(res.id)}${refQs}`;
-            this.navigateToUrl(checkoutUrl);
+            this.navigateToUrl(withQueryString(resolveCourseCheckoutUrl(String(res.id)), refQs));
           } else {
             console.warn('Buy button: Could not resolve course ID from slug');
           }

@@ -53,6 +53,9 @@ export function isElearnSpaRootPath(requestPath: string): boolean {
   if (p === '/checkout' || p.startsWith('/checkout/')) {
     return true;
   }
+  if (p === '/course/checkout' || p.startsWith('/course/checkout/')) {
+    return true;
+  }
   return false;
 }
 
@@ -88,6 +91,9 @@ export function resolveElearnSpaMountPath(requestPath: string): string {
   const p = requestPath.split('?')[0].replace(/\/$/, '') || '/';
   if (p === '/app' || p.startsWith('/app/')) {
     return '/app';
+  }
+  if (p === '/course/checkout' || p.startsWith('/course/checkout/')) {
+    return '/course';
   }
   return '/';
 }

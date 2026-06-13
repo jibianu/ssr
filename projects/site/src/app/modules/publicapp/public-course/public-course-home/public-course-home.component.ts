@@ -8,7 +8,7 @@ import { AuthenticationService } from '../../../auth/auth.service';
 import { BackendHealthService } from 'src/app/core/services/backend-health.service';
 import { environment } from 'src/environments/environment';
 import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
-import { resolveCourseCheckoutUrl } from 'src/app/core/helpers/course-checkout-url.helper';
+import { resolveCourseCheckoutUrl, resolveStudentCourseUrl } from 'src/app/core/helpers/course-checkout-url.helper';
 
 interface HomeCourseFeature {
   id?: string;
@@ -455,14 +455,10 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       return this.getBuyButtonUrl(course);
     }
     const id = this.getCourseIdString(course);
-    const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
 
     if (this.isEnrolled(course)) {
       if (!id) return '#';
-      if (elearnBase.startsWith('http://') || elearnBase.startsWith('https://')) {
-        return `${elearnBase}/app/student/course/${encodeURIComponent(id)}`;
-      }
-      return `/app/student/course/${encodeURIComponent(id)}`;
+      return resolveStudentCourseUrl(id);
     }
     if (this.isFreeCourse(course)) {
       return '#';
@@ -509,17 +505,12 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     }
 
     const id = this.getCourseIdString(course);
-    const elearnBase = ((environment as { elearnAppUrl?: string }).elearnAppUrl ?? '').trim().replace(/\/$/, '');
 
     if (this.isEnrolled(course)) {
       event.preventDefault();
       event.stopPropagation();
       if (!id) return;
-      const resumeUrl =
-        elearnBase.startsWith('http://') || elearnBase.startsWith('https://')
-          ? `${elearnBase}/app/student/course/${encodeURIComponent(id)}`
-          : `/app/student/course/${encodeURIComponent(id)}`;
-      this.navigateHard(resumeUrl);
+      this.navigateHard(resolveStudentCourseUrl(id));
       return;
     }
 
@@ -529,10 +520,7 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
       if (!id || this.enrollingCourseId === id) return;
       this.enrollingCourseId = id;
       this.cdr.markForCheck();
-      const resumeUrl =
-        elearnBase.startsWith('http://') || elearnBase.startsWith('https://')
-          ? `${elearnBase}/app/student/course/${encodeURIComponent(id)}`
-          : `/app/student/course/${encodeURIComponent(id)}`;
+      const resumeUrl = resolveStudentCourseUrl(id);
       this.publicAppService.enrollFreeCourse(id).subscribe({
         next: res => {
           this.enrollingCourseId = null;

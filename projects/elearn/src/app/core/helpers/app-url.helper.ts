@@ -104,7 +104,7 @@ export function menuLinkToRouterCommands(pathOrUrl: string): string[] {
   return segments.length ? ['/', 'app', ...segments] : ['/app'];
 }
 
-/** Turn a path like `/app/payment/success?...` into a full URL using the same prefix as the SPA. */
+/** Turn a path like `/app/payment/success?...` into a full URL using the site origin on unified domain. */
 export function resolveToAbsoluteAppUrl(redirectPathOrUrl: string): string {
   const s = (redirectPathOrUrl ?? '').trim();
   if (!s) {
@@ -113,7 +113,19 @@ export function resolveToAbsoluteAppUrl(redirectPathOrUrl: string): string {
   if (/^https?:\/\//i.test(s)) {
     return s;
   }
+  const path = normalizeAppRouterUrl(s.startsWith('/') ? s : `/${s}`);
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin.replace(/\/+$/, '');
+    // Unified domain: app shell + checkout + auth live at origin root, not under /course/
+    if (
+      path.startsWith('/app/') ||
+      path.startsWith('/checkout/') ||
+      path.startsWith('/login') ||
+      path.startsWith('/register')
+    ) {
+      return `${origin}${path}`;
+    }
+  }
   const base = getAbsoluteAppBaseUrlForStripeReturn();
-  const path = s.startsWith('/') ? s : `/${s}`;
   return `${base}${path}`;
 }

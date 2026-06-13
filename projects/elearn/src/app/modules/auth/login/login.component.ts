@@ -397,6 +397,11 @@ export class LoginComponent implements OnInit {
                 } catch (_) {}
               }
               if (returnUrl) {
+                const checkoutMatch = returnUrl.match(/^\/checkout\/([^/?#]+)/);
+                if (checkoutMatch) {
+                  this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+                  return;
+                }
                 const courseMatch = returnUrl.match(/^\/app\/student\/course\/([^/?#]+)/);
                 if (courseMatch) {
                   const courseId = courseMatch[1];
