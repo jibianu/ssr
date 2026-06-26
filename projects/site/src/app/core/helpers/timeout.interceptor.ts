@@ -80,8 +80,12 @@ export class TimeoutInterceptor implements HttpInterceptor {
     }
 
     // ✅ SSR OPTIMIZATION: Longer timeout for Dashboard endpoints (slow queries)
-    if (u.includes('/dashboard')) {
-      return 60000; // 60 seconds for dashboard endpoints
+    if (u.includes('/dashboard') || u.includes('/category/dashboard')) {
+      return 45000;
+    }
+
+    if (u.includes('/api/public/categories/dashboard')) {
+      return 30000;
     }
 
     return this.DEFAULT_TIMEOUT;

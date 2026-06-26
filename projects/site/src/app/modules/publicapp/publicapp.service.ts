@@ -1,5 +1,5 @@
 import { Category } from './../adminapp/category/category.model';
-import { Observable, of, throwError, TimeoutError, race, timer } from 'rxjs';
+import { Observable, of, throwError, TimeoutError, race, timer, forkJoin } from 'rxjs';
 import { shareReplay, catchError, timeout, retry, delay, map, switchMap } from 'rxjs/operators';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
@@ -558,50 +558,123 @@ export class PublicAppService {
         );
     }
 
-    // ✅ PERFORMANCE: Cache dashboard categories - called on home page load
-    getDashboardCategories(): Observable<any> {
-        const dashboardUrl = `${this.apiUrl}page/Category/Dashboard`;
-        const legacyUrl = `${this.apiUrl}api/Category/Dashboard`;
+    // ✅ PERFORMANCE: Cache dashboard categories - called on /courses page load
+    getDashboardCategories(): Observable<any[]> {
+        const publicDashboardUrl = `${this.apiUrl}api/public/categories/dashboard`;
+        const legacyDashboardUrl = `${this.apiUrl}page/Category/Dashboard`;
+        const legacyApiUrl = `${this.apiUrl}api/Category/Dashboard`;
 
-        const fetchDashboard = (url: string) =>
+        const normalizeList = (body: any): any[] => {
+            if (Array.isArray(body)) {
+                return body;
+            }
+            return body?.data ?? body?.items ?? body?.results ?? [];
+        };
+
+        const fetchPublicDashboard = () =>
+            this.http.get<any>(publicDashboardUrl).pipe(
+                map(normalizeList),
+                catchError(() => of(null as any[] | null))
+            );
+
+        const fetchLegacy = (url: string) =>
             this.http.get<any>(url).pipe(
-                shareReplay({ bufferSize: 1, refCount: true }),
-                catchError(error => {
-                    if (typeof window !== 'undefined') {
-                        console.error('Error fetching dashboard categories:', error);
-                    } else {
-                        const isNetworkError = !error.status || error.status === 0;
-                        if (!isNetworkError) {
-                            console.warn('⚠️ SSR: Error fetching dashboard categories (non-network error):', error.status, error.statusText);
-                        }
+                map(normalizeList),
+                catchError(() => of(null as any[] | null))
+            );
+
+        const buildFromPublicListing = (): Observable<any[]> =>
+            forkJoin({
+                categories: this.getCategories(),
+                courses: this.http
+                    .get<any>(`${this.apiUrl}api/public/courses`, {
+                        params: new HttpParams().set('pageNumber', '1').set('pageSize', '100')
+                    })
+                    .pipe(
+                        map((body) => {
+                            const list = body?.results ?? body?.Results ?? normalizeList(body);
+                            return Array.isArray(list) ? list : [];
+                        }),
+                        catchError(() => of([]))
+                    )
+            }).pipe(map(({ categories, courses }) => this.buildDashboardFromPublicListing(categories, courses)));
+
+        const resolveDashboard = (): Observable<any[]> =>
+            fetchPublicDashboard().pipe(
+                switchMap((list) => (list && list.length > 0 ? of(list) : buildFromPublicListing())),
+                switchMap((list) => {
+                    if (list && list.length > 0) {
+                        return of(list);
                     }
-                    return throwError(() => error);
-                })
+                    return race([
+                        fetchLegacy(legacyDashboardUrl),
+                        timer(12000).pipe(map(() => null as any[] | null))
+                    ]).pipe(
+                        switchMap((legacyList) =>
+                            legacyList && legacyList.length > 0 ? of(legacyList) : fetchLegacy(legacyApiUrl)
+                        ),
+                        map((legacyList) => legacyList ?? [])
+                    );
+                }),
+                catchError(() => of([]))
             );
 
         if (this.isServer) {
-            return fetchDashboard(dashboardUrl).pipe(
-                catchError(() => fetchDashboard(legacyUrl)),
-                catchError(error => {
-                    const isNetworkError = !error?.status || error.status === 0;
-                    if (!isNetworkError) {
-                        console.warn('⚠️ SSR: Error fetching dashboard categories:', error.status, error.statusText);
-                    }
-                    return of([]);
-                })
-            );
+            return resolveDashboard();
         }
 
         if (!this.dashboardCategoriesCache$) {
-            this.dashboardCategoriesCache$ = fetchDashboard(dashboardUrl).pipe(
-                catchError(() => fetchDashboard(legacyUrl)),
-                catchError(error => {
+            this.dashboardCategoriesCache$ = resolveDashboard().pipe(
+                shareReplay({ bufferSize: 1, refCount: true }),
+                catchError(() => {
                     this.dashboardCategoriesCache$ = null;
                     return of([]);
                 })
             );
         }
         return this.dashboardCategoriesCache$;
+    }
+
+    /** Build page/Category/Dashboard shape from fast public APIs when dashboard endpoint is unavailable. */
+    private buildDashboardFromPublicListing(categories: Category[], courses: any[]): any[] {
+        const byCategoryId = new Map<string, any[]>();
+        for (const course of courses ?? []) {
+            const categoryId = String(course?.category?.id ?? course?.categoryId ?? course?.CategoryId ?? '');
+            const categoryName = course?.category?.name ?? course?.categoryName ?? course?.Category?.Name ?? '';
+            const key = categoryId || categoryName;
+            if (!key) {
+                continue;
+            }
+            if (!byCategoryId.has(key)) {
+                byCategoryId.set(key, []);
+            }
+            byCategoryId.get(key)!.push({
+                ...course,
+                id: course?.id ?? course?.Id,
+                slug: course?.slug ?? course?.Slug ?? course?.canonicalUrl,
+                canonicalUrl: course?.canonicalUrl ?? course?.slug ?? course?.Slug,
+                imageLink: course?.imageLink ?? course?.ImageLink ?? course?.titleImageUrl,
+                amount: course?.amount ?? course?.discountedPrice ?? course?.price ?? 0,
+                category: course?.category ?? { id: categoryId, name: categoryName }
+            });
+        }
+
+        let sortOrder = 0;
+        return (categories ?? [])
+            .map((cat) => {
+                const id = String(cat?.id ?? (cat as any)?.Id ?? '');
+                const name = cat?.name ?? (cat as any)?.Name ?? '';
+                const coursesForCat = byCategoryId.get(id) ?? byCategoryId.get(name) ?? [];
+                return {
+                    id: cat?.id ?? (cat as any)?.Id,
+                    name,
+                    appsName: name,
+                    sortOrder: sortOrder++,
+                    showOnDashboard: true,
+                    courses: coursesForCat
+                };
+            })
+            .filter((section) => section.courses.length > 0);
     }
 
     getCourseByCanonicalLocationURL(courseUrl: string, locationUrl: string): Observable<any> {
