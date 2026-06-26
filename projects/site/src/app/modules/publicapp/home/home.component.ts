@@ -6,6 +6,8 @@ import { MetadataService } from 'src/app/shared/service/meta.service';
 import { CanonicalService } from 'src/app/shared/service/canonical.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
 import { PublicAppService } from '../publicapp.service';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
+import { resolveMediaCdnUrl } from 'src/app/core/helpers/assets-cdn.helper';
 import { environment } from 'src/environments/environment';
 
 // ✅ HYDRATION: Interface definitions for type safety in @for loops
@@ -275,7 +277,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  readonly topEvents: EventCard[] = [
+  topEvents: EventCard[] = [
     {
       url: '',
       image: 'assets/home_courseimage/Pipenet_Event.jpeg',
@@ -419,6 +421,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     // Keep homepage design/images static, but bind each card URL to an actual published course slug.
     this.syncTopCourseUrls();
+    this.syncTopEventUrls();
     this.startTopCourseAutoRefresh();
   }
 
@@ -597,5 +600,81 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private formatHomePrice(amount: number): string {
     return `₹${amount.toFixed(2)}`;
+  }
+
+  /** Bind homepage event cards to live dashboard events (URLs, titles, prices). Keeps static images as fallback. */
+  private syncTopEventUrls(): void {
+    this.publicAppService
+      .getDashboardEvents()
+      .pipe(catchError(() => of([])))
+      .subscribe((events: any[]) => {
+        if (!Array.isArray(events) || events.length === 0) {
+          return;
+        }
+
+        const live = events.slice(0, this.topEvents.length);
+        let changed = false;
+
+        live.forEach((evt, index) => {
+          const card = this.topEvents[index];
+          if (!card) {
+            return;
+          }
+
+          const slug = normalizeEventCanonicalSlug(evt?.canonicalUrl ?? evt?.CanonicalUrl);
+          if (slug) {
+            const route = `/${slug}`;
+            if (card.url !== route) {
+              card.url = route;
+              changed = true;
+            }
+            if (card.ctaLabel === 'Check back soon') {
+              card.ctaLabel = 'Register Now';
+              changed = true;
+            }
+          }
+
+          const title = (evt?.title ?? evt?.Title ?? '').toString().trim();
+          if (title && card.title !== title) {
+            card.title = title;
+            changed = true;
+          }
+
+          const amount = Number(evt?.amount ?? evt?.Amount);
+          if (Number.isFinite(amount) && amount >= 0) {
+            const price = this.formatHomePrice(amount);
+            if (card.price !== price) {
+              card.price = price;
+              changed = true;
+            }
+          }
+
+          const imageUrl = this.resolveHomeEventImage(evt);
+          if (imageUrl && card.image !== imageUrl) {
+            card.image = imageUrl;
+            changed = true;
+          }
+        });
+
+        if (changed) {
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private resolveHomeEventImage(evt: any): string {
+    const fromDetails = Array.isArray(evt?.eventDetails)
+      ? evt.eventDetails.find((d: any) => d?.section === 'image')?.imageUrl
+      : '';
+    const eventInfo = (evt?.eventInfo ?? '').toString();
+    const titleImageMatch = eventInfo.match(/\[TitleImage:(.+?)\]/);
+    const raw = (fromDetails || titleImageMatch?.[1] || evt?.bannerImage || evt?.imageUrl || '').toString().trim();
+    if (!raw) {
+      return '';
+    }
+    if (raw.startsWith('assets/')) {
+      return raw.startsWith('/') ? raw : `/${raw}`;
+    }
+    return resolveMediaCdnUrl(this.publicAppService.resolveCourseImageUrl(raw));
   }
 }

@@ -411,9 +411,11 @@ export class AuthenticationService {
         return null;
     }
 
-    /** Stub for legacy callers; prefer postLogin() for role-based flow. */
+    /** Validates current session via post-login API. Prefer postLogin() for role-based flow. */
     validateUser(): Observable<{ skipValidation?: boolean; isValidUser?: boolean }> {
-        return of({ isValidUser: true });
+        return this.postLogin().pipe(
+            map((res) => ({ isValidUser: res.isValidUser }))
+        );
     }
 
     /**

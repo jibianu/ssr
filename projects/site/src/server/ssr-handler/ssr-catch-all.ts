@@ -282,7 +282,14 @@ export async function warmHtmlCache(deps: SsrCatchAllDeps): Promise<void> {
     return;
   }
 
-  const popularRoutes = ['/', '/about-us', '/contact-us'];
+  const popularRoutes = ['/', '/about-us', '/contact-us', '/courses', '/events'];
+  const catalogSlugs = await fetchWarmCatalogSlugs();
+  for (const slug of catalogSlugs) {
+    if (slug) {
+      popularRoutes.push(`/${slug}`);
+    }
+  }
+
   console.log(`🔥 Warming HTML cache for ${popularRoutes.length} routes…`);
 
   for (const route of popularRoutes) {
@@ -309,4 +316,27 @@ export async function warmHtmlCache(deps: SsrCatchAllDeps): Promise<void> {
     }
   }
   console.log('✅ Cache warming complete');
+}
+
+/** Top published course slugs for SSR warm-cache (best effort). */
+async function fetchWarmCatalogSlugs(): Promise<string[]> {
+  const apiBase = (process.env['API_URL'] || process.env['SSR_API_URL'] || 'https://coursebackend.oilandgasclub.com').replace(/\/$/, '');
+  const url = `${apiBase}/api/public/courses/catalog`;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) {
+      return [];
+    }
+    const body = await res.json() as { results?: Array<{ slug?: string; canonicalUrl?: string }> };
+    const rows = body?.results ?? [];
+    return rows
+      .slice(0, 12)
+      .map((row) => {
+        const raw = (row?.slug ?? row?.canonicalUrl ?? '').toString().trim().replace(/^\/+/, '');
+        return raw.split('/').pop() ?? raw;
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }

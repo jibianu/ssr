@@ -152,7 +152,7 @@
       @for (event of topEvents; track event.image) {
         <article class="home-card home-card--event">
           <div class="home-card__media">
-            <img [src]="event.image" [alt]="event.alt" loading="lazy" width="320" height="240" />
+            <img [ngSrc]="event.image" [alt]="event.alt" width="320" height="240" loading="lazy" />
             <span class="home-card__badge">Featured</span>
           </div>
           <div class="home-card__body">

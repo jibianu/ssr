@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { extractPagedResults, extractPagedTotal } from '../../core/helpers/paged-response.helper';
 
 export interface StudentDashboardSummary {
   coursesPurchased: number;
@@ -81,12 +82,12 @@ export class StudentDashboardApiService {
   constructor(private http: HttpClient) {}
 
   /** Published events only (for student Events page). Uses GET api/events/published. */
-  getPublishedEvents(): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}api/events/published`).pipe(
-      map((body: any) => {
-        const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
-        return Array.isArray(list) ? list : [];
-      })
+  getPublishedEvents(pageNumber = 1, pageSize = 20): Observable<{ results: any[]; total: number }> {
+    return this.http.get<any>(`${this.apiUrl}api/events/published?pageNumber=${pageNumber}&pageSize=${pageSize}`).pipe(
+      map((body: any) => ({
+        results: extractPagedResults(body),
+        total: extractPagedTotal(body, extractPagedResults(body).length),
+      }))
     );
   }
 
@@ -102,20 +103,14 @@ export class StudentDashboardApiService {
   /** Upcoming events for event detail page. GET api/events/upcoming/{eventId} */
   getUpcomingEvents(eventId: string): Observable<any[]> {
     return this.http.get<any>(`${this.apiUrl}api/events/upcoming/${eventId}`).pipe(
-      map((body: any) => {
-        const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
-        return Array.isArray(list) ? list : [];
-      })
+      map((body: any) => extractPagedResults(body)),
     );
   }
 
   /** My Events: events the current user has registered for. GET api/student/events */
-  getMyEvents(): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}api/student/events`).pipe(
-      map((body: any) => {
-        const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
-        return Array.isArray(list) ? list : [];
-      })
+  getMyEvents(pageNumber = 1, pageSize = 20): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}api/student/events?pageNumber=${pageNumber}&pageSize=${pageSize}`).pipe(
+      map((body: any) => extractPagedResults(body)),
     );
   }
 

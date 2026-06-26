@@ -49,7 +49,6 @@ export class TestDetailsComponent implements OnInit, OnDestroy {
   getQuestionSetDetails(id) {
     this.subscription.add(this.appService.getQuestionsetById(id).subscribe((res: any) => {
       if (res) {
-        debugger
         this.questionSetDetails = res;
       }
     }));

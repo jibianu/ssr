@@ -8,5 +8,7 @@ export const environment = {
   elearnAppUrl: '/course',
   seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300',
-  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg'
+  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg',
+  mediaCdnUrl: '' as string | undefined,
+  mediaCdnWebpSuffix: '' as string | undefined,
 };

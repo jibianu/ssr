@@ -10,5 +10,9 @@ export const environment = {
   elearnAppUrl: '/course',
   seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300',
-  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg'
+  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg',
+  /** Set to CloudFront distribution URL when media CDN is live, e.g. https://dxxxx.cloudfront.net */
+  mediaCdnUrl: '' as string | undefined,
+  /** Optional WebP path suffix when CDN serves transformed images, e.g. '.webp' */
+  mediaCdnWebpSuffix: '' as string | undefined,
 };

@@ -8,7 +8,7 @@ import { AffiliateLayoutComponent } from './layouts/affiliate/affiliate-layout.c
 import { CompanyLayoutComponent } from './layouts/company/company-layout.component';
 import { ManagementLayoutComponent } from './layouts/management/management-layout.component';
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule, ExtraOptions, PreloadAllModules } from '@angular/router';
+import { Routes, RouterModule, ExtraOptions } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { UserValidationGuard } from './core/guards/user-validation.guard';
 import { RoleGuard } from './core/guards/role.guard';
@@ -20,7 +20,6 @@ const routerOptions: ExtraOptions = {
   scrollPositionRestoration: 'enabled',
   anchorScrolling: 'enabled',
   scrollOffset: [0, 64],
-  preloadingStrategy: PreloadAllModules,
 };
 
 const AUTH_SHELL_GUARDS = [AuthGuard, UserValidationGuard];

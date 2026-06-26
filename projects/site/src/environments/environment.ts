@@ -15,5 +15,8 @@ export const environment = {
   elearnAppUrl: 'http://localhost:4201',
   seoUrl: 'https://oilandgasclub.com/',
   imgUrl: 'https://via.placeholder.com/468x300',
-  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg'
+  logoUrl: 'https://course-oilandgas.s3.ap-northeast-1.amazonaws.com/logo/oilandgas_club.svg',
+  /** Optional CloudFront origin for S3 media — set when CDN is configured in production. */
+  mediaCdnUrl: '' as string | undefined,
+  mediaCdnWebpSuffix: '' as string | undefined,
 };

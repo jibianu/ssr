@@ -12,11 +12,6 @@ export class CheckboxComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    debugger
-    console.log(this.permissionResponse);
-    this.permissionResponse.forEach(element => {
-      console.log(element.name)
-    });
   }
 
 }

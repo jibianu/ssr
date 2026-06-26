@@ -177,10 +177,7 @@ export class CourseListComponent implements OnInit, OnDestroy {
     if (this.isManagementContext) {
       this.subscription.add(this.appService.getAssignedCoursesForManagement(obj).subscribe({
         next: response => {
-          this.course = response?.results || [];
-          this.course.forEach((x) => {
-            this.getAllPricesByCourseId(x.id, (price) => { x.price = price; });
-          });
+          this.course = this.mapCourseListRows(response?.results || []);
           this.count = response?.totalNumberOfRecords ?? 0;
           this.updateUserMappingVisibility();
         },
@@ -199,10 +196,7 @@ export class CourseListComponent implements OnInit, OnDestroy {
       this.subscription.add(this.appService.getCourses(obj,res)
         .subscribe({
           next: response => {
-            this.course = response?.results || [];
-            this.course.forEach((x) => {
-              this.getAllPricesByCourseId(x.id, (price) => { x.price = price; });
-            });
+            this.course = this.mapCourseListRows(response?.results || []);
             this.count = response?.totalNumberOfRecords ?? 0;
             this.updateUserMappingVisibility();
           },
@@ -550,16 +544,23 @@ export class CourseListComponent implements OnInit, OnDestroy {
       }
     })
   }
-  priceVal = 0;
-  getAllPricesByCourseId(id, callback) {
-    this.appService.getCoursePrices(id).subscribe({
-      next: (res: any) => {
-        const price = res?.[0]?.discountedPrice ?? 0;
-        callback(price);
-      },
-      error: () => callback(0)
-    });
+  /** Price is included on GET courses (`amount`); avoid N+1 per-row price API calls. */
+  private mapCourseListRows(rows: any[]): any[] {
+    return (rows || []).map((row) => ({
+      ...row,
+      price: this.resolveCourseListPrice(row),
+    }));
   }
+
+  private resolveCourseListPrice(item: any): number {
+    const amount = item?.amount ?? item?.Amount;
+    if (amount != null && amount !== '') {
+      const n = Number(amount);
+      if (Number.isFinite(n)) return n;
+    }
+    return 0;
+  }
+
   courseFormInit() {
     this.courseForm = this.fb.group({
       title: ['', Validators.required],

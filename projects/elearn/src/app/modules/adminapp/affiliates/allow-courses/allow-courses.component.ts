@@ -60,7 +60,7 @@ export class AllowCoursesComponent implements OnInit, OnDestroy {
     this.allowAllCourses = true;
     this.allowedCourseIds.clear();
 
-    this.api.getList().pipe(first()).subscribe({
+    this.api.getListAll().pipe(first()).subscribe({
       next: (list) => {
         this.affiliates = Array.isArray(list) ? list : [];
         // Always reset selection to "All users" on refresh/page load.

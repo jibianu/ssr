@@ -72,7 +72,7 @@ export class CampaignLinksComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.loading = true;
-    this.api.getList().pipe(first()).subscribe({
+    this.api.getListAll().pipe(first()).subscribe({
       next: (list) => {
         this.affiliates = list || [];
         this.api.getPublishedCoursesForSelection().pipe(first()).subscribe({

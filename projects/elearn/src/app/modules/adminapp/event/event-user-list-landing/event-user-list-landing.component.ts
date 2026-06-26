@@ -2,15 +2,6 @@ import { AdminAppService } from '../../adminapp.service';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-function toEventsArray(data: any): any[] {
-  if (Array.isArray(data)) return data;
-  if (data && typeof data === 'object') {
-    const arr = data.data ?? data.events ?? data.items ?? data.Events ?? data.Data;
-    return Array.isArray(arr) ? arr : [];
-  }
-  return [];
-}
-
 @Component({
   selector: 'app-event-user-list-landing',
   templateUrl: './event-user-list-landing.component.html',
@@ -26,9 +17,9 @@ export class EventUserListLandingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription.add(
-      this.appService.getEvents().subscribe({
+      this.appService.getEventsAll().subscribe({
         next: (data) => {
-          this.events = toEventsArray(data) || [];
+          this.events = data || [];
           this.loading = false;
         },
         error: () => {

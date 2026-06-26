@@ -49,7 +49,7 @@
   <div class="impact-admin__summary">
     <div class="impact-card impact-card--stat">
       <div class="impact-card__body">
-        <span class="stat-value">{{ list.length }}</span>
+        <span class="stat-value">{{ totalAffiliates }}</span>
         <span class="stat-label">Total affiliates</span>
       </div>
     </div>
@@ -135,6 +135,11 @@
         </table>
       </div>
       <p class="impact-admin__empty" *ngIf="filteredList.length === 0 && !loading">No affiliates match the filter.</p>
+      <div class="impact-admin__pagination" *ngIf="totalAffiliates > pageSize">
+        <button type="button" class="impact-btn impact-btn--sm" (click)="goToAffiliatePage(pageNumber - 1)" [disabled]="pageNumber <= 1 || loading">Previous</button>
+        <span class="impact-admin__page-info">Page {{ pageNumber }} of {{ totalAffiliatePages }}</span>
+        <button type="button" class="impact-btn impact-btn--sm" (click)="goToAffiliatePage(pageNumber + 1)" [disabled]="pageNumber >= totalAffiliatePages || loading">Next</button>
+      </div>
     </div>
   </div>
 </div>

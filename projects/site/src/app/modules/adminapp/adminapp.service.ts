@@ -634,7 +634,7 @@ export class AdminAppService {
     private fetchPublishedEventBySlug(slug: string): Observable<any | null> {
         return this.http.get<any>(this.apiUrl + 'api/events/published').pipe(
             map((body: any) => {
-                const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
+                const list = Array.isArray(body) ? body : (body?.results ?? body?.data ?? body?.items ?? []);
                 if (!Array.isArray(list)) {
                     return null;
                 }

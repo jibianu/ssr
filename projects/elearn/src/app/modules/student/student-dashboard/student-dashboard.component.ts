@@ -37,7 +37,6 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   }
 
   fetchCourses(): void {
-    debugger
     let obj = {
       'Filters.Title': this.searchTitle,
       'Sort.PropertyName': this.sortBy,

@@ -35,6 +35,9 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
   allowDrawerCourseFilter = '';
 
   list: AdminAffiliateListItem[] = [];
+  pageNumber = 1;
+  pageSize = 50;
+  totalAffiliates = 0;
   loading = false;
   error = '';
   actionId: string | null = null;
@@ -169,9 +172,10 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
   load(): void {
     this.loading = true;
     this.error = '';
-    this.api.getList().subscribe({
-      next: (data) => {
-        this.list = Array.isArray(data) ? data : [];
+    this.api.getList(this.pageNumber, this.pageSize).subscribe({
+      next: ({ results, total }) => {
+        this.list = Array.isArray(results) ? results : [];
+        this.totalAffiliates = total;
         this.loading = false;
       },
       error: (err) => {
@@ -184,6 +188,19 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
     });
+  }
+
+  get totalAffiliatePages(): number {
+    return Math.max(1, Math.ceil(this.totalAffiliates / this.pageSize));
+  }
+
+  goToAffiliatePage(page: number): void {
+    const next = Math.min(Math.max(1, page), this.totalAffiliatePages);
+    if (next === this.pageNumber) {
+      return;
+    }
+    this.pageNumber = next;
+    this.load();
   }
 
   approve(item: AdminAffiliateListItem): void {
@@ -474,7 +491,7 @@ export class AdminAffiliatesComponent implements OnInit, OnDestroy {
     this.allowModalLoading = true;
     this.loadCoursesIfNeeded();
     if (!this.list.length) {
-      this.api.getList().pipe(first()).subscribe({
+      this.api.getListAll().pipe(first()).subscribe({
         next: (data) => {
           this.list = Array.isArray(data) ? data : [];
           this.loadAllowModalSelection();

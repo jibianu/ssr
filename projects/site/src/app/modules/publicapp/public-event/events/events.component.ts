@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, of, interval, Subscription } from 'rxjs';
-import { catchError, tap, switchMap, startWith, takeUntil } from 'rxjs/operators';
+import { Observable, of, interval, Subject, merge } from 'rxjs';
+import { catchError, switchMap, startWith } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
+import { resolveMediaCdnUrl } from 'src/app/core/helpers/assets-cdn.helper';
 @Component({
     selector: 'app-events',
     templateUrl: './events.component.html',
@@ -21,7 +22,8 @@ export class EventsComponent implements OnInit, OnDestroy {
   events$: Observable<any[]>;
   private readonly isBrowser: boolean;
   private visibilityChangeListener?: () => void;
-  private eventsSubscription?: Subscription;
+  /** Triggers an immediate refetch when the tab becomes visible again. */
+  private readonly refreshTrigger$ = new Subject<void>();
 
   constructor(
     private publicAppService: PublicAppService,
@@ -29,66 +31,27 @@ export class EventsComponent implements OnInit, OnDestroy {
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
-    
-    // ✅ INSTANT UPDATES: Auto-refresh every 5 seconds + on page visibility change
-    // This ensures checkbox updates appear within 5 seconds without page reload
-    const refreshInterval$ = this.isBrowser 
-      ? interval(5000).pipe(startWith(0)) // Poll every 5 seconds, start immediately
-      : of(0); // SSR: only fetch once
-    
-    // ✅ Use getPublishedEvents() so all published events show (no ShowOnDashboard required)
-    // Auto-refreshes every 5 seconds to catch admin updates instantly
-    // ✅ SSR FIX: Guard service calls to prevent injector destroyed errors
-    this.events$ = refreshInterval$.pipe(
-      switchMap(() => {
-        // ✅ SSR FIX: Only make service calls if not destroyed and in browser context
-        if (!this.isBrowser) {
-          // SSR: Return empty array immediately without service call
-          return of([]);
-        }
-        
-        // Browser: Make service call
-        if (this.isBrowser) {
-        console.log('[EventsComponent] Refreshing events from backend...');
-        }
-        return this.publicAppService.getPublishedEvents().pipe(
-          catchError(error => {
-            // ✅ SSR FIX: Only log errors in browser
-            if (this.isBrowser) {
-            console.error('[EventsComponent] Error fetching published events:', error);
-            }
-            return of([]); // Return empty array on error to keep polling
-          })
-        );
-      }),
-      tap((events: any[]) => {
-        // ✅ SSR FIX: Only log in browser context
-        if (this.isBrowser) {
-        // Debug: Log events received from backend (already filtered)
-        console.log(`[EventsComponent] Events received from backend (published): ${events?.length || 0}`);
-        if (events && events.length > 0) {
-          console.log('[EventsComponent] Sample event:', { title: events[0].title });
-          }
-        }
-      }),
-      catchError(error => {
-        // ✅ SSR FIX: Only log errors in browser
-        if (this.isBrowser) {
-        console.error('[EventsComponent] Error loading events:', error);
-        }
-        return of([]);
-      })
+
+    // SSR: fetch once for SEO. Browser: poll every 60s + refresh on tab focus.
+    const poll$ = this.isBrowser
+      ? merge(interval(60_000).pipe(startWith(0)), this.refreshTrigger$.pipe(startWith(undefined)))
+      : of(undefined);
+
+    this.events$ = poll$.pipe(
+      switchMap(() =>
+        this.publicAppService.getPublishedEvents().pipe(
+          catchError(() => of([]))
+        )
+      ),
+      catchError(() => of([]))
     );
   }
 
   ngOnInit(): void {
-    // ✅ INSTANT UPDATES: Refresh when page becomes visible (user switches back to tab)
-    // This ensures updates appear immediately when admin makes changes
     if (this.isBrowser && typeof document !== 'undefined') {
       this.visibilityChangeListener = () => {
         if (!document.hidden) {
-          console.log('[EventsComponent] Page visible - refreshing events...');
-          // Trigger change detection to refresh the observable
+          this.refreshTrigger$.next();
           this.cdr.markForCheck();
         }
       };
@@ -97,14 +60,8 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // ✅ SSR FIX: Clean up all subscriptions to prevent injector destroyed errors
-    // Note: async pipe handles unsubscription automatically, but we guard here for safety
-    if (this.eventsSubscription) {
-      this.eventsSubscription.unsubscribe();
-      this.eventsSubscription = undefined;
-    }
-    
-    // Clean up visibility change listener
+    this.refreshTrigger$.complete();
+
     if (this.isBrowser && this.visibilityChangeListener && typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.visibilityChangeListener);
       this.visibilityChangeListener = undefined;
@@ -140,13 +97,19 @@ export class EventsComponent implements OnInit, OnDestroy {
       const imageDetail = event.eventDetails.find(
         (detail: any) => detail.section === 'image'
       );
-      if (imageDetail?.imageUrl) return imageDetail.imageUrl;
+      if (imageDetail?.imageUrl) return resolveMediaCdnUrl(imageDetail.imageUrl);
     }
 
     const titleImageUrl = this.getTitleImageFromEventInfo(event?.eventInfo);
-    if (titleImageUrl) return titleImageUrl;
+    if (titleImageUrl) return resolveMediaCdnUrl(titleImageUrl);
 
-    return event.bannerImage || event.imageUrl || event.image || '';
+    return resolveMediaCdnUrl(event.bannerImage || event.imageUrl || event.image || '');
+  }
+
+  /** CDN-aware image URL for event cards (NgOptimizedImage). */
+  getEventImageUrl(event: any): string {
+    const url = this.getEventImage(event);
+    return url || 'assets/img/oilandgasclub.jpg';
   }
 
   /** Strip [TitleImage:...] and [VideoUrl:...] from eventInfo for display. */

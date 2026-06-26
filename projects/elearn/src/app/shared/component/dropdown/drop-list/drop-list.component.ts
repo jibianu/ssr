@@ -15,13 +15,6 @@ export class DropListComponent implements OnInit, OnChanges {
   constructor(private adminAppService: AdminAppService) { }
 
   ngOnInit(): void {
-    debugger
-    console.log("This id for dropdown " + this.roleResponse);
-    // this.adminAppService.Get("api/User/permissions/byuser/"+ this.StudentID)
-    // .subscribe(Response =>{
-    //   debugger
-    //   this.StudentList = Response
-    // })
   }
   ngOnChanges(): void {
     // console.log("This id for dropdown " + this.StudentID);

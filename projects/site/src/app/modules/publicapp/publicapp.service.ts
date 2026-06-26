@@ -6,6 +6,8 @@ import { isPlatformServer } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { API_URL } from '../../core/config/api-url.config';
 import { normalizeEventCanonicalSlug } from '../../core/helpers/event-canonical-slug.helper';
+import { extractPagedResults } from '../../core/helpers/paged-response.helper';
+import { resolveMediaCdnUrl } from '../../core/helpers/assets-cdn.helper';
 
 // ✅ PERFORMANCE: Service-level caching prevents redundant API calls (40-50% reduction)
 // ✅ SSR: shareReplay works in both SSR and browser contexts
@@ -199,13 +201,13 @@ export class PublicAppService {
             return 'assets/img/oilandgasclub.jpg';
         }
         if (/^https?:\/\//i.test(s)) {
-            return s;
+            return resolveMediaCdnUrl(s) || s;
         }
         if (s.startsWith('assets/')) {
             return s.startsWith('/') ? s : `/${s}`;
         }
         const api = (this.apiUrl || '').replace(/\/$/, '');
-        return `${api}/${s.replace(/^\/+/, '')}`;
+        return resolveMediaCdnUrl(`${api}/${s.replace(/^\/+/, '')}`) || `${api}/${s.replace(/^\/+/, '')}`;
     }
 
     // ✅ PERFORMANCE: Cache by canonical URL - used in route resolvers and components
@@ -864,13 +866,10 @@ export class PublicAppService {
      * NO CACHING: Always fetch fresh data to ensure instant visibility updates.
      */
     /** GET api/events/published - only published events (for public /events page). */
-    getPublishedEvents(): Observable<any[]> {
-        const endpoint = `${this.apiUrl}api/events/published`;
+    getPublishedEvents(pageNumber = 1, pageSize = 200): Observable<any[]> {
+        const endpoint = `${this.apiUrl}api/events/published?pageNumber=${pageNumber}&pageSize=${pageSize}`;
         return this.http.get<any>(endpoint).pipe(
-            map((body: any) => {
-                const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
-                return Array.isArray(list) ? list : [];
-            }),
+            map((body: any) => extractPagedResults(body)),
             catchError(() => of([]))
         );
     }
@@ -911,15 +910,16 @@ export class PublicAppService {
     }
 
     getDashboardEvents(): Observable<any> {
-        const endpoint = `${this.apiUrl}api/events/dashboard`;
+        const endpoint = `${this.apiUrl}api/events/dashboard?pageNumber=1&pageSize=8`;
+
+        const normalize = (body: unknown) =>
+            extractPagedResults<any>(body).filter(
+                (e) => e?.isPublished === true || e?.IsPublished === true
+            );
 
         if (this.isServer) {
             return this.http.get<any>(endpoint).pipe(
-                map((body: any) => {
-                    const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
-                    if (!Array.isArray(list)) return [];
-                    return list.filter((e: any) => e?.isPublished === true || e?.IsPublished === true);
-                }),
+                map(normalize),
                 catchError(error => {
                     console.error('Error fetching dashboard events:', error);
                     return of([]);
@@ -930,11 +930,7 @@ export class PublicAppService {
         // ✅ NO CACHING: Always fetch fresh data to ensure instant updates when admin changes checkbox
         // ✅ Only show events that are explicitly published (hide unpublished even if backend sends them)
         return this.http.get<any>(endpoint).pipe(
-            map((body: any) => {
-                const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
-                if (!Array.isArray(list)) return [];
-                return list.filter((e: any) => e?.isPublished === true || e?.IsPublished === true);
-            }),
+            map(normalize),
             catchError(error => {
                 console.error('Error fetching dashboard events:', error);
                 return of([]); // Fallback to empty array

@@ -2218,6 +2218,11 @@ export class CurriculumListComponent implements OnInit, AfterViewInit, OnDestroy
   }
   videoLoadError = false;
 
+  getVideoProviderType(videoLink: string | undefined): 'youtube' | 'local' {
+    if (!videoLink) return 'local';
+    return videoLink.includes('https://www.youtube.com') ? 'youtube' : 'local';
+  }
+
   loadVideo(item){
     this.videoLoadError = false;
     this.videoObj['videoLink'] = item.videoLink;

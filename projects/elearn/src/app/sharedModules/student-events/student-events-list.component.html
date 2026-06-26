@@ -38,4 +38,10 @@
       </a>
     </article>
   </div>
+
+  <div class="student-events-pagination" *ngIf="!loading && !error && totalEvents > pageSize">
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToPage(pageNumber - 1)" [disabled]="pageNumber <= 1">Previous</button>
+    <span class="student-events-pagination__info">Page {{ pageNumber }} of {{ totalPages }}</span>
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToPage(pageNumber + 1)" [disabled]="pageNumber >= totalPages">Next</button>
+  </div>
 </div>

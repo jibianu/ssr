@@ -36,14 +36,12 @@ export class ChatComponent implements OnInit {
   }
 
   getChatByUserId(id){
-    this.subscription.add(this.chatService.getChat(id).subscribe((res: any) => {
-      debugger
+    this.subscription.add(this.chatService.getChat(id).subscribe(() => {
     }));
   }
 
   getUnreadCount(id){
-    this.subscription.add(this.chatService.getUnreadCountByUserId(id).subscribe((res: any) => {
-      debugger
+    this.subscription.add(this.chatService.getUnreadCountByUserId(id).subscribe(() => {
     }));
   }
 
@@ -53,8 +51,7 @@ export class ChatComponent implements OnInit {
       "attachmentUrl": "string",
       "toUserId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
     }
-    this.subscription.add(this.chatService.postChat(obj).subscribe((res: any) => {
-      debugger
+    this.subscription.add(this.chatService.postChat(obj).subscribe(() => {
     }));
   }
 

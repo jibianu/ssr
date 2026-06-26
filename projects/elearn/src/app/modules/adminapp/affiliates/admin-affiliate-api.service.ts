@@ -146,10 +146,25 @@ export class AdminAffiliateApiService {
 
   constructor(private http: HttpClient) {}
 
-  getList(): Observable<AdminAffiliateListItem[]> {
-    return this.http.get<any[]>(this.baseUrl).pipe(
-      map((rows) => (rows || []).map((r) => this.normalizeListItem(r)))
+  getList(pageNumber = 1, pageSize = 50): Observable<{ results: AdminAffiliateListItem[]; total: number }> {
+    const url = `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    return this.http.get<any>(url).pipe(
+      map((body) => {
+        const rows = Array.isArray(body)
+          ? body
+          : (body?.results ?? body?.Results ?? []);
+        const total = body?.totalNumberOfRecords ?? body?.TotalNumberOfRecords ?? rows.length;
+        return {
+          results: (rows || []).map((r: any) => this.normalizeListItem(r)),
+          total: Number(total) || 0,
+        };
+      })
     );
+  }
+
+  /** Full affiliate list for dropdowns (campaign links, allow courses, etc.). */
+  getListAll(): Observable<AdminAffiliateListItem[]> {
+    return this.getList(1, 500).pipe(map((paged) => paged.results ?? []));
   }
 
   getDetails(id: string): Observable<AdminAffiliateDetail> {

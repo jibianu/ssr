@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpEventType, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { AuthenticationService } from '../auth/auth.service';
 import { getApiBaseUrl } from 'src/app/core/helpers/api-base-url.helper';
+import { extractPagedResults } from '../../core/helpers/paged-response.helper';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAppService {
@@ -183,8 +184,18 @@ export class AdminAppService {
         return this.http.delete<any>(this.apiUrl + `api/category/` + id);
     }
 
-    getEvents(): Observable<any[]> {
-        return this.http.get<any>(this.apiUrl + `api/events`);
+    /** Paginated admin/trainer event list. API: GET /api/events?pageNumber=&pageSize= */
+    getEvents(pageNumber = 1, pageSize = 100): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/events`, {
+            params: { pageNumber: String(pageNumber), pageSize: String(pageSize) }
+        });
+    }
+
+    /** All events for dropdowns (coupon form, etc.) — fetches up to 500. */
+    getEventsAll(): Observable<any[]> {
+        return this.getEvents(1, 500).pipe(
+            map((body: any) => extractPagedResults(body))
+        );
     }
 
     /** Get published blogs (paginated). API: GET /api/blog */

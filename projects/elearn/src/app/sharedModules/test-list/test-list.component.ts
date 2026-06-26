@@ -78,7 +78,6 @@ export class TestListComponent implements OnInit {
   }
 
   setCourseProgressDetails(item) {
-    debugger
     var req = {
       "courseProgressId": sessionStorage.getItem('courseProgressID'),
       "entityType": item.title,

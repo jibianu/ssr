@@ -1,7 +1,7 @@
 import { SharedModule } from './../../../shared/shared.module';
 import { FixMojibakeSafeHtmlPipe } from '../../../shared/pipes/fix-mojibake-safe-html.pipe';
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { PublicCourseHomeComponent } from './public-course-home/public-course-home.component';
@@ -27,6 +27,7 @@ import { NgxPaginationModule } from "ngx-pagination";
   ],
   imports: [
     CommonModule,
+    NgOptimizedImage,
     RouterModule,
     SharedModule,
     NgxPaginationModule,

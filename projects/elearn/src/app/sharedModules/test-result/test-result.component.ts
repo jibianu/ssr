@@ -16,7 +16,6 @@ export class TestResultComponent implements OnInit {
   questionSetID: any;
   userTestResponse: any;
   constructor(private appService: AdminAppService, private route: ActivatedRoute, private _location:Location) { 
-      debugger
       this.questionSetID = this.route.snapshot.params.questionSetID;
   }
 
@@ -26,10 +25,8 @@ export class TestResultComponent implements OnInit {
   getTestsResult(id) {
     this.subscription.add(this.appService.getTestsResult(id).subscribe((res: any) => {
       if (res) {
-        debugger
         this.questionSetDetails = res.questionSetTestInformation[0];
         this.userTestResponse = res.userTestResponse;
-        console.log(res)
       }
     }));
   }

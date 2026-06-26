@@ -12,6 +12,9 @@ export class StudentEventsListComponent implements OnInit {
   events: any[] = [];
   loading = true;
   error: string | null = null;
+  pageNumber = 1;
+  pageSize = 12;
+  totalEvents = 0;
 
   constructor(
     private studentApi: StudentDashboardApiService,
@@ -23,12 +26,17 @@ export class StudentEventsListComponent implements OnInit {
     this.loadEvents();
   }
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalEvents / this.pageSize));
+  }
+
   loadEvents(): void {
     this.loading = true;
     this.error = null;
-    this.studentApi.getPublishedEvents().subscribe({
-      next: (list) => {
-        this.events = list || [];
+    this.studentApi.getPublishedEvents(this.pageNumber, this.pageSize).subscribe({
+      next: ({ results, total }) => {
+        this.events = results || [];
+        this.totalEvents = total;
         this.loading = false;
       },
       error: () => {
@@ -37,6 +45,15 @@ export class StudentEventsListComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  goToPage(page: number): void {
+    const next = Math.min(Math.max(1, page), this.totalPages);
+    if (next === this.pageNumber) {
+      return;
+    }
+    this.pageNumber = next;
+    this.loadEvents();
   }
 
   getEventImage(event: any): string {

@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { SearchEventComponent } from '../../../../shared/modals/search-event/search-event.component';
+import { extractPagedResults } from '../../../../core/helpers/paged-response.helper';
 
 function norm(e: any): any {
   const id = e?.id ?? e?.Id;
@@ -185,9 +186,9 @@ export class EventListComponent implements OnInit, OnDestroy {
   loadEvents(): void {
     this.loading = true;
     this.error = null;
-    this.appService.getEvents().subscribe({
+    this.appService.getEvents(1, 200).subscribe({
       next: (data) => {
-        const raw = toEventsArray(data);
+        const raw = extractPagedResults<any>(data);
         this.events = (raw || []).map(norm).filter((e) => e.id !== '');
         this.applyFilter();
         if (!this.isTrainerPage) this.loadRegistrationCounts();

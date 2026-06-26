@@ -36,9 +36,11 @@
       <article class="course-card" *ngFor="let item of data.courses; trackBy: trackByCourseId">
         <a class="course-card__media" [routerLink]="getFastCourseRoute(item)">
           <img
-            [src]="item?.titleImageUrl"
+            [ngSrc]="item?.titleImageUrl || 'assets/img/oilandgasclub.jpg'"
             (error)="onImgError($event)"
             alt="{{ item?.title }}"
+            width="320"
+            height="180"
             loading="lazy"
           />
           <span class="course-card__badge" *ngIf="item?.badge">{{ item.badge }}</span>

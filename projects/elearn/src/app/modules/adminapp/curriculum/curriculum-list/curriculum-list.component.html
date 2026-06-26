@@ -192,25 +192,24 @@
                     </button>
                   </div>
                   <div class="curriculum-view__video-card" *ngFor="let x of item?.videoLectures; trackBy: trackByIndex">
-                    {{loadVideo(x)}}
                     <div class="curriculum-view__video-wrapper">
                       <div class="curriculum-view__video-player">
-                        <video width="100%" controls controlsList="nodownload" playsinline *ngIf="videoObj?.providerType=='local'"
+                        <video width="100%" controls controlsList="nodownload" playsinline *ngIf="getVideoProviderType(x?.videoLink) === 'local'"
                           (error)="onVideoError()" (loadeddata)="onVideoLoaded()">
-                          <source [src]="getVideoSrc(videoObj?.videoLink) | safeUrl" type="video/mp4">
+                          <source [src]="getVideoSrc(x?.videoLink) | safeUrl" type="video/mp4">
                           Your browser does not support the video tag.
                         </video>
                         <p class="text-danger small mt-1" *ngIf="videoLoadError">Video could not be loaded. Check that the API is running ({{ appService.apiUrl }}) and the file exists in S3.</p>
-                        <iframe width="100%" height="100%" *ngIf="videoObj?.providerType=='youtube'"
-                          [src]="videoObj?.videoLink|safeUrl" frameborder="0"
+                        <iframe width="100%" height="100%" *ngIf="getVideoProviderType(x?.videoLink) === 'youtube'"
+                          [src]="x?.videoLink|safeUrl" frameborder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowfullscreen></iframe>
                       </div>
                       <div class="curriculum-view__video-details">
                         <div class="curriculum-view__card-header">
-                          <h5 class="curriculum-view__card-title">{{ videoObj?.title | fixMojibake }}</h5>
+                          <h5 class="curriculum-view__card-title">{{ x?.title | fixMojibake }}</h5>
                         </div>
-                        <div class="curriculum-view__video-desc post-body" [innerHTML]="videoObj?.description | fixMojibakeSafeHtml"></div>
+                        <div class="curriculum-view__video-desc post-body" [innerHTML]="x?.description | fixMojibakeSafeHtml"></div>
                       </div>
                     </div>
                     <hr class="curriculum-view__divider" *ngIf="item?.videoLectures?.length > 1" />

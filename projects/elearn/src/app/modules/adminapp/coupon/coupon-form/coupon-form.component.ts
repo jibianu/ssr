@@ -114,7 +114,7 @@ export class CouponFormComponent implements OnInit {
     const keepEventIds = new Set(selectedEventIds.filter(Boolean));
     const keepCourseIds = new Set(selectedCourseIds.filter(Boolean));
 
-    this.appService.getEvents().subscribe({
+    this.appService.getEventsAll().subscribe({
       next: (list) => {
         this.events = (list || [])
           .filter((e: any) => {
