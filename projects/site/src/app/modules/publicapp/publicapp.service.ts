@@ -525,8 +525,28 @@ export class PublicAppService {
 
     // ✅ PERFORMANCE: Cache dashboard categories - called on home page load
     getDashboardCategories(): Observable<any> {
+        const dashboardUrl = `${this.apiUrl}page/Category/Dashboard`;
+        const legacyUrl = `${this.apiUrl}api/Category/Dashboard`;
+
+        const fetchDashboard = (url: string) =>
+            this.http.get<any>(url).pipe(
+                shareReplay({ bufferSize: 1, refCount: true }),
+                catchError(error => {
+                    if (typeof window !== 'undefined') {
+                        console.error('Error fetching dashboard categories:', error);
+                    } else {
+                        const isNetworkError = !error.status || error.status === 0;
+                        if (!isNetworkError) {
+                            console.warn('⚠️ SSR: Error fetching dashboard categories (non-network error):', error.status, error.statusText);
+                        }
+                    }
+                    return throwError(() => error);
+                })
+            );
+
         if (this.isServer) {
-            return this.http.get<any>(`${this.apiUrl}page/Category/Dashboard`).pipe(
+            return fetchDashboard(dashboardUrl).pipe(
+                catchError(() => fetchDashboard(legacyUrl)),
                 catchError(error => {
                     const isNetworkError = !error?.status || error.status === 0;
                     if (!isNetworkError) {
@@ -538,21 +558,11 @@ export class PublicAppService {
         }
 
         if (!this.dashboardCategoriesCache$) {
-            this.dashboardCategoriesCache$ = this.http.get<any>(`${this.apiUrl}page/Category/Dashboard`).pipe(
-                shareReplay({ bufferSize: 1, refCount: true }),
+            this.dashboardCategoriesCache$ = fetchDashboard(dashboardUrl).pipe(
+                catchError(() => fetchDashboard(legacyUrl)),
                 catchError(error => {
-                    // ✅ SSR-FRIENDLY: Only log errors in browser (SSR errors are expected if backend is down)
-                    if (typeof window !== 'undefined') {
-                        console.error('Error fetching dashboard categories:', error);
-                    } else {
-                        // ✅ SSR: Log less verbose message for network errors (expected if backend is down)
-                        const isNetworkError = !error.status || error.status === 0;
-                        if (!isNetworkError) {
-                            console.warn('⚠️ SSR: Error fetching dashboard categories (non-network error):', error.status, error.statusText);
-                        }
-                    }
-                    this.dashboardCategoriesCache$ = null; // ✅ ERROR HANDLING: Clear cache on error
-                    return of([]); // ✅ ERROR HANDLING: Return empty array on error (allows SSR to continue)
+                    this.dashboardCategoriesCache$ = null;
+                    return of([]);
                 })
             );
         }

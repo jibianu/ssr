@@ -53,7 +53,7 @@ export class PublicAppService {
     }
 
     getDashboardCategories() {
-        return this.http.get<any>(this.apiUrl + `api/Category/Dashboard`);
+        return this.http.get<any>(this.apiUrl + `page/Category/Dashboard`);
     }
 
     getCourseByCanonicalLocationURL(courseUrl, locationUrl){
