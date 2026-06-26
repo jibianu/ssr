@@ -233,11 +233,12 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
       course?.summary ??
       '';
 
-    const titleImageUrl =
+    const titleImageUrl = this.publicAppService.resolveCourseImageUrl(
       course?.titleImageUrl ??
       course?.TitleImageUrl ??
       course?.imageLink ??
-      course?.ImageLink;
+      course?.ImageLink
+    );
 
     const canonicalRaw =
       course?.canonicalUrl ??

@@ -15,16 +15,32 @@
 <!-- ✅ Old Design: Blue promotional card header -->
 <div *ngIf="course" class="course-header-old">
   <div class="course-header-card">
+    <div class="course-header-mobile-thumb d-lg-none" *ngIf="displayCourseImageUrl">
+      <img
+        [src]="displayCourseImageUrl"
+        [alt]="course.title || 'Course image'"
+        loading="lazy"
+        (error)="onImgError($event)"
+      />
+    </div>
     <h1 class="course-header-title">{{ course.title }}</h1>
     <!-- Main description: first Course Title Summary (from Edit landing page) or eventInfo for events; fallback metaDescription -->
     <div class="course-header-subtitle-wrap" *ngIf="headerDescriptionText">
-      <i class="fa fa-check course-header-subtitle-icon" aria-hidden="true"></i>
+      <span class="course-header-subtitle-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.333 4L6 11.333 2.667 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
       <p class="course-header-subtitle">{{ headerDescriptionText }}</p>
     </div>
     <ul class="course-header-features" *ngIf="(courseDetails?.courseSummaries && courseDetails?.courseSummaries.length > 1)">
           <li *ngFor="let item of courseDetails?.courseSummaries | slice:1; trackBy: trackBySummaryIndex">
-        <i class="fa fa-check"></i>
-        <span>{{ item?.summary }}</span>
+        <span class="course-header-feature-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.333 4L6 11.333 2.667 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>{{ sanitizeCourseDisplayText(item?.summary ?? item?.Summary) }}</span>
           </li>
         </ul>
     <div class="course-header-footer">
@@ -309,14 +325,14 @@
         <!-- ✅ Pricing Card - Gets Course Features data from API via courseFeatures getter -->
         <div class="pricing-card">
           <!-- Course Image: when promo video exists, show as clickable thumbnail; otherwise image only -->
-          <ng-container *ngIf="courseDetails?.promoVideoUrl && courseDetails?.titleImageUrl">
+          <ng-container *ngIf="courseDetails?.promoVideoUrl && displayCourseImageUrl">
             <div class="promo-thumb-wrap pricing-card-image-wrap"
                  (click)="openPromoVideo()"
                  role="button"
                  tabindex="0"
                  (keydown.enter)="openPromoVideo()"
                  (keydown.space)="openPromoVideo(); $event.preventDefault()">
-              <img [src]="courseDetails?.titleImageUrl"
+              <img [src]="displayCourseImageUrl"
                    class="pricing-card-image promo-thumb-img"
                    (error)="onImgError($event)"
                    [alt]="course?.title || 'Course Image'"
@@ -326,8 +342,8 @@
               </div>
             </div>
           </ng-container>
-          <img *ngIf="(!courseDetails?.promoVideoUrl) && courseDetails?.titleImageUrl"
-               [src]="courseDetails?.titleImageUrl"
+          <img *ngIf="(!courseDetails?.promoVideoUrl) && displayCourseImageUrl"
+               [src]="displayCourseImageUrl"
                class="pricing-card-image"
                (error)="onImgError($event)"
                [alt]="course?.title || 'Course Image'"
@@ -416,34 +432,34 @@
                 <li class="pricing-feature-item" 
                     *ngFor="let feature of courseFeatures; trackBy: trackByFeatureId"
                     [attr.data-feature-id]="feature?.id">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">{{ feature?.description || feature?.Description || '' }}</span>
                 </li>
               </ng-container>
               <!-- Fallback Static Features if no API data -->
               <ng-template #staticFeatures>
                 <li class="pricing-feature-item">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">Comprehensive Study Materials</span>
                 </li>
                 <li class="pricing-feature-item">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">Hands-On Practical Exercises</span>
                 </li>
                 <li class="pricing-feature-item">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">Flexible Learning Options</span>
                 </li>
                 <li class="pricing-feature-item">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">Networking Opportunities</span>
                 </li>
                 <li class="pricing-feature-item">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">Real-World Application Focus</span>
                 </li>
                 <li class="pricing-feature-item">
-                  <i class="fa fa-check pricing-feature-check"></i>
+                  <span class="pricing-feature-check" aria-hidden="true"></span>
                   <span class="pricing-feature-text">Certification Exam Preparation</span>
                   </li>
               </ng-template>

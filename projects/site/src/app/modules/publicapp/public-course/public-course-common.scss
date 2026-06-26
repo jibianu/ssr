@@ -104,13 +104,16 @@ $course-transition-slow: 300ms;
 @mixin course-card-media($hover-scale: 1.05) {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: auto;
   overflow: hidden;
+  background: #f8fafc;
 
   img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    max-height: 240px;
+    object-fit: contain;
+    object-position: center;
     transition: transform 220ms ease;
   }
 

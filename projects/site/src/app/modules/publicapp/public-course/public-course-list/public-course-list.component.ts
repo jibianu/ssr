@@ -259,7 +259,9 @@ export class PublicCourseListComponent implements OnInit, OnDestroy {
     return {
       ...course,
       canonicalUrl: this.normalizeCourseUrl(canonicalUrl),
-      titleImageUrl: course?.titleImageUrl ?? course?.TitleImageUrl ?? course?.imageLink ?? course?.ImageLink,
+      titleImageUrl: this.publicAppService.resolveCourseImageUrl(
+        course?.titleImageUrl ?? course?.TitleImageUrl ?? course?.imageLink ?? course?.ImageLink
+      ),
       badge: course?.isBestSeller ? 'Best Seller' : course?.badge,
       courseFeatures,
     };

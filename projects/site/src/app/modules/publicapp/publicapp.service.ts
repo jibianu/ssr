@@ -191,6 +191,22 @@ export class PublicAppService {
         return url;
     }
 
+    /** Resolve course thumbnail for <img src> — API may return ImageLink as absolute S3 URL or relative upload path. */
+    resolveCourseImageUrl(raw: string | null | undefined): string {
+        const s = (raw ?? '').toString().trim();
+        if (!s) {
+            return 'assets/img/oilandgasclub.jpg';
+        }
+        if (/^https?:\/\//i.test(s)) {
+            return s;
+        }
+        if (s.startsWith('assets/')) {
+            return s.startsWith('/') ? s : `/${s}`;
+        }
+        const api = (this.apiUrl || '').replace(/\/$/, '');
+        return `${api}/${s.replace(/^\/+/, '')}`;
+    }
+
     // ✅ PERFORMANCE: Cache by canonical URL - used in route resolvers and components
     // options.refresh: when true, appends ?_refresh=timestamp so public page gets fresh data (About, FAQ, Trainers) after Edit landing page saves
     getCourseByCanonicalURL(url: string, options?: { refresh?: boolean }): Observable<any> {

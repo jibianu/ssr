@@ -36,8 +36,10 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
   /** Main header description: eventInfo (events) or first Course Title Summary / metaDescription (courses). What you add in Edit landing page → Course Title Summaries shows here. */
   get headerDescriptionText(): string {
     const eventInfo = this.courseDetails?.eventInfo ?? this.courseDetails?.EventInfo;
-    if (eventInfo && typeof eventInfo === 'string' && eventInfo.trim()) return eventInfo.trim();
-    return this.courseSummaryText || '';
+    if (eventInfo && typeof eventInfo === 'string' && eventInfo.trim()) {
+      return this.sanitizeCourseDisplayText(eventInfo);
+    }
+    return this.sanitizeCourseDisplayText(this.courseSummaryText || '');
   }
   /** Category ID from course for related courses (same as Elearn getCoursesByCategory(categoryId)). */
   get courseCategoryId(): string | null {
@@ -54,6 +56,19 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     const c = this.course ?? this.courseDetails;
     const slug = c ? (c.canonicalUrl ?? c.CanonicalUrl ?? c.slug ?? c.Slug ?? '') : '';
     return (slug || this.courseSlug || '').toString().trim().replace(/^\//, '');
+  }
+
+  /** Resolved thumbnail for header, sidebar, and mobile hero. */
+  get displayCourseImageUrl(): string {
+    return (
+      this.image ||
+      this.publicAppService.resolveCourseImageUrl(
+        this.courseDetails?.titleImageUrl ??
+        this.courseDetails?.TitleImageUrl ??
+        this.courseDetails?.imageLink ??
+        this.courseDetails?.ImageLink
+      )
+    );
   }
 
   // ✅ Loading states
@@ -665,6 +680,10 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     if (d.id === undefined && d.Id !== undefined) d.id = d.Id;
     if (d.title === undefined && d.Title !== undefined) d.title = d.Title;
     if (d.titleImageUrl === undefined && d.TitleImageUrl !== undefined) d.titleImageUrl = d.TitleImageUrl;
+    if (!d.titleImageUrl) {
+      d.titleImageUrl = d.imageLink ?? d.ImageLink ?? d.TitleImageUrl;
+    }
+    d.titleImageUrl = this.publicAppService.resolveCourseImageUrl(d.titleImageUrl);
     if (d.canonicalUrl === undefined && d.CanonicalUrl !== undefined) d.canonicalUrl = d.CanonicalUrl;
     if (d.metaDescription === undefined && d.MetaDescription !== undefined) d.metaDescription = d.MetaDescription;
     if (d.amount === undefined && d.Amount !== undefined) d.amount = d.Amount;
@@ -871,11 +890,25 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.categoryName = courseDetails.categoryName ?? courseDetails.CategoryName ?? (cat ? (cat.name || cat.Name || '') : '');
     const summaries = courseDetails.courseSummaries ?? courseDetails.CourseSummaries;
     const firstSummary = Array.isArray(summaries) && summaries.length > 0 ? summaries[0] : null;
-    this.courseSummaryText = (firstSummary && (firstSummary.summary ?? firstSummary.Summary)) ? (firstSummary.summary ?? firstSummary.Summary).trim() : (courseDetails.metaDescription ?? courseDetails.MetaDescription ?? courseDetails.description ?? courseDetails.Description ?? '').trim();
+    this.courseSummaryText = this.sanitizeCourseDisplayText(
+      (firstSummary && (firstSummary.summary ?? firstSummary.Summary))
+        ? (firstSummary.summary ?? firstSummary.Summary)
+        : (courseDetails.metaDescription ?? courseDetails.MetaDescription ?? courseDetails.description ?? courseDetails.Description ?? '')
+    );
     const rawImage =
-      this.courseDetails.titleImageUrl || (this.courseDetails as any).TitleImageUrl || 'assets/img/oilandgasclub.jpg';
-    // OG / Twitter require absolute URLs when SSR emits meta tags
-    this.image = this.toAbsoluteSeoUrl(rawImage, base);
+      courseDetails.titleImageUrl ||
+      courseDetails.TitleImageUrl ||
+      courseDetails.imageLink ||
+      courseDetails.ImageLink ||
+      '';
+    const resolvedImage = this.publicAppService.resolveCourseImageUrl(rawImage);
+    this.image = this.toAbsoluteSeoUrl(resolvedImage, base);
+    if (this.courseDetails) {
+      this.courseDetails.titleImageUrl = resolvedImage;
+    }
+    if (this.course) {
+      (this.course as any).titleImageUrl = resolvedImage;
+    }
       const authorName = this.courseDetails.createdByUser?.firstname && this.courseDetails?.createdByUser?.lastname
         ? `${this.courseDetails.createdByUser.firstname} ${this.courseDetails.createdByUser.lastname}`
         : 'Oilandgasclub';
@@ -1081,6 +1114,19 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
 
   onImgError(event: any) {
     (event.target as HTMLImageElement).src = 'assets/img/oilandgasclub.jpg';
+  }
+
+  /** Strip icon-font artifacts and HTML from course summary text (e.g. "check3" from FA ligatures). */
+  sanitizeCourseDisplayText(text: string | null | undefined): string {
+    if (!text) return '';
+    return String(text)
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/\bfa-[a-z0-9-]+\b/gi, '')
+      .replace(/^\s*check\d*\s+/i, '')
+      .replace(/\s+check\d*\s+/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   onUserImgError(event: Event) {

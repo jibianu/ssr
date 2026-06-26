@@ -78,12 +78,6 @@
 
 .related-card__media {
   @include course-card-media(1.06);
-  
-  // ✅ Desktop: Reduce media section height
-  @media (min-width: 769px) {
-    aspect-ratio: 1.2 / 1 !important; // ✅ Reduced from 1.06 (taller) to 1.2 (shorter)
-    max-height: 200px !important; // ✅ Limit max height
-  }
 
   .related-card__flag {
     @include course-card-badge(

@@ -150,7 +150,8 @@
 }
 
 #courseAccordion #card-header:after {
-  font-family: 'FontAwesome';  
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
   content: "\f068";
   float: right; 
   font-size: 0.8rem;
@@ -162,7 +163,8 @@
 }
 
 #sub-card-header:after {
-  font-family: 'FontAwesome';  
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
   content: "\f068";
   float: right; 
   font-size: 0.8rem;
@@ -395,6 +397,21 @@
   overflow: visible;
 }
 
+.course-header-mobile-thumb {
+  margin: 0 0 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+  }
+}
+
 .course-header-badge {
   display: flex;
   align-items: center;
@@ -449,17 +466,23 @@
 
   .course-header-subtitle-icon {
     color: #10b981;
-    font-size: 1rem;
     margin-top: 0.25rem;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+
+    svg {
+      display: block;
+    }
   }
 
   .course-header-subtitle {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    display: block;
+    margin: 0 0 0.75rem 0;
     font-size: clamp(0.9rem, 1.5vw, 1rem);
+    font-family: inherit;
     color: #333;
     line-height: 1.5;
     word-wrap: break-word;
@@ -487,16 +510,23 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
 
-    i {
-      color: #10b981; // ✅ Keep green checkmark color
-      font-size: 1rem;
+    .course-header-feature-icon {
+      color: #10b981;
       margin-top: 0.25rem;
       flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+
+      svg {
+        display: block;
+      }
     }
-    
+
     span {
       flex: 1;
-      min-width: 0; // Allow text to wrap
+      min-width: 0;
     }
   }
 }
@@ -701,21 +731,25 @@
 
 .pricing-card-image {
   width: 100%;
-  height: 200px;
-  object-fit: cover;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  object-position: center top;
   display: block;
-  border-radius: 8px 8px 0 0; // ✅ Rounded top corners
+  background: #f8fafc;
+  border-radius: 8px 8px 0 0;
 }
 
 // ✅ Promo video: title image as clickable thumbnail with play overlay
 .pricing-card-image-wrap {
   position: relative;
   width: 100%;
-  height: 200px;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
   border-radius: 8px 8px 0 0;
   cursor: pointer;
   outline: none;
+  background: #f8fafc;
 
   &:focus {
     outline: 2px solid var(--course-color-accent-red, #e74c3c);
@@ -726,8 +760,10 @@
 .promo-thumb-wrap {
   .promo-thumb-img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center top;
     display: block;
     transition: transform 0.2s ease;
   }
@@ -1150,24 +1186,24 @@ li.pricing-feature-item,
     visibility: visible !important;
   }
   
-  // ✅ Checkmark icon - More specific selectors to override any global styles
-  :host .pricing-feature-check,
-  :host i.pricing-feature-check,
-  :host i.fa-check.pricing-feature-check,
-  :host .fa-check.pricing-feature-check,
-  .pricing-feature-check,
-  i.pricing-feature-check,
-  i.fa-check.pricing-feature-check,
-  .fa-check.pricing-feature-check {
-    color: rgb(69 69 69 / var(--tw-text-opacity, 1)) !important; // ✅ User specified color
-    font-size: 1rem;
-    margin-top: 0.125rem;
+  // ✅ Checkmark icon - SVG mask (no Font Awesome dependency)
+  .pricing-feature-check {
     flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.125rem;
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    width: auto !important;
-    height: auto !important;
+    background-color: rgb(69 69 69 / var(--tw-text-opacity, 1));
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M13.333 4L6 11.333 2.667 8' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M13.333 4L6 11.333 2.667 8' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
   }
   
   // ✅ Feature text - More specific selectors to override any global styles
@@ -3447,9 +3483,12 @@ a.course-detail__cta.course-detail__cta--info,
 
   .pricing-card-image {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center top;
     display: block;
+    background: #f8fafc;
   }
 
   .pricing-card-header {

@@ -305,7 +305,9 @@ export class PublicCategoryComponent {
     return {
       ...course,
       canonicalUrl: this.normalizeCourseUrl(canonicalUrl),
-      titleImageUrl: course?.titleImageUrl ?? course?.TitleImageUrl ?? course?.imageLink ?? course?.ImageLink,
+      titleImageUrl: this.publicAppService.resolveCourseImageUrl(
+        course?.titleImageUrl ?? course?.TitleImageUrl ?? course?.imageLink ?? course?.ImageLink
+      ),
       courseFeatures,
       badge,
       amount: Number.isFinite(amount) ? amount : 0,

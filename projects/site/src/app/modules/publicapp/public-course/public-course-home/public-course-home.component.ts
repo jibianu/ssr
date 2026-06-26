@@ -324,7 +324,9 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     const canonicalUrl = this.normalizeCourseUrl(urlForLink);
 
     // ✅ Image: backend returns ImageLink; template uses titleImageUrl
-    const titleImageUrl = course?.titleImageUrl ?? course?.imageLink ?? course?.ImageLink ?? '';
+    const titleImageUrl = this.publicAppService.resolveCourseImageUrl(
+      course?.titleImageUrl ?? course?.imageLink ?? course?.ImageLink ?? ''
+    );
 
     // ✅ Price: backend may return amount, finalPrice, or price
     const amount = course?.amount ?? course?.finalPrice ?? course?.price ?? 0;

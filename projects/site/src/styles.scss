@@ -3,9 +3,14 @@
 /* Importing Bootstrap SCSS file. */
 @use 'bootstrap/scss/bootstrap' as *;
 
-// ✅ FIX: Font Awesome 6 Global Icon Styles
-// Ensure all Font Awesome icons display properly across the application
-.fas, .far, .fab, .fal, .fad {
+// ✅ Font Awesome 6 — include legacy `.fa` prefix (v4-shims in index.html) and solid weight
+.fa,
+.fas,
+.fa-solid,
+i.fa,
+i.fas,
+i.fa-solid,
+i[class*="fa-"] {
   font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro";
   font-style: normal;
   font-variant: normal;
@@ -16,8 +21,13 @@
   line-height: 1;
 }
 
-.fas, .fa-solid {
-  font-weight: 900; // Font Awesome Solid
+.fa,
+.fas,
+.fa-solid,
+i.fa:not(.fa-brands):not(.fab),
+i.fas,
+i.fa-solid {
+  font-weight: 900;
 }
 
 .far, .fa-regular {
