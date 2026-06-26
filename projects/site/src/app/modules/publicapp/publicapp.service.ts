@@ -1,10 +1,11 @@
 import { Category } from './../adminapp/category/category.model';
-import { Observable, of, throwError, TimeoutError } from 'rxjs';
-import { shareReplay, catchError, timeout, retry, delay, map } from 'rxjs/operators';
+import { Observable, of, throwError, TimeoutError, race, timer } from 'rxjs';
+import { shareReplay, catchError, timeout, retry, delay, map, switchMap } from 'rxjs/operators';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { API_URL } from '../../core/config/api-url.config';
+import { normalizeEventCanonicalSlug } from '../../core/helpers/event-canonical-slug.helper';
 
 // ✅ PERFORMANCE: Service-level caching prevents redundant API calls (40-50% reduction)
 // ✅ SSR: shareReplay works in both SSR and browser contexts
@@ -798,6 +799,41 @@ export class PublicAppService {
                 return Array.isArray(list) ? list : [];
             }),
             catchError(() => of([]))
+        );
+    }
+
+    /** Fast lookup from published list when GET api/events/event/{slug} is slow or unavailable. */
+    getPublishedEventBySlug(slug: string): Observable<any | null> {
+        const key = normalizeEventCanonicalSlug(slug);
+        if (!key) {
+            return of(null);
+        }
+        return this.getPublishedEvents().pipe(
+            map((events) =>
+                events.find(
+                    (e) => normalizeEventCanonicalSlug(e?.canonicalUrl ?? e?.CanonicalUrl) === key
+                ) ?? null
+            ),
+            catchError(() => of(null))
+        );
+    }
+
+    /**
+     * Public event detail by canonical slug — tries full endpoint, falls back to published list.
+     * Production backend can exceed 10s on the heavy detail endpoint; published list is fast.
+     */
+    getPublicEventBySlug(slug: string): Observable<any | null> {
+        const key = normalizeEventCanonicalSlug(slug);
+        if (!key) {
+            return of(null);
+        }
+        const detailUrl = `${this.apiUrl}api/events/event/${encodeURIComponent(key)}`;
+        const detail$ = this.http.get<any>(detailUrl).pipe(
+            map((event) => (event?.id ? event : null)),
+            catchError(() => of(null))
+        );
+        return race([detail$, timer(8000).pipe(map(() => null))]).pipe(
+            switchMap((event) => (event ? of(event) : this.getPublishedEventBySlug(key)))
         );
     }
 

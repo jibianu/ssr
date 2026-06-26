@@ -64,9 +64,13 @@ export class TimeoutInterceptor implements HttpInterceptor {
 
     const u = request.url.toLowerCase();
 
-    // Event slug lookup: fail fast when slug is a course/blog (parallel fallback handles those).
+    // Event slug lookup: production detail endpoint can be slow; allow 45s before fallback.
     if (u.includes('/api/events/event/')) {
-      return 10000;
+      return 45000;
+    }
+
+    if (u.includes('/api/events/published')) {
+      return 20000;
     }
 
     // Course detail by slug (and /location/ variants): can be slow; keep 60s without X-Timeout header

@@ -1,6 +1,6 @@
 import { Category } from './category/category.model';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { shareReplay, catchError, tap } from 'rxjs/operators';
+import { Observable, of, BehaviorSubject, race, timer } from 'rxjs';
+import { shareReplay, catchError, tap, switchMap, map } from 'rxjs/operators';
 import { environment } from './../../../environments/environment';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -609,24 +609,43 @@ export class AdminAppService {
         if (!slug) {
             return of(null);
         }
-        return this.http.get<any>(this.apiUrl + `api/events/event/` + encodeURIComponent(slug)).pipe(
-            catchError(error => {
-                // ✅ SSR-FRIENDLY: Suppress verbose error logging for network errors during SSR
-                // Network errors during SSR are expected if backend is not running
-                const isNetworkError = error instanceof HttpErrorResponse && (!error.status || error.status === 0);
-                const isSSR = !this.isBrowser;
-                
-                if (isSSR && isNetworkError) {
-                    // ✅ SSR: Only log at warning level (network errors are expected if backend is down)
-                    // Don't log the full error stack trace during SSR
-                    console.warn(`SSR: Network error fetching event by URL ${url} (backend may not be running)`);
-                } else {
-                    // ✅ Browser or non-network errors: Log normally
-                    console.error(`Error fetching event by URL ${url}:`, error);
+
+        const detail$ = this.http
+            .get<any>(this.apiUrl + `api/events/event/` + encodeURIComponent(slug))
+            .pipe(
+                map((event) => (event?.id ? event : null)),
+                catchError((error) => {
+                    const isNetworkError =
+                        error instanceof HttpErrorResponse && (!error.status || error.status === 0);
+                    if (!this.isBrowser && isNetworkError) {
+                        console.warn(`SSR: Network error fetching event by URL ${slug}`);
+                    }
+                    return of(null);
+                })
+            );
+
+        // Production detail endpoint can exceed 30s; use fast published list after 8s.
+        return race([detail$, timer(8000).pipe(map(() => null))]).pipe(
+            switchMap((event) => (event ? of(event) : this.fetchPublishedEventBySlug(slug)))
+        );
+    }
+
+    /** Fallback when GET api/events/event/{slug} times out or fails on production. */
+    private fetchPublishedEventBySlug(slug: string): Observable<any | null> {
+        return this.http.get<any>(this.apiUrl + 'api/events/published').pipe(
+            map((body: any) => {
+                const list = Array.isArray(body) ? body : (body?.data ?? body?.items ?? []);
+                if (!Array.isArray(list)) {
+                    return null;
                 }
-                
-                return of(null); // ✅ ERROR HANDLING: Return null on error
-            })
+                return (
+                    list.find(
+                        (e: any) =>
+                            normalizeEventCanonicalSlug(e?.canonicalUrl ?? e?.CanonicalUrl) === slug
+                    ) ?? null
+                );
+            }),
+            catchError(() => of(null))
         );
     }
 

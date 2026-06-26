@@ -114,10 +114,16 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       }
     } else if (slugPage?.type && !slugPage.notFound && this.slugPageMatches(slugPage, slug)) {
       this.applySlugPageData(slugPage);
-      if (slugPage.type === 'course') {
-        return of(slugPage.course ?? true);
+      if (slugPage.type === 'course' && slugPage.course) {
+        return of(slugPage.course);
       }
-      return of(true);
+      if (slugPage.type === 'event' && slugPage.eventData) {
+        return of(true);
+      }
+      if (slugPage.type === 'blog' && slugPage.blog) {
+        return of(true);
+      }
+      // SSR prefetched type but no payload — resolve live below.
     }
 
     return this.slugResolver.resolve(slug).pipe(
