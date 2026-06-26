@@ -16,20 +16,19 @@ import { InHouseSolutionsComponent } from './in-house-solutions/in-house-solutio
 import { PoliciesComponent } from './policies/policies.component';
 import { MissionAndVisionComponent } from './mission-and-vision/mission-and-vision.component';
 import { AffiliateProgramComponent } from './affiliate-program/affiliate-program.component';
-import { PublicCourseHomeComponent } from './public-course/public-course-home/public-course-home.component';
-import { PublicCategoryComponent } from './public-course/public-category/public-category.component';
-import { PublicCourseListComponent } from './public-course/public-course-list/public-course-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { TermsAndConditionComponent } from './terms-and-condition/terms-and-condition.component';
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { RouteSeoData } from '../../shared/interfaces/route-seo.interface';
 import { CheckoutGuard } from '../../core/guards/checkout.guard';
-import { RedirectCoursesToSlugComponent } from './public-course/redirect-courses-to-slug/redirect-courses-to-slug.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { PaymentSuccessComponent } from './payment-success/payment-success.component';
 import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirect-to-elearn.component';
 import { RedirectToAppShellComponent } from '../../core/redirect-to-app-shell/redirect-to-app-shell.component';
+
+const loadCourseCatalog = () =>
+  import('./public-course/public-course-feature.module').then(m => m.PublicCourseFeatureModule);
 
 const routes: Routes = [
   { 
@@ -44,32 +43,8 @@ const routes: Routes = [
       }
     } as RouteSeoData
   },
-  { 
-    path: 'courses', 
-    component: PublicCourseHomeComponent,
-    data: {
-      seo: {
-        title: 'Oil and Gas Courses | Professional Training Programs',
-        description: 'Browse our comprehensive collection of oil and gas courses. From beginner to advanced levels, enhance your skills with industry-expert training.',
-        keywords: 'oil and gas courses, petroleum training, energy education, professional development',
-        type: 'website'
-      }
-    } as RouteSeoData
-  },
-  // ✅ Redirect old /courses/:url to canonical /:courseSlug (same slug, no /courses/ prefix)
-  { path: 'courses/:url', component: RedirectCoursesToSlugComponent },
-  { path: 'courses/:url/:location', component: RedirectCoursesToSlugComponent },
-  {
-    path: 'list',
-    component: PublicCourseListComponent,
-    data: {
-      seo: {
-        title: 'All Courses - Oilandgasclub',
-        description: 'Browse the complete list of Oilandgasclub courses and training programs.',
-        type: 'website'
-      }
-    } as RouteSeoData
-  },
+  { path: 'courses', loadChildren: loadCourseCatalog },
+  { path: 'list', loadChildren: () => import('./public-course/public-course-list-lazy.module').then(m => m.PublicCourseListLazyModule) },
   { path: 'events', loadChildren: () => import('../publicapp/public-event/public-event.module').then(m => m.PublicEventModule) },
   { 
     path: 'contact-us', 
@@ -307,23 +282,19 @@ const routes: Routes = [
     path: 'blog',
     loadChildren: () => import('./blog/blog.module').then(m => m.BlogModule)
   },
-  // ✅ Category route - direct component (not lazy-loaded, simpler)
   {
-    path: 'category/:name',
-    component: PublicCategoryComponent
+    path: 'category',
+    loadChildren: () => import('./public-course/public-category-lazy.module').then(m => m.PublicCategoryLazyModule)
   },
-  // ✅ Legacy route support: redirect /course/:slug -> /:slug
   {
-    path: 'course/:courseSlug',
-    component: RedirectCoursesToSlugComponent
+    path: 'course',
+    loadChildren: () => import('./public-course/public-course-redirect-lazy.module').then(m => m.PublicCourseRedirectLazyModule)
   },
-  // ✅ Checkout by courseId (unified). Auth: redirect to /login?returnUrl=/checkout/:courseId if not logged in.
   {
     path: 'checkout/:courseId',
     canActivate: [CheckoutGuard],
     component: CheckoutComponent
   },
-  // ✅ Payment success: gateway redirects here; verify then redirect to /app/my-courses
   {
     path: 'payment/success',
     component: PaymentSuccessComponent

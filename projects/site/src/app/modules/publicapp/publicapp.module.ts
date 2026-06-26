@@ -25,11 +25,9 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
 import { RefundCancellationPolicyComponent } from './refund-cancellation-policy/refund-cancellation-policy.component';
 // ✅ MODULE: PageNotFoundComponent is imported via SharedModule (no need to import here)
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { PublicCourseModule } from './public-course/public-course.module';
-import { RedirectCoursesToSlugComponent } from './public-course/redirect-courses-to-slug/redirect-courses-to-slug.component';
+import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirect-to-elearn.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { PaymentSuccessComponent } from './payment-success/payment-success.component';
-import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirect-to-elearn.component';
 
 
 
@@ -67,8 +65,6 @@ import { RedirectToElearnComponent } from '../../core/redirect-to-elearn/redirec
     RouterLink,
     PublicappRoutingModule,
     SharedModule,
-    PublicCourseModule,
-    RedirectCoursesToSlugComponent,
     RedirectToElearnComponent,
     FixMojibakeSafeHtmlPipe
   ],

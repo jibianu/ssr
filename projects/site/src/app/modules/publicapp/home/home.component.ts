@@ -431,7 +431,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private syncTopCourseUrls(): void {
     this.publicAppService
-      .getCourses({ pageNumber: 1, pageSize: 300 })
+      .getCourseCatalog()
       .pipe(catchError(() => of({ results: [] })))
       .subscribe((res: any) => {
         const rows: any[] = Array.isArray(res?.results) ? res.results : [];
@@ -590,7 +590,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private getRowAmount(row: any): number | null {
-    const raw = row?.amount ?? row?.finalPrice ?? row?.price;
+    const raw = row?.amount ?? row?.Amount ?? row?.finalPrice ?? row?.price;
     const n = Number(raw);
     return Number.isFinite(n) ? n : null;
   }

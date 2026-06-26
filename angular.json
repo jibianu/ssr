@@ -46,7 +46,11 @@
               "fileReplacements": [{ "replace": "projects/site/src/environments/environment.ts", "with": "projects/site/src/environments/environment.prod.ts" }],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false
+              "sourceMap": false,
+              "budgets": [
+                { "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" },
+                { "type": "anyComponentStyle", "maximumWarning": "32kb", "maximumError": "256kb" }
+              ]
             },
             "development": {
               "optimization": false,
@@ -61,7 +65,11 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false
+              "sourceMap": false,
+              "budgets": [
+                { "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" },
+                { "type": "anyComponentStyle", "maximumWarning": "32kb", "maximumError": "256kb" }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -125,7 +133,7 @@
             "stylePreprocessorOptions": {
               "includePaths": ["projects/elearn/src/app"]
             },
-            "scripts": ["node_modules/jquery/dist/jquery.min.js", "node_modules/popper.js/dist/umd/popper.min.js", "node_modules/bootstrap/dist/js/bootstrap.js"]
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -133,7 +141,11 @@
               "baseHref": "/",
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false
+              "sourceMap": false,
+              "budgets": [
+                { "type": "initial", "maximumWarning": "2.5mb", "maximumError": "5mb" },
+                { "type": "anyComponentStyle", "maximumWarning": "32kb", "maximumError": "256kb" }
+              ]
             },
             "development": { "optimization": false, "sourceMap": true },
             "unified": {
@@ -146,7 +158,11 @@
               "baseHref": "/",
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false
+              "sourceMap": false,
+              "budgets": [
+                { "type": "initial", "maximumWarning": "2.5mb", "maximumError": "5mb" },
+                { "type": "anyComponentStyle", "maximumWarning": "32kb", "maximumError": "256kb" }
+              ]
             },
             "unified-local": {
               "fileReplacements": [
@@ -158,7 +174,11 @@
               "baseHref": "/",
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false
+              "sourceMap": false,
+              "budgets": [
+                { "type": "initial", "maximumWarning": "2.5mb", "maximumError": "5mb" },
+                { "type": "anyComponentStyle", "maximumWarning": "32kb", "maximumError": "256kb" }
+              ]
             }
           },
           "defaultConfiguration": "production"

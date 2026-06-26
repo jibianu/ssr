@@ -18,6 +18,7 @@ export class PublicAppService {
     private categoriesCache$: Observable<Category[]> | null = null;
     private dashboardCategoriesCache$: Observable<any> | null = null;
     private eventsCache$: Observable<any> | null = null;
+    private courseCatalogCache$: Observable<{ results: any[] }> | null = null;
 
     /**
      * Replays the last successful `getCourseByCanonicalURL(..., { refresh: false })` pipeline per slug
@@ -40,10 +41,6 @@ export class PublicAppService {
         this.isServer = isPlatformServer(platformId);
     }
 
-    /**
-     * GET api/public/courses - same as Elearn. Optional categorySlug; when empty returns all published courses.
-     * Use for both category pages and the main course list (with or without category filter).
-     */
     getPublicCoursesByCategory(categorySlug: string, pageNumber = 1, pageSize = 16): Observable<{ results: any[]; totalNumberOfRecords: number }> {
         let params = new HttpParams()
             .set('pageNumber', String(pageNumber))
@@ -78,6 +75,24 @@ export class PublicAppService {
                 return of([]);
             })
         );
+    }
+
+    /**
+     * GET api/public/courses/catalog — lightweight slug/title/price rows for homepage link sync.
+     */
+    getCourseCatalog(): Observable<{ results: any[] }> {
+        if (!this.courseCatalogCache$) {
+            this.courseCatalogCache$ = this.http.get<any>(`${this.apiUrl}api/public/courses/catalog`).pipe(
+                map(res => ({ results: res?.results ?? res?.Results ?? [] })),
+                shareReplay({ bufferSize: 1, refCount: true }),
+                catchError(error => {
+                    if (this.isServer) return of({ results: [] });
+                    console.error('[PublicAppService] Error fetching course catalog:', error);
+                    return of({ results: [] });
+                })
+            );
+        }
+        return this.courseCatalogCache$;
     }
 
     // ✅ PERFORMANCE: shareReplay prevents duplicate concurrent requests for same data

@@ -41,10 +41,8 @@ export class AppComponent implements OnDestroy {
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         this.setupNavigationInterceptor();
-        // ✅ DIAGNOSTIC: Expose backend health service to window for debugging
-        if (isPlatformBrowser(this.platformId)) {
+        if (isPlatformBrowser(this.platformId) && typeof ngDevMode !== 'undefined' && ngDevMode) {
             (window as any).backendHealth = this.backendHealthService;
-            console.log('💡 Debug helper: Use window.backendHealth.testBackendConnection() in console to test backend');
         }
     }
 
@@ -58,24 +56,13 @@ export class AppComponent implements OnDestroy {
 
     private handleNavigationEvent(event: any): void {
         if (event instanceof NavigationStart) {
-            console.log('[AppComponent] 🔄 NavigationStart:', event.url);
-            console.log('[AppComponent]   Navigation ID:', event.id);
             this.isLoading = true;
         } else if (event instanceof NavigationEnd) {
-            console.log('[AppComponent] ✅ NavigationEnd:', event.url);
-            console.log('[AppComponent]   Navigation ID:', event.id);
-            // Track pageview in GTM using urlAfterRedirects
             this.gtmService.pushPageView(event.urlAfterRedirects);
             this.isLoading = false;
         } else if (event instanceof NavigationCancel) {
-            console.warn('[AppComponent] ⚠️  NavigationCancel:', event.url);
-            console.warn('[AppComponent]   Reason:', event.reason);
-            console.warn('[AppComponent]   Navigation ID:', event.id);
             this.isLoading = false;
         } else if (event instanceof NavigationError) {
-            console.error('[AppComponent] ❌ NavigationError:', event.url);
-            console.error('[AppComponent]   Error:', event.error);
-            console.error('[AppComponent]   Navigation ID:', event.id);
             this.isLoading = false;
         }
     }
