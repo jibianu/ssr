@@ -513,7 +513,10 @@ export class PublicAppService {
                     title: course.title,
                     titleImageUrl: course.titleImageUrl ?? course.imageLink ?? course.ImageLink,
                     canonicalUrl: course.canonicalUrl ?? course.CanonicalUrl ?? course.slug ?? course.Slug,
-                    amount: course.amount,
+                    amount: course.amount ?? course.Amount ?? course.discountedPrice ?? course.DiscountedPrice ?? course.price ?? course.Price,
+                    price: course.price ?? course.Price,
+                    discountedPrice: course.discountedPrice ?? course.DiscountedPrice,
+                    coursePrices: course.coursePrices,
                     category: course.category || course.categoryName
                 }));
                 return courses;

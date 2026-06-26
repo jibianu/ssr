@@ -180,22 +180,7 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
       : [];
 
     const badge = course?.isBestSeller ? 'Best Seller' : course?.badge;
-    const salePrice = this.toNumber(
-      course?.amount ??
-      course?.saleAmount ??
-      course?.salePrice ??
-      course?.discountedPrice ??
-      course?.price
-    );
-    const listPrice = this.toNumber(
-      course?.mrp ??
-      course?.originalAmount ??
-      course?.strikePrice ??
-      course?.listPrice ??
-      course?.basePrice ??
-      course?.markedPrice ??
-      course?.actualAmount
-    );
+    const { salePrice, listPrice } = this.resolveSaleAndListPrice(course);
     const discountPercent = this.calculateDiscount(listPrice, salePrice);
 
     const instructorName =
@@ -270,7 +255,7 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
       route: this.buildCourseRoute(normalizedUrl),
       courseFeatures,
       badge,
-      amount: salePrice ?? listPrice ?? this.toNumber(course?.amount) ?? undefined,
+      amount: salePrice,
       listPrice,
       discountPercent,
       instructorName: instructorName || undefined,
@@ -347,5 +332,50 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
 
     const discount = Math.round(((listPrice - salePrice) / listPrice) * 100);
     return Number.isFinite(discount) ? discount : undefined;
+  }
+
+  /** Align with category/home cards: API uses Price + DiscountedPrice (PascalCase) on by-category list. */
+  private resolveSaleAndListPrice(course: any): { salePrice?: number; listPrice?: number } {
+    const priceRow = Array.isArray(course?.coursePrices) && course.coursePrices.length > 0
+      ? course.coursePrices[0]
+      : null;
+
+    const discounted = this.toNumber(
+      course?.amount ??
+      course?.Amount ??
+      course?.discountedPrice ??
+      course?.DiscountedPrice ??
+      course?.finalPrice ??
+      course?.FinalPrice ??
+      course?.salePrice ??
+      course?.saleAmount ??
+      priceRow?.finalPrice ??
+      priceRow?.FinalPrice ??
+      priceRow?.discountedPrice ??
+      priceRow?.DiscountedPrice
+    );
+
+    const full = this.toNumber(
+      course?.originalAmount ??
+      course?.OriginalAmount ??
+      course?.price ??
+      course?.Price ??
+      course?.mrp ??
+      course?.Mrp ??
+      course?.originalAmount ??
+      course?.strikePrice ??
+      course?.listPrice ??
+      course?.basePrice ??
+      course?.markedPrice ??
+      course?.actualAmount ??
+      priceRow?.originalPrice ??
+      priceRow?.OriginalPrice
+    );
+
+    const salePrice = discounted ?? full;
+    const listPrice =
+      full != null && salePrice != null && full > salePrice ? full : undefined;
+
+    return { salePrice, listPrice };
   }
 }
