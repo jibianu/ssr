@@ -10,9 +10,9 @@ import { UtmService } from '../../../services/utm.service';
 import { AuthenticationService } from '../../auth/auth.service';
 import { resolveCourseId, resolveCourseSlug } from 'src/app/core/helpers/course-id.helper';
 import {
-  getAbsoluteAppBaseUrlForStripeReturn,
   resolveToAbsoluteAppUrl
 } from 'src/app/core/helpers/app-url.helper';
+import { confirmStripePaymentWith3ds, stripePaymentElementOptions, stripePaymentReturnUrl, stripePaymentSuccessPath } from 'src/app/core/helpers/stripe-confirm.helper';
 import { CouponApiService } from 'src/app/services/coupon-api.service';
 
 @Component({
@@ -80,6 +80,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const user = this.authService.currentUser();
     this.userName = user?.username || user?.email || user?.name || '';
+    if (this.razorpayEnabled) {
+      this.selectedGateway = 'razorpay';
+    }
+
+    if (this.route.snapshot.queryParamMap.get('payment_failed') === '1') {
+      this.loadError = 'Bank authentication was not completed or the payment was declined. Please try again.';
+    }
 
     this.subscription.add(
       this.appService.startPurchase(this.courseId).subscribe({
@@ -343,7 +350,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
               courseId: this.courseId
             })
             .subscribe({
-              next: () => this.router.navigateByUrl(`/app/payment/success?entityId=${this.courseId}`),
+              next: () => this.router.navigateByUrl(stripePaymentSuccessPath(this.courseId)),
               error: () => {
                 this.razorpayLoading = false;
                 this.loadError = 'Payment verification failed. If you were charged, contact support.';
@@ -416,13 +423,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Return URL for payment success – must include SPA mount path (e.g. /course) on unified domain. */
+  /** Return URL for Stripe 3DS — must be absolute HTTPS on the live domain. */
   private getReturnUrl(): string {
-    if (typeof window !== 'undefined') {
-      return `${getAbsoluteAppBaseUrlForStripeReturn()}/app/payment/success?entityId=${this.courseId}`;
-    }
-    const fallback = ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
-    return `${fallback}/app/payment/success?entityId=${this.courseId}`;
+    return stripePaymentReturnUrl(this.courseId);
   }
 
   private async initStripe(): Promise<void> {
@@ -443,12 +446,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
       // Payment Element – shows cards, UPI (Google Pay, PhonePe, Paytm apps).
       // UPI: user enters UPI ID and Stripe triggers collect request to their UPI app.
-      const paymentElement = this.elements.create('payment' as any, {
-        layout: 'tabs',
-        defaultCollapsed: false,
-        radios: true,
-        spacing: 'tight'
-      } as any);
+      const paymentElement = this.elements.create('payment' as any, stripePaymentElementOptions() as any);
 
       paymentElement.on('ready', () => {
         this.paymentElementReady = true;
@@ -463,29 +461,33 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   async payNow(): Promise<void> {
-    if (!this.stripe || !this.clientSecret || !this.elements) return;
+    if (!this.stripe || !this.clientSecret || !this.elements || this.paying) return;
     this.paying = true;
     this.loadError = null;
+    this.cdr.detectChanges();
 
-    const successUrl =
-      typeof window !== 'undefined'
-        ? `${getAbsoluteAppBaseUrlForStripeReturn()}/app/payment/success?entityId=${this.courseId}`
-        : `${((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '')}/app/payment/success?entityId=${this.courseId}`;
-
-    const { error } = await this.stripe.confirmPayment({
+    const outcome = await confirmStripePaymentWith3ds({
+      stripe: this.stripe,
       elements: this.elements,
-      confirmParams: {
-        return_url: successUrl,
-        receipt_email: this.authService.currentUser()?.email || undefined
-      }
+      clientSecret: this.clientSecret,
+      returnUrl: this.getReturnUrl(),
+      receiptEmail: this.authService.currentUser()?.email || undefined
     });
 
     this.paying = false;
-    if (error) {
-      this.loadError = error.message || 'Payment could not be completed.';
-    } else {
-      this.router.navigateByUrl(`/app/payment/success?entityId=${this.courseId}`);
+
+    if (outcome.success && outcome.paymentIntentId) {
+      this.router.navigateByUrl(
+        stripePaymentSuccessPath(this.courseId, undefined, {
+          payment_intent: outcome.paymentIntentId,
+          redirect_status: 'succeeded'
+        })
+      );
+      return;
     }
+
+    this.loadError = outcome.errorMessage || 'Payment could not be completed.';
+    this.cdr.detectChanges();
   }
 
   onLogoError(event: Event): void {

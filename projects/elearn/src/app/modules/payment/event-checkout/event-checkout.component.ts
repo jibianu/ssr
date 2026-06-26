@@ -7,7 +7,7 @@ import { environment } from 'src/environments/environment';
 import { AuthenticationService } from '../../auth/auth.service';
 import { StudentDashboardApiService } from '../../student/student-dashboard-api.service';
 import { RazorpayPaymentService } from '../../../services/razorpay-payment.service';
-import { getAbsoluteAppBaseUrlForStripeReturn } from 'src/app/core/helpers/app-url.helper';
+import { confirmStripePaymentWith3ds, stripePaymentElementOptions, stripePaymentReturnUrl, stripePaymentSuccessPath } from 'src/app/core/helpers/stripe-confirm.helper';
 import { CouponApiService } from 'src/app/services/coupon-api.service';
 
 @Component({
@@ -73,6 +73,9 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const user = this.authService.currentUser();
     this.userName = user?.username || user?.email || user?.name || '';
+    if (this.razorpayEnabled) {
+      this.selectedGateway = 'razorpay';
+    }
 
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
@@ -544,7 +547,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
             })
             .subscribe({
               next: () =>
-                this.router.navigateByUrl(`/app/payment/success?entityId=${this.eventId}&entityType=event`),
+                this.router.navigateByUrl(stripePaymentSuccessPath(this.eventId, 'event')),
               error: (err) => {
                 this.razorpayLoading = false;
                 const reason = err?.error?.reason;
@@ -580,11 +583,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   }
 
   private getEventSuccessUrl(): string {
-    const base =
-      typeof window !== 'undefined'
-        ? getAbsoluteAppBaseUrlForStripeReturn()
-        : ((environment as { seoUrl?: string }).seoUrl || '').replace(/\/$/, '');
-    return `${base}/app/payment/success?entityId=${this.eventId}&entityType=event`;
+    return stripePaymentReturnUrl(this.eventId, 'event');
   }
 
   private async initStripe(): Promise<void> {
@@ -602,12 +601,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
         appearance: { theme: 'stripe', variables: { colorPrimary: '#f57722' } }
       });
       await new Promise<void>((r) => setTimeout(r, 50));
-      const paymentElement = this.elements.create('payment' as any, {
-        layout: 'tabs',
-        defaultCollapsed: false,
-        radios: true,
-        spacing: 'tight'
-      } as any);
+      const paymentElement = this.elements.create('payment' as any, stripePaymentElementOptions() as any);
       paymentElement.on('ready', () => {
         this.paymentElementReady = true;
         this.cdr.detectChanges();
@@ -620,25 +614,33 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   }
 
   async payNow(): Promise<void> {
-    if (!this.stripe || !this.clientSecret || !this.elements) return;
+    if (!this.stripe || !this.clientSecret || !this.elements || this.paying) return;
     this.paying = true;
     this.loadError = null;
     this.cdr.detectChanges();
-    const successUrl = this.getEventSuccessUrl();
-    const { error } = await this.stripe.confirmPayment({
+
+    const outcome = await confirmStripePaymentWith3ds({
+      stripe: this.stripe,
       elements: this.elements,
-      confirmParams: {
-        return_url: successUrl,
-        receipt_email: this.authService.currentUser()?.email || undefined
-      }
+      clientSecret: this.clientSecret,
+      returnUrl: this.getEventSuccessUrl(),
+      receiptEmail: this.authService.currentUser()?.email || undefined
     });
+
     this.paying = false;
-    this.cdr.detectChanges();
-    if (error) {
-      this.loadError = error.message || 'Payment could not be completed.';
-    } else {
-      this.router.navigateByUrl(`/app/payment/success?entityId=${this.eventId}&entityType=event`);
+
+    if (outcome.success && outcome.paymentIntentId) {
+      this.router.navigateByUrl(
+        stripePaymentSuccessPath(this.eventId, 'event', {
+          payment_intent: outcome.paymentIntentId,
+          redirect_status: 'succeeded'
+        })
+      );
+      return;
     }
+
+    this.loadError = outcome.errorMessage || 'Payment could not be completed.';
+    this.cdr.detectChanges();
   }
 
   async completePurchase(): Promise<void> {

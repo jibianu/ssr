@@ -2,7 +2,7 @@
  * Express application factory: middleware, static assets, Elearn SPA, ops routes, SSR catch-all.
  */
 
-import type { Express } from 'express';
+import type { Express, Request, Response } from 'express';
 import express from 'express';
 import compression from 'compression';
 import { existsSync } from 'fs';
@@ -18,6 +18,9 @@ import {
   mountElearnSpaIfPresent,
   registerElearnStaticAssetShortcut,
   resolveElearnBrowserFolder,
+  resolveElearnCheckoutDevRedirect,
+  resolveElearnDevRedirectUrl,
+  isLocalDevServer,
 } from './ssr-handler/elearn-spa';
 import { registerSsrCatchAll, warmHtmlCache, type SsrCatchAllDeps } from './ssr-handler/ssr-catch-all';
 import { resolveBrowserDistFolder } from './utils/dist-paths';
@@ -58,6 +61,25 @@ export function createProductionServer(
 
   const app = express();
   const isProd = process.env['NODE_ENV'] === 'production';
+
+  // --- Checkout on :4200 → live elearn ng serve on :4201 (must run before any static/SPA) ---
+  if (isLocalDevServer()) {
+    const redirectCheckoutToElearnDev = (req: Request, res: Response): void => {
+      const path = req.path || '/';
+      const target = resolveElearnCheckoutDevRedirect(path, req.originalUrl || path);
+      if (target) {
+        res.redirect(302, target);
+        return;
+      }
+      res.status(502).type('text/plain').send(
+        'Checkout requires the Elearn dev server. Run: npm run start:elearn (port 4201) or npm run start:both'
+      );
+    };
+    app.get('/checkout', redirectCheckoutToElearnDev);
+    app.get('/checkout/{*splat}', redirectCheckoutToElearnDev);
+    console.log('[SSR] Local dev: /checkout/* → http://localhost:4201/checkout/*');
+  }
+
   const cacheConfig = getCacheConfig();
   const htmlCache = createCacheAdapter({
     type: cacheConfig.type,
@@ -77,6 +99,20 @@ export function createProductionServer(
 
   // --- SEO: sitemap + robots from .NET (before static + SSR; Angular must not own these routes) ---
   registerSeoBackendProxy(app);
+
+  // --- Split dev: redirect remaining Elearn shell paths to ng serve ---
+  app.use((req, res, next) => {
+    if (!isLocalDevServer() || (req.method !== 'GET' && req.method !== 'HEAD')) {
+      return next();
+    }
+    const path = req.path || '/';
+    const target = resolveElearnDevRedirectUrl(path, req.originalUrl || path);
+    if (target) {
+      res.redirect(302, target);
+      return;
+    }
+    next();
+  });
 
   // --- Elearn hashed assets (before site static) ---
   registerElearnStaticAssetShortcut(app, elearnBrowserFolder);

@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "npm run start:site",
-    "start:site": "npm run dev:ssr",
+    "start": "npm run start:both",
+    "start:site": "npm run start:site:split",
+    "start:site:unified": "npm run dev:ssr",
+    "start:site:split": "ng serve site --port 4200",
     "start:elearn": "ng serve elearn --port 4201",
-    "start:both": "concurrently -n site,elearn -c blue,green \"npm run start:site\" \"npm run start:elearn\"",
+    "start:both": "concurrently -n site,elearn -c blue,green \"npm run start:site:split\" \"npm run start:elearn\"",
     "build": "ng build site",
     "build:site": "ng build site",
     "build:site:prod": "ng build site --configuration production",
@@ -25,7 +27,7 @@
     "serve:ssr": "node dist/site/server/server.mjs",
     "preview:ssr": "npm run build:ssr && npm run serve:ssr",
     "dev:ssr": "ng build elearn --configuration unified-local && npm run build:ssr && node scripts/serve-ssr-dev.mjs",
-    "dev:ssr:watch": "ng serve site --ssr --port 4200"
+    "dev:ssr:watch": "ng serve site --port 4200"
   },
   "private": true,
   "dependencies": {

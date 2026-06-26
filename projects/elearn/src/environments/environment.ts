@@ -10,6 +10,8 @@ export const environment = {
   companyPortalHost: '' as string | undefined,
   /** Path on the tenant host (leading slash). Production: /login → https://{subdomain}.oilandgasclub.com/login */
   companyPortalLoginPath: '/login',
+  /** Elearn dev server origin (split dev). Stripe return URLs and checkout must use this, not site :4200. */
+  elearnAppUrl: 'http://localhost:4201',
   /** Base URL of the site app (public course landing). When localhost, Elearn uses native course page (no iframe). */
   publicCourseSiteUrl: 'http://localhost:4200',
   /** Dev only: if true, embed public site (4200) inside Elearn; uses course slug in URL (needs `npm run start:site`). */

@@ -25,6 +25,62 @@ export function sendElearnSpaIndex(res: Response, mountPath: string, indexPath: 
   res.send(html);
 }
 
+/** True on local dev servers (not live production deploy). */
+export function isLocalDevServer(): boolean {
+  if (process.env['ELEARN_DEV_REDIRECT'] === '0') {
+    return false;
+  }
+  if (process.env['ELEARN_DEV_REDIRECT'] === '1') {
+    return true;
+  }
+  return process.env['NODE_ENV'] !== 'production';
+}
+
+export function resolveElearnDevServerBase(): string {
+  return (process.env['ELEARN_DEV_URL'] ?? 'http://localhost:4201').trim().replace(/\/$/, '');
+}
+
+/** Checkout must always use live `ng serve elearn` in local dev — never stale dist/elearn on :4200. */
+export function resolveElearnCheckoutDevRedirect(requestPath: string, rawUrl: string): string | null {
+  if (!isLocalDevServer()) {
+    return null;
+  }
+  const p = requestPath.split('?')[0].replace(/\/$/, '') || '/';
+  if (p !== '/checkout' && !p.startsWith('/checkout/')) {
+    return null;
+  }
+  const devBase = resolveElearnDevServerBase();
+  if (!devBase.startsWith('http')) {
+    return null;
+  }
+  const qs = rawUrl.includes('?') ? rawUrl.slice(rawUrl.indexOf('?')) : '';
+  return `${devBase}${p}${qs}`;
+}
+
+/** When set (split dev: site 4200 + elearn 4201), SSR redirects Elearn shell paths here instead of stale dist. */
+export function resolveElearnDevRedirectUrl(requestPath: string, rawUrl: string): string | null {
+  const checkoutRedirect = resolveElearnCheckoutDevRedirect(requestPath, rawUrl);
+  if (checkoutRedirect) {
+    return checkoutRedirect;
+  }
+  // Unified SSR (single port) serves built Elearn from dist for non-checkout paths.
+  if (process.env['UNIFIED_SSR'] === '1') {
+    return null;
+  }
+  if (!isLocalDevServer()) {
+    return null;
+  }
+  const devBase = resolveElearnDevServerBase();
+  if (!devBase.startsWith('http')) {
+    return null;
+  }
+  if (!isElearnAppShellPath(requestPath)) {
+    return null;
+  }
+  const qs = rawUrl.includes('?') ? rawUrl.slice(rawUrl.indexOf('?')) : '';
+  return `${devBase}${requestPath}${qs}`;
+}
+
 /** Elearn auth/checkout routes when SPA uses `baseHref` `/` on the unified domain. */
 export function isElearnSpaRootPath(requestPath: string): boolean {
   const p = requestPath.split('?')[0].replace(/\/$/, '') || '/';

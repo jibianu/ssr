@@ -24,6 +24,8 @@ import {
 import { ensureSafeRequest } from '../utils/request-safety';
 import {
   isElearnAppShellPath,
+  isLocalDevServer,
+  resolveElearnDevRedirectUrl,
   resolveElearnIndexPath,
   resolveElearnSpaMountPath,
   sendElearnSpaIndex,
@@ -81,6 +83,14 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
 
     if (isAssetRequest(requestPath)) {
       res.status(404).end();
+      return;
+    }
+
+    const elearnDevRedirect = isLocalDevServer()
+      ? resolveElearnDevRedirectUrl(requestPath, req.url ?? requestPath)
+      : null;
+    if (elearnDevRedirect) {
+      res.redirect(302, elearnDevRedirect);
       return;
     }
 
@@ -230,6 +240,13 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
       const path = getRequestPath(ensureSafeRequest(req));
       if (isAssetRequest(path)) {
         res.status(404).end();
+        return;
+      }
+      const elearnDevRedirect = isLocalDevServer()
+        ? resolveElearnDevRedirectUrl(path, req.url ?? path)
+        : null;
+      if (elearnDevRedirect) {
+        res.redirect(302, elearnDevRedirect);
         return;
       }
       const elearnIdx = resolveElearnIndexPath(elearnBrowserFolder);
