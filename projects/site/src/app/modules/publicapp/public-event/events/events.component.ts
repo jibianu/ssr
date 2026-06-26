@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, of, interval, Subscription } from 'rxjs';
 import { catchError, tap, switchMap, startWith, takeUntil } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
-
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 @Component({
     selector: 'app-events',
     templateUrl: './events.component.html',
@@ -122,6 +122,12 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   toggleMobileFilters(): void {
     this.mobileFiltersOpen = !this.mobileFiltersOpen;
+  }
+
+  /** Root slug route for event detail (domain/{slug}), normalized for hosted/production URLs. */
+  getEventRoute(event: any): string[] {
+    const slug = normalizeEventCanonicalSlug(event?.canonicalUrl ?? event?.CanonicalUrl);
+    return slug ? ['/', slug] : ['/events'];
   }
 
   /**

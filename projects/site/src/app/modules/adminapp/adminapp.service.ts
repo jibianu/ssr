@@ -5,6 +5,7 @@ import { environment } from './../../../environments/environment';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 
 // ✅ TypeScript interfaces matching backend DTOs
 export interface EventDetailResponse {
@@ -604,7 +605,11 @@ export class AdminAppService {
     }
 
     getEventByCanonicalURL(url): Observable<any> {
-        return this.http.get<any>(this.apiUrl + `api/events/event/` + encodeURIComponent(url)).pipe(
+        const slug = normalizeEventCanonicalSlug(url);
+        if (!slug) {
+            return of(null);
+        }
+        return this.http.get<any>(this.apiUrl + `api/events/event/` + encodeURIComponent(slug)).pipe(
             catchError(error => {
                 // ✅ SSR-FRIENDLY: Suppress verbose error logging for network errors during SSR
                 // Network errors during SSR are expected if backend is not running

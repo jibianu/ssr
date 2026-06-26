@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { AdminAppService } from '../../modules/adminapp/adminapp.service';
 import { PublicAppService } from '../../modules/publicapp/publicapp.service';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 
 @Injectable({ providedIn: 'root' })
 export class EventResolverService {
@@ -17,7 +18,7 @@ export class EventResolverService {
         route: ActivatedRouteSnapshot,
         _state: RouterStateSnapshot
     ): Observable<any | UrlTree> {
-        const eventUrl = route.paramMap.get('url')?.trim();
+        const eventUrl = normalizeEventCanonicalSlug(route.paramMap.get('url'));
 
         if (!eventUrl) {
             return of(this.notFoundTree());

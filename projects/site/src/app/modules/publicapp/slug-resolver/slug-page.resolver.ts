@@ -8,6 +8,7 @@ import { AdminAppService } from '../../adminapp/adminapp.service';
 import { BlogService } from '../blog/blog.service';
 import { isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
 import { resolveSlugByParallelLookup } from './slug-fallback.util';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 
 /** Prefetched data for /:slug (course | blog | event) — runs before route activation so SSR includes content. */
 export interface SlugPageData {
@@ -72,7 +73,7 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
         );
       }
       if (meta?.type === 'event') {
-        const eventSlug = (meta.slug || slug).trim();
+        const eventSlug = normalizeEventCanonicalSlug(meta.slug || slug);
         return admin.getEventByCanonicalURL(eventSlug).pipe(
           switchMap((event: { id?: string } | null) => {
             if (!event?.id) {

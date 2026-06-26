@@ -3,6 +3,7 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { BlogService } from '../blog/blog.service';
 import { PublicAppService } from '../publicapp.service';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 
 export type SlugFallbackMatch =
   | { type: 'blog'; blog: unknown }
@@ -20,7 +21,7 @@ export function resolveSlugByParallelLookup(
   admin: AdminAppService,
   publicApp: PublicAppService
 ): Observable<SlugFallbackMatch> {
-  const trimmed = slug.trim();
+  const trimmed = normalizeEventCanonicalSlug(slug);
   if (!trimmed) {
     return of(null);
   }

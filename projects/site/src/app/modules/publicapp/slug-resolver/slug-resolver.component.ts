@@ -13,6 +13,7 @@ import { BlogDetailComponent } from '../blog/blog-detail/blog-detail.component';
 import { PublicEventModule } from '../public-event/public-event.module';
 import { appShellRedirectForSlug, isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
 import { resolveSlugByParallelLookup } from './slug-fallback.util';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 
 @Component({
   selector: 'app-slug-resolver',
@@ -106,11 +107,12 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     this.resetForSlug(slug);
 
     if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
-      this.notFound.set(true);
-      return of(null);
-    }
-
-    if (slugPage?.type && !slugPage.notFound && this.slugPageMatches(slugPage, slug)) {
+      // SSR may fail to reach the API on hosted servers — retry live lookup in the browser.
+      if (!isPlatformBrowser(this.platformId)) {
+        this.notFound.set(true);
+        return of(null);
+      }
+    } else if (slugPage?.type && !slugPage.notFound && this.slugPageMatches(slugPage, slug)) {
       this.applySlugPageData(slugPage);
       if (slugPage.type === 'course') {
         return of(slugPage.course ?? true);
@@ -224,7 +226,8 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     }
 
     if (res.type === 'event') {
-      return this.adminService.getEventByCanonicalURL(res.slug).pipe(
+      const eventSlug = normalizeEventCanonicalSlug(res.slug || this.slug());
+      return this.adminService.getEventByCanonicalURL(eventSlug).pipe(
         switchMap((event: { id?: string } | null) => {
           if (!event?.id) {
             this.notFound.set(true);

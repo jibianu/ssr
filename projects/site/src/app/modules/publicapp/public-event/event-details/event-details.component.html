@@ -530,7 +530,7 @@
               <span>{{ related.startDate | date: 'mediumDate' }}</span>
               <span>{{ related.locationName || 'Online' }}</span>
             </div>
-            <a class="btn btn-outline-primary btn-sm" [routerLink]="related?.canonicalUrl ? ['/', related.canonicalUrl] : ['/events']">View details</a>
+            <a class="btn btn-outline-primary btn-sm" [routerLink]="getEventRoute(related)">View details</a>
           </article>
         </div>
       </section>

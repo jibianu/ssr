@@ -28,6 +28,7 @@ import { MetadataService } from 'src/app/shared/service/meta.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
 import { PaymentCardComponent } from '../payments/payment-card.component';
 import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
+import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 
 interface EventDetail {
   section: string;
@@ -1016,6 +1017,11 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     return item?.id ?? index.toString();
   }
 
+  getEventRoute(event: { canonicalUrl?: string; CanonicalUrl?: string } | null | undefined): string[] {
+    const slug = normalizeEventCanonicalSlug(event?.canonicalUrl ?? event?.CanonicalUrl);
+    return slug ? ['/', slug] : ['/events'];
+  }
+
   // ✅ Helper method for tracking organizers (same as trackByOrganizerId but clearer name)
   trackByHostId(index: number, host: EventDetail): string {
     return host?.id ?? index.toString();
@@ -1723,7 +1729,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const base = (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/?$/, '/');
-    const canonicalSlug = (this.event.canonicalUrl ?? this.event.CanonicalUrl ?? '').toString().replace(/^\/+/, '').trim();
+    const canonicalSlug = normalizeEventCanonicalSlug(this.event.canonicalUrl ?? this.event.CanonicalUrl);
     const fullUrl = canonicalSlug ? `${base}${canonicalSlug}` : `${base}events`;
 
     const titleSection = this.event.eventDetails?.find(
