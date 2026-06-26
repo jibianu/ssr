@@ -17,7 +17,9 @@
 } @else if (notFound()) {
   <div class="container py-4"><p class="text-muted">Page not found.</p></div>
 } @else if (type() === 'course' && course(); as c) {
-  <app-public-course-details [resolvedCourse]="c" [courseSlug]="slug()"></app-public-course-details>
+  @for (courseKey of [slug()]; track courseKey) {
+    <app-public-course-details [resolvedCourse]="c" [courseSlug]="courseKey"></app-public-course-details>
+  }
 } @else if (type() === 'blog') {
   <app-blog-detail [slugInput]="slug()" [prefetchedBlog]="blogPrefetch()"></app-blog-detail>
 } @else if (type() === 'event' && eventData(); as ev) {

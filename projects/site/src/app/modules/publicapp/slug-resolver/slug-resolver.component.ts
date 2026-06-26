@@ -1,9 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, switchMap, catchError, map } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
+import { takeUntil, switchMap, catchError, map, distinctUntilChanged, tap } from 'rxjs/operators';
 import { SlugResolverService, SlugResolverResponse } from './slug-resolver.service';
 import { SlugPageData } from './slug-page.resolver';
 import { PublicAppService } from '../publicapp.service';
@@ -13,6 +12,7 @@ import { PublicCourseModule } from '../public-course/public-course.module';
 import { BlogDetailComponent } from '../blog/blog-detail/blog-detail.component';
 import { PublicEventModule } from '../public-event/public-event.module';
 import { appShellRedirectForSlug, isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
+import { resolveSlugByParallelLookup } from './slug-fallback.util';
 
 @Component({
   selector: 'app-slug-resolver',
@@ -51,192 +51,218 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   blogPrefetch = signal<unknown | null>(null);
 
   ngOnInit(): void {
-    const pre = this.route.snapshot.data['slugPage'] as SlugPageData | undefined;
-    if (pre?.notFound) {
-      this.notFound.set(true);
-      this.loading.set(false);
-      this.navigateToNotFound();
-      return;
-    }
-    if (pre && pre.type && !pre.notFound) {
-      this.applySlugPageData(pre);
-      return;
-    }
+    const slugRoute = this.route.parent ?? this.route;
+    const slugParam$ = slugRoute.paramMap.pipe(
+      map((p) => p.get('slug') || ''),
+      distinctUntilChanged()
+    );
 
-    const rawParam0 =
-      this.route.parent?.snapshot.paramMap.get('slug') ?? this.route.snapshot.paramMap.get('slug') ?? '';
-    const canon0 = this.publicAppService.normalizeSlugRouteParam(rawParam0);
-    if (
-      canon0 &&
-      rawParam0 &&
-      canon0 !== rawParam0.replace(/^\/+/, '') &&
-      isPlatformBrowser(this.platformId)
-    ) {
-      void this.router.navigate(['/', canon0], { replaceUrl: true, queryParamsHandling: 'preserve' });
-      return;
-    }
-
-    const slugParam$ = this.route.parent
-      ? this.route.parent.paramMap.pipe(map((p) => ({ slug: p.get('slug') || '' })))
-      : this.route.paramMap.pipe(map((p) => ({ slug: p.get('slug') || '' })));
-
-    slugParam$.pipe(
+    combineLatest([slugParam$, this.route.data]).pipe(
       takeUntil(this.destroy$),
-      switchMap((params) => {
-        const raw = params.slug || '';
-        const slug = this.publicAppService.normalizeSlugRouteParam(raw) || raw.trim();
-        if (!slug) {
-          this.notFound.set(true);
-          this.loading.set(false);
-          return of(null);
-        }
-        if (isAppShellSlug(slug) && isPlatformBrowser(this.platformId)) {
-          const target = appShellRedirectForSlug(slug);
-          if (target) {
-            window.location.replace(target);
-            return of(null);
-          }
-        }
-        this.slug.set(slug);
-        this.loading.set(true);
-        this.notFound.set(false);
-        this.resolved.set(null);
-        this.course.set(null);
-        this.eventData.set(null);
-        this.blogPrefetch.set(null);
-        this.type.set(null);
-        return this.slugResolver.resolve(slug);
-      }),
-      switchMap(res => {
-        if (res === undefined) return of(null);
-        if (res === null) {
-          // Fallback: slug resolver table may miss some older blog/event/course slugs.
-          const fallbackSlug = this.slug();
-          if (!fallbackSlug) {
-            this.notFound.set(true);
-            this.loading.set(false);
-            return of(null);
-          }
-          return this.blogService.getBlogBySlug(fallbackSlug).pipe(
-            switchMap((blog) => {
-              if (blog) {
-                this.type.set('blog');
-                this.resolved.set({ type: 'blog', slug: fallbackSlug });
-                this.blogPrefetch.set(blog);
-                return of(true);
-              }
-              return this.adminService.getEventByCanonicalURL(fallbackSlug).pipe(
-                switchMap((event: any) => {
-                  if (event?.id) {
-                    this.type.set('event');
-                    this.resolved.set({ type: 'event', slug: fallbackSlug });
-                    return this.publicAppService.getUpcomingEvents(event.id).pipe(
-                      catchError(() => of([])),
-                      switchMap((upcoming: any[]) => {
-                        this.eventData.set({ ...event, upcomingEvents: upcoming || [] });
-                        return of(true);
-                      })
-                    );
-                  }
-                  this.type.set('course');
-                  this.resolved.set({ type: 'course', slug: fallbackSlug });
-                  return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
-                    switchMap((basic) =>
-                      basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })
-                    )
-                  );
-                }),
-                catchError(() => {
-                  this.type.set('course');
-                  this.resolved.set({ type: 'course', slug: fallbackSlug });
-                  return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
-                    switchMap((basic) =>
-                      basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })
-                    )
-                  );
-                })
-              );
-            }),
-            catchError(() => {
-              this.type.set('course');
-              this.resolved.set({ type: 'course', slug: fallbackSlug });
-              return this.publicAppService.getCourseBasicByCanonicalURL(fallbackSlug).pipe(
-                switchMap((basic) =>
-                  basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(fallbackSlug, { refresh: false })
-                ),
-                catchError(() => {
-                  this.notFound.set(true);
-                  this.loading.set(false);
-                  return of(null);
-                })
-              );
-            })
-          );
-        }
-        this.resolved.set(res);
-        this.type.set(res.type);
-        if (res.type === 'course') {
-          return this.publicAppService.getCourseBasicByCanonicalURL(res.slug).pipe(
-            switchMap((basic) => basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(res.slug, { refresh: false })),
-            catchError(() => {
-              this.notFound.set(true);
-              return of(null);
-            })
-          );
-        }
-        if (res.type === 'event') {
-          return this.adminService.getEventByCanonicalURL(res.slug).pipe(
-            switchMap((event: any) => {
-              if (!event?.id) {
-                this.notFound.set(true);
-                return of(null);
-              }
-              return this.publicAppService.getUpcomingEvents(event.id).pipe(
-                catchError(() => of([])),
-                switchMap((upcoming: any[]) => {
-                  this.eventData.set({ ...event, upcomingEvents: upcoming || [] });
-                  return of(true);
-                })
-              );
-            }),
-            catchError(() => {
-              this.notFound.set(true);
-              return of(null);
-            })
-          );
-        }
-        if (res.type === 'blog') {
-          return this.blogService.getBlogBySlug(res.slug).pipe(
-            switchMap((blog) => {
-              if (!blog) {
-                this.notFound.set(true);
-                return of(null);
-              }
-              this.blogPrefetch.set(blog);
-              return of(true);
-            }),
-            catchError(() => {
-              this.notFound.set(true);
-              return of(null);
-            })
-          );
-        }
-        this.loading.set(false);
-        return of(true);
-      })
-    ).subscribe(result => {
+      switchMap(([rawSlug, data]) => this.loadSlugContent(rawSlug, data['slugPage'] as SlugPageData | undefined))
+    ).subscribe((result) => {
       if (result === null) {
         this.loading.set(false);
-        if (this.notFound()) this.navigateToNotFound();
-        this.cdr.markForCheck();
-        return;
-      }
-      if (this.type() === 'course' && result && typeof result === 'object') {
+        if (this.notFound()) {
+          this.navigateToNotFound();
+        }
+      } else if (this.type() === 'course' && result && typeof result === 'object') {
         this.course.set(result);
+        this.loading.set(false);
+      } else {
+        this.loading.set(false);
       }
-      this.loading.set(false);
       this.cdr.markForCheck();
     });
+  }
+
+  /** Re-run when /:slug changes (e.g. related course card) — same component instance is reused by the router. */
+  private loadSlugContent(rawSlug: string, slugPage?: SlugPageData): Observable<unknown> {
+    const slug = this.publicAppService.normalizeSlugRouteParam(rawSlug) || rawSlug.trim();
+    if (!slug) {
+      this.notFound.set(true);
+      return of(null);
+    }
+
+    const canon = this.publicAppService.normalizeSlugRouteParam(rawSlug);
+    if (
+      canon &&
+      rawSlug &&
+      canon !== rawSlug.replace(/^\/+/, '') &&
+      isPlatformBrowser(this.platformId)
+    ) {
+      void this.router.navigate(['/', canon], { replaceUrl: true, queryParamsHandling: 'preserve' });
+      return of(null);
+    }
+
+    if (isAppShellSlug(slug) && isPlatformBrowser(this.platformId)) {
+      const target = appShellRedirectForSlug(slug);
+      if (target) {
+        window.location.replace(target);
+        return of(null);
+      }
+    }
+
+    this.resetForSlug(slug);
+
+    if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
+      this.notFound.set(true);
+      return of(null);
+    }
+
+    if (slugPage?.type && !slugPage.notFound && this.slugPageMatches(slugPage, slug)) {
+      this.applySlugPageData(slugPage);
+      if (slugPage.type === 'course') {
+        return of(slugPage.course ?? true);
+      }
+      return of(true);
+    }
+
+    return this.slugResolver.resolve(slug).pipe(
+      switchMap((res) => this.resolveSlugMeta(res)),
+      tap((result) => {
+        if (result === null && this.notFound()) {
+          return;
+        }
+        if (this.isBrowser && this.type() === 'course') {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+      })
+    );
+  }
+
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
+
+  private resetForSlug(slug: string): void {
+    this.slug.set(slug);
+    this.loading.set(true);
+    this.notFound.set(false);
+    this.resolved.set(null);
+    this.course.set(null);
+    this.eventData.set(null);
+    this.blogPrefetch.set(null);
+    this.type.set(null);
+  }
+
+  private slugPageMatches(slugPage: SlugPageData, slug: string): boolean {
+    const expected = this.normalizeSlugKey(slugPage.slug || slug);
+    const actual = this.normalizeSlugKey(slug);
+    return expected.length > 0 && expected === actual;
+  }
+
+  private normalizeSlugKey(value: string): string {
+    return (
+      this.publicAppService.normalizePublicCourseSlug(value) ||
+      this.publicAppService.normalizeSlugRouteParam(value) ||
+      value.trim()
+    ).toLowerCase();
+  }
+
+  private resolveSlugMeta(res: SlugResolverResponse | null): Observable<unknown> {
+    if (res === undefined) {
+      return of(null);
+    }
+    if (res === null) {
+      const fallbackSlug = this.slug();
+      if (!fallbackSlug) {
+        this.notFound.set(true);
+        return of(null);
+      }
+      return resolveSlugByParallelLookup(
+        fallbackSlug,
+        this.blogService,
+        this.adminService,
+        this.publicAppService
+      ).pipe(
+        switchMap((match) => {
+          if (!match) {
+            this.notFound.set(true);
+            return of(null);
+          }
+          if (match.type === 'blog') {
+            this.type.set('blog');
+            this.resolved.set({ type: 'blog', slug: fallbackSlug });
+            this.blogPrefetch.set(match.blog);
+            return of(true);
+          }
+          if (match.type === 'event') {
+            this.type.set('event');
+            this.resolved.set({ type: 'event', slug: fallbackSlug });
+            this.eventData.set({
+              ...(match.event as object),
+              upcomingEvents: match.upcomingEvents
+            });
+            return of(true);
+          }
+          this.type.set('course');
+          this.resolved.set({ type: 'course', slug: fallbackSlug });
+          this.course.set(match.course);
+          return of(match.course);
+        }),
+        catchError(() => {
+          this.notFound.set(true);
+          return of(null);
+        })
+      );
+    }
+
+    this.resolved.set(res);
+    this.type.set(res.type);
+
+    if (res.type === 'course') {
+      return this.publicAppService.getCourseBasicByCanonicalURL(res.slug).pipe(
+        switchMap((basic) =>
+          basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(res.slug, { refresh: false })
+        ),
+        catchError(() => {
+          this.notFound.set(true);
+          return of(null);
+        })
+      );
+    }
+
+    if (res.type === 'event') {
+      return this.adminService.getEventByCanonicalURL(res.slug).pipe(
+        switchMap((event: { id?: string } | null) => {
+          if (!event?.id) {
+            this.notFound.set(true);
+            return of(null);
+          }
+          return this.publicAppService.getUpcomingEvents(event.id).pipe(
+            catchError(() => of([])),
+            switchMap((upcoming: unknown[]) => {
+              this.eventData.set({ ...event, upcomingEvents: upcoming || [] });
+              return of(true);
+            })
+          );
+        }),
+        catchError(() => {
+          this.notFound.set(true);
+          return of(null);
+        })
+      );
+    }
+
+    if (res.type === 'blog') {
+      return this.blogService.getBlogBySlug(res.slug).pipe(
+        switchMap((blog) => {
+          if (!blog) {
+            this.notFound.set(true);
+            return of(null);
+          }
+          this.blogPrefetch.set(blog);
+          return of(true);
+        }),
+        catchError(() => {
+          this.notFound.set(true);
+          return of(null);
+        })
+      );
+    }
+
+    return of(true);
   }
 
   private applySlugPageData(pre: SlugPageData): void {

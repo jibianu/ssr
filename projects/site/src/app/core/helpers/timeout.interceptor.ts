@@ -62,15 +62,21 @@ export class TimeoutInterceptor implements HttpInterceptor {
       }
     }
 
+    const u = request.url.toLowerCase();
+
+    // Event slug lookup: fail fast when slug is a course/blog (parallel fallback handles those).
+    if (u.includes('/api/events/event/')) {
+      return 10000;
+    }
+
     // Course detail by slug (and /location/ variants): can be slow; keep 60s without X-Timeout header
     // so browser CORS stays a "simple" GET (no OPTIONS preflight for a custom header).
-    const u = request.url.toLowerCase();
     if (u.includes('/page/course/course/')) {
       return 60000;
     }
 
     // ✅ SSR OPTIMIZATION: Longer timeout for Dashboard endpoints (slow queries)
-    if (request.url.includes('/Dashboard') || request.url.includes('/dashboard')) {
+    if (u.includes('/dashboard')) {
       return 60000; // 60 seconds for dashboard endpoints
     }
 

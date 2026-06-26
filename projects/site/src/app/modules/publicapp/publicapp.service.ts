@@ -512,7 +512,7 @@ export class PublicAppService {
                     id: course.id,
                     title: course.title,
                     titleImageUrl: course.titleImageUrl ?? course.imageLink ?? course.ImageLink,
-                    canonicalUrl: course.canonicalUrl ?? course.slug,
+                    canonicalUrl: course.canonicalUrl ?? course.CanonicalUrl ?? course.slug ?? course.Slug,
                     amount: course.amount,
                     category: course.category || course.categoryName
                 }));

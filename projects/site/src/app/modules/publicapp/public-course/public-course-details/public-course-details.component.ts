@@ -442,15 +442,42 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
     this.applyCoursePayload(data, slug, true);
   }
 
-  /** When parent (CourseShell) passes new resolvedCourse/courseSlug after navigation (e.g. topbar search), re-apply so page reloads. */
+  /** When parent passes new resolvedCourse/courseSlug (related course, search, etc.), fully reload the page state. */
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['resolvedCourse'] || changes['courseSlug']) {
-      if (this.resolvedCourse) {
-        this.applyResolvedCourse();
-        if (this.isBrowser) this.initializeCountdown();
-        this.changeDetectorRef.markForCheck();
-      }
+    if (!changes['resolvedCourse'] && !changes['courseSlug']) {
+      return;
     }
+    if (changes['resolvedCourse']?.firstChange && changes['courseSlug']?.firstChange) {
+      return;
+    }
+    if (!this.resolvedCourse) {
+      return;
+    }
+
+    const prevSlug = this.normalizeSlugForStaleGuard(
+      (changes['courseSlug']?.previousValue ?? '').toString()
+    );
+    const nextSlug = this.normalizeSlugForStaleGuard(this.courseSlug);
+    const prevId = changes['resolvedCourse']?.previousValue?.id;
+    const nextId = this.resolvedCourse?.id;
+    if (prevSlug === nextSlug && prevId === nextId) {
+      return;
+    }
+
+    this.contentLoaded = false;
+    this.extraLoaded = false;
+    this.loadError = null;
+    this.resetSidebarEnrollmentState();
+    this.applyResolvedCourse();
+    if (this.isBrowser) {
+      this.initializeCountdown();
+      const slugToLoad = (this.courseSlug || '').toString().trim();
+      if (slugToLoad) {
+        setTimeout(() => this.loadProgressiveCourseParts(slugToLoad), 0);
+      }
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    this.changeDetectorRef.markForCheck();
   }
 
   ngOnDestroy(): void {

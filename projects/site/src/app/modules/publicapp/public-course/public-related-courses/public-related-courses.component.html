@@ -11,7 +11,14 @@
 
       <div class="related-grid">
       <article class="related-card" *ngFor="let course of courses; trackBy: trackByCourseId">
-        <a class="related-card__media" [routerLink]="course?.canonicalUrl">
+        <a
+          *ngIf="course.route as courseRoute"
+          class="related-card__stretched-link"
+          [routerLink]="courseRoute"
+          [attr.aria-label]="'View course: ' + (course?.title || 'course')"
+        ></a>
+
+        <div class="related-card__media">
           <img
             [src]="course?.titleImageUrl"
             (error)="onImgError($event)"
@@ -24,16 +31,14 @@
           <span class="related-card__play">
             <i class="fa fa-play" aria-hidden="true"></i>
           </span>
-        </a>
+        </div>
 
         <div class="related-card__body">
           <div class="related-card__labels" *ngIf="course?.tagLabel">
             <span class="related-card__label">{{ course.tagLabel }}</span>
           </div>
 
-          <h3 class="related-card__title">
-            <a [routerLink]="course?.canonicalUrl">{{ course?.title }}</a>
-          </h3>
+          <h3 class="related-card__title">{{ course?.title }}</h3>
 
           <p class="related-card__mentor" *ngIf="course?.instructorName">
             A course by {{ course.instructorName }}
@@ -75,7 +80,11 @@
         </div>
 
         <footer class="related-card__footer">
-          <a class="related-card__cta" [routerLink]="course?.canonicalUrl">
+          <a
+            *ngIf="course.route as courseRoute"
+            class="related-card__cta"
+            [routerLink]="courseRoute"
+          >
             <span class="related-card__cta-text">
               <i class="fa fa-shopping-cart" aria-hidden="true"></i>
               Buy

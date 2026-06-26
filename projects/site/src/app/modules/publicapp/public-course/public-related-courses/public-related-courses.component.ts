@@ -15,6 +15,7 @@ interface RelatedCourseCard {
   titleImageUrl?: string;
   amount?: number;
   canonicalUrl: string;
+  route: string[] | null;
   courseFeatures: RelatedCourseFeature[];
   badge?: string;
   listPrice?: number;
@@ -119,6 +120,26 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
 
   trackByCourseId(index: number, course: RelatedCourseCard): string {
     return course?.id != null ? String(course.id) : String(index);
+  }
+
+  /** Canonical public course URL: /:slug (array form — reliable from nested route contexts). */
+  getCourseRoute(course: RelatedCourseCard | null | undefined): string[] | null {
+    if (course?.route) {
+      return course.route;
+    }
+    const raw = (course?.canonicalUrl || '').toString().trim().replace(/^\/+/, '');
+    const slug =
+      this.publicAppService.normalizePublicCourseSlug(raw) ||
+      this.publicAppService.normalizeSlugRouteParam(raw);
+    return slug ? ['/', slug] : null;
+  }
+
+  private buildCourseRoute(canonicalUrl: string): string[] | null {
+    const raw = (canonicalUrl || '').trim().replace(/^\/+/, '');
+    const slug =
+      this.publicAppService.normalizePublicCourseSlug(raw) ||
+      this.publicAppService.normalizeSlugRouteParam(raw);
+    return slug ? ['/', slug] : null;
   }
 
   getRatingPercentage(rating: number | undefined): number {
@@ -233,11 +254,20 @@ export class PublicRelatedCoursesComponent implements OnInit, OnChanges, OnDestr
       course?.imageLink ??
       course?.ImageLink;
 
-    const canonicalRaw = course?.canonicalUrl ?? course?.CanonicalUrl ?? course?.slug ?? course?.Slug ?? '';
+    const canonicalRaw =
+      course?.canonicalUrl ??
+      course?.CanonicalUrl ??
+      course?.slug ??
+      course?.Slug ??
+      course?.url ??
+      course?.Url ??
+      '';
+    const normalizedUrl = this.normalizeCourseUrl(canonicalRaw);
     return {
       ...course,
       titleImageUrl: titleImageUrl || undefined,
-      canonicalUrl: this.normalizeCourseUrl(canonicalRaw),
+      canonicalUrl: normalizedUrl,
+      route: this.buildCourseRoute(normalizedUrl),
       courseFeatures,
       badge,
       amount: salePrice ?? listPrice ?? this.toNumber(course?.amount) ?? undefined,

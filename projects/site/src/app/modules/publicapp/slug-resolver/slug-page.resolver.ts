@@ -7,6 +7,7 @@ import { PublicAppService } from '../publicapp.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { BlogService } from '../blog/blog.service';
 import { isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
+import { resolveSlugByParallelLookup } from './slug-fallback.util';
 
 /** Prefetched data for /:slug (course | blog | event) — runs before route activation so SSR includes content. */
 export interface SlugPageData {
@@ -39,45 +40,26 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
   return slugSvc.resolve(slug).pipe(
     catchError(() => of(null)),
     switchMap((meta) => {
-      // Fallback: slug-resolver table may miss some older blog/event slugs.
-      // Try blog first (cheap) to ensure canonical blog URLs still render + SSR.
+      // Fallback: slug-resolver table may miss older slugs — probe blog/event/course in parallel.
       if (!meta) {
-        return blogSvc.getBlogBySlug(slug).pipe(
-          switchMap((b) => {
-            if (b) {
-              return of({ slug, type: 'blog' as const, blog: b });
+        return resolveSlugByParallelLookup(slug, blogSvc, admin, publicApp).pipe(
+          map((match) => {
+            if (!match) {
+              return { slug, type: null, notFound: true };
             }
-            return admin.getEventByCanonicalURL(slug).pipe(
-              switchMap((event: { id?: string } | null) => {
-                if (!event?.id) {
-                  return of(null);
-                }
-                return publicApp.getUpcomingEvents(event.id).pipe(
-                  map((upcoming: unknown[]) => ({
-                    slug,
-                    type: 'event' as const,
-                    eventData: { ...event, upcomingEvents: upcoming || [] }
-                  })),
-                  catchError(() =>
-                    of({
-                      slug,
-                      type: 'event' as const,
-                      eventData: { ...event, upcomingEvents: [] }
-                    })
-                  )
-                );
-              }),
-              catchError(() => of(null))
-            );
+            if (match.type === 'blog') {
+              return { slug, type: 'blog' as const, blog: match.blog };
+            }
+            if (match.type === 'event') {
+              return {
+                slug,
+                type: 'event' as const,
+                eventData: { ...(match.event as object), upcomingEvents: match.upcomingEvents }
+              };
+            }
+            return { slug, type: 'course' as const, course: match.course };
           }),
-          catchError(() => of(null)),
-          switchMap((fallbackResolved) => {
-            if (fallbackResolved) {
-              return of(fallbackResolved);
-            }
-            // Still unknown → treat as course below.
-            return of({ slug, type: 'course' as const } as SlugPageData);
-          })
+          catchError(() => of({ slug, type: null, notFound: true }))
         );
       }
       if (meta?.type === 'blog') {

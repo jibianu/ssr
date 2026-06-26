@@ -17,18 +17,18 @@ const routes : Routes=[
     component:EventsComponent
   },
   {
-    path: ':url',
-    component:EventDetailsComponent,
-    resolve:{event:EventResolverService},
-  },
-  {
     path:'payment/success',
     component:PaymentSuccessComponent
   },
   {
     path:'payment/error',
     component:PaymentErrorComponent
-  }
+  },
+  {
+    path: ':url',
+    component:EventDetailsComponent,
+    resolve:{event:EventResolverService},
+  },
 ]
 
 @NgModule({

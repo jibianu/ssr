@@ -57,7 +57,7 @@
             class="event-card"
             *ngFor="let event of eventsList; trackBy: trackByEventId"
           >
-            <a class="event-card__link" [routerLink]="['/events', event.canonicalUrl]">
+            <a class="event-card__link" [routerLink]="event?.canonicalUrl ? ['/', event.canonicalUrl] : ['/events']">
               <div class="event-card__media">
                 <img
                   class="event-card__image"
