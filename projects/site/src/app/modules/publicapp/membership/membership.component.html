@@ -1,102 +1,171 @@
 <!-- 🆕 HYDRATION OPTIMIZATION: Skip hydration for static content page -->
 <div class="membership-page" ngSkipHydration>
-  <section class="membership-hero">
-    <div class="membership-hero__copy">
-      <p class="membership-eyebrow">🏅 Membership</p>
-      <h1>Unlock a <span>global energy network</span> built for designers, operators, and leaders</h1>
+  <section class="membership-hero" aria-labelledby="membership-hero-heading">
+    <div class="membership-hero__inner">
+      <p class="membership-hero__eyebrow">Oilandgasclub Membership</p>
+
+      <h1 id="membership-hero-heading">
+        <span class="membership-hero__title-line">Unlimited&nbsp;Courses&nbsp;&amp;&nbsp;Workshops</span>
+        <span class="membership-hero__title-line">for One Full Year</span>
+      </h1>
+
       <p class="membership-hero__lead">
-        Tap premium learning tracks, curated experts, and priority invites that accelerate your career momentum.
+        Access 50+ technical courses, live workshops, engineering resources, and exclusive member
+        benefits—all included with your annual Oilandgasclub Membership.
       </p>
-      <div class="membership-hero__stats">
-        @for (stat of heroStats; track stat.label) {
-          <article class="membership-stat">
-            <span class="membership-stat__value">{{ stat.value }}</span>
-            <span class="membership-stat__label">{{ stat.label }}</span>
-          </article>
-        }
+
+      <p class="membership-hero__pricing">
+        <strong>{{ featuredPlan.title }}</strong> annual now
+        <span class="membership-hero__original">₹{{ getHeroYearlyOriginal() }}</span>
+        <span class="membership-hero__price">₹{{ getHeroYearlyPrice() }}</span>
+        <span class="membership-hero__pricing-note">
+          (less than ₹{{ getHeroMonthlyEquivalent() }} per month, billed annually)
+        </span>
+      </p>
+
+      <div class="membership-hero__actions">
+        <button type="button" class="membership-hero__btn-primary" (click)="startHeroMembership()">
+          Get {{ yearlyDiscountPercent }}% off
+        </button>
+        <button type="button" class="membership-hero__btn-link" (click)="scrollToPricing()">
+          View all plans
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
-      <div class="membership-hero__cta">
-        <a class="btn-primary" href="/contact-us">Join now</a>
-        <a class="btn-secondary" href="/partner-us">Partner with us</a>
-      </div>
+
+      <p class="membership-hero__footnote">
+        or ₹{{ getHeroSixMonthPrice() }}/6 months. Save {{ yearlyDiscountPercent }}% on yearly billing.
+      </p>
     </div>
-    <figure class="membership-hero__visual" aria-hidden="true">
-      <svg class="membership-svg membership-svg--hero" viewBox="0 0 360 300" role="presentation">
-        <defs>
-          <linearGradient id="membershipHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#dbeafe" />
-            <stop offset="100%" stop-color="#f5d0fe" />
-          </linearGradient>
-        </defs>
-        <rect x="32" y="32" width="296" height="220" rx="32" fill="url(#membershipHeroBg)" />
-        <rect x="70" y="70" width="220" height="64" rx="18" fill="#fff" opacity="0.95" />
-        <rect x="70" y="150" width="220" height="74" rx="22" fill="#0f172a" opacity="0.9" />
-        <circle cx="118" cy="102" r="18" fill="#6366f1" opacity="0.9" />
-        <rect x="148" y="90" width="64" height="12" rx="6" fill="#dbe3ff" />
-        <rect x="148" y="112" width="90" height="10" rx="5" fill="#eef2ff" />
-        <rect x="90" y="170" width="48" height="26" rx="10" fill="#3b82f6" />
-        <rect x="150" y="170" width="48" height="26" rx="10" fill="#10b981" />
-        <rect x="210" y="170" width="48" height="26" rx="10" fill="#fbbf24" />
-        <path d="M82 240c32-48 172-48 204 0" fill="none" stroke="#f472b6" stroke-width="16" stroke-linecap="round" />
-      </svg>
-    </figure>
   </section>
 
-  <section class="membership-section">
-    <header class="membership-section__header">
-      <p class="membership-eyebrow">✨ Reasons to join</p>
-      <h2>Membership unlocks more possibilities</h2>
-    </header>
-    <div class="membership-grid">
-      @for (reason of reasonsToJoin; track reason.title) {
-        <article class="membership-card">
-          <div class="membership-card__icon">
-            <svg viewBox="0 0 60 60" role="presentation">
-              <defs>
-                <linearGradient id="membershipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#c7d2fe" />
-                  <stop offset="100%" stop-color="#bae6fd" />
-                </linearGradient>
-              </defs>
-              <rect x="8" y="12" width="44" height="36" rx="14" fill="url(#membershipGradient)" opacity="0.6" />
-              <path d="M20 30h20" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
-              <path d="M24 40h12" stroke="#10b981" stroke-width="3" stroke-linecap="round" opacity="0.7" />
-            </svg>
-          </div>
-          <h3>{{ reason.title }}</h3>
-          <p>{{ reason.description }}</p>
-        </article>
+  <section class="membership-trusted" aria-labelledby="membership-trusted-heading">
+    <h3 id="membership-trusted-heading" class="membership-trusted__title">
+      {{ trustedCompanies.title }}
+    </h3>
+    <p class="membership-trusted__subtitle">{{ trustedCompanies.lead }}</p>
+    <div class="membership-trusted__logos">
+      @for (logo of trustedCompanyLogos; track logo.name) {
+        <div class="membership-trusted__logo">
+          <img [src]="logo.src" [alt]="logo.name" loading="lazy" />
+        </div>
       }
     </div>
   </section>
 
-  <section class="membership-section membership-section--tiers">
+  <div class="membership-page__content">
+  <section class="membership-section membership-section--pricing" aria-labelledby="membership-pricing-heading">
     <header class="membership-section__header">
       <p class="membership-eyebrow">👤 Membership tiers</p>
-      <h2>Choose the plan that matches your ambition</h2>
+      <h2 id="membership-pricing-heading">Choose the plan that matches your oil &amp; gas career ambition</h2>
     </header>
-    <div class="membership-tiers">
-      @for (tier of membershipTiers; track tier.name) {
-        <article class="membership-tier">
-          <div class="membership-tier__badge">{{ tier.name }}</div>
-          <h3>{{ tier.tagline }}</h3>
-          <ul>
-            @for (benefit of tier.benefits; track benefit) {
-              <li>{{ benefit }}</li>
+
+    <div class="membership-billing-toggle" role="tablist" aria-label="Billing cycle">
+      @for (option of billingOptions; track option.id) {
+        <button
+          type="button"
+          class="membership-billing-toggle__option"
+          role="tab"
+          [class.membership-billing-toggle__option--active]="selectedBillingCycle === option.id"
+          [attr.aria-selected]="selectedBillingCycle === option.id"
+          (click)="selectBillingCycle(option.id)"
+        >
+          {{ option.label }}
+          @if (option.savingsBadge) {
+            <span class="membership-billing-toggle__badge">{{ option.savingsBadge }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    <div class="membership-pricing">
+      @for (plan of membershipPlans; track plan.id) {
+        <article
+          class="membership-plan"
+          [class.membership-plan--popular]="plan.isMostPopular"
+          [attr.aria-label]="plan.title"
+        >
+          @if (plan.badge) {
+            <div class="membership-plan__badge">{{ plan.badge }}</div>
+          }
+
+          <div class="membership-plan__header">
+            <h3 class="membership-plan__title" [class.membership-plan__title--accent]="plan.isMostPopular">
+              {{ plan.title }}
+            </h3>
+            <p class="membership-plan__subtitle">{{ plan.subtitle }}</p>
+
+            <div class="membership-plan__price">
+              @if (plan.isCustom) {
+                <span class="membership-plan__amount membership-plan__amount--custom">Custom</span>
+                <span class="membership-plan__period">pricing</span>
+              } @else {
+                @if (showYearlyDiscount(plan)) {
+                  <span class="membership-plan__original">₹{{ getOriginalPrice(plan) }}</span>
+                }
+                <span class="membership-plan__amount">₹{{ getDisplayPrice(plan) }}</span>
+                <span class="membership-plan__period">{{ getPricePeriodLabel() }}</span>
+              }
+            </div>
+
+            @if (showYearlyDiscount(plan)) {
+              <p class="membership-plan__savings">{{ planYearlyDiscount(plan) }}% off yearly billing</p>
             }
-          </ul>
-          <div class="membership-tier__cta">
-            <a class="btn-primary" [href]="tier.ctaUrl">Get access</a>
+
+            @if (plan.isCustom) {
+              <a class="membership-plan__cta membership-plan__cta--outline" href="/partner-us">
+                {{ plan.ctaLabel }}
+              </a>
+            } @else {
+              <button
+                type="button"
+                class="membership-plan__cta"
+                [class.membership-plan__cta--primary]="plan.isMostPopular"
+                [class.membership-plan__cta--outline]="!plan.isMostPopular"
+                (click)="startMembership(plan)"
+              >
+                {{ plan.ctaLabel }}
+              </button>
+            }
+
+            <p class="membership-plan__note">
+              @if (plan.isCustom) {
+                Tailored for teams of any size
+              } @else {
+                Cancel anytime
+              }
+            </p>
+          </div>
+
+          <div class="membership-plan__features">
+            @if (plan.featuresHeading) {
+              <p class="membership-plan__features-heading">{{ plan.featuresHeading }}</p>
+            }
+            <ul class="membership-plan__feature-list">
+              @for (feature of plan.features; track feature) {
+                <li class="membership-plan__feature">
+                  <span class="membership-plan__feature-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16"><path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="currentColor"/></svg>
+                  </span>
+                  <span>{{ feature }}</span>
+                </li>
+              }
+            </ul>
           </div>
         </article>
       }
     </div>
+
+    <p class="membership-pricing__disclaimer">
+      All membership benefits are subject to active subscription and available workshop/course categories.
+    </p>
   </section>
 
   <section class="membership-section membership-section--perks">
     <header class="membership-section__header">
-      <p class="membership-eyebrow">📌 Signature perks</p>
-      <h2>Members stay ahead</h2>
+      <h2>What's Included in Your Membership</h2>
     </header>
     <div class="membership-perks">
       @for (perk of perks; track perk) {
@@ -105,15 +174,135 @@
     </div>
   </section>
 
+  <section class="membership-feature" aria-labelledby="membership-feature-heading">
+    <div class="membership-feature__inner">
+      <div class="membership-feature__layout">
+        <figure class="membership-feature__visual">
+          <img
+            [src]="featureHighlight.imageSrc"
+            [alt]="featureHighlight.imageAlt"
+            width="600"
+            height="600"
+            loading="lazy"
+          />
+        </figure>
+
+        <div class="membership-feature__panel">
+          <h2 id="membership-feature-heading">{{ featureHighlight.title }}</h2>
+          <p class="membership-feature__description">{{ featureHighlight.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="membership-section membership-section--faq" aria-labelledby="membership-faq-heading">
+    <header class="membership-section__header">
+      <p class="membership-eyebrow">❓ Common questions</p>
+      <h2 id="membership-faq-heading">Frequently Asked Questions</h2>
+    </header>
+
+    <div class="membership-faq">
+      @for (faq of faqs; track faq.question) {
+        <details class="membership-faq__item">
+          <summary class="membership-faq__question">{{ faq.question }}</summary>
+          <div class="membership-faq__answer">
+            @if (faq.intro) {
+              <p>{{ faq.intro }}</p>
+            }
+            @if (faq.answer) {
+              <p>{{ faq.answer }}</p>
+            }
+            @if (faq.bullets?.length) {
+              <ul>
+                @for (item of faq.bullets; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            }
+          </div>
+        </details>
+      }
+    </div>
+  </section>
+
+  <section class="membership-promo" aria-labelledby="membership-promo-heading">
+    <div class="membership-promo__inner">
+      <h2 id="membership-promo-heading" class="membership-promo__title">
+        {{ membershipPromo.title }}
+      </h2>
+
+      <div class="membership-promo__body">
+        <div class="membership-promo__content">
+          <p class="membership-promo__lead">{{ membershipPromo.description }}</p>
+
+          <ul class="membership-promo__highlights">
+            @for (item of membershipPromo.highlights; track item.id) {
+              <li class="membership-promo__highlight">
+                <span
+                  class="membership-promo__icon membership-promo__icon--{{ item.iconTone }}"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5.1L12 14.8 7.5 17.8l.9-5.1L4.8 8.2l5-.7L12 3z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+                <span>{{ item.label }}</span>
+              </li>
+            }
+          </ul>
+
+          <div class="membership-promo__actions">
+            <button type="button" class="membership-promo__btn-primary" (click)="startPromoMembership()">
+              {{ membershipPromo.ctaPrimary }}
+            </button>
+            <button type="button" class="membership-promo__btn-link" (click)="scrollToPricing()">
+              {{ membershipPromo.ctaSecondary }}
+            </button>
+          </div>
+        </div>
+
+        <div class="membership-promo__visual">
+          <figure class="membership-promo__photo">
+            <img
+              [src]="membershipPromo.imageSrc"
+              [alt]="membershipPromo.imageAlt"
+              width="1024"
+              height="731"
+              loading="lazy"
+            />
+          </figure>
+          <span class="membership-promo__accent"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="membership-section membership-section--cta">
     <div class="membership-cta">
       <div>
-        <p class="membership-eyebrow">🤝 We’re here for you</p>
-        <h2>Need a custom membership bundle?</h2>
-        <p>Email <a href="mailto:anush@oilandgasclub.com">anush@oilandgasclub.com</a> or call +91-70101-82555.</p>
+        <p class="membership-eyebrow">🤝 We're here for you</p>
+        <h2>Still have questions?</h2>
+        <p>Our support team is here to help you choose the right membership plan.</p>
+        <div class="membership-cta__contact">
+          <a class="membership-cta__link" [href]="'mailto:' + supportEmail">
+            📧 Email: {{ supportEmail }}
+          </a>
+          <a
+            class="membership-cta__link"
+            [href]="supportWhatsAppUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            💬 WhatsApp: {{ supportWhatsAppDisplay }}
+          </a>
+        </div>
       </div>
-      <a class="btn-primary" href="mailto:anush@oilandgasclub.com">Talk to us</a>
+      <a class="btn-primary" [href]="'mailto:' + supportEmail">Talk to us</a>
     </div>
   </section>
+  </div>
 </div>
 

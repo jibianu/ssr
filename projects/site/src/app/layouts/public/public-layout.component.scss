@@ -53,6 +53,11 @@ app-public-footer {
   &--white {
     background: #ffffff;
   }
+
+  &--membership {
+    padding-block: 0 clamp(1.5rem, 6vw, 2.4rem);
+    background: #ffffff;
+  }
 }
 
 /* Logged-in student on course page: make room for Elearn sidebar (72px) */

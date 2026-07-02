@@ -1,0 +1,234 @@
+.membership-subscriptions__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.membership-subscriptions__tab {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: #374151;
+}
+
+.membership-subscriptions__tab--active {
+  border-color: #f57722;
+  background: #fff7f2;
+  color: #f57722;
+}
+
+.membership-subscriptions__plan-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  background: #fff;
+}
+
+.membership-subscriptions__plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.membership-subscriptions__plan-header h5 {
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.membership-subscriptions__active-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin: 0;
+}
+
+.membership-subscriptions__plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.membership-subscriptions__preview {
+  margin-bottom: 0.75rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.membership-subscriptions__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.membership-subscriptions__save-btn {
+  min-width: 120px;
+  background-color: #f57722;
+  border-color: #f57722;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+
+  &:hover:not(:disabled) {
+    background-color: #e06a1a;
+    border-color: #e06a1a;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
+.membership-subscriptions {
+  padding: 1rem;
+}
+
+.membership-subscriptions__header {
+  margin-bottom: 1rem;
+}
+
+.membership-subscriptions__title {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+}
+
+.membership-subscriptions__subtitle {
+  margin: 0;
+  color: #6b7280;
+}
+
+.membership-subscriptions__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.membership-subscriptions__search {
+  min-width: 220px;
+  flex: 1;
+}
+
+.membership-subscriptions__table-wrap {
+  overflow-x: auto;
+}
+
+.membership-subscriptions__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.membership-subscriptions__table th,
+.membership-subscriptions__table td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+  font-size: 0.9rem;
+}
+
+.membership-subscriptions__table th {
+  text-align: left;
+  background: #f9fafb;
+}
+
+.membership-subscriptions__pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.membership-subscriptions__pager-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.membership-subscriptions__loading,
+.membership-subscriptions__error,
+.membership-subscriptions__empty {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.membership-subscriptions__error {
+  color: #dc2626;
+}
+
+.membership-subscriptions__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1040;
+}
+
+.membership-subscriptions__modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 1rem;
+}
+
+.membership-subscriptions__modal-inner {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: auto;
+  padding: 1.25rem;
+  position: relative;
+}
+
+.membership-subscriptions__modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.membership-subscriptions__detail-section {
+  margin-bottom: 1.25rem;
+}
+
+.membership-subscriptions__detail-section h6 {
+  margin: 0 0 0.65rem;
+  font-weight: 600;
+}
+
+.membership-subscriptions__detail-grid {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.membership-subscriptions__detail-grid dt {
+  margin: 0;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.membership-subscriptions__detail-grid dd {
+  margin: 0;
+  color: #111827;
+}

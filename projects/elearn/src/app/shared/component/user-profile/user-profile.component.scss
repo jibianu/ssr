@@ -25,6 +25,75 @@ $bg-card: #ffffff;
 $bg-avatar-panel-start: #fff8f5;
 $bg-avatar-panel-end: #ffefe8;
 
+.profile-membership {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 87, 34, 0.25);
+  background: linear-gradient(135deg, #fff8f5 0%, #fff 100%);
+}
+
+.profile-membership-welcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.92rem;
+  line-height: 1.45;
+
+  .fa-check-circle {
+    color: #16a34a;
+    margin-top: 0.15rem;
+  }
+}
+
+.profile-membership__badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: $orange;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.profile-membership__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  color: $text;
+}
+
+.profile-membership__meta {
+  margin: 0 0 0.75rem;
+  color: $text-muted;
+  font-size: 0.9rem;
+}
+
+.profile-membership__coupon-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.profile-membership__coupon-row .form-control {
+  flex: 1;
+  font-family: ui-monospace, monospace;
+}
+
+.profile-membership__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
 .profile-page {
   width: 100%;
   min-height: 100vh;

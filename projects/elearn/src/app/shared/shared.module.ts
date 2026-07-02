@@ -51,6 +51,7 @@ import { UnauthorizedComponent } from './component/unauthorized/unauthorized.com
 import { CommonPageTopbarComponent } from './component/common-page-topbar/common-page-topbar.component';
 import { CommonSidebarComponent } from './component/common-sidebar/common-sidebar.component';
 import { CommonPaginationComponent } from './component/common-pagination/common-pagination.component';
+import { StudentSidebarMembershipCtaComponent } from './component/student-sidebar-membership-cta/student-sidebar-membership-cta.component';
 
 @NgModule({
     declarations: [ToasterComponent, ConfirmationModalComponent, ReadMoreComponent, UserProfileComponent, CommonPageTopbarComponent, CommonSidebarComponent, ChatComponent, DropListComponent, StudentDetailsComponent, CheckboxComponent, UpdatePermissionomponent, UpdateCourseListComponent, StudentCourseListComponent, SearchCoursesComponent, SearchBlogComponent, SearchEventComponent, TrainerListFilterComponent, SkipQuestionComponent, RetakeQuestionComponent,
@@ -65,7 +66,8 @@ import { CommonPaginationComponent } from './component/common-pagination/common-
         RemoveFromManagementComponent,
         InviteUserComponent,
         ChangeProgressComponent,
-        PublishCourseModalComponent],
+        PublishCourseModalComponent,
+        StudentSidebarMembershipCtaComponent],
     imports: [
         CommonModule,
         NgOptimizedImage,
@@ -123,6 +125,7 @@ import { CommonPaginationComponent } from './component/common-pagination/common-
         NgOptimizedImage,
         InviteUserComponent,
         UnauthorizedComponent,
+        StudentSidebarMembershipCtaComponent,
         RouterModule
     ],
     schemas: [

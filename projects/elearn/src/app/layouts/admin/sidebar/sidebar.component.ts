@@ -57,6 +57,7 @@ export class SidebarComponent implements OnInit {
       { link: '/app/admin/newsletter-subscriptions', label: 'NewsletterSubscriptions', icon: 'fa fa-envelope' },
       { link: '/app/admin/events', label: 'Events', icon: 'fa fa-calendar-alt' },
       { link: '/app/admin/coupons', label: 'Coupons', icon: 'fa fa-ticket-alt' },
+      { link: '/app/admin/membership-subscriptions', label: 'Membership Subscriptions', icon: 'fa fa-id-card' },
       { link: '/app/admin/chat', label: 'Chat', icon: 'fa fa-comment' },
       { link: '/app/admin/notifications', label: 'Push notifications', icon: 'fa fa-bell' },
       { link: '/app/admin/profile', label: 'Profile', icon: 'fa fa-user-circle' },

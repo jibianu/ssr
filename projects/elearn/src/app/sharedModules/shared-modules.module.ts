@@ -31,6 +31,7 @@ import { CurriculumSidebarComponent } from './course-player/curriculum-sidebar/c
 import { LessonVideoComponent } from './course-player/video-player/video-player.component';
 import { StudentEventsListComponent } from './student-events/student-events-list.component';
 import { StudentEventDetailComponent } from './student-events/student-event-detail.component';
+import { StudentMembershipPageComponent } from './student-membership/student-membership-page.component';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import { StudentEventDetailComponent } from './student-events/student-event-deta
     StudentSearchPageComponent,
     StudentEventsListComponent,
     StudentEventDetailComponent,
+    StudentMembershipPageComponent,
   ],
   imports: [
     PurchaseHistoryComponent,

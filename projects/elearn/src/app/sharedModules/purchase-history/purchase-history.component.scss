@@ -63,6 +63,11 @@ $text-muted: #6b7280;
 .purchase-history__table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.purchase-history__row td {
+  vertical-align: middle;
 }
 
 .purchase-history__th {
@@ -98,14 +103,25 @@ $text-muted: #6b7280;
   }
 
   &--item {
-    max-width: 280px;
+    width: 34%;
+    word-break: break-word;
   }
 
   &--price {
+    width: 12%;
     font-weight: 500;
+    white-space: nowrap;
+  }
+
+  &--payment {
+    width: 22%;
+    word-break: break-word;
+    font-size: 0.875rem;
+    line-height: 1.35;
   }
 
   &--actions {
+    width: 18%;
     text-align: right;
     white-space: nowrap;
     padding-right: 1rem;
@@ -127,9 +143,22 @@ $text-muted: #6b7280;
   }
 }
 
-.purchase-history__price--free,
-.purchase-history__td--price span {
+.purchase-history__price--free {
   color: $price-green;
+}
+
+.purchase-history__price-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  line-height: 1.25;
+}
+
+.purchase-history__price-original {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  text-decoration: line-through;
 }
 
 .purchase-history__btn {

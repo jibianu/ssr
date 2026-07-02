@@ -16,6 +16,10 @@ describe('stripePaymentSuccessPath', () => {
     expect(stripePaymentSuccessPath('evt-1', 'event')).toContain('entityType=event');
   });
 
+  it('includes entityType=membership for membership checkout', () => {
+    expect(stripePaymentSuccessPath('professional', 'membership')).toContain('entityType=membership');
+  });
+
   it('appends extra query params when provided', () => {
     const path = stripePaymentSuccessPath('c1', undefined, { payment_intent: 'pi_123', redirect_status: 'succeeded' });
     expect(path).toContain('payment_intent=pi_123');

@@ -92,6 +92,25 @@
                   </div>
                 </div>
                 <div class="profile-form__fields">
+                  <div *ngIf="showMembershipWelcome" class="profile-membership-welcome" role="status">
+                    <i class="fa fa-check-circle" aria-hidden="true"></i>
+                    <span>Payment complete! You are now a <strong>Pro Member</strong>. Your personal coupon below works only on your account.</span>
+                  </div>
+                  <div *ngIf="showMembershipCard" class="profile-membership profile-membership--active">
+                    <div class="profile-membership__badge">Pro Member</div>
+                    <h3 class="profile-membership__title">{{ membershipStatus.planName }}</h3>
+                    <p class="profile-membership__meta">Valid until {{ formatMembershipDate(membershipStatus.endDate) }}</p>
+                    <div class="profile-membership__coupon" *ngIf="membershipStatus.couponCode">
+                      <label class="form-label">Your membership coupon</label>
+                      <div class="profile-membership__coupon-row">
+                        <input type="text" class="form-control" [value]="membershipStatus.couponCode" readonly />
+                        <button type="button" class="btn btn--secondary" (click)="copyMembershipCoupon()">
+                          {{ couponCopied ? 'Copied' : 'Copy' }}
+                        </button>
+                      </div>
+                      <p class="profile-membership__hint">Use this code at course or event checkout for free access (your account only).</p>
+                    </div>
+                  </div>
                   <h2 class="profile-form__section-title">Account details</h2>
                   <div class="profile-form__row profile-form__row--half">
                     <div class="form-group">
@@ -263,6 +282,25 @@
               </div>
 
               <div class="profile-form__fields">
+                <div *ngIf="showMembershipWelcome" class="profile-membership-welcome" role="status">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
+                  <span>Payment complete! You are now a <strong>Pro Member</strong>. Your personal coupon below works only on your account.</span>
+                </div>
+                <div *ngIf="showMembershipCard" class="profile-membership profile-membership--active">
+                  <div class="profile-membership__badge">Pro Member</div>
+                  <h3 class="profile-membership__title">{{ membershipStatus.planName }}</h3>
+                  <p class="profile-membership__meta">Valid until {{ formatMembershipDate(membershipStatus.endDate) }}</p>
+                  <div class="profile-membership__coupon" *ngIf="membershipStatus.couponCode">
+                    <label class="form-label">Your membership coupon</label>
+                    <div class="profile-membership__coupon-row">
+                      <input type="text" class="form-control" [value]="membershipStatus.couponCode" readonly />
+                      <button type="button" class="btn btn--secondary" (click)="copyMembershipCoupon()">
+                        {{ couponCopied ? 'Copied' : 'Copy' }}
+                      </button>
+                    </div>
+                    <p class="profile-membership__hint">Use this code at course or event checkout for free access (your account only).</p>
+                  </div>
+                </div>
                 <h2 class="profile-form__section-title">Account details</h2>
                 <div class="profile-form__row profile-form__row--half">
                   <div class="form-group">

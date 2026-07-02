@@ -1,0 +1,42 @@
+<button
+  *ngIf="showCta"
+  type="button"
+  class="student-membership-cta"
+  (click)="openMembershipPage()"
+  [attr.title]="title"
+>
+  <div class="student-membership-cta__icon student-membership-cta__icon--collapsed" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M4 18h16l-1.2-5.4c-.2-.9-.9-1.6-1.8-1.8L12 9.5 7 10.8c-.9.2-1.6.9-1.8 1.8L4 18z"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linejoin="round"
+      />
+      <path d="M8.5 10.8L12 5l3.5 5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="12" cy="15.2" r="1" fill="currentColor" />
+    </svg>
+  </div>
+
+  <div class="student-membership-cta__card">
+    <div class="student-membership-cta__header">
+      <div class="student-membership-cta__icon student-membership-cta__icon--small" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M4 18h16l-1.2-5.4c-.2-.9-.9-1.6-1.8-1.8L12 9.5 7 10.8c-.9.2-1.6.9-1.8 1.8L4 18z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+          <path d="M8.5 10.8L12 5l3.5 5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="12" cy="15.2" r="1" fill="currentColor" />
+        </svg>
+      </div>
+      <div class="student-membership-cta__copy">
+        <strong>{{ title }}</strong>
+        <span>{{ subtitle }}</span>
+      </div>
+    </div>
+    <span class="student-membership-cta__btn">{{ buttonLabel }}</span>
+  </div>
+</button>

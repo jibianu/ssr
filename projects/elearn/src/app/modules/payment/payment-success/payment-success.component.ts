@@ -7,6 +7,7 @@ import { AdminAppService } from '../../adminapp/adminapp.service';
 import { AuthenticationService } from '../../auth/auth.service';
 import { StripePaymentService } from '../../../services/stripe-payment.service';
 import { StudentDashboardApiService } from '../../student/student-dashboard-api.service';
+import { MembershipApiService } from 'src/app/services/membership-api.service';
 import { Role } from 'src/app/shared/models/role';
 
 @Component({
@@ -30,7 +31,8 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
     private stripePaymentService: StripePaymentService,
     private studentApi: StudentDashboardApiService,
     private authService: AuthenticationService,
-    private router: Router
+    private router: Router,
+    private membershipApi: MembershipApiService
   ) {
     const q = route.snapshot.queryParams || {};
     this.sessionId = q['session_id'] || '';
@@ -54,9 +56,7 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
 
     // Stripe 3DS / bank redirect failed — send user back to checkout.
     if (redirectStatus === 'failed' && this.entityId) {
-      const checkoutPath = this.entityType === 'event'
-        ? `/checkout/event/${this.entityId}`
-        : `/checkout/${this.entityId}`;
+      const checkoutPath = this.checkoutPathForEntity();
       this.router.navigate([checkoutPath], {
         queryParams: { payment_failed: '1' },
         replaceUrl: true
@@ -108,6 +108,11 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.entityType === 'membership' && this.entityId) {
+      this.completeMembershipReturn(paymentIntentId);
+      return;
+    }
+
     if (this.entityId && (paymentIntentId || !this.sessionId)) {
       this.completeCourseReturn(paymentIntentId);
       return;
@@ -134,15 +139,49 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
   private failAndReturnToCheckout(message: string): void {
     this.loading = false;
     this.errorMessage = message;
-    const checkoutPath = this.entityType === 'event'
-      ? `/checkout/event/${this.entityId}`
-      : `/checkout/${this.entityId}`;
+    const checkoutPath = this.checkoutPathForEntity();
     setTimeout(() => {
       this.router.navigate([checkoutPath], {
         queryParams: { payment_failed: '1' },
         replaceUrl: true
       });
     }, 2500);
+  }
+
+  private checkoutPathForEntity(): string {
+    if (this.entityType === 'event') {
+      return `/checkout/event/${this.entityId}`;
+    }
+    if (this.entityType === 'membership') {
+      return `/checkout/membership/${this.entityId}`;
+    }
+    return `/checkout/${this.entityId}`;
+  }
+
+  private completeMembershipReturn(paymentIntentId: string): void {
+    const finish = () => {
+      void this.ensureSessionRole().then((roleId) => {
+        if (this.canAccessStudentArea(roleId)) {
+          this.router.navigate(['/app/student/profile'], {
+            queryParams: { membership: 'activated' },
+            replaceUrl: true
+          });
+        } else {
+          this.loading = false;
+        }
+      });
+    };
+    if (!paymentIntentId) {
+      finish();
+      return;
+    }
+    this.clearStoredPaymentIntentId();
+    this.subscription.add(
+      this.membershipApi.confirmStripePayment(paymentIntentId).subscribe({
+        next: finish,
+        error: finish
+      })
+    );
   }
 
   private completeEventReturn(paymentIntentId: string): void {

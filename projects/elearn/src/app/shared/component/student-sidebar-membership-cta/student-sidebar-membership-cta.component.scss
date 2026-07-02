@@ -1,0 +1,155 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+}
+
+.student-membership-cta {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: inherit;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.student-membership-cta__icon {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.student-membership-cta__icon--collapsed {
+  width: 44px;
+  height: 44px;
+  margin: 0;
+}
+
+.student-membership-cta:hover .student-membership-cta__icon {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+}
+
+.student-membership-cta__card {
+  display: none;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  box-sizing: border-box;
+}
+
+.student-membership-cta__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.student-membership-cta__icon--small {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.student-membership-cta__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: #6b7280;
+    line-height: 1.35;
+  }
+}
+
+.student-membership-cta__btn {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.student-membership-cta:hover .student-membership-cta__btn {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+/* Collapsed sidebar: crown icon only, aligned with nav icons */
+:host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta {
+  padding: 10px 12px;
+}
+
+:host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta__card {
+  display: none !important;
+}
+
+:host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta__icon--collapsed {
+  display: flex !important;
+}
+
+/* Expanded sidebar: full upgrade card */
+:host-context(.student-layout__sidebar:hover) .student-membership-cta {
+  display: block;
+  padding: 0 10px 12px;
+}
+
+:host-context(.student-layout__sidebar:hover) .student-membership-cta__icon--collapsed {
+  display: none !important;
+}
+
+:host-context(.student-layout__sidebar:hover) .student-membership-cta__card {
+  display: block;
+}
+
+/* Mobile drawer: always show full card */
+:host-context(.mobile-layout__drawer--open) .student-membership-cta {
+  display: block;
+  padding: 0 16px 16px;
+}
+
+:host-context(.mobile-layout__drawer--open) .student-membership-cta__icon--collapsed {
+  display: none !important;
+}
+
+:host-context(.mobile-layout__drawer--open) .student-membership-cta__card {
+  display: block;
+}

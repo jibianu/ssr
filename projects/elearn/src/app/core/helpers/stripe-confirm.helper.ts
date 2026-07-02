@@ -156,12 +156,12 @@ export async function confirmStripePaymentWith3ds(params: {
 /** Build query string for the post-payment success page (under /checkout/success — no app role guards). */
 export function stripePaymentSuccessPath(
   entityId: string,
-  entityType?: 'event',
+  entityType?: 'event' | 'membership',
   extra?: Record<string, string | undefined>
 ): string {
   const params = new URLSearchParams({ entityId });
-  if (entityType === 'event') {
-    params.set('entityType', 'event');
+  if (entityType === 'event' || entityType === 'membership') {
+    params.set('entityType', entityType);
   }
   if (extra) {
     for (const [key, value] of Object.entries(extra)) {
@@ -174,7 +174,7 @@ export function stripePaymentSuccessPath(
 }
 
 /** Absolute HTTPS return URL for Stripe 3DS redirects (must match live domain). */
-export function stripePaymentReturnUrl(entityId: string, entityType?: 'event'): string {
+export function stripePaymentReturnUrl(entityId: string, entityType?: 'event' | 'membership'): string {
   if (typeof window === 'undefined') {
     return stripePaymentSuccessPath(entityId, entityType);
   }

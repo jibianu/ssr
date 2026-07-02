@@ -2,7 +2,7 @@ import { Location } from '@angular/common';
 import { CookieService } from 'src/app/core/services/cookie.service';
 import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
@@ -13,6 +13,7 @@ import { getNavbarMenuForRole, NavbarMenuItem } from 'src/app/config/navbar-menu
 import { Role } from 'src/app/shared/models/role';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
 import { AffiliateService, AffiliateDashboardResponse } from 'src/app/modules/affiliate/affiliate.service';
+import { MembershipApiService, MembershipStatusApi } from 'src/app/services/membership-api.service';
 // import { ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 
 @Component({
@@ -51,7 +52,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
    * Header guidance: students see certificate accuracy; trainers and other roles see communication-only copy.
    */
   get profileIntroMessage(): string {
-    if (this.roleId === Role.Student) {
+    if (this.normalizeRoleId(this.roleId) === Role.Student) {
       return 'Keep your profile updated, including your contact number and LinkedIn details, so we can communicate better and generate your certificates accurately.';
     }
     return 'Keep your profile updated, including your contact number and LinkedIn details, so we can communicate better.';
@@ -66,6 +67,21 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   isAffiliateUser = false;
   /** Affiliate dashboard data for profile affiliate section. */
   affiliateDashboard: AffiliateDashboardResponse | null = null;
+  membershipStatus: MembershipStatusApi | null = null;
+  membershipLoading = false;
+  couponCopied = false;
+  showMembershipWelcome = false;
+  /** True for students (role id 2) or anyone on the student profile route. */
+  get isStudentProfile(): boolean {
+    return this.normalizeRoleId(this.roleId) === Role.Student
+      || (this.router.url?.startsWith('/app/student') ?? false);
+  }
+
+  get showMembershipCard(): boolean {
+    return this.isStudentProfile && !!this.membershipStatus?.isActiveMember;
+  }
+
+  readonly Role = Role;
 
   constructor(
     private formBuilder: UntypedFormBuilder,
@@ -76,9 +92,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     private location: Location,
     private authService: AuthenticationService,
     private router: Router,
+    private route: ActivatedRoute,
     private elementRef: ElementRef,
     private studentBreadcrumb: StudentBreadcrumbService,
-    private affiliateService: AffiliateService
+    private affiliateService: AffiliateService,
+    private membershipApi: MembershipApiService
   ) {}
 
   @HostListener('document:click', ['$event'])
@@ -124,14 +142,17 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.userId = user?.id;
     this.userEmail = user?.email || '';
     this.userDisplayName = this.buildDisplayName(user?.firstName, user?.lastName, user?.userName);
-    this.roleId = user?.roleId != null ? user.roleId : this.authService.currentUser()?.roleId ?? null;
+    this.roleId = this.normalizeRoleId(user?.roleId ?? this.authService.currentUser()?.roleId);
     if (this.roleId != null && ROLE_LANDING_ROUTES[this.roleId]) {
       this.homeRoute = ROLE_LANDING_ROUTES[this.roleId];
     }
     /* Show sidebar for Admin, Trainer, Company, Management (same as shared navbar). */
-    this.showSidebarToggler = this.roleId === Role.Admin || this.roleId === Role.Trainer || this.roleId === Role.Company || this.roleId === Role.Manager;
-    this.menuItems = getNavbarMenuForRole(this.roleId);
-    if (this.roleId === Role.Manager) {
+    this.showSidebarToggler = this.normalizeRoleId(this.roleId) === Role.Admin
+      || this.normalizeRoleId(this.roleId) === Role.Trainer
+      || this.normalizeRoleId(this.roleId) === Role.Company
+      || this.normalizeRoleId(this.roleId) === Role.Manager;
+    this.menuItems = getNavbarMenuForRole(this.normalizeRoleId(this.roleId));
+    if (this.normalizeRoleId(this.roleId) === Role.Manager) {
       this.subscription.add(
         this.appService.getMyManagementPermissions().subscribe({
           next: (perms: string[]) => {
@@ -146,7 +167,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       );
     }
     /* Affiliate (student with affiliate record): show sidebar with affiliate menu + load affiliate data for profile section. */
-    if (this.roleId === Role.Student) {
+    if (this.isStudentProfile) {
+      this.loadMembershipStatus();
+      if (this.route.snapshot.queryParamMap.get('membership') === 'activated') {
+        setTimeout(() => this.loadMembershipStatus(), 500);
+      }
       this.affiliateService.getDashboard().subscribe({
         next: (res) => {
           if (res && res.status !== 'None') {
@@ -164,6 +189,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     /* Load profile from API (works for Admin, Trainer, Company, Management – API uses current user from token). */
     this.getUserInfo();
     this.sharedService.certificateName.next('My Profile');
+  }
+
+  private normalizeRoleId(value: unknown): number | null {
+    if (value == null || value === '') return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   private buildDisplayName(firstName?: string, lastName?: string, userName?: string): string {
@@ -227,6 +258,13 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     }
     this.subscription.add(this.appService.getUserInfo().subscribe((res: any) => {
       if (res) {
+        const rid = this.normalizeRoleId(res.roleId ?? res.RoleId);
+        if (rid != null) {
+          this.roleId = rid;
+        }
+        if (this.isStudentProfile) {
+          this.loadMembershipStatus();
+        }
         const profilePic = res.profilePictureUrl ?? res.ProfilePictureUrl ?? res.profilePicture ?? res.ProfilePicture ?? res.imageUrl ?? res.avatarUrl ?? '';
         this.userEmail = res.email || this.userEmail;
         this.userDisplayName = this.buildDisplayName(res.firstName, res.lastName, res.userName);
@@ -377,6 +415,49 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     }
     this.sharedService.certificateName.next('');
 
+  }
+
+  loadMembershipStatus(): void {
+    this.membershipLoading = true;
+    this.subscription.add(
+      this.membershipApi.getStatus().subscribe({
+        next: (status) => {
+          this.membershipStatus = status;
+          this.membershipLoading = false;
+          if (this.route.snapshot.queryParamMap.get('membership') === 'activated' && status?.isActiveMember) {
+            this.showMembershipWelcome = true;
+            this.toasterService.showSuccess('Welcome! Your Pro Membership is active. Use your personal coupon for free course and event access.');
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { membership: null },
+              queryParamsHandling: 'merge',
+              replaceUrl: true
+            });
+          }
+        },
+        error: () => {
+          this.membershipLoading = false;
+        }
+      })
+    );
+  }
+
+  copyMembershipCoupon(): void {
+    const code = this.membershipStatus?.couponCode?.trim();
+    if (!code || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    navigator.clipboard.writeText(code).then(() => {
+      this.couponCopied = true;
+      this.toasterService.showSuccess('Coupon code copied.');
+      setTimeout(() => { this.couponCopied = false; }, 2000);
+    }).catch(() => {
+      this.toasterService.showError('Could not copy coupon code.');
+    });
+  }
+
+  formatMembershipDate(value?: string): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
 }

@@ -27,6 +27,7 @@ import { NotificationsComponent } from './notifications/notifications.component'
 import { StudentSearchPageComponent } from './student-search-page/student-search-page.component';
 import { StudentEventsListComponent } from './student-events/student-events-list.component';
 import { StudentEventDetailComponent } from './student-events/student-event-detail.component';
+import { StudentMembershipPageComponent } from './student-membership/student-membership-page.component';
 
 const routes: Routes = [
   { path: 'course/:courseId', redirectTo: 'details/curriculum-list/:courseId', pathMatch: 'full' },
@@ -85,6 +86,7 @@ const routes: Routes = [
   { path: 'category-courses-description/:courseID', redirectTo: 'categories/course/:courseID', pathMatch: 'full' },
   // { path: 'exam-result/:questionSetID', component: TestResultComponent },
   { path: 'profile', component: UserProfileComponent },
+  { path: 'membership', component: StudentMembershipPageComponent },
   { path: 'purchase-history', component: PurchaseHistoryComponent },
   { path: 'notifications', component: NotificationsComponent },
   { path: 'certificate', component: CommonCertificateComponent, canActivate: [TrainerBlockCertificateGuard] },

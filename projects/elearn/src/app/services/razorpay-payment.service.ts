@@ -7,6 +7,8 @@ import { environment } from '../../environments/environment';
 export interface RazorpayCreateOrderOptions {
   userId?: string;
   eventId?: string;
+  membershipPlanCode?: string;
+  billingCycle?: string;
   couponCode?: string;
   referralInstructorId?: string;
   utmSource?: string;
@@ -61,8 +63,10 @@ export class RazorpayPaymentService {
   ): Observable<RazorpayCreateOrderResponse> {
     const body: Record<string, unknown> = {
       amount: amountPaise,
-      courseId: options?.eventId ? '' : courseId,
+      courseId: options?.eventId || options?.membershipPlanCode ? '' : courseId,
       eventId: options?.eventId ?? '',
+      membershipPlanCode: options?.membershipPlanCode ?? '',
+      billingCycle: options?.billingCycle ?? '',
       userId: options?.userId ?? '',
       couponCode: options?.couponCode ?? '',
       referralInstructorId: options?.referralInstructorId ?? '',
@@ -73,6 +77,19 @@ export class RazorpayPaymentService {
       campaignCode: options?.campaignCode ?? ''
     };
     return this.http.post<RazorpayCreateOrderResponse>(`${this.apiUrl}api/Razorpay/create-order`, body);
+  }
+
+  createMembershipOrder(
+    amountPaise: number,
+    planCode: string,
+    billingCycle: string,
+    options?: RazorpayCreateOrderOptions
+  ): Observable<RazorpayCreateOrderResponse> {
+    return this.createOrder(amountPaise, '', {
+      ...options,
+      membershipPlanCode: planCode,
+      billingCycle
+    });
   }
 
   /** Verify the Razorpay Checkout signature server-side and enroll the user. */

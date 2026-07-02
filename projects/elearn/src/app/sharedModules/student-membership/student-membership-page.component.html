@@ -1,0 +1,104 @@
+<div class="student-membership-page">
+  <section class="student-membership-hero" *ngIf="!loading && !loadError">
+    <p class="student-membership-hero__eyebrow">Oilandgasclub Membership</p>
+    <h1>{{ pageTitle }}</h1>
+    <p class="student-membership-hero__lead">{{ pageLead }}</p>
+
+    <ng-container *ngIf="featuredPlan as featured">
+      <p class="student-membership-hero__pricing" *ngIf="!isStudentMember">
+        <strong>{{ featured.planName }}</strong> annual now
+        <span class="student-membership-hero__original">₹{{ featured.yearlyOriginalPrice }}</span>
+        <span class="student-membership-hero__price">₹{{ featured.yearlyPrice }}</span>
+        <span class="student-membership-hero__pricing-note">
+          (less than ₹{{ (featured.yearlyPrice / 12) | number:'1.0-0' }} per month, billed annually)
+        </span>
+      </p>
+
+      <div class="student-membership-hero__actions">
+        <button type="button" class="student-membership-hero__btn-primary" (click)="startFeaturedCheckout()" [disabled]="isProMember">
+          {{ isStudentMember ? 'Upgrade to Professional' : 'Get ' + featured.yearlyDiscountPercent + '% off' }}
+        </button>
+        <button type="button" class="student-membership-hero__btn-link" (click)="scrollToPricing()">
+          View all plans
+        </button>
+      </div>
+
+      <p class="student-membership-hero__footnote" *ngIf="!isStudentMember">
+        or ₹{{ featured.sixMonthPrice }}/6 months. Save {{ featured.yearlyDiscountPercent }}% on yearly billing.
+      </p>
+    </ng-container>
+  </section>
+
+  <div *ngIf="loading" class="student-membership-page__loading">Loading membership plans...</div>
+  <div *ngIf="loadError" class="student-membership-page__error">{{ loadError }}</div>
+
+  <section
+    id="student-membership-pricing"
+    class="student-membership-pricing-section"
+    *ngIf="!loading && !loadError"
+  >
+    <header class="student-membership-pricing-section__header">
+      <p class="student-membership-pricing-section__eyebrow">Membership tiers</p>
+      <h2>{{ isStudentMember ? 'Your upgrade option' : 'Choose the plan that matches your career ambition' }}</h2>
+    </header>
+
+    <div class="student-membership-billing-toggle" role="tablist" aria-label="Billing cycle">
+      <button
+        type="button"
+        *ngFor="let option of billingOptions"
+        class="student-membership-billing-toggle__option"
+        role="tab"
+        [class.student-membership-billing-toggle__option--active]="selectedBillingCycle === option.id"
+        [attr.aria-selected]="selectedBillingCycle === option.id"
+        (click)="selectBillingCycle(option.id)"
+      >
+        {{ option.label }}
+        <span *ngIf="option.savingsBadge" class="student-membership-billing-toggle__badge">{{ option.savingsBadge }}</span>
+      </button>
+    </div>
+
+    <div class="student-membership-pricing">
+      <article
+        *ngFor="let plan of visiblePlans"
+        class="student-membership-plan"
+        [class.student-membership-plan--popular]="isHighlighted(plan)"
+        [class.student-membership-plan--current]="isCurrentPlan(plan)"
+      >
+        <div class="student-membership-plan__badge" *ngIf="getPlanMeta(plan).badge">{{ getPlanMeta(plan).badge }}</div>
+        <div class="student-membership-plan__badge student-membership-plan__badge--current" *ngIf="isCurrentPlan(plan)">Current plan</div>
+
+        <div class="student-membership-plan__header">
+          <h3>{{ plan.planName }}</h3>
+          <p class="student-membership-plan__subtitle">{{ getPlanMeta(plan).subtitle }}</p>
+
+          <div class="student-membership-plan__price">
+            <span class="student-membership-plan__original" *ngIf="showYearlyDiscount()">₹{{ getOriginalPrice(plan) }}</span>
+            <span class="student-membership-plan__amount">₹{{ getDisplayPrice(plan) }}</span>
+            <span class="student-membership-plan__period">{{ getPricePeriodLabel() }}</span>
+          </div>
+
+          <p class="student-membership-plan__savings" *ngIf="showYearlyDiscount()">
+            {{ plan.yearlyDiscountPercent }}% off yearly billing
+          </p>
+
+          <button
+            type="button"
+            class="student-membership-plan__cta"
+            [class.student-membership-plan__cta--primary]="isHighlighted(plan)"
+            [disabled]="!canPurchase(plan)"
+            (click)="startCheckout(plan)"
+          >
+            {{ getCtaLabel(plan) }}
+          </button>
+        </div>
+
+        <div class="student-membership-plan__features">
+          <p class="student-membership-plan__features-heading">{{ getPlanMeta(plan).featuresHeading }}</p>
+          <ul>
+            <li *ngFor="let feature of getPlanMeta(plan).features">{{ feature }}</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>

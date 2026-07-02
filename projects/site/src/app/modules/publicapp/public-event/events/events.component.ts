@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, of, interval, Subject, merge } from 'rxjs';
-import { catchError, switchMap, startWith } from 'rxjs/operators';
+import { catchError, map, switchMap, startWith } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
+import { resolveEventStartTime } from 'src/app/core/helpers/event-timing.helper';
 import { resolveMediaCdnUrl } from 'src/app/core/helpers/assets-cdn.helper';
 @Component({
     selector: 'app-events',
@@ -40,6 +41,12 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.events$ = poll$.pipe(
       switchMap(() =>
         this.publicAppService.getPublishedEvents().pipe(
+          map((events) =>
+            (events || []).map((event) => ({
+              ...event,
+              startTime: resolveEventStartTime(event)
+            }))
+          ),
           catchError(() => of([]))
         )
       ),

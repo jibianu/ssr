@@ -39,14 +39,19 @@ export interface StudentDashboardActivityTable {
 }
 
 export interface StudentPurchaseHistoryItem {
-  itemType?: 'Course' | 'Event';
+  itemType?: 'Course' | 'Event' | 'Membership';
   courseId: string;
   enrollmentId: string;
   courseTitle: string;
   eventId?: string;
   eventTitle?: string;
+  membershipSubscriptionId?: string;
+  membershipPlanName?: string;
+  billingCycle?: string;
   purchaseDate: string;
   totalPrice: number | null;
+  originalPrice?: number | null;
+  couponCode?: string | null;
   paymentTypeName: string;
   hasReceipt: boolean;
   hasInvoice: boolean;
@@ -222,8 +227,13 @@ export class StudentDashboardApiService {
             courseTitle: row?.courseTitle ?? row?.CourseTitle ?? '',
             eventId: row?.eventId ?? row?.EventId ?? undefined,
             eventTitle: row?.eventTitle ?? row?.EventTitle ?? undefined,
+            membershipSubscriptionId: row?.membershipSubscriptionId ?? row?.MembershipSubscriptionId ?? undefined,
+            membershipPlanName: row?.membershipPlanName ?? row?.MembershipPlanName ?? undefined,
+            billingCycle: row?.billingCycle ?? row?.BillingCycle ?? undefined,
             purchaseDate: row?.purchaseDate ?? row?.PurchaseDate ?? '',
             totalPrice: row?.totalPrice ?? row?.TotalPrice ?? null,
+            originalPrice: row?.originalPrice ?? row?.OriginalPrice ?? null,
+            couponCode: row?.couponCode ?? row?.CouponCode ?? null,
             paymentTypeName: row?.paymentTypeName ?? row?.PaymentTypeName ?? '—',
             hasReceipt: row?.hasReceipt ?? row?.HasReceipt ?? false,
             hasInvoice: row?.hasInvoice ?? row?.HasInvoice ?? false,

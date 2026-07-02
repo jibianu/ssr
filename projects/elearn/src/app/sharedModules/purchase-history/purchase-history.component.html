@@ -33,19 +33,26 @@
         <ng-container *ngIf="!loading">
           <tr *ngFor="let item of items; trackBy: trackByItem" class="purchase-history__row">
             <td class="purchase-history__td purchase-history__td--icon">
-              <i [class]="(item.itemType === 'Event') ? 'fa fa-calendar-check-o purchase-history__cart-icon' : 'fa fa-shopping-cart purchase-history__cart-icon'" aria-hidden="true"></i>
+              <i [class]="itemIconClass(item)" aria-hidden="true"></i>
             </td>
             <td class="purchase-history__td purchase-history__td--item">
-              <a *ngIf="item.itemType === 'Event' && item.eventId" [routerLink]="['/app/student/events/event', item.eventId]" class="purchase-history__item-link">{{ item.eventTitle || 'Event' }}</a>
-              <a *ngIf="item.itemType !== 'Event' || !item.eventId" [routerLink]="['/app/student/details/curriculum-list', item.courseId]" class="purchase-history__item-link">{{ item.courseTitle || '—' }}</a>
+              <a *ngIf="isEventItem(item) && item.eventId" [routerLink]="['/app/student/events/event', item.eventId]" class="purchase-history__item-link">{{ itemTitle(item) }}</a>
+              <a *ngIf="isMembershipItem(item)" [routerLink]="['/app/student/profile']" class="purchase-history__item-link">{{ itemTitle(item) }}</a>
+              <a *ngIf="!isEventItem(item) && !isMembershipItem(item) && item.courseId" [routerLink]="['/app/student/details/curriculum-list', item.courseId]" class="purchase-history__item-link">{{ itemTitle(item) }}</a>
+              <span *ngIf="!isEventItem(item) && !isMembershipItem(item) && !item.courseId" class="purchase-history__item-link">{{ itemTitle(item) }}</span>
             </td>
             <td class="purchase-history__td">{{ item.purchaseDate | date:'MMM d, y' }}</td>
             <td class="purchase-history__td purchase-history__td--price">
-              <span [class.purchase-history__price--free]="item.totalPrice === null || item.totalPrice === 0">
-                {{ item.totalPrice != null && item.totalPrice > 0 ? (item.totalPrice | currency:'INR':'symbol':'1.2-2') : 'Free' }}
-              </span>
+              <div class="purchase-history__price-stack">
+                <span [class.purchase-history__price--free]="item.totalPrice === null || item.totalPrice === 0">
+                  {{ priceDisplay(item) }}
+                </span>
+                <span class="purchase-history__price-original" *ngIf="isCouponPurchase(item) && item.originalPrice && item.originalPrice > 0">
+                  {{ item.originalPrice | currency:'INR':'symbol':'1.2-2' }}
+                </span>
+              </div>
             </td>
-            <td class="purchase-history__td">{{ item.paymentTypeName || '—' }}</td>
+            <td class="purchase-history__td purchase-history__td--payment">{{ paymentTypeLabel(item) }}</td>
             <td class="purchase-history__td purchase-history__td--actions">
               <button type="button" class="purchase-history__btn purchase-history__btn--outline" [disabled]="!item.hasReceipt" title="Receipt" (click)="item.hasReceipt && openReceipt(item)">
                 Receipt
@@ -115,11 +122,11 @@
           </thead>
           <tbody>
             <tr>
-              <td>{{ selectedItem.itemType === 'Event' ? (selectedItem.eventTitle || 'Event') : (selectedItem.courseTitle || '—') }}</td>
+              <td>{{ itemTitle(selectedItem) }}</td>
               <td>{{ selectedItem.purchaseDate | date:'MMM. d, y' }}</td>
-              <td>—</td>
+              <td>{{ selectedItem.couponCode || '—' }}</td>
               <td>1</td>
-              <td>{{ (selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td>{{ (selectedItem.originalPrice ?? selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</td>
               <td>{{ (selectedItem.totalPrice ?? 0) | currency:'INR':'symbol':'1.2-2' }}</td>
             </tr>
           </tbody>
@@ -187,7 +194,7 @@
           </thead>
           <tbody>
             <tr>
-              <td>{{ selectedItem.itemType === 'Event' ? (selectedItem.eventTitle || 'Event') : (selectedItem.courseTitle || '—') }}</td>
+              <td>{{ itemTitle(selectedItem) }}</td>
               <td>9984 33</td>
               <td>1.0</td>
               <td>{{ invoiceTaxableValue(selectedItem) | number:'1.2-2' }}</td>

@@ -26,6 +26,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   /** When true, URL is /:courseId (e.g. /123) → Elearn layout; hide public header/footer. */
   isElearnCoursePage = false;
   isCorporateTrainingPage = false;
+  isMembershipPage = false;
   private subs = new Subscription();
 
   constructor(
@@ -55,6 +56,9 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     this.isCorporateTrainingPage =
       this.router.url.includes('/corporate-training') ||
       this.router.url.endsWith('/corporate-training');
+    this.isMembershipPage =
+      this.router.url.includes('/membership') ||
+      this.router.url.endsWith('/membership');
     this.cdr.markForCheck();
   }
 

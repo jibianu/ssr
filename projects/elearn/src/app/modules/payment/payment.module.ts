@@ -6,12 +6,14 @@ import { CheckoutComponent } from './checkout/checkout.component';
 import { EventCheckoutComponent } from './event-checkout/event-checkout.component';
 import { PaymentSuccessComponent } from './payment-success/payment-success.component';
 import { PaymentFailedComponent } from './payment-failed/payment-failed.component';
+import { MembershipCheckoutComponent } from './membership-checkout/membership-checkout.component';
 import { PaymentRedirectComponent } from './payment-redirect/payment-redirect.component';
 
 @NgModule({
   declarations: [
     CheckoutComponent,
     EventCheckoutComponent,
+    MembershipCheckoutComponent,
     PaymentSuccessComponent,
     PaymentFailedComponent,
     PaymentRedirectComponent

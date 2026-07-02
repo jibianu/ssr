@@ -45,6 +45,8 @@
         <i class="fa fa-certificate"></i>
         <span class="student-layout__nav-text">Certificates</span>
       </a>
+    </nav>
+    <nav class="student-layout__nav-bottom" aria-label="Account shortcuts">
       <a routerLink="purchase-history" routerLinkActive="active" title="Purchase History">
         <i class="fa fa-shopping-cart"></i>
         <span class="student-layout__nav-text">Purchase History</span>
@@ -54,7 +56,9 @@
         <span class="student-layout__nav-text">Notifications</span>
       </a>
     </nav>
-    <div class="student-layout__user">
+    <div class="student-layout__sidebar-footer">
+      <app-student-sidebar-membership-cta></app-student-sidebar-membership-cta>
+      <div class="student-layout__user">
       <a routerLink="profile" routerLinkActive="active" class="student-layout__user-link" title="Profile">
         <div class="student-layout__avatar">
           <img
@@ -67,6 +71,7 @@
         </div>
         <span class="student-layout__nav-text student-layout__user-name">Profile</span>
       </a>
+    </div>
     </div>
     </div>
   </aside>

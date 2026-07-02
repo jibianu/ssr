@@ -1,0 +1,179 @@
+<section class="event-checkout" *ngIf="!loading && planName">
+  <div class="event-checkout__container">
+    <header class="event-checkout__header">
+      <a [routerLink]="['/']" class="event-checkout__logo-link">
+        <img [src]="logoUrl" alt="Logo" class="event-checkout__logo" (error)="onLogoError($event)" />
+      </a>
+      <span class="event-checkout__badge">Secure checkout · All prices in INR (₹)</span>
+    </header>
+
+    <div class="event-checkout__grid">
+      <div class="event-checkout__payment-col">
+        <h1 class="event-checkout__welcome">You can now complete your membership{{ userName ? ', ' + userName : '' }}</h1>
+        <p class="event-checkout__welcome-note">Enter your details below, then complete payment.</p>
+
+        <div class="event-checkout__registration">
+          <h2 class="event-checkout__order-heading">Your details</h2>
+
+          <div class="event-checkout__registration-summary" *ngIf="registrationDetailsComplete && !editingRegistration">
+            <p><strong>{{ registrationForm.get('name')?.value }}</strong></p>
+            <p>{{ registrationForm.get('email')?.value }}</p>
+            <p>{{ registrationForm.get('mobile')?.value }}</p>
+            <p>{{ registrationForm.get('companyName')?.value }}</p>
+            <p>{{ registrationForm.get('designation')?.value }} · {{ registrationForm.get('department')?.value }}</p>
+            <button type="button" class="event-checkout__edit-link" (click)="editRegistrationDetails()">Edit details</button>
+          </div>
+
+          <form class="event-checkout__registration-form" [formGroup]="registrationForm"
+            *ngIf="!registrationDetailsComplete || editingRegistration" (ngSubmit)="saveRegistrationDetails()">
+            <div class="event-checkout__field">
+              <label for="mem-name">Full name <span class="required">*</span></label>
+              <input id="mem-name" type="text" class="form-control" formControlName="name" />
+            </div>
+            <div class="event-checkout__field">
+              <label for="mem-email">Work email <span class="required">*</span></label>
+              <input id="mem-email" type="email" class="form-control" formControlName="email" readonly />
+              <p class="event-checkout__field-hint">Uses your signed-in account email.</p>
+            </div>
+            <div class="event-checkout__field">
+              <label for="mem-mobile">Mobile number <span class="required">*</span></label>
+              <input id="mem-mobile" type="text" class="form-control" formControlName="mobile" placeholder="+91 98765 43210" />
+            </div>
+            <div class="event-checkout__field">
+              <label for="mem-company">Company name <span class="required">*</span></label>
+              <input id="mem-company" type="text" class="form-control" formControlName="companyName" />
+            </div>
+            <p class="event-checkout__profile-category-label">Work profile category</p>
+            <div class="event-checkout__field-row">
+              <div class="event-checkout__field">
+                <label for="mem-designation">Designation <span class="required">*</span></label>
+                <input id="mem-designation" type="text" class="form-control" formControlName="designation" />
+              </div>
+              <div class="event-checkout__field">
+                <label for="mem-department">Department <span class="required">*</span></label>
+                <input id="mem-department" type="text" class="form-control" formControlName="department" />
+              </div>
+            </div>
+            <button type="submit" class="event-checkout__btn event-checkout__btn--secondary" [disabled]="savingRegistrationDetails">
+              {{ savingRegistrationDetails ? 'Saving…' : (editingRegistration ? 'Update details' : 'Continue to payment') }}
+            </button>
+          </form>
+        </div>
+
+        <div class="event-checkout__order-box">
+          <h2 class="event-checkout__order-heading">Order summary</h2>
+          <div class="event-checkout__order-row">
+            <span>{{ planName }}</span>
+            <span><span aria-label="INR">₹</span>{{ amountRupees | number:'1.2-2' }}</span>
+          </div>
+          <div class="event-checkout__order-divider"></div>
+          <div class="event-checkout__order-row event-checkout__order-total">
+            <span>Total (Incl. taxes)</span>
+            <span><span aria-label="INR">₹</span>{{ amountRupees | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <p class="event-checkout__error" *ngIf="loadError">{{ loadError }}</p>
+
+        <ng-container *ngIf="!clientSecret && registrationDetailsComplete">
+          <div class="event-checkout__gateways">
+            <div class="event-checkout__payment-card">
+              <h2 class="event-checkout__order-heading">Payment Method</h2>
+              <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'stripe'">
+                <input type="radio" name="gateway" value="stripe" [(ngModel)]="selectedGateway" />
+                <span class="event-checkout__gateway-label">Credit / Debit Card <small>(Stripe)</small></span>
+              </label>
+              <label class="event-checkout__gateway" [class.event-checkout__gateway--active]="selectedGateway === 'razorpay'" *ngIf="razorpayEnabled">
+                <input type="radio" name="gateway" value="razorpay" [(ngModel)]="selectedGateway" />
+                <span class="event-checkout__gateway-label">UPI / Cards / Net Banking <small>(Razorpay)</small></span>
+              </label>
+            </div>
+
+            <div class="event-checkout__pay-actions">
+              <button type="button" class="event-checkout__btn event-checkout__btn--primary"
+                [disabled]="creatingIntent || razorpayLoading || savingRegistrationDetails"
+                (click)="proceedToPayment()"
+                aria-label="Proceed to payment">
+                <i class="fas fa-lock event-checkout__btn-icon" *ngIf="!creatingIntent && !razorpayLoading"></i>
+                <span class="event-checkout__btn-text">{{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}</span>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="event-checkout__methods" *ngIf="clientSecret">
+          <div id="membership-payment-element" class="event-checkout__payment-element"></div>
+          <button type="button" class="event-checkout__btn event-checkout__btn--primary event-checkout__btn--complete"
+            [disabled]="paying || !paymentElementReady" (click)="payWithStripe()" aria-label="Complete purchase">
+            <i class="fas fa-shopping-cart event-checkout__btn-icon" *ngIf="!paying"></i>
+            <span class="event-checkout__btn-text">{{ paying ? 'Processing…' : 'Complete purchase' }}</span>
+          </button>
+        </div>
+
+        <div class="event-checkout__trust">
+          <p class="event-checkout__trust-line"><i class="fas fa-lock"></i> 100% secure payment</p>
+          <p class="event-checkout__trust-note">Powered by Stripe or Razorpay. Your payment details are encrypted and secure.</p>
+        </div>
+
+        <p class="event-checkout__help">
+          Any questions? <a routerLink="/app/student/profile" class="event-checkout__help-link">Visit your profile</a> or contact support.
+        </p>
+      </div>
+
+      <div class="event-checkout__cart-col">
+        <div class="event-checkout__cart-card">
+          <h2 class="event-checkout__cart-heading">Membership</h2>
+          <a (click)="goToMembershipPage()" class="event-checkout__back" role="button">
+            <i class="fas fa-arrow-left"></i> Back to membership
+          </a>
+          <div class="event-checkout__divider"></div>
+
+          <div class="event-checkout__item">
+            <div class="event-checkout__item-media">
+              <div class="event-checkout__item-placeholder">
+                <i class="fas fa-id-card"></i>
+              </div>
+            </div>
+            <div class="event-checkout__item-body">
+              <h3 class="event-checkout__item-title">{{ planName }}</h3>
+              <p class="event-checkout__item-meta">{{ billingCycleLabel }}</p>
+              <p class="event-checkout__item-available">Available</p>
+            </div>
+            <div class="event-checkout__item-prices">
+              <span class="event-checkout__price-current"><span aria-label="INR">₹</span>{{ amountRupees | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="event-checkout__what-you-get">
+            <h3 class="event-checkout__what-title">What are you buying?</h3>
+            <ul class="event-checkout__what-list">
+              <li><i class="fas fa-check event-checkout__what-icon"></i> {{ planName }} membership with {{ billingCycleLabel | lowercase }}.</li>
+              <li><i class="fas fa-check event-checkout__what-icon"></i> Member coupon for 100% off eligible courses and events.</li>
+              <li><i class="fas fa-check event-checkout__what-icon"></i> Access to member benefits from your profile after activation.</li>
+            </ul>
+          </div>
+
+          <div class="event-checkout__terms">
+            <p>By completing your purchase you agree to our terms of use and privacy policy. All charges are in INR (₹).</p>
+          </div>
+        </div>
+
+        <p class="event-checkout__help event-checkout__help--bottom">
+          Need help? <a routerLink="/app/student/profile" class="event-checkout__help-link">Profile &amp; support</a>
+        </p>
+      </div>
+    </div>
+
+    <footer class="event-checkout__footer">
+      <p>&copy; {{ appName }} {{ currentYear }}. Secure checkout powered by Stripe &amp; Razorpay.</p>
+    </footer>
+  </div>
+</section>
+
+<div *ngIf="loading" class="event-checkout__loading">
+  <i class="fa fa-spinner fa-spin"></i> Loading…
+</div>
+<div *ngIf="loadError && !planName && !loading" class="event-checkout__error-page">
+  <p>{{ loadError }}</p>
+  <a routerLink="/app/student/membership" class="event-checkout__link">Back to membership</a>
+</div>

@@ -1,6 +1,10 @@
 <!-- Public header/footer: hide when URL is /:courseId (Elearn layout shows its own chrome) -->
 <app-public-topbar *ngIf="!isAuthRoute && !isEmbedMode && !isElearnCoursePage"></app-public-topbar>
-<main class="public-main-wrapper" [class.public-main-wrapper--white]="isCorporateTrainingPage">
+<main
+  class="public-main-wrapper"
+  [class.public-main-wrapper--white]="isCorporateTrainingPage || isMembershipPage"
+  [class.public-main-wrapper--membership]="isMembershipPage"
+>
   <div class="public-container">
     <router-outlet></router-outlet>
   </div>

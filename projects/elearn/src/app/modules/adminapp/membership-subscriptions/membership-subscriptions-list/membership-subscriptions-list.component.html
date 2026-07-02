@@ -1,0 +1,220 @@
+<div class="membership-subscriptions">
+  <div class="membership-subscriptions__header">
+    <h4 class="membership-subscriptions__title">Membership</h4>
+    <p class="membership-subscriptions__subtitle">Manage plan pricing and view subscription purchases.</p>
+  </div>
+
+  <div class="membership-subscriptions__tabs">
+    <button type="button" class="membership-subscriptions__tab"
+      [class.membership-subscriptions__tab--active]="activeTab === 'pricing'"
+      (click)="setTab('pricing')">Plan pricing</button>
+    <button type="button" class="membership-subscriptions__tab"
+      [class.membership-subscriptions__tab--active]="activeTab === 'subscriptions'"
+      (click)="setTab('subscriptions')">Subscriptions</button>
+  </div>
+
+  <!-- Plan pricing -->
+  <div *ngIf="activeTab === 'pricing'" class="membership-subscriptions__pricing">
+    <div *ngIf="plansLoading" class="membership-subscriptions__loading">Loading plans…</div>
+    <div *ngIf="plansLoadError" class="membership-subscriptions__error">{{ plansLoadError }}</div>
+
+    <div *ngFor="let plan of planRows" class="membership-subscriptions__plan-card">
+      <div class="membership-subscriptions__plan-header">
+        <h5>{{ plan.planCode | titlecase }} plan</h5>
+        <label class="membership-subscriptions__active-toggle">
+          <input type="checkbox" [(ngModel)]="plan.isActive" />
+          Active on membership page
+        </label>
+      </div>
+
+      <div class="membership-subscriptions__plan-grid">
+        <div class="form-group">
+          <label>Plan name</label>
+          <input type="text" class="form-control" [(ngModel)]="plan.planName" />
+        </div>
+        <div class="form-group">
+          <label>6-month price (₹)</label>
+          <input type="number" class="form-control" min="1" [(ngModel)]="plan.sixMonthPrice" />
+        </div>
+        <div class="form-group">
+          <label>Yearly discount (%)</label>
+          <input type="number" class="form-control" min="0" max="90" [(ngModel)]="plan.yearlyDiscountPercent" />
+        </div>
+        <div class="form-group">
+          <label>Display order</label>
+          <input type="number" class="form-control" min="0" [(ngModel)]="plan.displayOrder" />
+        </div>
+      </div>
+
+      <div class="membership-subscriptions__preview">
+        <strong>Preview:</strong>
+        6 months — ₹{{ plan.sixMonthPrice | number:'1.0-0' }} ·
+        Yearly — <s>₹{{ previewYearlyOriginal(plan) | number:'1.0-0' }}</s>
+        ₹{{ previewYearlyPrice(plan) | number:'1.0-0' }}
+        ({{ plan.yearlyDiscountPercent }}% off)
+      </div>
+
+      <div class="membership-subscriptions__actions">
+        <button type="button" class="btn btn-primary membership-subscriptions__save-btn" (click)="savePlan(plan)" [disabled]="plan.saving">
+          {{ plan.saving ? 'Updating…' : 'Update' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscriptions list -->
+  <div *ngIf="activeTab === 'subscriptions'">
+    <div class="membership-subscriptions__toolbar">
+      <input class="form-control membership-subscriptions__search" type="search" placeholder="Search name, email, phone, company, coupon…"
+        [(ngModel)]="search" (keyup.enter)="onSearch()" />
+      <select class="form-control" [(ngModel)]="planCode" (change)="onSearch()">
+        <option value="">All plans</option>
+        <option value="student">Student</option>
+        <option value="professional">Professional</option>
+      </select>
+      <select class="form-control" [(ngModel)]="subscriptionStatus" (change)="onSearch()">
+        <option value="">All statuses</option>
+        <option value="active">Active</option>
+        <option value="expired">Expired</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="failed">Failed</option>
+      </select>
+      <select class="form-control" [(ngModel)]="gateway" (change)="onSearch()">
+        <option value="">All gateways</option>
+        <option value="Razorpay">Razorpay</option>
+        <option value="Stripe">Stripe</option>
+      </select>
+      <button type="button" class="btn btn-primary btn-sm" (click)="onSearch()">Search</button>
+    </div>
+
+    <div *ngIf="loading" class="membership-subscriptions__loading">Loading…</div>
+    <div *ngIf="loadError" class="membership-subscriptions__error">{{ loadError }}</div>
+    <div *ngIf="!loading && !loadError && rows.length === 0" class="membership-subscriptions__empty">No subscriptions found.</div>
+
+    <div *ngIf="rows.length" class="membership-subscriptions__table-wrap">
+      <table class="membership-subscriptions__table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Mobile</th>
+            <th>Company</th>
+            <th>Work profile</th>
+            <th>Plan</th>
+            <th>Amount</th>
+            <th>Gateway</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Valid until</th>
+            <th>Coupon</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>
+              <div>{{ row.userName || '—' }}</div>
+              <small>{{ row.userEmail || '—' }}</small>
+            </td>
+            <td>{{ row.userPhone || '—' }}</td>
+            <td>{{ row.userCompanyName || '—' }}</td>
+            <td>
+              <div>{{ row.userDesignation || '—' }}</div>
+              <small *ngIf="row.userDepartment">{{ row.userDepartment }}</small>
+            </td>
+            <td>{{ row.planName }}</td>
+            <td>₹{{ row.amount | number:'1.0-0' }}</td>
+            <td>{{ row.gateway || '—' }}</td>
+            <td>{{ row.paymentStatus }}</td>
+            <td>{{ row.subscriptionStatus }}</td>
+            <td>{{ formatDate(row.endDate) }}</td>
+            <td>
+              <div>{{ row.couponCode || '—' }}</div>
+              <small *ngIf="row.couponStatus">{{ row.couponStatus }}</small>
+            </td>
+            <td>{{ formatDate(row.createdOn) }}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="viewDetail(row)">View</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="membership-subscriptions__pager" *ngIf="totalNumberOfRecords > 0">
+      <span>Showing {{ (pageNumber - 1) * pageSize + 1 }} – {{ pageNumber * pageSize > totalNumberOfRecords ? totalNumberOfRecords : pageNumber * pageSize }} of {{ totalNumberOfRecords }}</span>
+      <div class="membership-subscriptions__pager-controls">
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="pageNumber <= 1" (click)="onPageChange(pageNumber - 1)">Prev</button>
+        <span>Page {{ pageNumber }} / {{ totalPages }}</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="pageNumber >= totalPages" (click)="onPageChange(pageNumber + 1)">Next</button>
+        <select class="form-control form-control-sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+          <option [ngValue]="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="membership-subscriptions__modal-backdrop" *ngIf="selectedDetail || detailLoading" (click)="closeDetail()"></div>
+<div class="membership-subscriptions__modal" *ngIf="selectedDetail || detailLoading">
+  <div class="membership-subscriptions__modal-inner" (click)="$event.stopPropagation()">
+    <button type="button" class="membership-subscriptions__modal-close" (click)="closeDetail()">×</button>
+    <div *ngIf="detailLoading">Loading details…</div>
+    <div *ngIf="selectedDetail">
+      <h5>Subscription details</h5>
+
+      <div class="membership-subscriptions__detail-section">
+        <h6>Member details</h6>
+        <dl class="membership-subscriptions__detail-grid">
+          <dt>Name</dt>
+          <dd>{{ selectedDetail.userName || '—' }}</dd>
+          <dt>Work email</dt>
+          <dd>{{ selectedDetail.userEmail || '—' }}</dd>
+          <dt>Mobile</dt>
+          <dd>{{ selectedDetail.userPhone || '—' }}</dd>
+          <dt>Company</dt>
+          <dd>{{ selectedDetail.userCompanyName || '—' }}</dd>
+          <dt>Designation</dt>
+          <dd>{{ selectedDetail.userDesignation || '—' }}</dd>
+          <dt>Department</dt>
+          <dd>{{ selectedDetail.userDepartment || '—' }}</dd>
+        </dl>
+      </div>
+
+      <div class="membership-subscriptions__detail-section">
+        <h6>Subscription</h6>
+        <dl class="membership-subscriptions__detail-grid">
+          <dt>Plan</dt>
+          <dd>{{ selectedDetail.subscription?.planName || '—' }}</dd>
+          <dt>Status</dt>
+          <dd>{{ selectedDetail.subscription?.status || '—' }} / {{ selectedDetail.subscription?.paymentStatus || '—' }}</dd>
+          <dt>Gateway</dt>
+          <dd>{{ selectedDetail.subscription?.gateway || '—' }}</dd>
+          <dt>Amount</dt>
+          <dd>₹{{ selectedDetail.subscription?.amount ?? '—' }}</dd>
+          <dt>Billing cycle</dt>
+          <dd>{{ selectedDetail.subscription?.billingCycle || '—' }}</dd>
+          <dt>Valid from</dt>
+          <dd>{{ formatDate(selectedDetail.subscription?.startDate) }}</dd>
+          <dt>Valid until</dt>
+          <dd>{{ formatDate(selectedDetail.subscription?.endDate) }}</dd>
+          <dt>Coupon</dt>
+          <dd>{{ selectedDetail.coupon?.code || '—' }} <span *ngIf="selectedDetail.coupon?.status">({{ selectedDetail.coupon?.status }})</span></dd>
+        </dl>
+      </div>
+
+      <h6>Payments</h6>
+      <ul>
+        <li *ngFor="let p of selectedDetail.payments">{{ p.gateway }} — {{ p.status }} — ₹{{ p.amount }} — {{ formatDate(p.createdOn) }}</li>
+        <li *ngIf="!selectedDetail.payments?.length">No payment records.</li>
+      </ul>
+      <h6>Coupon usage</h6>
+      <ul>
+        <li *ngFor="let u of selectedDetail.usages">{{ u.referenceType }} {{ u.referenceId }} — {{ formatDate(u.usedAt) }}</li>
+        <li *ngIf="!selectedDetail.usages?.length">No coupon usage yet.</li>
+      </ul>
+    </div>
+  </div>
+</div>

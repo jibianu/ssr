@@ -75,8 +75,52 @@ export class PurchaseHistoryComponent implements OnInit {
   }
 
   trackByItem(_index: number, item: StudentPurchaseHistoryItem): string {
-    if (item.itemType === 'Event' && item.eventId) return 'event-' + item.eventId + '-' + item.enrollmentId;
+    const type = (item.itemType || 'Course').toLowerCase();
+    if (type === 'event' && item.eventId) return 'event-' + item.eventId + '-' + item.enrollmentId;
+    if (type === 'membership' && item.membershipSubscriptionId) return 'membership-' + item.membershipSubscriptionId;
+    if (type === 'membership' && item.enrollmentId) return 'membership-' + item.enrollmentId;
     return item.enrollmentId || item.courseId || '';
+  }
+
+  itemTitle(item: StudentPurchaseHistoryItem): string {
+    const type = (item.itemType || 'Course').toLowerCase();
+    if (type === 'event') return item.eventTitle || 'Event';
+    if (type === 'membership') return item.membershipPlanName ? `${item.membershipPlanName} Membership` : (item.courseTitle || 'Membership');
+    return item.courseTitle || '—';
+  }
+
+  itemIconClass(item: StudentPurchaseHistoryItem): string {
+    const type = (item.itemType || 'Course').toLowerCase();
+    if (type === 'event') return 'fa fa-calendar-check-o purchase-history__cart-icon';
+    if (type === 'membership') return 'fa fa-id-card purchase-history__cart-icon';
+    return 'fa fa-shopping-cart purchase-history__cart-icon';
+  }
+
+  isMembershipItem(item: StudentPurchaseHistoryItem): boolean {
+    return (item.itemType || '').toLowerCase() === 'membership';
+  }
+
+  isEventItem(item: StudentPurchaseHistoryItem): boolean {
+    return (item.itemType || '').toLowerCase() === 'event';
+  }
+
+  isCouponPurchase(item: StudentPurchaseHistoryItem): boolean {
+    return !!(item.couponCode?.trim()) || (item.totalPrice === 0 && (item.paymentTypeName || '').toLowerCase().includes('coupon'));
+  }
+
+  paymentTypeLabel(item: StudentPurchaseHistoryItem): string {
+    const code = item.couponCode?.trim();
+    if (code) {
+      return `${item.paymentTypeName || 'Coupon'} · ${code}`;
+    }
+    return item.paymentTypeName || '—';
+  }
+
+  priceDisplay(item: StudentPurchaseHistoryItem): string {
+    if (item.totalPrice != null && item.totalPrice > 0) {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(item.totalPrice);
+    }
+    return 'Free';
   }
 
   get buyerName(): string {

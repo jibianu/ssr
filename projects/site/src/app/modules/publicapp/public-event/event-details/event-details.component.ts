@@ -29,6 +29,7 @@ import { StructuredDataService } from 'src/app/shared/service/structured-data.se
 import { PaymentCardComponent } from '../payments/payment-card.component';
 import type { SlugPageData } from '../../slug-resolver/slug-page.resolver';
 import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
+import { resolveEventStartTime } from 'src/app/core/helpers/event-timing.helper';
 
 interface EventDetail {
   section: string;
@@ -536,6 +537,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     const rawDetails = event.eventDetails ?? event.EventDetails ?? [];
     return {
       ...event,
+      startTime: resolveEventStartTime(event),
       eventInfo: event.eventInfo ?? event.EventInfo ?? '',
       eventDetails: Array.isArray(rawDetails)
         ? rawDetails.map((d: any, index: number) => ({
