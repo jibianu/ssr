@@ -162,12 +162,31 @@
     <div class="common-topbar__dropdown-backdrop" *ngIf="dropdownOpen" (click)="closeDropdown()" aria-hidden="true"></div>
     <div class="common-topbar__dropdown" *ngIf="dropdownOpen" (click)="$event.stopPropagation()">
       <div class="common-topbar__dropdown-email" *ngIf="userEmail">{{ userEmail }}</div>
-      <a routerLink="/app/profile" class="common-topbar__dropdown-item" (click)="closeDropdown()">
-        <i class="fa fa-user"></i> My Profile
-      </a>
-      <button type="button" class="common-topbar__dropdown-item" (click)="logout()">
-        <i class="fa fa-sign-out"></i> Logout
-      </button>
+      <ng-container *ngIf="showStudentProfileMenu">
+        <a routerLink="/app/student/courses" class="common-topbar__dropdown-item" (click)="closeDropdown()">
+          <i class="fa fa-book"></i> My Course
+        </a>
+        <a routerLink="/app/student/categories" class="common-topbar__dropdown-item" (click)="closeDropdown()">
+          <i class="fa fa-compass"></i> Explore All course
+        </a>
+        <a routerLink="/app/student/profile" class="common-topbar__dropdown-item" (click)="closeDropdown()">
+          <i class="fa fa-user"></i> Profile
+        </a>
+        <a routerLink="/app/student/certificate" class="common-topbar__dropdown-item" (click)="closeDropdown()">
+          <i class="fa fa-certificate"></i> Certificates
+        </a>
+        <button type="button" class="common-topbar__dropdown-item" (click)="logout()">
+          <i class="fa fa-sign-out"></i> Log Out
+        </button>
+      </ng-container>
+      <ng-container *ngIf="!showStudentProfileMenu">
+        <a routerLink="/app/profile" class="common-topbar__dropdown-item" (click)="closeDropdown()">
+          <i class="fa fa-user"></i> My Profile
+        </a>
+        <button type="button" class="common-topbar__dropdown-item" (click)="logout()">
+          <i class="fa fa-sign-out"></i> Logout
+        </button>
+      </ng-container>
     </div>
   </div>
   </div>

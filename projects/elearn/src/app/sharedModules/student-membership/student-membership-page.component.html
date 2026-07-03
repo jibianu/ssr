@@ -5,7 +5,7 @@
     <p class="student-membership-hero__lead">{{ pageLead }}</p>
 
     <ng-container *ngIf="featuredPlan as featured">
-      <p class="student-membership-hero__pricing" *ngIf="!isStudentMember">
+      <p class="student-membership-hero__pricing" *ngIf="!isStudentMember && !isProMember">
         <strong>{{ featured.planName }}</strong> annual now
         <span class="student-membership-hero__original">₹{{ featured.yearlyOriginalPrice }}</span>
         <span class="student-membership-hero__price">₹{{ featured.yearlyPrice }}</span>
@@ -14,16 +14,21 @@
         </span>
       </p>
 
+      <p class="student-membership-hero__pricing" *ngIf="isProMember">
+        <strong>Professional Plan</strong> active
+        <span class="student-membership-hero__price" *ngIf="membershipEndDateLabel">until {{ membershipEndDateLabel }}</span>
+      </p>
+
       <div class="student-membership-hero__actions">
-        <button type="button" class="student-membership-hero__btn-primary" (click)="startFeaturedCheckout()" [disabled]="isProMember">
-          {{ isStudentMember ? 'Upgrade to Professional' : 'Get ' + featured.yearlyDiscountPercent + '% off' }}
+        <button type="button" class="student-membership-hero__btn-primary" (click)="startFeaturedCheckout()" [disabled]="isProMember && !canRenewMembership">
+          {{ isProMember ? (canRenewMembership ? 'Renew Professional Plan' : 'Renewal not open yet') : (isStudentMember ? 'Upgrade to Professional' : 'Get ' + featured.yearlyDiscountPercent + '% off') }}
         </button>
         <button type="button" class="student-membership-hero__btn-link" (click)="scrollToPricing()">
           View all plans
         </button>
       </div>
 
-      <p class="student-membership-hero__footnote" *ngIf="!isStudentMember">
+      <p class="student-membership-hero__footnote" *ngIf="!isStudentMember && !isProMember">
         or ₹{{ featured.sixMonthPrice }}/6 months. Save {{ featured.yearlyDiscountPercent }}% on yearly billing.
       </p>
     </ng-container>
@@ -39,13 +44,13 @@
   >
     <header class="student-membership-pricing-section__header">
       <p class="student-membership-pricing-section__eyebrow">Membership tiers</p>
-      <h2>{{ isStudentMember ? 'Your upgrade option' : 'Choose the plan that matches your career ambition' }}</h2>
+      <h2>{{ isStudentMember ? 'Your upgrade option' : (isProMember ? 'Your plan' : 'Choose the plan that matches your career ambition') }}</h2>
     </header>
 
-    <div class="student-membership-billing-toggle" role="tablist" aria-label="Billing cycle">
+    <div class="student-membership-billing-toggle" role="tablist" aria-label="Billing cycle" *ngIf="availableBillingOptions.length > 1">
       <button
         type="button"
-        *ngFor="let option of billingOptions"
+        *ngFor="let option of availableBillingOptions"
         class="student-membership-billing-toggle__option"
         role="tab"
         [class.student-membership-billing-toggle__option--active]="selectedBillingCycle === option.id"
@@ -56,6 +61,12 @@
         <span *ngIf="option.savingsBadge" class="student-membership-billing-toggle__badge">{{ option.savingsBadge }}</span>
       </button>
     </div>
+    <p class="student-membership-pricing-section__cycle-note" *ngIf="lockedBillingCycle">
+      {{ isProMember ? 'Renewal uses your current' : 'Upgrade uses your current' }} {{ lockedBillingCycle === 'yearly' ? 'yearly' : '6-month' }} billing cycle.
+    </p>
+    <p class="student-membership-pricing-section__cycle-note" *ngIf="isProMember && !canRenewMembership && renewalOpensInDays > 0">
+      Renewal opens after 300 days of membership ({{ renewalOpensInDays }} days remaining).
+    </p>
 
     <div class="student-membership-pricing">
       <article

@@ -57,8 +57,17 @@ export class StudentDesktopLayoutComponent implements OnInit, OnDestroy {
   }
 
   get profileImageUrl(): string | null {
-    const url = this.profileImageUrlOverride ?? this.user?.profilePictureUrl ?? this.user?.ProfilePictureUrl;
-    return url || null;
+    const u = this.user;
+    const url =
+      this.profileImageUrlOverride ??
+      u?.profilePictureUrl ??
+      u?.ProfilePictureUrl ??
+      u?.profilePicture ??
+      u?.ProfilePicture ??
+      u?.imageUrl ??
+      u?.avatarUrl ??
+      null;
+    return url && typeof url === 'string' && url.trim() ? url.trim() : null;
   }
 
   get userInitial(): string {
@@ -88,6 +97,13 @@ export class StudentDesktopLayoutComponent implements OnInit, OnDestroy {
     this.document.body.classList.add('student-layout-active');
     this.sharedService.showStudentCourseSearch.next(true);
     this.user = this.authService.currentUser();
+    this.sub.add(
+      this.authService.getUserInfo().subscribe((user) => {
+        if (user) {
+          this.user = user;
+        }
+      })
+    );
     this.studentSessionService.startSession().subscribe();
     this.analyticsService.startSession().subscribe();
     this.sub.add(

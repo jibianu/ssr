@@ -69,6 +69,16 @@ export function getAbsoluteAppBaseUrlForStripeReturn(): string {
   return window.location.origin.replace(/\/+$/, '');
 }
 
+/** True for student shell routes (`/app/student/...` or unified `/student/...`). */
+export function isStudentAppRoute(pathOrUrl: string): boolean {
+  const segments = (pathOrUrl ?? '').split('?')[0].split('#')[0].split('/').filter(Boolean);
+  const i = segments.indexOf('student');
+  if (i < 0) {
+    return false;
+  }
+  return i === 0 || (i === 1 && segments[0] === 'app');
+}
+
 /** Canonical browser path: always single `/app/...` (never `/app/app/...`). */
 export function normalizeAppRouterUrl(pathOrUrl: string): string {
   const s = (pathOrUrl ?? '').trim();

@@ -32,6 +32,23 @@ export interface MembershipStatusApi {
   endDate?: string;
   couponCode?: string;
   couponStatus?: string;
+  billingCycle?: string;
+  canRenew?: boolean;
+  membershipDaysElapsed?: number;
+  renewalOpensInDays?: number;
+}
+
+export interface MembershipCheckoutQuoteApi {
+  planCode?: string;
+  planName?: string;
+  billingCycle?: string;
+  originalAmountRupees?: number;
+  upgradeCreditRupees?: number;
+  finalAmountRupees?: number;
+  isUpgrade?: boolean;
+  upgradedFromPlanName?: string;
+  remainingDays?: number;
+  totalDays?: number;
 }
 
 export interface MembershipCheckoutOrderApi {
@@ -40,6 +57,8 @@ export interface MembershipCheckoutOrderApi {
   finalAmountPaise?: number;
   planName?: string;
   alreadyActive?: boolean;
+  activatedFree?: boolean;
+  quote?: MembershipCheckoutQuoteApi;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -63,6 +82,29 @@ export class MembershipApiService {
         endDate: r?.endDate ?? r?.EndDate ?? undefined,
         couponCode: r?.couponCode ?? r?.CouponCode ?? undefined,
         couponStatus: r?.couponStatus ?? r?.CouponStatus ?? undefined,
+        billingCycle: (r?.billingCycle ?? r?.BillingCycle ?? '').toLowerCase() || undefined,
+        canRenew: !!(r?.canRenew ?? r?.CanRenew),
+        membershipDaysElapsed: r?.membershipDaysElapsed ?? r?.MembershipDaysElapsed ?? 0,
+        renewalOpensInDays: r?.renewalOpensInDays ?? r?.RenewalOpensInDays ?? 0,
+      }))
+    );
+  }
+
+  getCheckoutQuote(planCode: string, billingCycle: string): Observable<MembershipCheckoutQuoteApi> {
+    return this.http.get<any>(`${this.apiUrl}api/membership/checkout/quote`, {
+      params: { planCode, billingCycle }
+    }).pipe(
+      map((r) => ({
+        planCode: r?.planCode ?? r?.PlanCode,
+        planName: r?.planName ?? r?.PlanName,
+        billingCycle: r?.billingCycle ?? r?.BillingCycle,
+        originalAmountRupees: r?.originalAmountRupees ?? r?.OriginalAmountRupees ?? 0,
+        upgradeCreditRupees: r?.upgradeCreditRupees ?? r?.UpgradeCreditRupees ?? 0,
+        finalAmountRupees: r?.finalAmountRupees ?? r?.FinalAmountRupees ?? 0,
+        isUpgrade: !!(r?.isUpgrade ?? r?.IsUpgrade),
+        upgradedFromPlanName: r?.upgradedFromPlanName ?? r?.UpgradedFromPlanName,
+        remainingDays: r?.remainingDays ?? r?.RemainingDays ?? 0,
+        totalDays: r?.totalDays ?? r?.TotalDays ?? 0,
       }))
     );
   }

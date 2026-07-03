@@ -26,6 +26,7 @@ $sb-active-bg: rgba(249, 115, 22, 0.12);
 $sb-active-icon-bg: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
 $sb-radius: 12px;
 $sb-radius-sm: 10px;
+$sb-collapsed-width: 72px;
 
 /* Desktop sidebar – slim 72px, expand on hover */
 .student-layout__sidebar {
@@ -279,6 +280,15 @@ $sb-radius-sm: 10px;
   background: rgba(255, 255, 255, 0.6);
 }
 
+.student-layout__sidebar:not(:hover) .student-layout__user {
+  display: flex;
+  justify-content: center;
+  width: $sb-collapsed-width;
+  max-width: $sb-collapsed-width;
+  padding: 4px 0 12px;
+  box-sizing: border-box;
+}
+
 .student-layout__user-link {
   display: flex;
   align-items: center;
@@ -288,6 +298,33 @@ $sb-radius-sm: 10px;
   white-space: nowrap;
   border-radius: $sb-radius;
   transition: color 0.2s ease, background 0.2s ease;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-link {
+  justify-content: center;
+  width: $sb-collapsed-width;
+  max-width: $sb-collapsed-width;
+  padding: 6px 0;
+  box-sizing: border-box;
+  background: transparent !important;
+  border-radius: 0;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-name {
+  display: none;
+  width: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-link:hover,
+.student-layout__sidebar:not(:hover) .student-layout__user-link.active {
+  background: transparent !important;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-link.active .student-layout__avatar {
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3), 0 3px 10px rgba(0, 0, 0, 0.12);
 }
 
 .student-layout__user-link:hover {
@@ -302,24 +339,38 @@ $sb-radius-sm: 10px;
 }
 
 .student-layout__avatar {
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-sizing: border-box;
+  border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #e5e7eb;
+  position: relative;
+  isolation: isolate;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
 }
 
 .student-layout__avatar img {
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   object-fit: cover;
+  object-position: center center;
   display: block;
+  border-radius: 50%;
 }
 
 .student-layout__avatar-initial {

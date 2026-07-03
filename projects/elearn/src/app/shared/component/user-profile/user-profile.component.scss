@@ -26,18 +26,24 @@ $bg-avatar-panel-start: #fff8f5;
 $bg-avatar-panel-end: #ffefe8;
 
 .profile-membership {
-  margin-bottom: 1.25rem;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
+  margin-bottom: 0;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
   border: 1px solid rgba(255, 87, 34, 0.25);
   background: linear-gradient(135deg, #fff8f5 0%, #fff 100%);
+}
+
+.profile-membership--side {
+  flex: 1 1 380px;
+  min-width: 0;
+  padding: 1.5rem 1.75rem;
 }
 
 .profile-membership-welcome {
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   padding: 0.85rem 1rem;
   border-radius: 10px;
   border: 1px solid rgba(34, 197, 94, 0.35);
@@ -52,46 +58,133 @@ $bg-avatar-panel-end: #ffefe8;
   }
 }
 
+.profile-form__welcome {
+  margin: 20px 28px 0;
+}
+
 .profile-membership__badge {
   display: inline-block;
-  padding: 0.25rem 0.65rem;
+  padding: 0.35rem 0.85rem;
   border-radius: 999px;
   background: $orange;
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
 .profile-membership__title {
-  margin: 0 0 0.25rem;
-  font-size: 1.1rem;
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
   color: $text;
 }
 
 .profile-membership__meta {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   color: $text-muted;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+}
+
+.profile-membership__coupon {
+  margin-top: 0.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 87, 34, 0.35);
+  background: linear-gradient(135deg, #fff7ed 0%, #fff 100%);
+  box-shadow: inset 4px 0 0 $orange;
+}
+
+.profile-membership__coupon-label {
+  color: $text;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
 .profile-membership__coupon-row {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
+  align-items: stretch;
 }
 
-.profile-membership__coupon-row .form-control {
+.profile-membership__coupon-code {
   flex: 1;
-  font-family: ui-monospace, monospace;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #9a3412;
+  background: #fff !important;
+  border: 2px dashed rgba(255, 87, 34, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+  user-select: all;
+}
+
+.profile-membership__coupon-copy {
+  flex-shrink: 0;
+  align-self: stretch;
+  padding: 10px 16px;
+  background: $orange;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.28);
+}
+
+.profile-membership__coupon-copy:hover {
+  background: $orange-dark;
+  color: #fff;
+}
+
+.profile-membership__coupon-copy--copied {
+  background: #16a34a;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.28);
 }
 
 .profile-membership__hint {
-  margin: 0.5rem 0 0;
-  font-size: 0.8rem;
+  margin: 0.65rem 0 0;
+  font-size: 0.85rem;
   color: $text-muted;
+  line-height: 1.45;
+}
+
+/* Top row: profile identity (left) + membership card (right) */
+.profile-form__top {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 28px 24px;
+  border-bottom: 1px solid $border;
+}
+
+.profile-form__top--has-membership .profile-form__header {
+  flex: 0 0 auto;
+}
+
+/* Profile header – avatar + name/email + change photo */
+.profile-form__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0;
+  border-bottom: none;
+  flex-wrap: wrap;
+}
+
+.profile-form__top--has-membership .profile-form__header {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.profile-form__top--has-membership .profile-form__header-action {
+  margin-top: 4px;
 }
 
 .profile-page {
@@ -510,6 +603,9 @@ $bg-avatar-panel-end: #ffefe8;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
   background: $bg-card;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
@@ -530,48 +626,29 @@ $bg-avatar-panel-end: #ffefe8;
   min-height: 0;
 }
 
-/* Avatar section – soft gradient panel */
-.profile-form__avatar-section {
-  padding: 32px 24px;
-  background: linear-gradient(160deg, $bg-avatar-panel-start 0%, $bg-avatar-panel-end 50%, #fff5f0 100%);
+.profile-form__identity {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid $border;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  flex: 0 0 auto;
 }
 
-.avatar-section__label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: $text-muted;
-  margin-bottom: 16px;
-}
-
-.avatar-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.avatar-wrap__circle {
-  width: 112px;
-  height: 112px;
+.profile-form__avatar {
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #fff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f1f5f9;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
-.avatar-wrap__img {
+.profile-form__avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -579,7 +656,7 @@ $bg-avatar-panel-end: #ffefe8;
   display: block;
 }
 
-.avatar-wrap__initial {
+.profile-form__avatar-initial {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -591,34 +668,52 @@ $bg-avatar-panel-end: #ffefe8;
   font-weight: 600;
 }
 
-/* Change photo – primary style for emphasis */
-.avatar-wrap__change {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  background: $orange;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
+.profile-form__identity-text {
+  min-width: 0;
+  width: 100%;
+}
+
+.profile-form__display-name {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.profile-form__display-email {
+  margin: 0;
   font-size: 0.875rem;
-  font-weight: 600;
+  color: $text-muted;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.profile-form__header-action {
+  flex-shrink: 0;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.25);
+  margin: 0;
+  white-space: nowrap;
+  position: relative;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  gap: 6px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(255, 87, 34, 0.25);
+
+  i {
+    font-size: 0.75rem;
+  }
+
+  &:hover {
+    transform: none;
+    box-shadow: 0 2px 6px rgba(255, 87, 34, 0.3);
+  }
 }
 
-.avatar-wrap__change:hover {
-  background: $orange-dark;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
-}
-
-.avatar-wrap__change-icon {
-  font-size: 0.9rem;
-}
-
-.avatar-wrap__file {
+.profile-form__file-input {
   position: absolute;
   opacity: 0;
   width: 0;
@@ -628,10 +723,10 @@ $bg-avatar-panel-end: #ffefe8;
 /* Form section */
 .profile-form__fields {
   flex: 1 1 auto;
-  padding: 32px 28px 28px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
   min-height: 0;
 }
 
@@ -640,11 +735,21 @@ $bg-avatar-panel-end: #ffefe8;
 }
 
 .profile-form__section-title {
-  margin: 0 0 6px 0;
-  font-size: 1.0625rem;
-  font-weight: 600;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: $text;
   letter-spacing: -0.02em;
+}
+
+.profile-form__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-form__grid-full {
+  width: 100%;
 }
 
 .profile-form__row {
@@ -695,20 +800,21 @@ $bg-avatar-panel-end: #ffefe8;
 }
 
 .form-label {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: $text;
+  color: $text-muted;
+  margin-bottom: 2px;
 }
 
-/* Inputs – outlined (white bg, thin border), orange focus */
+/* Inputs – soft filled style (reference layout), orange focus */
 .form-control {
-  padding: 12px 14px;
-  border: 1px solid $border;
+  padding: 12px 16px;
+  border: 1px solid transparent;
   border-radius: 10px;
   font-size: 0.9375rem;
   color: $text;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #f3f4f6;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .form-control::placeholder {
@@ -717,21 +823,23 @@ $bg-avatar-panel-end: #ffefe8;
 
 .form-control:focus {
   outline: none;
-  border-color: $orange;
-  box-shadow: 0 0 0 3px $orange-focus;
+  border-color: transparent;
+  background: #fff;
+  box-shadow: 0 0 0 2px $orange-focus;
 }
 
 .form-control.is-invalid {
   border-color: #ef4444;
+  background: #fff;
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
 }
 
 .form-control--disabled,
 .form-control:disabled {
-  background: #f9fafb;
+  background: #eceff3;
   color: $text-muted;
   cursor: not-allowed;
-  border-color: #e5e7eb;
+  border-color: transparent;
 }
 
 .invalid-feedback {
@@ -740,16 +848,14 @@ $bg-avatar-panel-end: #ffefe8;
   margin-top: 2px;
 }
 
-/* Actions – below Username field, always visible in flow */
+/* Actions */
 .profile-form__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  padding-top: 20px;
-  border-top: 1px solid $border;
+  margin-top: 4px;
+  padding-top: 8px;
 }
 
 .btn {
@@ -789,68 +895,85 @@ $bg-avatar-panel-end: #ffefe8;
   border-color: #d1d5db;
 }
 
-/* Desktop */
+@media (max-width: 576px) {
+  .profile-form__top {
+    padding: 20px 20px 18px;
+  }
+
+  .profile-form__welcome {
+    margin: 16px 20px 0;
+  }
+
+  .profile-form__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-form__header-action {
+    width: auto;
+    align-self: flex-start;
+  }
+
+  .profile-form__fields {
+    padding: 20px;
+  }
+}
+
+/* Desktop – two-column field grid + side-by-side profile/membership */
 @media (min-width: 768px) {
   .profile-page {
     padding: 32px 28px;
   }
 
-  .profile-form {
+  .profile-form__top {
+    padding: 32px 36px 28px;
+  }
+
+  .profile-form__top--has-membership {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 28px;
   }
 
-  /* Do not stretch full form height — avoids a tall peach “placeholder” strip beside fields */
-  .profile-form__avatar-section {
-    flex: 0 0 260px;
-    align-self: flex-start;
-    border-radius: 16px 0 0 16px;
-    border-bottom: none;
-    border-right: 1px solid $border;
-    padding: 36px 28px;
+  .profile-form__top--has-membership .profile-membership--side {
+    flex: 1 1 55%;
+    min-width: 320px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
-  .avatar-wrap__circle {
-    width: 128px;
-    height: 128px;
+  .profile-form__welcome {
+    margin: 24px 36px 0;
   }
 
   .profile-form__fields {
-    flex: 1;
-    padding: 36px 40px 24px;
-    min-width: 0;
-  }
-
-  /* Embedded: body = avatar + fields side by side; row height follows fields, outer column scrolls */
-  .profile-form--embedded .profile-form__body {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-
-  .profile-form--embedded .profile-form__avatar-section {
-    flex: 0 0 260px;
-    border-radius: 16px 0 0 0;
-    border-bottom: none;
-    border-right: 1px solid $border;
-    padding: 36px 28px;
-  }
-
-  .profile-form--embedded .profile-form__fields {
-    flex: 1;
-    min-width: 0;
-    padding: 36px 40px 24px;
-  }
-
-  .profile-form__section-title {
-    margin-bottom: 8px;
+    padding: 32px 36px 28px;
   }
 
   .profile-form__row--half {
     flex-direction: row;
+    gap: 24px;
   }
 
   .profile-form__row--half .form-group {
     flex: 1;
+    min-width: 0;
+  }
+
+  .profile-form__avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-form__top--has-membership .profile-form__avatar {
+    width: 132px;
+    height: 132px;
+  }
+
+  .profile-form__top--has-membership .profile-form__avatar-initial {
+    font-size: 3rem;
   }
 }
 

@@ -63,8 +63,12 @@
         <div class="event-checkout__order-box">
           <h2 class="event-checkout__order-heading">Order summary</h2>
           <div class="event-checkout__order-row">
-            <span>{{ planName }}</span>
-            <span><span aria-label="INR">₹</span>{{ amountRupees | number:'1.2-2' }}</span>
+            <span>{{ planName }} · {{ billingCycleLabel }}</span>
+            <span><span aria-label="INR">₹</span>{{ originalAmountRupees | number:'1.2-2' }}</span>
+          </div>
+          <div class="event-checkout__order-row event-checkout__order-row--credit" *ngIf="isUpgrade && upgradeCreditRupees > 0">
+            <span>Upgrade adjustment{{ upgradedFromPlanName ? ' from ' + upgradedFromPlanName : '' }}{{ remainingDays > 0 ? ' (' + remainingDays + ' days left)' : '' }}</span>
+            <span>- <span aria-label="INR">₹</span>{{ upgradeCreditRupees | number:'1.2-2' }}</span>
           </div>
           <div class="event-checkout__order-divider"></div>
           <div class="event-checkout__order-row event-checkout__order-total">
@@ -95,7 +99,7 @@
                 (click)="proceedToPayment()"
                 aria-label="Proceed to payment">
                 <i class="fas fa-lock event-checkout__btn-icon" *ngIf="!creatingIntent && !razorpayLoading"></i>
-                <span class="event-checkout__btn-text">{{ (creatingIntent || razorpayLoading) ? 'Loading…' : 'Proceed to payment' }}</span>
+                <span class="event-checkout__btn-text">{{ (creatingIntent || razorpayLoading) ? 'Loading…' : (amountRupees <= 0 ? 'Complete upgrade' : 'Proceed to payment') }}</span>
               </button>
             </div>
           </div>

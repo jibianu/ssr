@@ -143,6 +143,14 @@ export class CommonTopbarComponent implements OnInit, OnDestroy {
     this.avatarImageError = false;
     this.userName = this.user?.userName;
     sessionStorage.setItem('CurrentUser', JSON.stringify(this.user));
+    this.authService.getUserInfo().subscribe((user) => {
+      if (user) {
+        this.user = user;
+        this.userName = user.userName ?? user.UserName ?? this.userName;
+        sessionStorage.setItem('CurrentUser', JSON.stringify(user));
+        this.cdr.markForCheck();
+      }
+    });
     var role: Role;
     role = this.user.roleId;
     switch (role) {

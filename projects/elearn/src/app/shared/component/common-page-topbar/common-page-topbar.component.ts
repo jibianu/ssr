@@ -9,9 +9,10 @@ import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { SharedService } from '../../service/shared-service.service';
 import { ToasterService } from '../toaster/toaster.service';
 import { environment } from 'src/environments/environment';
-import { normalizeAppRouterUrl, normalizeRoleLandingRoute } from 'src/app/core/helpers/app-url.helper';
+import { normalizeAppRouterUrl, normalizeRoleLandingRoute, isStudentAppRoute } from 'src/app/core/helpers/app-url.helper';
 
 const ROLE_TRAINER = 3;
+const ROLE_STUDENT = 2;
 
 /** Common topbar for Admin, Trainer, Company, Management: logo (left), back, title (center), user dropdown (right). */
 @Component({
@@ -79,6 +80,12 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
   pendingPermissionTypes: string[] = [];
   trainerRequestingPermission = false;
   isTrainer = false;
+  isStudent = false;
+
+  /** Show full student nav in profile dropdown (matches dashboard topbar). */
+  get showStudentProfileMenu(): boolean {
+    return this.isStudent || this.showStudentCourseSearch || isStudentAppRoute(this.router.url ?? '');
+  }
 
   /** Student topbar course search (same behavior as site). */
   @ViewChild('studentSearchContainer') studentSearchContainerRef: ElementRef<HTMLElement> | null = null;
@@ -126,6 +133,7 @@ export class CommonPageTopbarComponent implements OnInit, OnDestroy, OnChanges {
     this.userDisplayName = this.buildDisplayName(user?.firstName, user?.lastName, user?.userName);
     const roleId = user?.roleId != null ? user.roleId : this.authService.currentUser()?.roleId;
     this.isTrainer = roleId === ROLE_TRAINER;
+    this.isStudent = roleId === ROLE_STUDENT;
     if (roleId != null && ROLE_LANDING_ROUTES[roleId]) {
       this.homeRoute = normalizeRoleLandingRoute(ROLE_LANDING_ROUTES[roleId]);
     }

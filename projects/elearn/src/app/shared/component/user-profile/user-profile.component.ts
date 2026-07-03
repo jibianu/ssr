@@ -4,11 +4,13 @@ import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 import { ToasterService } from 'src/app/shared/component/toaster/toaster.service';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { SharedService } from '../../service/shared-service.service';
 import { AuthenticationService, ROLE_LANDING_ROUTES } from 'src/app/modules/auth/auth.service';
 import { environment } from 'src/environments/environment';
+import { isStudentAppRoute } from 'src/app/core/helpers/app-url.helper';
 import { getNavbarMenuForRole, NavbarMenuItem } from 'src/app/config/navbar-menu.config';
 import { Role } from 'src/app/shared/models/role';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
@@ -45,7 +47,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   @Input() embedded = false;
   /** True when we're under student layout (same topbar/sidebar as other student pages). */
   get embeddedMode(): boolean {
-    return this.embedded || (this.router.url?.startsWith('/app/student') ?? false);
+    return this.embedded || isStudentAppRoute(this.router.url ?? '');
   }
 
   /**
@@ -74,7 +76,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   /** True for students (role id 2) or anyone on the student profile route. */
   get isStudentProfile(): boolean {
     return this.normalizeRoleId(this.roleId) === Role.Student
-      || (this.router.url?.startsWith('/app/student') ?? false);
+      || isStudentAppRoute(this.router.url ?? '');
   }
 
   get showMembershipCard(): boolean {
@@ -135,7 +137,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.router.url?.startsWith('/app/student')) {
+    if (isStudentAppRoute(this.router.url ?? '')) {
       this.studentBreadcrumb.setBreadcrumb([{ label: 'Profile' }]);
     }
     const user = JSON.parse(this.cookieService.getCookie('currentUser') || '{}');
@@ -256,7 +258,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     if (cachedPic && typeof cachedPic === 'string' && cachedPic.trim()) {
       this.uploadedFilePath = cachedPic.trim();
     }
-    this.subscription.add(this.appService.getUserInfo().subscribe((res: any) => {
+    this.subscription.add(this.authService.getUserInfo().subscribe((res: any) => {
       if (res) {
         const rid = this.normalizeRoleId(res.roleId ?? res.RoleId);
         if (rid != null) {
@@ -370,18 +372,82 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   fileProgress(fileInput: any) {
     this.fileData = <File>fileInput.target.files[0];
-    this.appService.uploadDocumnet(this.fileData, 'Profile_Image').subscribe(res => {
-      this.uploadedFilePath = res.documentPath;
-      this.userForm.patchValue({
-        profilePictureUrl: this.uploadedFilePath
-      });
-      this.authService.updateUserProfilePicture(this.uploadedFilePath);
-      this.sharedService.emitProfileImageUrl(this.uploadedFilePath);
-    });
+    if (!this.fileData) {
+      return;
+    }
+    this.subscription.add(
+      this.appService.uploadDocumnet(this.fileData, 'Profile_Image').subscribe({
+        next: (res) => {
+          this.uploadedFilePath = res.documentPath;
+          this.userForm.patchValue({
+            profilePictureUrl: this.uploadedFilePath
+          });
+          this.authService.updateUserProfilePicture(this.uploadedFilePath);
+          this.sharedService.emitProfileImageUrl(this.uploadedFilePath);
+          this.persistProfilePicture();
+        },
+        error: () => {
+          this.toasterService.showError('Could not upload profile photo.');
+        }
+      })
+    );
+  }
+
+  /** Save profile picture URL to the server so it persists after logout/login. */
+  private persistProfilePicture(): void {
+    const raw = this.userForm.getRawValue();
+    const cached = this.authService.currentUser() ?? {};
+    const socialLinks = (raw.socialLinks || [])
+      .filter((l: any) => l && (l.url || '').trim())
+      .map((l: any) => ({ platform: (l.platform || '').trim() || 'Other', url: (l.url || '').trim() }));
+    const payload = {
+      firstname: (raw.firstName || cached.firstName || cached.FirstName || 'User').trim(),
+      lastname: (raw.lastName || cached.lastName || cached.LastName || '').trim(),
+      username: (raw.userName || cached.userName || cached.UserName || cached.email || cached.Email || '').trim(),
+      profilePictureUrl: this.uploadedFilePath,
+      bio: raw.bio ?? cached.bio ?? '',
+      phone: raw.phone ?? cached.phone ?? cached.Phone ?? '',
+      socialLinks,
+    };
+    if (!payload.username) {
+      this.toasterService.showError('Could not save profile photo. Please refresh and try again.');
+      return;
+    }
+    this.subscription.add(
+      this.appService.profileUpdate(payload).subscribe({
+        next: () => {
+          this.toasterService.showSuccess('Profile photo updated.');
+          this.authService.getUserInfo().pipe(first()).subscribe((user) => {
+            const profilePic = user?.profilePictureUrl ?? user?.ProfilePictureUrl ?? this.uploadedFilePath;
+            if (profilePic) {
+              this.uploadedFilePath = String(profilePic).trim();
+              this.sharedService.emitProfileImageUrl(this.uploadedFilePath);
+            }
+          });
+        },
+        error: () => {
+          this.toasterService.showError('Photo uploaded but could not save to your profile.');
+        }
+      })
+    );
   }
   // openFullscreen(content){
   //   this.modalService.open(content);
   // }
+
+  /** Hide change-photo when the avatar URL is from Google sign-in (Gmail / Google account photo). */
+  get showChangePhotoButton(): boolean {
+    const url = this.uploadedFilePath || this.userForm?.get('profilePictureUrl')?.value;
+    return !this.isGoogleHostedProfilePhoto(url);
+  }
+
+  private isGoogleHostedProfilePhoto(url: unknown): boolean {
+    if (!url || typeof url !== 'string') {
+      return false;
+    }
+    const normalized = url.trim().toLowerCase();
+    return normalized.includes('googleusercontent.com') || normalized.includes('ggpht.com');
+  }
 
   /** First letter of name/email for profile avatar when no image. */
   get profileInitial(): string {

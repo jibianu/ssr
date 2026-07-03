@@ -18,32 +18,48 @@
   box-sizing: border-box;
 }
 
+.student-membership-cta--pro .student-membership-cta__icon {
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);
+}
+
 .student-membership-cta__icon {
   border-radius: 12px;
-  background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
-  color: #fff;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(227, 46, 46, 0.22);
+  transition: box-shadow 0.2s ease;
   flex-shrink: 0;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
 
-  svg {
-    width: 22px;
-    height: 22px;
+  .student-membership-cta__icon-img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    aspect-ratio: 1 / 1;
   }
 }
 
 .student-membership-cta__icon--collapsed {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
   margin: 0;
+  flex: 0 0 40px;
 }
 
 .student-membership-cta:hover .student-membership-cta__icon {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+  box-shadow: 0 6px 18px rgba(227, 46, 46, 0.32);
 }
 
 .student-membership-cta__card {
@@ -67,12 +83,12 @@
 .student-membership-cta__icon--small {
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
+  flex: 0 0 36px;
   margin: 0;
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
 }
 
 .student-membership-cta__copy {
@@ -100,8 +116,8 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #fff7ed;
+  color: #ea580c;
   font-size: 0.84rem;
   font-weight: 600;
   text-align: center;
@@ -109,21 +125,30 @@
 }
 
 .student-membership-cta:hover .student-membership-cta__btn {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: #ffedd5;
+  color: #c2410c;
 }
 
 /* Collapsed sidebar: crown icon only, aligned with nav icons */
 :host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta {
-  padding: 10px 12px;
-}
-
-:host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta__card {
-  display: none !important;
+  padding: 10px 0 6px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 :host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta__icon--collapsed {
   display: flex !important;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
+}
+
+:host-context(.student-layout__sidebar:not(:hover)) .student-membership-cta__card {
+  display: none !important;
 }
 
 /* Expanded sidebar: full upgrade card */

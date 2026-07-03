@@ -62,11 +62,48 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
     },
   };
 
+  private readonly planDisplayRank: Record<string, number> = {
+    student: 0,
+    professional: 1,
+  };
+
+  private sortPlansForDisplay(plans: MembershipPlanApi[]): MembershipPlanApi[] {
+    return [...plans].sort((a, b) => {
+      const rankA = this.planDisplayRank[(a.planCode || '').toLowerCase()] ?? 99;
+      const rankB = this.planDisplayRank[(b.planCode || '').toLowerCase()] ?? 99;
+      if (rankA !== rankB) {
+        return rankA - rankB;
+      }
+      return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+    });
+  }
+
   constructor(
     private membershipApi: MembershipApiService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
+
+  get isStudentMember(): boolean {
+    const code = (this.membershipStatus?.planCode || '').toLowerCase();
+    return !!this.membershipStatus?.isActiveMember && code === 'student';
+  }
+
+  get lockedBillingCycle(): BillingCycle | null {
+    if (this.isStudentMember || this.isProMember) {
+      const cycle = (this.membershipStatus?.billingCycle || 'yearly').toLowerCase();
+      return cycle === 'sixmonth' ? 'sixMonth' : 'yearly';
+    }
+    return null;
+  }
+
+  get availableBillingOptions(): { id: BillingCycle; label: string; savingsBadge?: string }[] {
+    const locked = this.lockedBillingCycle;
+    if (locked) {
+      return this.billingOptions.filter((option) => option.id === locked);
+    }
+    return this.billingOptions;
+  }
 
   ngOnInit(): void {
     this.highlightPlanCode = (this.route.snapshot.queryParamMap.get('highlight') || '').toLowerCase();
@@ -83,6 +120,12 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
           if (this.isStudentMember && !this.highlightPlanCode) {
             this.highlightPlanCode = 'professional';
           }
+          if (this.lockedBillingCycle) {
+            this.selectedBillingCycle = this.lockedBillingCycle;
+          }
+          if (this.isProMember) {
+            this.highlightPlanCode = 'professional';
+          }
         },
       })
     );
@@ -90,9 +133,9 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.membershipApi.getPlans().subscribe({
         next: (plans) => {
-          this.plans = (plans || [])
-            .filter((p) => ['student', 'professional'].includes((p.planCode || '').toLowerCase()))
-            .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+          this.plans = this.sortPlansForDisplay(
+            (plans || []).filter((p) => ['student', 'professional'].includes((p.planCode || '').toLowerCase()))
+          );
           this.loading = false;
         },
         error: () => {
@@ -107,14 +150,23 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
     this.sub.unsubscribe();
   }
 
-  get isStudentMember(): boolean {
-    const code = (this.membershipStatus?.planCode || '').toLowerCase();
-    return !!this.membershipStatus?.isActiveMember && code === 'student';
-  }
-
   get isProMember(): boolean {
     const code = (this.membershipStatus?.planCode || '').toLowerCase();
     return !!this.membershipStatus?.isActiveMember && code === 'professional';
+  }
+
+  get canRenewMembership(): boolean {
+    return !!this.membershipStatus?.canRenew;
+  }
+
+  get renewalOpensInDays(): number {
+    return this.membershipStatus?.renewalOpensInDays ?? 0;
+  }
+
+  get membershipEndDateLabel(): string {
+    const end = this.membershipStatus?.endDate;
+    if (!end) return '';
+    return new Date(end).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   get featuredPlan(): MembershipPlanApi | null {
@@ -122,25 +174,40 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
   }
 
   get visiblePlans(): MembershipPlanApi[] {
-    if (this.isStudentMember) {
+    if (this.isStudentMember || this.isProMember) {
       return this.plans.filter((p) => p.planCode === 'professional');
     }
     return this.plans;
   }
 
   get pageTitle(): string {
+    if (this.isProMember) {
+      return 'Your Professional Membership';
+    }
     return this.isStudentMember
       ? 'Upgrade to Professional Plan'
       : 'Unlimited Courses & Workshops for One Full Year';
   }
 
   get pageLead(): string {
+    if (this.isProMember) {
+      if (this.canRenewMembership) {
+        return 'Your plan is eligible for renewal. Renew now to continue without interruption.';
+      }
+      const days = this.renewalOpensInDays;
+      return days > 0
+        ? `You are on the Professional Plan. Renewal opens in ${days} day${days === 1 ? '' : 's'}.`
+        : 'You are on the Professional Plan.';
+    }
     return this.isStudentMember
       ? 'Upgrade your membership to unlock all workshops, events, and professional resources.'
       : 'Access 50+ technical courses, live workshops, engineering resources, and exclusive member benefits.';
   }
 
   selectBillingCycle(cycle: BillingCycle): void {
+    if (this.lockedBillingCycle && cycle !== this.lockedBillingCycle) {
+      return;
+    }
     this.selectedBillingCycle = cycle;
   }
 
@@ -186,7 +253,7 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
 
   canPurchase(plan: MembershipPlanApi): boolean {
     if (this.isCurrentPlan(plan)) {
-      return false;
+      return this.isProMember && this.canRenewMembership;
     }
     if (this.isStudentMember && plan.planCode === 'student') {
       return false;
@@ -198,6 +265,15 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
   }
 
   getCtaLabel(plan: MembershipPlanApi): string {
+    if (this.isCurrentPlan(plan) && this.isProMember) {
+      if (this.canRenewMembership) {
+        return 'Renew plan';
+      }
+      if (this.renewalOpensInDays > 0) {
+        return `Renewal in ${this.renewalOpensInDays} days`;
+      }
+      return 'Current plan';
+    }
     if (this.isCurrentPlan(plan)) {
       return 'Current plan';
     }
@@ -225,9 +301,17 @@ export class StudentMembershipPageComponent implements OnInit, OnDestroy {
 
   startFeaturedCheckout(): void {
     const plan = this.featuredPlan;
-    if (plan) {
-      this.selectedBillingCycle = 'yearly';
-      this.startCheckout(plan);
+    if (!plan || !this.canPurchase(plan)) {
+      if (this.isProMember) {
+        this.scrollToPricing();
+      }
+      return;
     }
+    if (this.lockedBillingCycle) {
+      this.selectedBillingCycle = this.lockedBillingCycle;
+    } else {
+      this.selectedBillingCycle = 'yearly';
+    }
+    this.startCheckout(plan);
   }
 }

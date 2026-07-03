@@ -139,6 +139,13 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
+
+  &__cycle-note {
+    margin: 0 0 1rem;
+    text-align: center;
+    font-size: 0.88rem;
+    color: #64748b;
+  }
 }
 
 .student-membership-billing-toggle {

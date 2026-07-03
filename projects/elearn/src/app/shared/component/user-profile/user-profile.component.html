@@ -76,42 +76,61 @@
         <div class="profile-page__content profile-page__content--embedded">
           <div class="profile-card profile-card--embedded">
             <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="profile-form profile-form--embedded">
-              <div class="profile-form__body">
-                <div class="profile-form__avatar-section">
-                  <span class="avatar-section__label">Profile photo</span>
-                  <div class="avatar-wrap">
-                    <div class="avatar-wrap__circle">
-                      <img *ngIf="uploadedFilePath" [src]="uploadedFilePath" alt="Profile" (error)="onUserImgError($event)" class="avatar-wrap__img" referrerPolicy="no-referrer" loading="eager">
-                      <span *ngIf="!uploadedFilePath" class="avatar-wrap__initial" aria-hidden="true">{{ profileInitial }}</span>
+              <div *ngIf="showMembershipWelcome" class="profile-membership-welcome profile-form__welcome" role="status">
+                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                <span>Payment complete! You are now a <strong>Pro Member</strong>. Your personal coupon below works only on your account.</span>
+              </div>
+
+              <div class="profile-form__top" [class.profile-form__top--has-membership]="showMembershipCard">
+                <div class="profile-form__header">
+                  <div class="profile-form__identity">
+                    <div class="profile-form__avatar">
+                      <img *ngIf="uploadedFilePath" [src]="uploadedFilePath" alt="Profile" (error)="onUserImgError($event)" class="profile-form__avatar-img" referrerPolicy="no-referrer" loading="eager">
+                      <span *ngIf="!uploadedFilePath" class="profile-form__avatar-initial" aria-hidden="true">{{ profileInitial }}</span>
                     </div>
-                    <label class="avatar-wrap__change">
-                      <i class="fa fa-camera avatar-wrap__change-icon"></i>
-                      <span class="avatar-wrap__change-text">Change photo</span>
-                      <input type="file" accept="image/*" (change)="fileProgress($event)" class="avatar-wrap__file">
-                    </label>
+                    <div class="profile-form__identity-text">
+                      <h2 class="profile-form__display-name">{{ userDisplayName }}</h2>
+                      <p class="profile-form__display-email">{{ userEmail }}</p>
+                    </div>
+                  </div>
+                  <label *ngIf="showChangePhotoButton" class="btn btn--primary profile-form__header-action">
+                    <i class="fa fa-camera" aria-hidden="true"></i>
+                    <span>Change photo</span>
+                    <input type="file" accept="image/*" (change)="fileProgress($event)" class="profile-form__file-input">
+                  </label>
+                </div>
+
+                <div *ngIf="showMembershipCard" class="profile-membership profile-membership--active profile-membership--side">
+                  <div class="profile-membership__badge">Pro Member</div>
+                  <h3 class="profile-membership__title">{{ membershipStatus.planName }}</h3>
+                  <p class="profile-membership__meta">Valid until {{ formatMembershipDate(membershipStatus.endDate) }}</p>
+                  <div class="profile-membership__coupon" *ngIf="membershipStatus.couponCode">
+                    <label class="form-label profile-membership__coupon-label">Your membership coupon</label>
+                    <div class="profile-membership__coupon-row">
+                      <input
+                        type="text"
+                        class="form-control profile-membership__coupon-code"
+                        [value]="membershipStatus.couponCode"
+                        readonly
+                        aria-label="Membership coupon code"
+                      />
+                      <button
+                        type="button"
+                        class="btn profile-membership__coupon-copy"
+                        [class.profile-membership__coupon-copy--copied]="couponCopied"
+                        (click)="copyMembershipCoupon()"
+                      >
+                        {{ couponCopied ? 'Copied' : 'Copy' }}
+                      </button>
+                    </div>
+                    <p class="profile-membership__hint">Use this code at course or event checkout for free access (your account only).</p>
                   </div>
                 </div>
-                <div class="profile-form__fields">
-                  <div *ngIf="showMembershipWelcome" class="profile-membership-welcome" role="status">
-                    <i class="fa fa-check-circle" aria-hidden="true"></i>
-                    <span>Payment complete! You are now a <strong>Pro Member</strong>. Your personal coupon below works only on your account.</span>
-                  </div>
-                  <div *ngIf="showMembershipCard" class="profile-membership profile-membership--active">
-                    <div class="profile-membership__badge">Pro Member</div>
-                    <h3 class="profile-membership__title">{{ membershipStatus.planName }}</h3>
-                    <p class="profile-membership__meta">Valid until {{ formatMembershipDate(membershipStatus.endDate) }}</p>
-                    <div class="profile-membership__coupon" *ngIf="membershipStatus.couponCode">
-                      <label class="form-label">Your membership coupon</label>
-                      <div class="profile-membership__coupon-row">
-                        <input type="text" class="form-control" [value]="membershipStatus.couponCode" readonly />
-                        <button type="button" class="btn btn--secondary" (click)="copyMembershipCoupon()">
-                          {{ couponCopied ? 'Copied' : 'Copy' }}
-                        </button>
-                      </div>
-                      <p class="profile-membership__hint">Use this code at course or event checkout for free access (your account only).</p>
-                    </div>
-                  </div>
-                  <h2 class="profile-form__section-title">Account details</h2>
+              </div>
+
+              <div class="profile-form__fields">
+                <h2 class="profile-form__section-title">Account details</h2>
+                <div class="profile-form__grid">
                   <div class="profile-form__row profile-form__row--half">
                     <div class="form-group">
                       <label class="form-label">First Name</label>
@@ -130,27 +149,29 @@
                       </div>
                     </div>
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="text" formControlName="email" class="form-control form-control--disabled" placeholder="Email"
-                      [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
-                    <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
-                      <div *ngIf="f.email.errors.required">Email is required</div>
+                  <div class="profile-form__row profile-form__row--half">
+                    <div class="form-group">
+                      <label class="form-label">Email</label>
+                      <input type="text" formControlName="email" class="form-control form-control--disabled" placeholder="Email"
+                        [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+                      <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                        <div *ngIf="f.email.errors.required">Email is required</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Username</label>
+                      <input type="text" formControlName="userName" class="form-control" placeholder="Username"
+                        [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
+                      <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+                        <div *ngIf="f.userName.errors.required">Username is required</div>
+                      </div>
                     </div>
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text" formControlName="userName" class="form-control" placeholder="Username"
-                      [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
-                    <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
-                      <div *ngIf="f.userName.errors.required">Username is required</div>
-                    </div>
-                  </div>
-                  <div class="form-group">
+                  <div class="form-group profile-form__grid-full">
                     <label class="form-label">About you</label>
                     <textarea formControlName="bio" class="form-control" placeholder="Tell others about yourself" rows="3"></textarea>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group profile-form__grid-full">
                     <label class="form-label">Social links</label>
                     <div class="social-links" formArrayName="socialLinks">
                       <div *ngFor="let link of socialLinksArray.controls; let i = index" [formGroupName]="i" class="social-links__row">
@@ -171,16 +192,16 @@
                       <i class="fa fa-plus"></i> Add another link
                     </button>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group profile-form__grid-full">
                     <label class="form-label">Contact number</label>
                     <input type="tel" formControlName="phone" class="form-control" placeholder="Your phone number" />
                   </div>
-                  <div class="profile-form__actions">
-                    <button type="submit" class="btn btn--primary">
-                      <i class="fa fa-check"></i> Update
-                    </button>
-                    <button type="button" class="btn btn--secondary" (click)="goBack()">Cancel</button>
-                  </div>
+                </div>
+                <div class="profile-form__actions">
+                  <button type="submit" class="btn btn--primary">
+                    <i class="fa fa-check"></i> Update
+                  </button>
+                  <button type="button" class="btn btn--secondary" (click)="goBack()">Cancel</button>
                 </div>
               </div>
             </form>
@@ -266,106 +287,126 @@
         <div class="profile-page__content">
           <div class="profile-card">
             <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="profile-form">
-              <div class="profile-form__avatar-section">
-                <span class="avatar-section__label">Profile photo</span>
-                <div class="avatar-wrap">
-                  <div class="avatar-wrap__circle">
-                    <img *ngIf="uploadedFilePath" [src]="uploadedFilePath" alt="Profile" (error)="onUserImgError($event)" class="avatar-wrap__img" referrerPolicy="no-referrer" loading="eager">
-                    <span *ngIf="!uploadedFilePath" class="avatar-wrap__initial" aria-hidden="true">{{ profileInitial }}</span>
-                  </div>
-                  <label class="avatar-wrap__change">
-                    <i class="fa fa-camera avatar-wrap__change-icon"></i>
-                    <span class="avatar-wrap__change-text">Change photo</span>
-                    <input type="file" accept="image/*" (change)="fileProgress($event)" class="avatar-wrap__file">
-                  </label>
-                </div>
+              <div *ngIf="showMembershipWelcome" class="profile-membership-welcome profile-form__welcome" role="status">
+                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                <span>Payment complete! You are now a <strong>Pro Member</strong>. Your personal coupon below works only on your account.</span>
               </div>
 
-              <div class="profile-form__fields">
-                <div *ngIf="showMembershipWelcome" class="profile-membership-welcome" role="status">
-                  <i class="fa fa-check-circle" aria-hidden="true"></i>
-                  <span>Payment complete! You are now a <strong>Pro Member</strong>. Your personal coupon below works only on your account.</span>
+              <div class="profile-form__top" [class.profile-form__top--has-membership]="showMembershipCard">
+                <div class="profile-form__header">
+                  <div class="profile-form__identity">
+                    <div class="profile-form__avatar">
+                      <img *ngIf="uploadedFilePath" [src]="uploadedFilePath" alt="Profile" (error)="onUserImgError($event)" class="profile-form__avatar-img" referrerPolicy="no-referrer" loading="eager">
+                      <span *ngIf="!uploadedFilePath" class="profile-form__avatar-initial" aria-hidden="true">{{ profileInitial }}</span>
+                    </div>
+                    <div class="profile-form__identity-text">
+                      <h2 class="profile-form__display-name">{{ userDisplayName }}</h2>
+                      <p class="profile-form__display-email">{{ userEmail }}</p>
+                    </div>
+                  </div>
+                  <label *ngIf="showChangePhotoButton" class="btn btn--primary profile-form__header-action">
+                    <i class="fa fa-camera" aria-hidden="true"></i>
+                    <span>Change photo</span>
+                    <input type="file" accept="image/*" (change)="fileProgress($event)" class="profile-form__file-input">
+                  </label>
                 </div>
-                <div *ngIf="showMembershipCard" class="profile-membership profile-membership--active">
+
+                <div *ngIf="showMembershipCard" class="profile-membership profile-membership--active profile-membership--side">
                   <div class="profile-membership__badge">Pro Member</div>
                   <h3 class="profile-membership__title">{{ membershipStatus.planName }}</h3>
                   <p class="profile-membership__meta">Valid until {{ formatMembershipDate(membershipStatus.endDate) }}</p>
                   <div class="profile-membership__coupon" *ngIf="membershipStatus.couponCode">
-                    <label class="form-label">Your membership coupon</label>
+                    <label class="form-label profile-membership__coupon-label">Your membership coupon</label>
                     <div class="profile-membership__coupon-row">
-                      <input type="text" class="form-control" [value]="membershipStatus.couponCode" readonly />
-                      <button type="button" class="btn btn--secondary" (click)="copyMembershipCoupon()">
+                      <input
+                        type="text"
+                        class="form-control profile-membership__coupon-code"
+                        [value]="membershipStatus.couponCode"
+                        readonly
+                        aria-label="Membership coupon code"
+                      />
+                      <button
+                        type="button"
+                        class="btn profile-membership__coupon-copy"
+                        [class.profile-membership__coupon-copy--copied]="couponCopied"
+                        (click)="copyMembershipCoupon()"
+                      >
                         {{ couponCopied ? 'Copied' : 'Copy' }}
                       </button>
                     </div>
                     <p class="profile-membership__hint">Use this code at course or event checkout for free access (your account only).</p>
                   </div>
                 </div>
+              </div>
+
+              <div class="profile-form__fields">
                 <h2 class="profile-form__section-title">Account details</h2>
-                <div class="profile-form__row profile-form__row--half">
-                  <div class="form-group">
-                    <label class="form-label">First Name</label>
-                    <input type="text" formControlName="firstName" class="form-control" placeholder="First name"
-                      [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
-                    <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
-                      <div *ngIf="f.firstName.errors.required">First name is required</div>
+                <div class="profile-form__grid">
+                  <div class="profile-form__row profile-form__row--half">
+                    <div class="form-group">
+                      <label class="form-label">First Name</label>
+                      <input type="text" formControlName="firstName" class="form-control" placeholder="First name"
+                        [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+                      <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                        <div *ngIf="f.firstName.errors.required">First name is required</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Last Name</label>
+                      <input type="text" formControlName="lastName" class="form-control" placeholder="Last name"
+                        [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+                      <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                        <div *ngIf="f.lastName.errors.required">Last name is required</div>
+                      </div>
                     </div>
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" formControlName="lastName" class="form-control" placeholder="Last name"
-                      [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
-                    <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
-                      <div *ngIf="f.lastName.errors.required">Last name is required</div>
+                  <div class="profile-form__row profile-form__row--half">
+                    <div class="form-group">
+                      <label class="form-label">Email</label>
+                      <input type="text" formControlName="email" class="form-control form-control--disabled" placeholder="Email"
+                        [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+                      <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                        <div *ngIf="f.email.errors.required">Email is required</div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Username</label>
+                      <input type="text" formControlName="userName" class="form-control" placeholder="Username"
+                        [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
+                      <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
+                        <div *ngIf="f.userName.errors.required">Username is required</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Email</label>
-                  <input type="text" formControlName="email" class="form-control form-control--disabled" placeholder="Email"
-                    [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
-                  <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
-                    <div *ngIf="f.email.errors.required">Email is required</div>
+                  <div class="form-group profile-form__grid-full">
+                    <label class="form-label">About you</label>
+                    <textarea formControlName="bio" class="form-control" placeholder="Tell others about yourself" rows="3"></textarea>
                   </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Username</label>
-                  <input type="text" formControlName="userName" class="form-control" placeholder="Username"
-                    [ngClass]="{ 'is-invalid': submitted && f.userName.errors }" />
-                  <div *ngIf="submitted && f.userName.errors" class="invalid-feedback">
-                    <div *ngIf="f.userName.errors.required">Username is required</div>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">About you</label>
-                  <textarea formControlName="bio" class="form-control" placeholder="Tell others about yourself" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Social links</label>
-                  <div class="social-links" formArrayName="socialLinks">
-                    <div *ngFor="let link of socialLinksArray.controls; let i = index" [formGroupName]="i" class="social-links__row">
-                      <select formControlName="platform" class="form-control social-links__platform">
-                        <option value="">Select platform</option>
-                        <option value="Facebook">Facebook</option>
-                        <option value="LinkedIn">LinkedIn</option>
-                        <option value="YouTube">YouTube</option>
-                        <option value="X">X</option>
-                        <option value="Website">Website</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <input type="url" formControlName="url" class="form-control social-links__url" placeholder="https://..." />
-                      <button *ngIf="socialLinksArray.length > 1" type="button" class="btn btn--secondary social-links__remove" (click)="removeSocialLink(i)" aria-label="Remove link">×</button>
+                  <div class="form-group profile-form__grid-full">
+                    <label class="form-label">Social links</label>
+                    <div class="social-links" formArrayName="socialLinks">
+                      <div *ngFor="let link of socialLinksArray.controls; let i = index" [formGroupName]="i" class="social-links__row">
+                        <select formControlName="platform" class="form-control social-links__platform">
+                          <option value="">Select platform</option>
+                          <option value="Facebook">Facebook</option>
+                          <option value="LinkedIn">LinkedIn</option>
+                          <option value="YouTube">YouTube</option>
+                          <option value="X">X</option>
+                          <option value="Website">Website</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <input type="url" formControlName="url" class="form-control social-links__url" placeholder="https://..." />
+                        <button *ngIf="socialLinksArray.length > 1" type="button" class="btn btn--secondary social-links__remove" (click)="removeSocialLink(i)" aria-label="Remove link">×</button>
+                      </div>
                     </div>
+                    <button type="button" class="btn btn--secondary btn-sm mt-1" (click)="addSocialLink()">
+                      <i class="fa fa-plus"></i> Add another link
+                    </button>
                   </div>
-                  <button type="button" class="btn btn--secondary btn-sm mt-1" (click)="addSocialLink()">
-                    <i class="fa fa-plus"></i> Add another link
-                  </button>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Contact number</label>
-                  <input type="tel" formControlName="phone" class="form-control" placeholder="Your phone number" />
+                  <div class="form-group profile-form__grid-full">
+                    <label class="form-label">Contact number</label>
+                    <input type="tel" formControlName="phone" class="form-control" placeholder="Your phone number" />
+                  </div>
                 </div>
                 <div class="profile-form__actions">
                   <button type="submit" class="btn btn--primary">

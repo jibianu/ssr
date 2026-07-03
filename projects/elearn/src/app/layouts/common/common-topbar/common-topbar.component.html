@@ -173,8 +173,8 @@
             </div>
           </div>
 
-          <!-- User Profile Dropdown (hidden on mobile for student - profile is in bottom nav) -->
-          <div class="user-profile-dropdown" ngbDropdown *ngIf="user && !(roleUrl === 'student' && isMobileView())">
+          <!-- User Profile Dropdown -->
+          <div class="user-profile-dropdown" ngbDropdown *ngIf="user">
             <div class="user-avatar" id="navbarDropdown1" ngbDropdownToggle>
               <img
                 *ngIf="topbarAvatarUrl && !avatarImageError"
@@ -192,6 +192,7 @@
                 <a ngbDropdownItem [routerLink]="['/app/student/courses']">My Course</a>
                 <a ngbDropdownItem [routerLink]="['/app/student/categories']">Explore All course</a>
                 <a ngbDropdownItem [routerLink]="['/app/student/profile']">Profile</a>
+                <a ngbDropdownItem [routerLink]="['/app/student/certificate']">Certificates</a>
                 <a ngbDropdownItem (click)="logout()">Log Out</a>
               </div>
             </div>

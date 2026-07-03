@@ -100,6 +100,13 @@ export class StudentLayoutComponent implements OnInit, OnDestroy {
     this.document.body.classList.add('student-layout-active');
     this.sharedService.showStudentCourseSearch.next(true); // show search in common-topbar (student)
     this.user = this.authService.currentUser();
+    this.sub.add(
+      this.authService.getUserInfo().subscribe((user) => {
+        if (user) {
+          this.user = user;
+        }
+      })
+    );
     this.studentSessionService.startSession().subscribe();
     this.analyticsService.startSession().subscribe();
     this.sub.add(

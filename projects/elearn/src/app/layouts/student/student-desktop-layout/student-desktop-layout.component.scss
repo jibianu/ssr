@@ -25,6 +25,7 @@ $sb-active-bg: rgba(249, 115, 22, 0.12);
 $sb-active-icon-bg: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
 $sb-radius: 12px;
 $sb-radius-sm: 10px;
+$sb-collapsed-width: 72px;
 
 .student-layout__sidebar {
   width: 72px;
@@ -66,6 +67,7 @@ $sb-radius-sm: 10px;
   flex-direction: column;
   flex-shrink: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .student-layout__logo {
@@ -107,89 +109,11 @@ $sb-radius-sm: 10px;
 }
 
 .student-layout__nav {
-  margin-top: 12px;
+  margin-top: 8px;
   flex: 1;
   min-height: 0;
-  padding: 0 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-  }
-}
-
-.student-layout__nav-bottom {
-  flex-shrink: 0;
-  padding: 0 10px 8px;
-  border-top: 1px solid $sb-border;
-
-  > a {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    margin-bottom: 4px;
-    color: $sb-text;
-    text-decoration: none;
-    white-space: nowrap;
-    border-radius: $sb-radius;
-    transition: background 0.2s ease, color 0.2s ease;
-    font-size: 0.9375rem;
-    font-weight: 500;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    &:hover {
-      color: $sb-text-active;
-      background: $sb-hover-bg;
-    }
-
-    &:hover i {
-      color: #f97316;
-    }
-
-    &.active {
-      color: $sb-text-active;
-      font-weight: 600;
-      background: $sb-active-bg;
-    }
-
-    &.active i {
-      background: $sb-active-icon-bg;
-      color: #fff;
-      border-radius: 50%;
-      padding: 9px;
-      margin: -2px 0;
-      min-width: 36px;
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 10px rgba(249, 115, 22, 0.4);
-      font-size: 0.875rem;
-    }
-
-    i {
-      font-size: 1.1rem;
-      min-width: 36px;
-      text-align: center;
-      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-    }
-  }
-}
-
-.student-layout__sidebar:not(:hover) .student-layout__nav-bottom > a {
-  padding: 8px 12px;
-  margin-bottom: 2px;
+  padding: 0 10px 6px;
+  overflow: hidden;
 }
 
 .student-layout__sidebar:not(:hover) .student-layout__nav > a {
@@ -204,8 +128,8 @@ $sb-radius-sm: 10px;
 .student-layout__nav > a {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
-  margin-bottom: 4px;
+  padding: 8px 12px;
+  margin-bottom: 2px;
   color: $sb-text;
   text-decoration: none;
   white-space: nowrap;
@@ -264,7 +188,7 @@ $sb-radius-sm: 10px;
 }
 
 .student-layout__sub-nav {
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
   padding: 0 0 0 8px;
   border-left: 2px solid $sb-border;
   margin-left: 22px;
@@ -273,7 +197,7 @@ $sb-radius-sm: 10px;
 .student-layout__sub-link {
   display: flex;
   align-items: center;
-  padding: 8px 12px 8px 10px;
+  padding: 6px 12px 6px 10px;
   margin-bottom: 2px;
   color: $sb-text;
   text-decoration: none;
@@ -351,12 +275,34 @@ $sb-radius-sm: 10px;
   overflow: hidden;
 }
 
+.student-layout__sidebar:not(:hover) .student-layout__sidebar-footer {
+  width: $sb-collapsed-width;
+  max-width: $sb-collapsed-width;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.student-layout__sidebar:not(:hover) ::ng-deep .student-membership-cta {
+  width: $sb-collapsed-width;
+  max-width: $sb-collapsed-width;
+  justify-content: center;
+  padding: 10px 0 6px;
+  box-sizing: border-box;
+}
+
 .student-layout__sidebar:not(:hover) ::ng-deep .student-membership-cta__card {
   display: none !important;
 }
 
 .student-layout__sidebar:not(:hover) ::ng-deep .student-membership-cta__icon--collapsed {
   display: flex !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
+  aspect-ratio: 1 / 1;
 }
 
 .student-layout__sidebar:hover ::ng-deep .student-membership-cta__icon--collapsed {
@@ -365,20 +311,34 @@ $sb-radius-sm: 10px;
 
 .student-layout__sidebar:hover ::ng-deep .student-membership-cta {
   display: block;
-  padding: 0 10px 8px;
+  padding: 0 10px 4px;
 }
 
 .student-layout__sidebar:hover ::ng-deep .student-membership-cta__card {
   display: block;
   max-width: 100%;
   box-sizing: border-box;
+  padding: 10px;
+}
+
+.student-layout__sidebar:hover ::ng-deep .student-membership-cta__header {
+  margin-bottom: 8px;
 }
 
 .student-layout__user {
   flex-shrink: 0;
-  padding: 8px 10px 14px;
+  padding: 6px 10px 10px;
   border-top: none;
   background: transparent;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user {
+  display: flex;
+  justify-content: center;
+  width: $sb-collapsed-width;
+  max-width: $sb-collapsed-width;
+  padding: 4px 0 12px;
+  box-sizing: border-box;
 }
 
 .student-layout__user-link {
@@ -392,6 +352,33 @@ $sb-radius-sm: 10px;
   transition: color 0.2s ease, background 0.2s ease;
 }
 
+.student-layout__sidebar:not(:hover) .student-layout__user-link {
+  justify-content: center;
+  width: $sb-collapsed-width;
+  max-width: $sb-collapsed-width;
+  padding: 6px 0;
+  box-sizing: border-box;
+  background: transparent !important;
+  border-radius: 0;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-link:hover,
+.student-layout__sidebar:not(:hover) .student-layout__user-link.active {
+  background: transparent !important;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-link.active .student-layout__avatar {
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3), 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__user-name {
+  display: none;
+  width: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
 .student-layout__user-link:hover {
   color: $sb-text-active;
   background: $sb-hover-bg;
@@ -403,25 +390,44 @@ $sb-radius-sm: 10px;
   background: $sb-active-bg;
 }
 
+.student-layout__sidebar:hover .student-layout__user-link.active {
+  background: $sb-active-bg;
+}
+
 .student-layout__avatar {
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-sizing: border-box;
+  border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #e5e7eb;
+  position: relative;
+  isolation: isolate;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
 }
 
 .student-layout__avatar img {
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   object-fit: cover;
+  object-position: center center;
   display: block;
+  border-radius: 50%;
 }
 
 .student-layout__avatar-initial {
@@ -434,6 +440,10 @@ $sb-radius-sm: 10px;
   color: #fff;
   font-size: 1rem;
   font-weight: 600;
+}
+
+.student-layout__sidebar:not(:hover) .student-layout__avatar-initial {
+  font-size: 1.2rem;
 }
 
 .student-layout__user-name {

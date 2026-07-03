@@ -19,7 +19,13 @@ export class MembershipCheckoutComponent implements OnInit, OnDestroy {
   planCode = '';
   billingCycle = 'yearly';
   planName = '';
+  originalAmountRupees = 0;
+  upgradeCreditRupees = 0;
   amountRupees = 0;
+  isUpgrade = false;
+  upgradedFromPlanName = '';
+  remainingDays = 0;
+  totalDays = 0;
   loading = true;
   loadError: string | null = null;
   userName = '';
@@ -83,24 +89,44 @@ export class MembershipCheckoutComponent implements OnInit, OnDestroy {
     }
 
     this.subscription.add(
-      this.membershipApi.getPlans().subscribe({
-        next: (plans) => {
-          const plan = (plans || []).find(p => (p.planCode || '').toLowerCase() === this.planCode);
-          if (!plan) {
+      this.membershipApi.getStatus().subscribe({
+        next: (status) => {
+          const code = (status?.planCode || '').toLowerCase();
+          const isStudentUpgrade = !!status?.isActiveMember && code === 'student' && this.planCode === 'professional';
+          if (isStudentUpgrade) {
+            const lockedCycle = (status.billingCycle || 'yearly').toLowerCase();
+            this.billingCycle = lockedCycle === 'sixmonth' ? 'sixMonth' : 'yearly';
+          }
+          this.loadCheckoutQuote();
+        },
+        error: () => this.loadCheckoutQuote()
+      })
+    );
+  }
+
+  private loadCheckoutQuote(): void {
+    this.subscription.add(
+      this.membershipApi.getCheckoutQuote(this.planCode, this.billingCycle).subscribe({
+        next: (quote) => {
+          if (!quote?.planName) {
             this.loadError = 'Membership plan not found.';
             this.loading = false;
             this.cdr.detectChanges();
             return;
           }
-          this.planName = plan.planName;
-          this.amountRupees = this.billingCycle === 'sixMonth'
-            ? plan.sixMonthPrice
-            : plan.yearlyPrice;
+          this.planName = quote.planName || '';
+          this.originalAmountRupees = quote.originalAmountRupees ?? 0;
+          this.upgradeCreditRupees = quote.upgradeCreditRupees ?? 0;
+          this.amountRupees = quote.finalAmountRupees ?? 0;
+          this.isUpgrade = !!quote.isUpgrade;
+          this.upgradedFromPlanName = quote.upgradedFromPlanName || '';
+          this.remainingDays = quote.remainingDays ?? 0;
+          this.totalDays = quote.totalDays ?? 0;
           this.loading = false;
           this.cdr.detectChanges();
         },
-        error: () => {
-          this.loadError = 'Could not load membership plan.';
+        error: (err) => {
+          this.loadError = err?.error?.message ?? 'Could not load membership pricing.';
           this.loading = false;
           this.cdr.detectChanges();
         }
@@ -249,6 +275,10 @@ export class MembershipCheckoutComponent implements OnInit, OnDestroy {
       this.membershipApi.createStripeOrder(this.planCode, this.billingCycle).subscribe({
         next: async (res) => {
           this.creatingIntent = false;
+          if (res?.activatedFree) {
+            this.router.navigate(['/app/student/profile'], { queryParams: { membership: 'activated' } });
+            return;
+          }
           if (res?.alreadyActive) {
             this.router.navigate(['/app/student/profile']);
             return;
@@ -333,6 +363,12 @@ export class MembershipCheckoutComponent implements OnInit, OnDestroy {
         userId: user?.userId ?? user?.id
       }).subscribe({
         next: async (res) => {
+          if (res?.enrolledFree) {
+            this.razorpayLoading = false;
+            this.router.navigate(['/app/student/profile'], { queryParams: { membership: 'activated' } });
+            this.cdr.detectChanges();
+            return;
+          }
           const ready = await this.razorpayPaymentService.loadCheckoutScript();
           if (!ready || !window.Razorpay) {
             this.razorpayLoading = false;
