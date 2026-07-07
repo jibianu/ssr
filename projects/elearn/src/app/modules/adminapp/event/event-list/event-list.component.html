@@ -210,7 +210,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="event-registrations-drawer__filters" *ngIf="!registrationLoading && !registrationError && registrationUsers.length > 0">
+    <div class="event-registrations-drawer__filters" *ngIf="!registrationLoading && !registrationError">
       <button
         type="button"
         class="event-registrations-drawer__filter-btn"
@@ -226,19 +226,97 @@
         Not completed ({{ registrationPendingCount }})
       </button>
     </div>
+    <div class="event-registrations-drawer__occurrence-filters" *ngIf="!isTrainerPage && registrationOccurrences.length > 0">
+      <span class="event-registrations-drawer__occurrence-label">Event date:</span>
+      <button
+        type="button"
+        *ngFor="let o of registrationOccurrences"
+        class="event-registrations-drawer__occurrence-btn"
+        [class.event-registrations-drawer__occurrence-btn--active]="selectedRegistrationOccurrenceId === o.id"
+        [disabled]="registrationUsersLoading"
+        (click)="onRegistrationOccurrenceChange(o.id)">
+        {{ formatOccurrenceLabel(o) }}{{ o.eventConductCompleted ? ' (completed)' : '' }}
+      </button>
+    </div>
+    <div class="event-registrations-drawer__actions" *ngIf="!isTrainerPage && !registrationLoading">
+      <button
+        type="button"
+        class="event-registrations-drawer__complete-btn event-registrations-drawer__complete-btn--secondary"
+        [disabled]="addingEventOccurrence"
+        (click)="addNewEventOccurrence()">
+        {{ addingEventOccurrence ? 'Adding…' : '+ Add new date' }}
+      </button>
+      <span class="event-registrations-drawer__completed-badge" *ngIf="registrationEventConductCompleted">
+        <i class="fas fa-check-circle"></i> Event completed — certificates unlocked
+      </span>
+      <button
+        type="button"
+        class="event-registrations-drawer__complete-btn"
+        *ngIf="canMarkEventConductCompleted"
+        [disabled]="markingEventConductCompleted"
+        (click)="markEventConductCompleted()">
+        <i class="fas fa-flag-checkered"></i>
+        {{ markingEventConductCompleted ? 'Marking…' : 'Mark event as completed' }}
+      </button>
+    </div>
+    <div class="event-registrations-drawer__add-date" *ngIf="showAddOccurrencePanel && !isTrainerPage">
+      <p class="event-registrations-drawer__add-date-title">
+        <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+        Add new event date
+      </p>
+      <div class="event-registrations-drawer__add-date-fields">
+        <label class="event-registrations-drawer__add-date-field">
+          <span>Start date</span>
+          <input
+            type="date"
+            class="event-registrations-drawer__date-input"
+            [(ngModel)]="newOccurrenceStartDate"
+            (ngModelChange)="onNewOccurrenceStartDateChange()"
+            [disabled]="addingEventOccurrence" />
+        </label>
+        <label class="event-registrations-drawer__add-date-field">
+          <span>End date</span>
+          <input
+            type="date"
+            class="event-registrations-drawer__date-input"
+            [(ngModel)]="newOccurrenceEndDate"
+            [min]="newOccurrenceStartDate"
+            [disabled]="addingEventOccurrence" />
+        </label>
+      </div>
+      <p class="event-registrations-drawer__add-date-hint">Click a date field to open the calendar picker.</p>
+      <p class="event-registrations-drawer__add-date-error" *ngIf="addOccurrenceFormError">{{ addOccurrenceFormError }}</p>
+      <div class="event-registrations-drawer__add-date-actions">
+        <button
+          type="button"
+          class="event-registrations-drawer__add-date-btn event-registrations-drawer__add-date-btn--primary"
+          [disabled]="addingEventOccurrence"
+          (click)="submitNewEventOccurrence()">
+          {{ addingEventOccurrence ? 'Adding…' : 'Add date' }}
+        </button>
+        <button
+          type="button"
+          class="event-registrations-drawer__add-date-btn"
+          [disabled]="addingEventOccurrence"
+          (click)="cancelAddOccurrencePanel()">
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
   <div class="event-registrations-drawer__body">
     <div *ngIf="registrationLoading" class="event-registrations-drawer__loading">Loading…</div>
+    <div *ngIf="registrationUsersLoading && !registrationLoading" class="event-registrations-drawer__loading event-registrations-drawer__loading--inline">Updating registrations…</div>
     <div *ngIf="registrationError" class="alert alert-danger m-2">{{ registrationError }}</div>
     <ng-container *ngIf="!registrationLoading && !registrationError">
-      <p class="event-registrations-drawer__count" *ngIf="registrationCount > 0">
+      <p class="event-registrations-drawer__count" *ngIf="registrationCount > 0 && !registrationUsersLoading">
         Showing <strong>{{ displayedRegistrationUsers.length }}</strong> of <strong>{{ registrationCount }}</strong>
         {{ registrationCount === 1 ? 'user' : 'users' }}
         <span class="event-registrations-drawer__count-label">
           ({{ registrationPaymentFilter === 'completed' ? 'payment completed' : 'not completed' }})
         </span>
       </p>
-      <div class="event-registrations-drawer__table-wrap" *ngIf="displayedRegistrationUsers.length > 0">
+      <div class="event-registrations-drawer__table-wrap" *ngIf="displayedRegistrationUsers.length > 0 && !registrationUsersLoading">
         <table class="event-registrations-drawer__table">
           <thead>
             <tr>
@@ -249,6 +327,7 @@
               <th>Company</th>
               <th>Designation</th>
               <th>Department</th>
+              <th>Registered on</th>
               <th>Payment Ref</th>
             </tr>
           </thead>
@@ -261,6 +340,7 @@
               <td>{{ u.companyName }}</td>
               <td>{{ u.designation }}</td>
               <td>{{ u.department }}</td>
+              <td class="event-registrations-drawer__td--date">{{ u.registeredOn ? (u.registeredOn | date:'dd MMM yyyy, h:mm a') : '—' }}</td>
               <td>{{ u.paymentRefDisplay }}</td>
             </tr>
           </tbody>
@@ -270,6 +350,13 @@
       <p class="event-registrations-drawer__empty text-muted" *ngIf="registrationCount > 0 && displayedRegistrationUsers.length === 0">
         No {{ registrationPaymentFilter === 'completed' ? 'completed payment' : 'pending payment' }} registrations.
       </p>
+
+      <app-event-recording-panel
+        *ngIf="!isTrainerPage && registrationEventConductCompleted && registrationEventId && selectedRegistrationOccurrenceId"
+        [eventId]="registrationEventId"
+        [occurrenceId]="selectedRegistrationOccurrenceId"
+        [isCompleted]="registrationEventConductCompleted">
+      </app-event-recording-panel>
     </ng-container>
   </div>
 </aside>

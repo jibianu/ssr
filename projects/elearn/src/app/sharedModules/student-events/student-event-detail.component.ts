@@ -61,6 +61,8 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
   isRegisteredForEvent = false;
   registrationCheckDone = false;
   showEnrollmentCongratulations = false;
+  eventOccurrences: any[] = [];
+  selectedOccurrenceId: string | null = null;
 
   eventUserForm!: FormGroup;
   modalRef: NgbModalRef | null = null;
@@ -166,6 +168,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
         this.studentBreadcrumb.setBreadcrumb([{ label: 'Events', url: '/app/student/events' }, { label: this.event.title }]);
       }
       this.loading = false;
+      this.loadEventOccurrences();
       this.refreshRegistrationStatus();
       if (this.eventId) {
         this.studentApi.getUpcomingEvents(this.eventId).subscribe({
@@ -224,6 +227,43 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     });
   }
 
+  private loadEventOccurrences(): void {
+    if (!this.eventId) return;
+    this.subscription.add(
+      this.studentApi.getEventOccurrences(this.eventId).subscribe({
+        next: (list) => {
+          this.eventOccurrences = (list ?? []).map((o: any) => ({
+            id: String(o.id ?? o.Id ?? ''),
+            startDate: o.startDate ?? o.StartDate,
+            endDate: o.endDate ?? o.EndDate,
+            isRegistered: o.isRegistered === true || o.IsRegistered === true,
+            eventConductCompleted: o.eventConductCompleted === true || o.EventConductCompleted === true,
+            registrationCompleted: o.registrationCompleted === true || o.RegistrationCompleted === true
+          })).filter((o) => o.id);
+          const open = this.eventOccurrences.filter((o) => !o.registrationCompleted && !o.eventConductCompleted);
+          const pick = open[0] ?? this.eventOccurrences[this.eventOccurrences.length - 1];
+          this.selectedOccurrenceId = pick?.id ?? null;
+          this.refreshRegistrationStatus();
+          this.cdr.markForCheck();
+        },
+        error: () => {}
+      })
+    );
+  }
+
+  onOccurrenceChange(occurrenceId: string): void {
+    this.selectedOccurrenceId = occurrenceId || null;
+    this.isRegisteredForEvent = false;
+    this.registrationCheckDone = false;
+    this.refreshRegistrationStatus();
+  }
+
+  formatOccurrenceLabel(o: any): string {
+    const start = o?.startDate ? new Date(o.startDate) : null;
+    if (!start || Number.isNaN(start.getTime())) return 'Event date';
+    return start.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   private refreshRegistrationStatus(): void {
     if (!this.eventId || !this.authenticationService.currentToken()) {
       if (!this.isRegisteredForEvent) {
@@ -232,7 +272,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       return;
     }
     this.subscription.add(
-      this.studentApi.checkEventRegistration(this.eventId).subscribe({
+      this.studentApi.checkEventRegistration(this.eventId, this.selectedOccurrenceId ?? undefined).subscribe({
         next: (r) => {
           if (r?.registered) {
             this.isRegisteredForEvent = true;
@@ -606,7 +646,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
       return;
     }
     if (this.isRegisteredForEvent) {
-      this.toasterService.showSuccess('You are already registered for this event.');
+      this.toasterService.showSuccess('Registration already completed for this event date.');
       return;
     }
     this.eventUserForm.reset({
@@ -679,7 +719,7 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     }
     this.isSubmitting = true;
     this.cdr.markForCheck();
-    const body = { name, email, mobile, companyName, designation, department };
+    const body = { name, email, mobile, companyName, designation, department, occurrenceId: this.selectedOccurrenceId ?? undefined };
     this.subscription.add(
       this.studentApi.registerForEvent(this.eventId, body).subscribe({
         next: (res) => {
@@ -703,7 +743,9 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
             }
             this.isSubmitting = false;
             this.cdr.markForCheck();
-            this.router.navigate(['/checkout/event', this.eventId]);
+            this.router.navigate(['/checkout/event', this.eventId], {
+              queryParams: this.selectedOccurrenceId ? { occurrenceId: this.selectedOccurrenceId } : {}
+            });
             return;
           }
           this.isSubmitting = false;

@@ -1,4 +1,5 @@
 import { CertificateTemplateComponent } from './certificate-template/certificate-template.component';
+import { EventCertificateTemplateComponent } from './event-certificate-template/event-certificate-template.component';
 import { TestResultComponent } from './test-result/test-result.component';
 
 import { NgModule } from '@angular/core';
@@ -27,6 +28,8 @@ import { NotificationsComponent } from './notifications/notifications.component'
 import { StudentSearchPageComponent } from './student-search-page/student-search-page.component';
 import { StudentEventsListComponent } from './student-events/student-events-list.component';
 import { StudentEventDetailComponent } from './student-events/student-event-detail.component';
+import { StudentCompletedEventsListComponent } from './student-events/student-completed-events-list.component';
+import { StudentCompletedEventContentComponent } from './student-events/student-completed-event-content.component';
 import { StudentMembershipPageComponent } from './student-membership/student-membership-page.component';
 
 const routes: Routes = [
@@ -91,7 +94,10 @@ const routes: Routes = [
   { path: 'notifications', component: NotificationsComponent },
   { path: 'certificate', component: CommonCertificateComponent, canActivate: [TrainerBlockCertificateGuard] },
   { path: 'certificate-template/:courseID', component: CertificateTemplateComponent },
+  { path: 'event-certificate/:eventId', component: EventCertificateTemplateComponent },
   { path: 'events', component: StudentEventsListComponent },
+  { path: 'events/completed', component: StudentCompletedEventsListComponent },
+  { path: 'events/completed/:eventId/:occurrenceId', component: StudentCompletedEventContentComponent },
   { path: 'events/event/:id', component: StudentEventDetailComponent },
 ];
 

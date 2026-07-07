@@ -120,31 +120,55 @@ export class StudentDashboardApiService {
   }
 
   /** Check if current user is registered for event. GET api/events/check-registration/{eventId} */
-  checkEventRegistration(eventId: string): Observable<{ registered: boolean }> {
-    return this.http.get<any>(`${this.apiUrl}api/events/check-registration/${eventId}`).pipe(
+  checkEventRegistration(eventId: string, occurrenceId?: string): Observable<{ registered: boolean }> {
+    let url = `${this.apiUrl}api/events/check-registration/${eventId}`;
+    if (occurrenceId) url += `?occurrenceId=${occurrenceId}`;
+    return this.http.get<any>(url).pipe(
       map((r) => ({ registered: r?.registered === true }))
     );
   }
 
-  /** Register for event (auth). Free: enrolls. Paid: returns needPayment. POST api/events/register */
-  registerForEvent(eventId: string, body?: { name?: string; email?: string; mobile?: string; companyName?: string; designation?: string; department?: string }): Observable<{ enrolled?: boolean; needPayment?: boolean; message?: string }> {
+  getEventOccurrences(eventId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}api/events/${eventId}/occurrences`).pipe(
+      map((r) => Array.isArray(r) ? r : [])
+    );
+  }
+
+  registerForEvent(eventId: string, body?: { occurrenceId?: string; forRecording?: boolean; name?: string; email?: string; mobile?: string; companyName?: string; designation?: string; department?: string }): Observable<{ enrolled?: boolean; needPayment?: boolean; message?: string }> {
+    if (body?.forRecording) {
+      return this.http.post<any>(`${this.apiUrl}api/events/register-recording`, { eventId, ...body });
+    }
     return this.http.post<any>(`${this.apiUrl}api/events/register`, { eventId, ...body });
   }
 
-  /** GET api/events/registration-draft/{eventId} */
-  getEventRegistrationDraft(eventId: string): Observable<{ hasDraft?: boolean; name?: string; email?: string; mobile?: string; companyName?: string; designation?: string; department?: string }> {
-    return this.http.get<any>(`${this.apiUrl}api/events/registration-draft/${eventId}`);
+  getCompletedEvents(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}api/student/completed-events`).pipe(
+      map((r) => Array.isArray(r) ? r : [])
+    );
   }
 
-  /** Create Stripe checkout session for paid event (redirect flow). POST api/events/checkout-session */
-  createEventCheckoutSession(eventId: string): Observable<{ paymentUrl: string }> {
-    return this.http.post<any>(`${this.apiUrl}api/events/checkout-session`, { eventId });
+  getEventRecordingAccess(eventId: string, occurrenceId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}api/events/${eventId}/occurrences/${occurrenceId}/recording/access`);
   }
 
-  /** Create PaymentIntent for embedded event checkout (Payment Element). POST api/events/create-payment-intent */
-  createEventPaymentIntent(eventId: string, couponCode?: string): Observable<{ clientSecret: string; paymentIntentId: string }> {
-    const body: { eventId: string; couponCode?: string } = { eventId };
+  getEventRecordingStatus(eventId: string, occurrenceId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}api/events/${eventId}/occurrences/${occurrenceId}/recording/status`);
+  }
+
+  getEventRegistrationDraft(eventId: string, occurrenceId?: string): Observable<{ hasDraft?: boolean; name?: string; email?: string; mobile?: string; companyName?: string; designation?: string; department?: string }> {
+    let url = `${this.apiUrl}api/events/registration-draft/${eventId}`;
+    if (occurrenceId) url += `?occurrenceId=${occurrenceId}`;
+    return this.http.get<any>(url);
+  }
+
+  createEventCheckoutSession(eventId: string, occurrenceId?: string, forRecording = false): Observable<{ paymentUrl: string }> {
+    return this.http.post<any>(`${this.apiUrl}api/events/checkout-session`, { eventId, occurrenceId, forRecording });
+  }
+
+  createEventPaymentIntent(eventId: string, couponCode?: string, occurrenceId?: string, forRecording = false): Observable<{ clientSecret: string; paymentIntentId: string }> {
+    const body: { eventId: string; couponCode?: string; occurrenceId?: string; forRecording?: boolean } = { eventId, forRecording };
     if (couponCode?.trim()) body.couponCode = couponCode.trim();
+    if (occurrenceId) body.occurrenceId = occurrenceId;
     return this.http.post<any>(`${this.apiUrl}api/events/create-payment-intent`, body);
   }
 

@@ -28,7 +28,13 @@ export function getApiBaseUrl(): string {
     return envUrl || 'http://localhost:52288/';
   }
 
-  const { hostname, origin } = window.location;
+  const { hostname, port, origin } = window.location;
+
+  // Elearn split dev (`ng serve elearn --port 4201`) has no /certificate proxy — use Kestrel directly.
+  if (isLocalBrowserHost(hostname) && port === '4201') {
+    return envUrl || 'http://localhost:52288/';
+  }
+
   if (isLocalBrowserHost(hostname)) {
     return `${origin}/`;
   }

@@ -892,6 +892,19 @@
           </div>
         </div>
 
+        <!-- Event date selection -->
+        <div class="form-group" *ngIf="eventOccurrences.length > 1">
+          <label for="reg-occurrence">
+            <i class="fa fa-calendar"></i>
+            Select event date <span class="required">*</span>
+          </label>
+          <select id="reg-occurrence" class="form-control" [value]="selectedOccurrenceId" (change)="onOccurrenceChange($any($event.target).value)">
+            <option *ngFor="let o of eventOccurrences" [value]="o.id" [disabled]="o.isRegistered || o.registrationCompleted || o.eventConductCompleted">
+              {{ formatOccurrenceLabel(o) }}{{ o.isRegistered ? ' — Registered' : '' }}{{ o.eventConductCompleted ? ' — Completed' : '' }}
+            </option>
+          </select>
+        </div>
+
         <!-- Consent Checkboxes -->
         <div class="consent-section">
           <label class="checkbox-label">

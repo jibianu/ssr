@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EventRoutingModule } from './event-routing.module';
 import { EventListComponent } from './event-list/event-list.component';
+import { EventRecordingPanelComponent } from './event-recording-panel/event-recording-panel.component';
 import { EventAddComponent } from './event-add/event-add.component';
 import { EventEditComponent } from './event-edit/event-edit.component';
 import { EventUserListComponent } from './event-user-list/event-user-list.component';
@@ -14,7 +15,8 @@ import { CourseRejectModalComponent } from '../course/course-review/course-rejec
 @NgModule({
   declarations: [
     EventListComponent,
-    EventUserListComponent
+    EventUserListComponent,
+    EventRecordingPanelComponent
   ],
   imports: [
     CommonModule,

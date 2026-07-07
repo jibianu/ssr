@@ -33,7 +33,9 @@ function norm(e: any): any {
     status: Number(status),
     createdByName: e?.createdByName ?? e?.CreatedByName ?? null,
     createdByRole: e?.createdByRole ?? e?.CreatedByRole ?? null,
-    amount: Number(e?.amount ?? e?.Amount ?? 0)
+    amount: Number(e?.amount ?? e?.Amount ?? 0),
+    eventConductCompleted: e?.eventConductCompleted === true || e?.EventConductCompleted === true,
+    eventConductCompletedOn: e?.eventConductCompletedOn ?? e?.EventConductCompletedOn
   };
 }
 
@@ -74,10 +76,22 @@ export class EventListComponent implements OnInit, OnDestroy {
   registrationUsers: any[] = [];
   registrationCount = 0;
   registrationLoading = false;
+  registrationUsersLoading = false;
   registrationError: string | null = null;
   registrationsDrawerOpen = false;
   /** Admin registrations drawer: filter by payment status. */
   registrationPaymentFilter: 'completed' | 'pending' = 'completed';
+  registrationEventConductCompleted = false;
+  registrationEventEndDate: string | null = null;
+  registrationEventStartDate: string | null = null;
+  registrationOccurrences: any[] = [];
+  selectedRegistrationOccurrenceId: string | null = null;
+  addingEventOccurrence = false;
+  markingEventConductCompleted = false;
+  showAddOccurrencePanel = false;
+  newOccurrenceStartDate = '';
+  newOccurrenceEndDate = '';
+  addOccurrenceFormError: string | null = null;
   private registrationModalRef: any = null;
 
   /** Event id -> registration count (for View registrations). */
@@ -326,11 +340,16 @@ export class EventListComponent implements OnInit, OnDestroy {
     this.registrationEventId = String(eventId);
     this.registrationEventTitle = item?.title ?? item?.Title ?? 'Event';
     this.registrationEventAmount = Number(item?.amount ?? item?.Amount ?? 0);
+    this.registrationEventConductCompleted = item?.eventConductCompleted === true;
+    this.registrationEventEndDate = item?.endDate ?? item?.EndDate ?? null;
+    this.registrationEventStartDate = item?.startDate ?? item?.StartDate ?? null;
     this.registrationUsers = [];
     this.registrationCount = 0;
     this.registrationPaymentFilter = 'completed';
     this.registrationError = null;
     this.registrationLoading = true;
+
+    this.loadRegistrationOccurrences(String(eventId));
 
     if (this.isTrainerPage) {
       const modalTpl = this.modalTemplateRef;
@@ -344,29 +363,6 @@ export class EventListComponent implements OnInit, OnDestroy {
     } else {
       this.registrationsDrawerOpen = true;
     }
-
-    this.appService.getEventUsers(String(eventId)).subscribe({
-      next: (response: any) => {
-        const list = Array.isArray(response)
-          ? response
-          : (response?.data ?? response?.items ?? response?.Items ?? response?.result ?? []);
-        const raw = Array.isArray(list) ? list : [];
-        this.registrationUsers = raw.map((u: any) => this.normalizeRegistrationUser(u, this.registrationEventAmount));
-        this.registrationCount = this.registrationUsers.length;
-        this.registrationLoading = false;
-        this.registrationError = null;
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        const status = err?.status;
-        const msg = err?.error?.message ?? err?.message ?? 'Failed to load registrations.';
-        this.registrationError = (status === 401 || status === 403) ? 'Sign in as admin to view registrations.' : msg;
-        this.registrationUsers = [];
-        this.registrationCount = 0;
-        this.registrationLoading = false;
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   /** Normalize API user (camelCase or PascalCase) so template always has consistent keys and Payment Ref displays. */
@@ -381,6 +377,7 @@ export class EventListComponent implements OnInit, OnDestroy {
     const isPaymentCompleted = u?.isPaymentCompleted ?? u?.IsPaymentCompleted;
     const paymentRefDisplay = this.formatPaymentRefDisplay(paymentRefNo, isPaymentCompleted, eventAmount);
     const paymentCompleted = this.isRegistrationPaymentCompleted(paymentRefNo, isPaymentCompleted, paymentRefDisplay, eventAmount);
+    const registeredOn = u?.registeredOn ?? u?.RegisteredOn ?? u?.createdOn ?? u?.CreatedOn ?? null;
     return {
       name,
       email,
@@ -390,7 +387,8 @@ export class EventListComponent implements OnInit, OnDestroy {
       department,
       paymentRefNo: paymentRefNo || null,
       paymentRefDisplay,
-      paymentCompleted
+      paymentCompleted,
+      registeredOn
     };
   }
 
@@ -452,6 +450,203 @@ export class EventListComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  private loadRegistrationUsers(initialLoad = false): void {
+    if (!this.registrationEventId) return;
+    if (initialLoad) {
+      this.registrationLoading = true;
+    } else {
+      this.registrationUsersLoading = true;
+    }
+    this.registrationError = null;
+    this.appService.getEventUsers(this.registrationEventId, this.selectedRegistrationOccurrenceId ?? undefined).subscribe({
+      next: (response: any) => {
+        const list = Array.isArray(response)
+          ? response
+          : (response?.data ?? response?.items ?? response?.Items ?? response?.result ?? []);
+        const raw = Array.isArray(list) ? list : [];
+        this.registrationUsers = raw.map((u: any) => this.normalizeRegistrationUser(u, this.registrationEventAmount));
+        this.registrationCount = this.registrationUsers.length;
+        this.registrationLoading = false;
+        this.registrationUsersLoading = false;
+        this.registrationError = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        const status = err?.status;
+        const msg = err?.error?.message ?? err?.message ?? 'Failed to load registrations.';
+        this.registrationError = (status === 401 || status === 403) ? 'Sign in as admin to view registrations.' : msg;
+        this.registrationUsers = [];
+        this.registrationCount = 0;
+        this.registrationLoading = false;
+        this.registrationUsersLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private sortRegistrationOccurrences(occurrences: any[]): any[] {
+    return [...occurrences].sort((a, b) => {
+      const aTime = a?.startDate ? new Date(a.startDate).getTime() : 0;
+      const bTime = b?.startDate ? new Date(b.startDate).getTime() : 0;
+      return aTime - bTime;
+    });
+  }
+
+  private loadRegistrationOccurrences(eventId: string, selectOccurrenceId?: string): void {
+    this.appService.getEventOccurrences(eventId).subscribe({
+      next: (list) => {
+        const raw = Array.isArray(list) ? list : [];
+        this.registrationOccurrences = this.sortRegistrationOccurrences(
+          raw.map((o: any) => ({
+            id: String(o.id ?? o.Id ?? ''),
+            startDate: o.startDate ?? o.StartDate,
+            endDate: o.endDate ?? o.EndDate,
+            eventConductCompleted: o.eventConductCompleted === true || o.EventConductCompleted === true
+          })).filter((o) => o.id)
+        );
+        const selected = (selectOccurrenceId
+          ? this.registrationOccurrences.find((o) => o.id === selectOccurrenceId)
+          : null) ?? this.registrationOccurrences[0];
+        this.selectedRegistrationOccurrenceId = selected?.id ?? null;
+        this.registrationEventConductCompleted = selected?.eventConductCompleted === true;
+        this.registrationEventStartDate = selected?.startDate ?? null;
+        this.registrationEventEndDate = selected?.endDate ?? null;
+        this.loadRegistrationUsers(true);
+      },
+      error: () => {
+        this.selectedRegistrationOccurrenceId = null;
+        this.loadRegistrationUsers(true);
+      }
+    });
+  }
+
+  onRegistrationOccurrenceChange(occurrenceId: string): void {
+    if (!occurrenceId || this.selectedRegistrationOccurrenceId === occurrenceId) return;
+    this.selectedRegistrationOccurrenceId = occurrenceId;
+    const occ = this.registrationOccurrences.find((o) => o.id === occurrenceId);
+    this.registrationEventConductCompleted = occ?.eventConductCompleted === true;
+    this.registrationEventStartDate = occ?.startDate ?? null;
+    this.registrationEventEndDate = occ?.endDate ?? null;
+    this.registrationPaymentFilter = 'completed';
+    this.loadRegistrationUsers();
+    this.cdr.markForCheck();
+  }
+
+  formatOccurrenceLabel(o: any): string {
+    const start = o?.startDate ? new Date(o.startDate) : null;
+    if (!start || Number.isNaN(start.getTime())) return 'Event date';
+    return start.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  addNewEventOccurrence(): void {
+    if (!this.registrationEventId || this.addingEventOccurrence) return;
+    if (this.showAddOccurrencePanel) {
+      this.cancelAddOccurrencePanel();
+      return;
+    }
+    this.showAddOccurrencePanel = true;
+    this.newOccurrenceStartDate = '';
+    this.newOccurrenceEndDate = '';
+    this.addOccurrenceFormError = null;
+    this.cdr.markForCheck();
+  }
+
+  onNewOccurrenceStartDateChange(): void {
+    if (!this.newOccurrenceEndDate || this.newOccurrenceEndDate < this.newOccurrenceStartDate) {
+      this.newOccurrenceEndDate = this.newOccurrenceStartDate;
+    }
+    this.addOccurrenceFormError = null;
+  }
+
+  cancelAddOccurrencePanel(): void {
+    this.showAddOccurrencePanel = false;
+    this.newOccurrenceStartDate = '';
+    this.newOccurrenceEndDate = '';
+    this.addOccurrenceFormError = null;
+    this.cdr.markForCheck();
+  }
+
+  submitNewEventOccurrence(): void {
+    if (!this.registrationEventId || this.addingEventOccurrence) return;
+    const startDate = this.newOccurrenceStartDate?.trim();
+    if (!startDate) {
+      this.addOccurrenceFormError = 'Please select a start date.';
+      this.cdr.markForCheck();
+      return;
+    }
+    const endDate = (this.newOccurrenceEndDate?.trim() || startDate);
+    if (endDate < startDate) {
+      this.addOccurrenceFormError = 'End date cannot be before start date.';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.addingEventOccurrence = true;
+    this.addOccurrenceFormError = null;
+    this.appService.addEventOccurrence(this.registrationEventId, startDate, endDate).subscribe({
+      next: (res) => {
+        this.addingEventOccurrence = false;
+        this.showAddOccurrencePanel = false;
+        this.newOccurrenceStartDate = '';
+        this.newOccurrenceEndDate = '';
+        this.toasterService.showSuccess('New event date added. Users can register for this date.');
+        const newOccurrenceId = String(res?.id ?? res?.Id ?? '');
+        this.loadRegistrationOccurrences(this.registrationEventId!, newOccurrenceId || undefined);
+      },
+      error: (err) => {
+        this.addingEventOccurrence = false;
+        this.addOccurrenceFormError = err?.error?.message ?? 'Failed to add event date.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  /** True when event date has passed and admin can mark conduct as completed. */
+  get canMarkEventConductCompleted(): boolean {
+    if (this.isTrainerPage || this.registrationEventConductCompleted) return false;
+    const ref = this.registrationEventEndDate ?? this.registrationEventStartDate;
+    if (!ref) return false;
+    const eventDate = new Date(ref);
+    if (Number.isNaN(eventDate.getTime())) return false;
+    return eventDate.getTime() <= Date.now();
+  }
+
+  markEventConductCompleted(): void {
+    if (!this.registrationEventId || this.markingEventConductCompleted || this.registrationEventConductCompleted) return;
+    const paidCount = this.registrationCompletedCount;
+    const modalRef = this.modalService.open(ConfirmationModalComponent, {
+      size: 'sm',
+      backdrop: 'static',
+      centered: true
+    });
+    modalRef.componentInstance.title = 'Mark event as completed?';
+    modalRef.componentInstance.descText =
+      `This will mark this event date as conducted/completed. ${paidCount} paid registrant${paidCount === 1 ? '' : 's'} for this date will be able to download certificates.`;
+    modalRef.componentInstance.confirmLabel = 'Mark completed';
+    modalRef.componentInstance.confirmStyle = 'default';
+    modalRef.result.then(
+      () => {
+        this.markingEventConductCompleted = true;
+        this.appService.markEventConductCompleted(this.registrationEventId!, this.selectedRegistrationOccurrenceId ?? undefined).subscribe({
+          next: () => {
+            this.registrationEventConductCompleted = true;
+            const occ = this.registrationOccurrences.find((o) => o.id === this.selectedRegistrationOccurrenceId);
+            if (occ) occ.eventConductCompleted = true;
+            this.markingEventConductCompleted = false;
+            this.toasterService.showSuccess('Event date marked as completed. Certificates unlocked for paid registrants.');
+            this.cdr.markForCheck();
+          },
+          error: (err) => {
+            this.markingEventConductCompleted = false;
+            const msg = err?.error?.message ?? err?.message ?? 'Failed to mark event as completed.';
+            this.toasterService.showError(msg);
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      () => {}
+    );
+  }
+
   closeRegistrationsModal(): void {
     if (this.registrationEventId && this.registrationCount !== undefined) {
       this.registrationCountByEventId[this.registrationEventId] = this.registrationCount;
@@ -462,6 +657,10 @@ export class EventListComponent implements OnInit, OnDestroy {
       this.registrationModalRef = null;
     }
     this.registrationsDrawerOpen = false;
+    this.showAddOccurrencePanel = false;
+    this.newOccurrenceStartDate = '';
+    this.newOccurrenceEndDate = '';
+    this.addOccurrenceFormError = null;
   }
 
   /** Load registration count for each event (for progress display). */

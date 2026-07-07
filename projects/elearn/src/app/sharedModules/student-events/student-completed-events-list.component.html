@@ -1,0 +1,28 @@
+<div class="student-completed-events">
+  <header class="student-completed-events__header">
+    <h1>Completed Events</h1>
+    <p>Watch recordings, notes, and materials from past workshops.</p>
+  </header>
+
+  <div *ngIf="loading" class="student-completed-events__loading">Loading…</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="student-completed-events__grid" *ngIf="!loading && !error">
+    <article class="student-completed-events__card" *ngFor="let item of events" (click)="openEvent(item)">
+      <div class="student-completed-events__image" *ngIf="getEventImage(item)">
+        <img [src]="getEventImage(item)" [alt]="item.title" />
+      </div>
+      <div class="student-completed-events__body">
+        <p class="student-completed-events__date">{{ formatDate(item.startDate ?? item.completedOn) }}</p>
+        <h2>{{ item.title }}</h2>
+        <p class="student-completed-events__location">{{ item.location || 'Online workshop' }}</p>
+        <div class="student-completed-events__footer">
+          <span class="student-completed-events__badge" *ngIf="item.hasAccess">Access granted</span>
+          <span class="student-completed-events__price" *ngIf="!item.hasAccess">{{ formatPrice(item.recordingAmount) }}</span>
+          <span class="student-completed-events__cta">{{ item.hasAccess ? 'View content' : 'Pay &amp; access' }}</span>
+        </div>
+      </div>
+    </article>
+    <p *ngIf="events.length === 0" class="text-muted">No completed events yet.</p>
+  </div>
+</div>

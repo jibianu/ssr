@@ -1,0 +1,79 @@
+<div class="event-recording-panel" *ngIf="isCompleted && eventId && occurrenceId">
+  <h3 class="event-recording-panel__title">
+    <i class="fas fa-play-circle"></i> Recording content
+  </h3>
+  <p class="event-recording-panel__hint">
+    Upload videos, text notes, and PDFs for paid users. Set the price for users who did not pay for the live event.
+  </p>
+
+  <div *ngIf="loading" class="event-recording-panel__loading">Loading content…</div>
+
+  <ng-container *ngIf="!loading">
+    <label class="event-recording-panel__field">
+      <span>Recording price (₹)</span>
+      <input type="number" class="form-control" min="0" step="1" [(ngModel)]="recordingAmount"
+        placeholder="Leave empty to use event price" />
+    </label>
+
+    <section class="event-recording-panel__section">
+      <div class="event-recording-panel__section-head">
+        <h4>Videos</h4>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addVideo()">+ Add video</button>
+      </div>
+      <div class="event-recording-panel__card" *ngFor="let v of videos; let i = index">
+        <input type="text" class="form-control mb-2" placeholder="Video title" [(ngModel)]="v.title" />
+        <textarea class="form-control mb-2" rows="2" placeholder="Description" [(ngModel)]="v.description"></textarea>
+        <div class="event-recording-panel__upload-row">
+          <input type="file" accept="video/*,.mp4,.webm,.mov" (change)="onVideoFileSelected($event, i)" />
+          <div *ngIf="uploadingVideoIndex === i" class="event-recording-panel__progress">
+            <div class="event-recording-panel__progress-bar" [style.width.%]="videoUploadProgress[i] || 0"></div>
+            <span>Uploading video… {{ videoUploadProgress[i] || 0 }}%</span>
+          </div>
+        </div>
+        <input type="text" class="form-control mt-2" placeholder="Video URL (S3 or YouTube)" [(ngModel)]="v.videoLink" />
+        <div *ngIf="v.videoLink && !isYoutube(v.videoLink)" class="event-recording-panel__preview mt-2">
+          <video controls playsinline preload="metadata" class="event-recording-panel__player"
+            (error)="onVideoPlaybackError(i)">
+            <source [src]="videoStreamUrl(v.videoLink) | safeUrl" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <p *ngIf="videoPlaybackErrors[i]" class="event-recording-panel__video-error text-danger">
+            Video file missing or cannot play. Choose the file again, wait for upload to finish, then click Save.
+          </p>
+        </div>
+        <iframe *ngIf="v.videoLink && isYoutube(v.videoLink)" class="event-recording-panel__player mt-2"
+          [src]="v.videoLink" frameborder="0" allowfullscreen></iframe>
+        <button type="button" class="btn btn-sm btn-link text-danger mt-1" (click)="removeVideo(i)">Remove</button>
+      </div>
+    </section>
+
+    <section class="event-recording-panel__section">
+      <div class="event-recording-panel__section-head">
+        <h4>Text &amp; PDF</h4>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addMaterial()">+ Add section</button>
+      </div>
+      <div class="event-recording-panel__card" *ngFor="let m of materials; let mi = index">
+        <input type="text" class="form-control mb-2" placeholder="Section title" [(ngModel)]="m.title" />
+        <textarea class="form-control mb-2" rows="4" placeholder="Text content (HTML supported)" [(ngModel)]="m.description"></textarea>
+        <div class="event-recording-panel__upload-row">
+          <input type="file" accept=".pdf,application/pdf" (change)="onPdfFileSelected($event, mi)" />
+          <div *ngIf="uploadingFileKey?.startsWith(mi + '-')" class="event-recording-panel__progress">
+            <div class="event-recording-panel__progress-bar" [style.width.%]="pdfUploadProgress[uploadingFileKey!] || 0"></div>
+            <span>Uploading PDF… {{ pdfUploadProgress[uploadingFileKey!] || 0 }}%</span>
+          </div>
+        </div>
+        <ul class="event-recording-panel__files" *ngIf="m.files?.length">
+          <li *ngFor="let f of m.files; let fi = index">
+            {{ f.fileName || 'PDF' }}
+            <button type="button" class="btn btn-sm btn-link text-danger" (click)="removeFile(mi, fi)">Remove</button>
+          </li>
+        </ul>
+        <button type="button" class="btn btn-sm btn-link text-danger mt-1" (click)="removeMaterial(mi)">Remove section</button>
+      </div>
+    </section>
+
+    <button type="button" class="btn btn-primary event-recording-panel__save" [disabled]="saving" (click)="save()">
+      {{ saving ? 'Saving…' : 'Save recording content' }}
+    </button>
+  </ng-container>
+</div>

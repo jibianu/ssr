@@ -23,7 +23,14 @@ export class JwtInterceptor implements HttpInterceptor {
             // Large media/file streams have their own inline loaders – don't block the
             // whole page with the fullscreen overlay while they download.
             (u.includes('/api/studymaterialfile/') && (u.includes('/content') || u.includes('stream'))) ||
-            u.includes('streamvideo')
+            u.includes('streamvideo') ||
+            // Large uploads use inline progress in the component — don't block the whole page.
+            u.includes('api/events/video') ||
+            u.includes('api/events/recordingfile') ||
+            u.includes('api/events/video/stream') ||
+            u.includes('api/curriculumvideolecture/uploadvideo') ||
+            u.includes('api/curriculumvideolecture/uploadimage') ||
+            u.includes('api/document/uploaddocument')
         );
     }
 

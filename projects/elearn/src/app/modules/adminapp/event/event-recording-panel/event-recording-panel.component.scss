@@ -1,0 +1,113 @@
+.event-recording-panel {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.event-recording-panel__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.event-recording-panel__hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.event-recording-panel__field {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.event-recording-panel__field span {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.event-recording-panel__section {
+  margin-bottom: 1rem;
+}
+
+.event-recording-panel__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.event-recording-panel__section-head h4 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.event-recording-panel__card {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #fafafa;
+}
+
+.event-recording-panel__upload-row {
+  font-size: 0.85rem;
+}
+
+.event-recording-panel__progress {
+  margin-top: 0.5rem;
+  height: 1.25rem;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.event-recording-panel__progress-bar {
+  height: 100%;
+  background: #0d6efd;
+  transition: width 0.2s ease;
+}
+
+.event-recording-panel__progress span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #333;
+}
+
+.event-recording-panel__files {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.event-recording-panel__player {
+  width: 100%;
+  max-height: 240px;
+  border-radius: 6px;
+  background: #000;
+}
+
+.event-recording-panel__preview {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.event-recording-panel__video-error {
+  font-size: 0.8rem;
+  margin: 0.35rem 0 0;
+}
+
+.event-recording-panel__save {
+  width: 100%;
+}
+
+.event-recording-panel__loading {
+  font-size: 0.9rem;
+  color: #666;
+}

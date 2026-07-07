@@ -53,6 +53,7 @@ export class StudentBreadcrumbComponent implements OnInit, OnDestroy {
     if (url.startsWith(base + '/details')) return [{ label: 'My Courses', url: '/app/student/courses' }, { label: 'Course' }];
     if (url.startsWith(base + '/profile')) return [{ label: 'Profile' }];
     if (url.startsWith(base + '/certificate-template')) return [{ label: 'Certificates', url: '/app/student/certificate' }, { label: 'Certificate' }];
+    if (url.startsWith(base + '/event-certificate')) return [{ label: 'Certificates', url: '/app/student/certificate' }, { label: 'Event Certificate' }];
     if (url.startsWith(base + '/certificate')) return [{ label: 'Certificates' }];
     if (url.startsWith(base + '/purchase-history')) return [{ label: 'Purchase History' }];
     if (url.startsWith(base + '/notifications')) return [{ label: 'Notifications' }];

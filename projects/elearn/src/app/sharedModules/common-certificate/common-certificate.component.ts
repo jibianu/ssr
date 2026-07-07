@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AdminAppService } from 'src/app/modules/adminapp/adminapp.service';
 import { SharedService } from 'src/app/shared/service/shared-service.service';
 import { StudentBreadcrumbService } from 'src/app/core/services/student-breadcrumb.service';
@@ -14,6 +15,8 @@ export class CommonCertificateComponent implements OnInit, OnDestroy {
 
   subscription: Subscription = new Subscription();
   courseList: any;
+  eventCertificateList: any[] = [];
+  loading = true;
   constructor(
     private appService: AdminAppService,
     private sharedService: SharedService,
@@ -24,30 +27,44 @@ export class CommonCertificateComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.studentBreadcrumb.setBreadcrumb([{ label: 'Certificates' }]);
-    this.fnFechCertificateCourse();
+    this.fnFetchCertificates();
   }
 
   gadata:any;
-  fnFechCertificateCourse() {
-    let obj = {
+  eventGadata: any[] = [];
+
+  fnFetchCertificates() {
+    this.loading = true;
+    const courseReq = this.appService.getEnrolledCourses({
       'Filter.IsCompleted': true,
-      // 'Sort.PropertyName': this.sortBy,
-      // 'Sort.IsAscending': this.isAsc,
-      // pageSize: this.tableSize,
       pageNumber: 1,
-    }
+    }).pipe(catchError(() => of({ results: [] })));
+
+    const eventReq = this.appService.getEventCertificates().pipe(catchError(() => of([])));
+
     this.subscription.add(
-      this.appService.getEnrolledCourses(obj)
-        .subscribe(res => {
-          // console.log(res)
-          this.courseList = res.results;
-          this.gadata = this.courseList.map(x => ({
-            ...x,
-            bgColor: this.getRandomColor()
-        
-          }));
-        })
-    )
+      forkJoin({ courses: courseReq, events: eventReq }).subscribe(({ courses, events }) => {
+        this.courseList = courses?.results ?? [];
+        this.gadata = this.courseList.map(x => ({
+          ...x,
+          bgColor: this.getRandomColor()
+        }));
+        this.eventCertificateList = Array.isArray(events) ? events : [];
+        this.eventGadata = this.eventCertificateList.map(x => ({
+          ...x,
+          id: x.eventId ?? x.EventId,
+          occurrenceId: x.eventOccurrenceId ?? x.EventOccurrenceId,
+          title: x.title ?? x.Title,
+          occurrenceStartDate: x.occurrenceStartDate ?? x.OccurrenceStartDate,
+          bgColor: this.getRandomColor()
+        }));
+        this.loading = false;
+      })
+    );
+  }
+
+  get hasAnyCertificates(): boolean {
+    return (this.courseList?.length ?? 0) > 0 || (this.eventCertificateList?.length ?? 0) > 0;
   }
 
   getRandomColor() {

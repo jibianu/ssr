@@ -7,6 +7,8 @@ import { environment } from '../../environments/environment';
 export interface RazorpayCreateOrderOptions {
   userId?: string;
   eventId?: string;
+  eventOccurrenceId?: string;
+  forRecording?: boolean;
   membershipPlanCode?: string;
   billingCycle?: string;
   couponCode?: string;
@@ -65,6 +67,8 @@ export class RazorpayPaymentService {
       amount: amountPaise,
       courseId: options?.eventId || options?.membershipPlanCode ? '' : courseId,
       eventId: options?.eventId ?? '',
+      eventOccurrenceId: options?.eventOccurrenceId ?? '',
+      forRecording: options?.forRecording === true,
       membershipPlanCode: options?.membershipPlanCode ?? '',
       billingCycle: options?.billingCycle ?? '',
       userId: options?.userId ?? '',

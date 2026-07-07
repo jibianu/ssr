@@ -1,9 +1,9 @@
-import { map, switchMap, catchError, shareReplay, tap } from 'rxjs/operators';
+import { map, switchMap, catchError, shareReplay, tap, filter } from 'rxjs/operators';
 import { Category } from './category/category.model';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from './../../../environments/environment';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEventType, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { AuthenticationService } from '../auth/auth.service';
 import { getApiBaseUrl } from 'src/app/core/helpers/api-base-url.helper';
 import { extractPagedResults } from '../../core/helpers/paged-response.helper';
@@ -456,11 +456,150 @@ export class AdminAppService {
         return this.http.post<{ url?: string }>(this.apiUrl + `api/events/TitleImage`, data);
     }
 
-    /** Upload event video to S3; returns { url } to store in event. */
+    /** Upload event video — direct to S3 when possible (fast); falls back to API proxy. */
     uploadEventVideo(file: File): Observable<{ url?: string }> {
+        return this.uploadEventVideoWithProgress(file).pipe(
+            filter((r) => r.progress === 100 && !!r.url),
+            map((r) => ({ url: r.url }))
+        );
+    }
+
+    /** Upload event video with progress via API (reliable — file is stored on S3 before URL is returned). */
+    uploadEventVideoWithProgress(file: File): Observable<{ progress: number; url?: string }> {
+        return this.uploadEventVideoMultipartWithProgress(file);
+    }
+
+    private uploadEventVideoMultipartWithProgress(file: File): Observable<{ progress: number; url?: string }> {
         const data = new FormData();
         data.append('file', file, file.name);
-        return this.http.post<{ url?: string }>(this.apiUrl + `api/events/Video`, data);
+        return this.http
+            .post<{ url?: string; Url?: string }>(this.apiUrl + 'api/events/Video', data, {
+                reportProgress: true,
+                observe: 'events'
+            })
+            .pipe(
+                map((event) => this.mapUploadProgressEvent(event)),
+                filter((r) => r.progress > 0 || !!r.url)
+            );
+    }
+
+    /** Upload PDF for event recording — direct to S3 when possible. */
+    uploadEventRecordingFile(file: File): Observable<{ url?: string }> {
+        return this.uploadEventRecordingFileWithProgress(file).pipe(
+            filter((r) => r.progress === 100 && !!r.url),
+            map((r) => ({ url: r.url }))
+        );
+    }
+
+    uploadEventRecordingFileWithProgress(file: File): Observable<{ progress: number; url?: string }> {
+        return this.uploadEventRecordingFileMultipartWithProgress(file);
+    }
+
+    private uploadEventRecordingFileMultipartWithProgress(
+        file: File
+    ): Observable<{ progress: number; url?: string }> {
+        const data = new FormData();
+        data.append('file', file, file.name);
+        return this.http
+            .post<{ url?: string; Url?: string }>(this.apiUrl + 'api/events/RecordingFile', data, {
+                reportProgress: true,
+                observe: 'events'
+            })
+            .pipe(
+                map((event) => this.mapUploadProgressEvent(event)),
+                filter((r) => r.progress > 0 || !!r.url)
+            );
+    }
+
+    /** Stream S3-hosted videos through the API (avoids S3 CORS in the browser). */
+    getVideoStreamUrl(url: string): string {
+        if (!url) return '';
+        if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) {
+            return url;
+        }
+        if (url.includes('Event/Video/') || url.includes('Event%2FVideo%2F')) {
+            return this.apiUrl + 'api/events/Video/stream?url=' + encodeURIComponent(url);
+        }
+        return this.apiUrl + 'api/CurriculumVideoLecture/StreamVideo?url=' + encodeURIComponent(url);
+    }
+
+    /** After a direct S3 upload, confirm the object exists before saving the URL. */
+    verifyEventVideoUrl(fileUrl: string): Observable<boolean> {
+        return this.http
+            .get<{ exists?: boolean }>(
+                this.apiUrl + 'api/events/Video/verify?url=' + encodeURIComponent(fileUrl)
+            )
+            .pipe(
+                map((r) => !!r?.exists),
+                catchError(() => of(false))
+            );
+    }
+
+    private finalizeDirectUpload(
+        file: File,
+        result: { progress: number; url?: string },
+        multipartFn: (f: File) => Observable<{ progress: number; url?: string }>
+    ): Observable<{ progress: number; url?: string }> {
+        if (!result.url || result.progress < 100) {
+            return of(result);
+        }
+        return this.verifyEventVideoUrl(result.url).pipe(
+            switchMap((exists) => (exists ? of(result) : multipartFn(file)))
+        );
+    }
+
+    private normalizePresignResponse(raw: Record<string, string> | null | undefined): {
+        uploadUrl: string;
+        fileUrl: string;
+        contentType?: string;
+    } {
+        return {
+            uploadUrl: raw?.['uploadUrl'] || raw?.['UploadUrl'] || '',
+            fileUrl: raw?.['fileUrl'] || raw?.['FileUrl'] || '',
+            contentType: raw?.['contentType'] || raw?.['ContentType']
+        };
+    }
+
+    private putFileToStorageWithProgress(
+        uploadUrl: string,
+        file: File,
+        contentType: string
+    ): Observable<{ progress: number; done: boolean }> {
+        return this.http
+            .put(uploadUrl, file, {
+                headers: new HttpHeaders({ 'Content-Type': contentType }),
+                reportProgress: true,
+                observe: 'events'
+            })
+            .pipe(
+                map((event: HttpEvent<unknown>) => {
+                    if (event.type === HttpEventType.UploadProgress && event.total) {
+                        return {
+                            progress: Math.round((100 * event.loaded) / event.total),
+                            done: false
+                        };
+                    }
+                    if (event.type === HttpEventType.Response) {
+                        return { progress: 100, done: true };
+                    }
+                    return { progress: 0, done: false };
+                }),
+                filter((ev) => ev.progress > 0 || ev.done)
+            );
+    }
+
+    private mapUploadProgressEvent(
+        event: HttpEvent<{ url?: string; Url?: string }>
+    ): { progress: number; url?: string } {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+            return { progress: Math.round((100 * event.loaded) / event.total) };
+        }
+        if (event.type === HttpEventType.Response) {
+            const body = event.body;
+            const url = body?.url ?? body?.Url;
+            return { progress: 100, url };
+        }
+        return { progress: 0 };
     }
 
     /** Delete event media (title image or video) from S3. Call before clearing the URL from the form so DB and S3 stay in sync. */
@@ -485,9 +624,47 @@ export class AdminAppService {
         );
     }
 
-    getEventUsers(eventId: string): Observable<any[]> {
-        return this.http.get<any[]>(this.apiUrl + `api/events/users/` + eventId);
+    /** Mark event as conducted/completed. Unlocks certificates for paid registrants. */
+    getEventUsers(eventId: string, occurrenceId?: string): Observable<any[]> {
+        let url = this.apiUrl + `api/events/users/` + eventId;
+        if (occurrenceId) url += `?occurrenceId=${occurrenceId}`;
+        return this.http.get<any[]>(url);
     }
+
+    getEventOccurrences(eventId: string): Observable<any[]> {
+        return this.http.get<any[]>(this.apiUrl + `api/events/${eventId}/occurrences`);
+    }
+
+    addEventOccurrence(eventId: string, startDate: string, endDate?: string): Observable<any> {
+        return this.http.post<any>(this.apiUrl + `api/events/${eventId}/occurrences`, { startDate, endDate: endDate ?? startDate });
+    }
+
+    markEventConductCompleted(eventId: string, occurrenceId?: string): Observable<{ message?: string; eventConductCompleted?: boolean }> {
+        let url = this.apiUrl + `api/events/` + eventId + `/mark-conduct-completed`;
+        if (occurrenceId) url += `?occurrenceId=${occurrenceId}`;
+        return this.http.patch<{ message?: string; eventConductCompleted?: boolean }>(url, {});
+    }
+
+    getEventRecordingContent(eventId: string, occurrenceId: string): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/events/${eventId}/occurrences/${occurrenceId}/recording`);
+    }
+
+    saveEventRecordingContent(eventId: string, occurrenceId: string, body: any): Observable<any> {
+        return this.http.put<any>(this.apiUrl + `api/events/${eventId}/occurrences/${occurrenceId}/recording`, body);
+    }
+
+    getCompletedEvents(): Observable<any[]> {
+        return this.http.get<any[]>(this.apiUrl + `api/student/completed-events`);
+    }
+
+    getEventRecordingAccess(eventId: string, occurrenceId: string): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/events/${eventId}/occurrences/${occurrenceId}/recording/access`);
+    }
+
+    getEventRecordingStatus(eventId: string, occurrenceId: string): Observable<any> {
+        return this.http.get<any>(this.apiUrl + `api/events/${eventId}/occurrences/${occurrenceId}/recording/status`);
+    }
+
     submitEventForReview(eventId: string, message?: string): Observable<void> {
         return this.http.post<void>(this.apiUrl + `api/events/` + eventId + `/submit-for-review`, { message: message ?? '' });
     }
@@ -707,6 +884,17 @@ export class AdminAppService {
         return this.http.get<{ completed: boolean; enrollmentId?: string }>(
             getApiBaseUrl() + `certificate/check/${enrollmentId}`
         );
+    }
+
+    /** Events where conduct is completed and user has paid — eligible for certificate. */
+    getEventCertificates(): Observable<any[]> {
+        return this.http.get<any[]>(this.apiUrl + `api/student/event-certificates`);
+    }
+
+    checkEventCertificateCompleted(eventId: string, occurrenceId?: string): Observable<{ completed: boolean; eventUserId?: string }> {
+        let url = getApiBaseUrl() + `certificate/event/check/${eventId}`;
+        if (occurrenceId) url += `?occurrenceId=${occurrenceId}`;
+        return this.http.get<{ completed: boolean; eventUserId?: string }>(url);
     }
 
     getDocumnetAsFile(doc, docId) {

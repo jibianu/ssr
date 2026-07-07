@@ -46,6 +46,10 @@
           <i class="fa fa-calendar-check-o"></i>
           <span>Events</span>
         </a>
+        <a routerLink="events/completed" routerLinkActive="active" (click)="closeDrawer()" title="Completed Events">
+          <i class="fa fa-check-square-o"></i>
+          <span>Completed Events</span>
+        </a>
         <a routerLink="purchase-history" routerLinkActive="active" (click)="closeDrawer()" title="Purchase History">
           <i class="fa fa-shopping-cart"></i>
           <span>Purchase History</span>

@@ -18,6 +18,8 @@ import { CouponApiService } from 'src/app/services/coupon-api.service';
 })
 export class EventCheckoutComponent implements OnInit, OnDestroy {
   eventId = '';
+  occurrenceId: string | null = null;
+  forRecording = false;
   event: any = null;
   loading = true;
   loadError: string | null = null;
@@ -68,6 +70,9 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   ) {
     const id = this.route.snapshot.paramMap.get('eventId');
     if (id) this.eventId = id;
+    const occ = this.route.snapshot.queryParamMap.get('occurrenceId');
+    if (occ) this.occurrenceId = occ;
+    this.forRecording = this.route.snapshot.queryParamMap.get('forRecording') === 'true';
   }
 
   ngOnInit(): void {
@@ -112,8 +117,31 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
   }
 
   private loadRegistrationStatus(): void {
+    if (this.forRecording) {
+      if (!this.occurrenceId) {
+        this.loadError = 'Event date is required for recording purchase.';
+        return;
+      }
+      this.subscription.add(
+        this.studentApi.getEventRecordingStatus(this.eventId, this.occurrenceId).subscribe({
+          next: (status) => {
+            if (status?.hasAccess) {
+              this.router.navigate(['/app/student/events/completed', this.eventId, this.occurrenceId]);
+              return;
+            }
+            if (status?.recordingAmount != null) {
+              this.event = { ...this.event, amount: status.recordingAmount };
+            }
+            this.loadRecordingRegistrationDraft();
+          },
+          error: () => this.prefillRegistrationFromUser()
+        })
+      );
+      return;
+    }
+
     this.subscription.add(
-      this.studentApi.checkEventRegistration(this.eventId).subscribe({
+      this.studentApi.checkEventRegistration(this.eventId, this.occurrenceId ?? undefined).subscribe({
         next: (status) => {
           if (status?.registered) {
             this.router.navigate(['/app/student/events/event', this.eventId], {
@@ -122,7 +150,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
             return;
           }
           this.subscription.add(
-            this.studentApi.getEventRegistrationDraft(this.eventId).subscribe({
+            this.studentApi.getEventRegistrationDraft(this.eventId, this.occurrenceId ?? undefined).subscribe({
               next: (draft) => {
                 if (draft?.hasDraft && draft.mobile?.trim()) {
                   this.registrationForm.patchValue({
@@ -149,6 +177,33 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
               }
             })
           );
+        }
+      })
+    );
+  }
+
+  private loadRecordingRegistrationDraft(): void {
+    this.subscription.add(
+      this.studentApi.getEventRegistrationDraft(this.eventId, this.occurrenceId ?? undefined).subscribe({
+        next: (draft) => {
+          if (draft?.hasDraft && draft.mobile?.trim()) {
+            this.registrationForm.patchValue({
+              name: draft.name || '',
+              email: draft.email || '',
+              mobile: draft.mobile || '',
+              companyName: draft.companyName || '',
+              designation: draft.designation || '',
+              department: draft.department || ''
+            });
+            this.registrationDetailsComplete = true;
+          } else {
+            this.prefillRegistrationFromUser();
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.prefillRegistrationFromUser();
+          this.cdr.detectChanges();
         }
       })
     );
@@ -209,7 +264,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     const body = this.getRegistrationBody();
     this.subscription.add(
-      this.studentApi.registerForEvent(this.eventId, body).subscribe({
+      this.studentApi.registerForEvent(this.eventId, { ...body, occurrenceId: this.occurrenceId ?? undefined, forRecording: this.forRecording }).subscribe({
         next: (res) => {
           this.savingRegistrationDetails = false;
           if (res?.enrolled) {
@@ -246,7 +301,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     const body = this.getRegistrationBody();
     return new Promise((resolve) => {
-      this.studentApi.registerForEvent(this.eventId, body).subscribe({
+      this.studentApi.registerForEvent(this.eventId, { ...body, occurrenceId: this.occurrenceId ?? undefined, forRecording: this.forRecording }).subscribe({
         next: (res) => {
           this.savingRegistrationDetails = false;
           if (res?.enrolled) {
@@ -436,7 +491,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     this.loadError = null;
     this.cdr.detectChanges();
     this.subscription.add(
-      this.studentApi.createEventPaymentIntent(this.eventId, this.couponCode?.trim() || undefined).subscribe({
+      this.studentApi.createEventPaymentIntent(this.eventId, this.couponCode?.trim() || undefined, this.occurrenceId ?? undefined, this.forRecording).subscribe({
         next: (res) => {
           this.creatingIntent = false;
           const secret = res?.clientSecret ?? (res as any)?.ClientSecret;
@@ -473,6 +528,8 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
       this.razorpayPaymentService
         .createOrder(this.amountPaise, '', {
           eventId: this.eventId,
+          eventOccurrenceId: this.occurrenceId ?? undefined,
+          forRecording: this.forRecording,
           userId: user?.userId ?? user?.id,
           couponCode: this.couponCode?.trim() || undefined
         })
@@ -664,7 +721,7 @@ export class EventCheckoutComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     const body = this.getRegistrationBody();
     this.subscription.add(
-      this.studentApi.registerForEvent(this.eventId, body).subscribe({
+      this.studentApi.registerForEvent(this.eventId, { ...body, occurrenceId: this.occurrenceId ?? undefined, forRecording: this.forRecording }).subscribe({
         next: (res) => {
           this.creatingSession = false;
           if (res?.enrolled) {

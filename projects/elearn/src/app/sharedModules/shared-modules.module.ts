@@ -21,6 +21,7 @@ import { PublicCourseEmbedComponent } from '../core/public-course-embed/public-c
 import { TestResultComponent } from './test-result/test-result.component';
 import { CommonCertificateComponent } from './common-certificate/common-certificate.component';
 import { CertificateTemplateComponent } from './certificate-template/certificate-template.component';
+import { EventCertificateTemplateComponent } from './event-certificate-template/event-certificate-template.component';
 import { PurchaseHistoryComponent } from './purchase-history/purchase-history.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { StudentSearchPageComponent } from './student-search-page/student-search-page.component';
@@ -31,6 +32,8 @@ import { CurriculumSidebarComponent } from './course-player/curriculum-sidebar/c
 import { LessonVideoComponent } from './course-player/video-player/video-player.component';
 import { StudentEventsListComponent } from './student-events/student-events-list.component';
 import { StudentEventDetailComponent } from './student-events/student-event-detail.component';
+import { StudentCompletedEventsListComponent } from './student-events/student-completed-events-list.component';
+import { StudentCompletedEventContentComponent } from './student-events/student-completed-event-content.component';
 import { StudentMembershipPageComponent } from './student-membership/student-membership-page.component';
 
 @NgModule({
@@ -57,9 +60,12 @@ import { StudentMembershipPageComponent } from './student-membership/student-mem
     TestResultComponent,
     CommonCertificateComponent,
     CertificateTemplateComponent,
+    EventCertificateTemplateComponent,
     StudentSearchPageComponent,
     StudentEventsListComponent,
     StudentEventDetailComponent,
+    StudentCompletedEventsListComponent,
+    StudentCompletedEventContentComponent,
     StudentMembershipPageComponent,
   ],
   imports: [
