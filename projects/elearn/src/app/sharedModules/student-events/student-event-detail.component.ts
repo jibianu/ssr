@@ -197,11 +197,22 @@ export class StudentEventDetailComponent implements OnInit, AfterViewInit, OnDes
     } else {
       this.studentApi.getEventByCanonicalUrl(param).subscribe({
         next: (e) => {
-          onEventLoaded(e);
-          const eventId = this.event?.id;
-          if (eventId && eventId !== param) {
-            this.router.navigate(['/app/student/events/event', eventId], { replaceUrl: true });
+          const eventId = e?.id ?? e?.Id;
+          if (eventId) {
+            this.studentApi.getEventById(String(eventId)).subscribe({
+              next: onEventLoaded,
+              error: () => {
+                this.error = 'Event not found.';
+                this.loading = false;
+                this.cdr.markForCheck();
+              }
+            });
+            if (String(eventId) !== param) {
+              this.router.navigate(['/app/student/events/event', eventId], { replaceUrl: true });
+            }
+            return;
           }
+          onEventLoaded(e);
         },
         error: () => {
           this.error = 'Event not found.';

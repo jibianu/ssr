@@ -375,6 +375,11 @@
     gap: 1.5rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     position: relative;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
   }
 }
 
@@ -404,6 +409,12 @@
   display: grid;
   gap: 1rem;
   border: 1px solid rgba(226, 232, 240, 0.65);
+  min-width: 0;
+
+  @media (max-width: 576px) {
+    padding: 1.1rem 1.15rem;
+    border-radius: 14px;
+  }
 
   h2 {
     margin: 0;
@@ -812,6 +823,7 @@
   div {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     gap: 1rem;
     font-size: 0.95rem;
     color: #1f2937;
@@ -820,10 +832,24 @@
   dt {
     font-weight: 600;
     color: #475569;
+    flex-shrink: 0;
   }
 
   dd {
     margin: 0;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  @media (max-width: 576px) {
+    div {
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    dd {
+      text-align: left;
+    }
   }
 }
 
@@ -1976,10 +2002,6 @@ a.book-now-btn:hover {
 @media (max-width: 576px) {
   .event-card header {
     flex-direction: column;
-  }
-
-  .summary-container {
-    grid-template-columns: 1fr;
   }
 
   .event-body {
