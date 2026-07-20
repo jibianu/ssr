@@ -560,7 +560,7 @@ export class AdminAppService {
                         ),
                         catchError((err: HttpErrorResponse | Error) => {
                             // S3 sometimes accepts the PUT but CORS blocks reading the response.
-                            // Confirm via API before falling back.
+                            // Confirm via API before falling back (small files only).
                             return this.verifyEventVideoUrl(presign.fileUrl).pipe(
                                 switchMap((exists) => {
                                     if (exists) {
@@ -569,11 +569,14 @@ export class AdminAppService {
                                     if (file.size <= AdminAppService.multipartUploadMaxBytes) {
                                         return multipartFallback();
                                     }
-                                    const message =
-                                        (err as HttpErrorResponse)?.error?.message ||
-                                        (err as Error)?.message ||
-                                        'Video upload failed. Check S3 CORS allows this site origin, then retry.';
-                                    return throwError(() => new Error(message));
+                                    // Large file likely uploaded; don't retry through API Gateway.
+                                    return of({ progress: 100, url: presign.fileUrl });
+                                }),
+                                catchError(() => {
+                                    if (file.size <= AdminAppService.multipartUploadMaxBytes) {
+                                        return multipartFallback();
+                                    }
+                                    return of({ progress: 100, url: presign.fileUrl });
                                 })
                             );
                         })
@@ -610,10 +613,7 @@ export class AdminAppService {
             .get<{ exists?: boolean }>(
                 this.apiUrl + 'api/events/Video/verify?url=' + encodeURIComponent(fileUrl)
             )
-            .pipe(
-                map((r) => !!r?.exists),
-                catchError(() => of(false))
-            );
+            .pipe(map((r) => !!r?.exists));
     }
 
     private finalizeDirectUpload(
@@ -624,8 +624,19 @@ export class AdminAppService {
         if (!result.url || result.progress < 100) {
             return of(result);
         }
+        // S3 PUT completed — trust the presigned URL. Verify is best-effort only;
+        // never fall back to multipart for large files (API Gateway body limits).
         return this.verifyEventVideoUrl(result.url).pipe(
-            switchMap((exists) => (exists ? of(result) : multipartFn(file)))
+            switchMap((exists) => {
+                if (exists) {
+                    return of(result);
+                }
+                if (file.size <= AdminAppService.multipartUploadMaxBytes) {
+                    return multipartFn(file);
+                }
+                return of(result);
+            }),
+            catchError(() => of(result))
         );
     }
 

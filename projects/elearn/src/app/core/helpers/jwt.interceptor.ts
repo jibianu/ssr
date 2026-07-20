@@ -28,7 +28,8 @@ export class JwtInterceptor implements HttpInterceptor {
 			u.includes('api/events/video') ||
             u.includes('api/events/recordingfile') ||
             u.includes('api/events/video/stream') ||
-            u.includes('api/events/video/upload-url') ||
+			u.includes('api/events/video/upload-url') ||
+            u.includes('api/events/video/verify') ||
             u.includes('api/events/recordingfile/upload-url') ||
             u.includes('amazonaws.com') ||
             u.includes('api/curriculumvideolecture/uploadvideo') ||
