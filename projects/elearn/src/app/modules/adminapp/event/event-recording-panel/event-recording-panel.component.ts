@@ -126,7 +126,11 @@ export class EventRecordingPanelComponent implements OnChanges {
       error: (err) => {
         this.uploadingVideoIndex = null;
         delete this.videoUploadProgress[index];
-        this.toaster.showError(err?.error?.message || err?.message || 'Video upload failed.');
+        this.toaster.showError(
+          err?.error?.message ||
+            err?.message ||
+            'Video upload failed. If this persists, update S3 bucket CORS to allow https://oilandgasclub.com (see docs/S3-CORS-SETUP.md).'
+        );
         input.value = '';
       }
     });

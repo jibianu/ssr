@@ -456,7 +456,14 @@ export class AdminAppService {
         return this.http.post<{ url?: string }>(this.apiUrl + `api/events/TitleImage`, data);
     }
 
-    /** Upload event video — direct to S3 when possible (fast); falls back to API proxy. */
+    /**
+     * API Gateway / reverse proxies often reject multipart bodies over ~10MB (413),
+     * which browsers surface as a CORS failure. Prefer direct S3 PUT via a tiny
+     * presigned-url request; fall back to multipart only for small files.
+     */
+    private static readonly multipartUploadMaxBytes = 8 * 1024 * 1024;
+
+    /** Upload event video — direct to S3 when possible (fast); falls back to API proxy for small files. */
     uploadEventVideo(file: File): Observable<{ url?: string }> {
         return this.uploadEventVideoWithProgress(file).pipe(
             filter((r) => r.progress === 100 && !!r.url),
@@ -464,9 +471,13 @@ export class AdminAppService {
         );
     }
 
-    /** Upload event video with progress via API (reliable — file is stored on S3 before URL is returned). */
+    /** Upload event video with progress (presigned S3 first, then small multipart fallback). */
     uploadEventVideoWithProgress(file: File): Observable<{ progress: number; url?: string }> {
-        return this.uploadEventVideoMultipartWithProgress(file);
+        return this.uploadViaPresignWithProgress(
+            file,
+            'api/events/Video/upload-url',
+            () => this.uploadEventVideoMultipartWithProgress(file)
+        );
     }
 
     private uploadEventVideoMultipartWithProgress(file: File): Observable<{ progress: number; url?: string }> {
@@ -492,7 +503,11 @@ export class AdminAppService {
     }
 
     uploadEventRecordingFileWithProgress(file: File): Observable<{ progress: number; url?: string }> {
-        return this.uploadEventRecordingFileMultipartWithProgress(file);
+        return this.uploadViaPresignWithProgress(
+            file,
+            'api/events/RecordingFile/upload-url',
+            () => this.uploadEventRecordingFileMultipartWithProgress(file)
+        );
     }
 
     private uploadEventRecordingFileMultipartWithProgress(
@@ -508,6 +523,72 @@ export class AdminAppService {
             .pipe(
                 map((event) => this.mapUploadProgressEvent(event)),
                 filter((r) => r.progress > 0 || !!r.url)
+            );
+    }
+
+    /**
+     * 1) Ask API for a short-lived S3 PUT URL (small JSON — always CORS-safe).
+     * 2) PUT the file bytes straight to S3 (bypasses API Gateway body limits).
+     * 3) Verify the object exists; if S3 CORS blocks reading the PUT response, verify still recovers.
+     * 4) For small files only, fall back to multipart through the API.
+     */
+    private uploadViaPresignWithProgress(
+        file: File,
+        uploadUrlPath: string,
+        multipartFallback: () => Observable<{ progress: number; url?: string }>
+    ): Observable<{ progress: number; url?: string }> {
+        const contentType = file.type || 'application/octet-stream';
+        return this.http
+            .post<Record<string, string>>(this.apiUrl + uploadUrlPath, {
+                fileName: file.name,
+                contentType
+            })
+            .pipe(
+                map((raw) => this.normalizePresignResponse(raw)),
+                switchMap((presign) => {
+                    if (!presign.uploadUrl || !presign.fileUrl) {
+                        return throwError(() => new Error('Could not create upload URL.'));
+                    }
+                    const type = presign.contentType || contentType;
+                    return this.putFileToStorageWithProgress(presign.uploadUrl, file, type).pipe(
+                        map((ev) => ({
+                            progress: ev.progress,
+                            url: ev.done ? presign.fileUrl : undefined
+                        })),
+                        switchMap((result) =>
+                            this.finalizeDirectUpload(file, result, multipartFallback)
+                        ),
+                        catchError((err: HttpErrorResponse | Error) => {
+                            // S3 sometimes accepts the PUT but CORS blocks reading the response.
+                            // Confirm via API before falling back.
+                            return this.verifyEventVideoUrl(presign.fileUrl).pipe(
+                                switchMap((exists) => {
+                                    if (exists) {
+                                        return of({ progress: 100, url: presign.fileUrl });
+                                    }
+                                    if (file.size <= AdminAppService.multipartUploadMaxBytes) {
+                                        return multipartFallback();
+                                    }
+                                    const message =
+                                        (err as HttpErrorResponse)?.error?.message ||
+                                        (err as Error)?.message ||
+                                        'Video upload failed. Check S3 CORS allows this site origin, then retry.';
+                                    return throwError(() => new Error(message));
+                                })
+                            );
+                        })
+                    );
+                }),
+                catchError((err: HttpErrorResponse | Error) => {
+                    if (file.size <= AdminAppService.multipartUploadMaxBytes) {
+                        return multipartFallback();
+                    }
+                    const message =
+                        (err as HttpErrorResponse)?.error?.message ||
+                        (err as Error)?.message ||
+                        'Video upload failed. Large files must upload directly to S3.';
+                    return throwError(() => new Error(message));
+                })
             );
     }
 

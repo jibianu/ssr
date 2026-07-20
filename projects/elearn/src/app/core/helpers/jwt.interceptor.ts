@@ -25,9 +25,12 @@ export class JwtInterceptor implements HttpInterceptor {
             (u.includes('/api/studymaterialfile/') && (u.includes('/content') || u.includes('stream'))) ||
             u.includes('streamvideo') ||
             // Large uploads use inline progress in the component — don't block the whole page.
-            u.includes('api/events/video') ||
+			u.includes('api/events/video') ||
             u.includes('api/events/recordingfile') ||
             u.includes('api/events/video/stream') ||
+            u.includes('api/events/video/upload-url') ||
+            u.includes('api/events/recordingfile/upload-url') ||
+            u.includes('amazonaws.com') ||
             u.includes('api/curriculumvideolecture/uploadvideo') ||
             u.includes('api/curriculumvideolecture/uploadimage') ||
             u.includes('api/document/uploaddocument')
