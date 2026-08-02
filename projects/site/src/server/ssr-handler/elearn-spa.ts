@@ -22,6 +22,9 @@ export function sendElearnSpaIndex(res: Response, mountPath: string, indexPath: 
   }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   setNoStoreHtmlHeaders(res);
+  // Every Elearn shell is a private area (auth, checkout, payment, dashboards)
+  // — never indexable, enforced at header level for non-JS crawlers.
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.send(html);
 }
 

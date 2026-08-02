@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { SsrResponseStatusService } from '../../../core/services/ssr-response-status.service';
 
 @Component({
     selector: 'app-page-not-found',
@@ -13,10 +14,10 @@ import { Component, OnInit } from '@angular/core';
     }
 })
 export class PageNotFoundComponent implements OnInit {
-
-  constructor() { }
+  private readonly ssrStatus = inject(SsrResponseStatusService);
 
   ngOnInit(): void {
+    // SSR must answer unknown routes with a real 404, not a soft-404 (200).
+    this.ssrStatus.setNotFound();
   }
-
 }

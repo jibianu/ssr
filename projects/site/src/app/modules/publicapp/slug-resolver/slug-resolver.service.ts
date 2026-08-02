@@ -7,6 +7,8 @@ import { API_URL } from 'src/app/core/config/api-url.config';
 export interface SlugResolverResponse {
   type: 'course' | 'blog' | 'event';
   slug: string;
+  /** Set when the requested slug was a retired alias — caller must 301 to `slug`. */
+  redirectedFrom?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,7 +41,10 @@ export class SlugResolverService {
         if (t !== 'course' && t !== 'blog' && t !== 'event') return null;
         const raw = (res.slug ?? res.Slug ?? slug).toString().trim() || slug.trim();
         const s = this.normalizeResolvedSlug(raw);
-        return { type: t as SlugResolverResponse['type'], slug: s };
+        const redirectedFrom = (res.redirectedFrom ?? res.RedirectedFrom ?? '').toString().trim();
+        return redirectedFrom
+          ? { type: t as SlugResolverResponse['type'], slug: s, redirectedFrom }
+          : { type: t as SlugResolverResponse['type'], slug: s };
       }),
       catchError(() => of(null)),
       shareReplay({ bufferSize: 1, refCount: true })

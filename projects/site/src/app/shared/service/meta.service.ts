@@ -1,6 +1,7 @@
 
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
 
 export interface PageMetadata {
@@ -28,12 +29,12 @@ const defaultMetadata: PageMetadata = {
     description: 'Start learning today with Oilandgasclub.com. Unlimited access to oil and gas courses and resources.',
     author: 'Anush',
     type: 'website',
-    image: 'https://www.oilandgasclub.com/assets/images/og-image.jpg',
+    image: 'https://oilandgasclub.com/assets/images/og-image.jpg',
     imageWidth: 1200,
     imageHeight: 630,
-    seoUrl: 'https://www.oilandgasclub.com',
+    seoUrl: 'https://oilandgasclub.com',
     site: 'oilandgasclub',
-    domain: 'www.oilandgasclub.com',
+    domain: 'oilandgasclub.com',
     robots: 'index, follow'
 };
 
@@ -43,7 +44,8 @@ const defaultMetadata: PageMetadata = {
 export class MetadataService {
     constructor(
         private meta: Meta,
-        private title: Title
+        private title: Title,
+        @Inject(DOCUMENT) private document: Document
     ) {}
 
     /**
@@ -140,14 +142,15 @@ export class MetadataService {
         });
     }
 
+    /** Proper <link rel="canonical"> element (a <meta rel=canonical> is invalid and ignored by Google). */
     public updateCanonicalUrl(url: string): void {
-        // Remove existing canonical link if it exists
-        const existingCanonical = this.meta.getTag('rel="canonical"');
-        if (existingCanonical) {
-            this.meta.removeTagElement(existingCanonical);
-        }
+        this.document.head
+            .querySelectorAll('link[rel="canonical"], meta[rel="canonical"]')
+            .forEach((el) => el.remove());
 
-        // Add new canonical link
-        this.meta.addTag({ rel: 'canonical', href: url });
+        const link = this.document.createElement('link');
+        link.setAttribute('rel', 'canonical');
+        link.setAttribute('href', url);
+        this.document.head.appendChild(link);
     }
 }

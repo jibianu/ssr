@@ -20,6 +20,15 @@
             "ssr": {
               "entry": "projects/site/src/server.ts"
             },
+            "security": {
+              "allowedHosts": [
+                "oilandgasclub.com",
+                "www.oilandgasclub.com",
+                "*.oilandgasclub.com",
+                "localhost",
+                "127.0.0.1"
+              ]
+            },
             "polyfills": ["@angular/localize/init", "projects/site/src/polyfills.ts"],
             "tsConfig": "projects/site/tsconfig.app.json",
             "assets": [

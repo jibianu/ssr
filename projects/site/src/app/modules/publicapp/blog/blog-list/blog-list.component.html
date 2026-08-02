@@ -1,5 +1,20 @@
 <section class="blog-page">
   <div class="container">
+    <nav class="blog-breadcrumbs" aria-label="Breadcrumb">
+      <a routerLink="/">Home</a>
+      <span aria-hidden="true"> / </span>
+      <span>Articles</span>
+    </nav>
+    @if (!selectedAuthorId()) {
+      <header class="blog-hub-header">
+        <h1 class="blog-hub-title">Oil and Gas Engineering Articles</h1>
+        <p class="blog-hub-intro">
+          Read practical articles on oil and gas engineering, certification topics, and industry
+          practice. Filter by category or search titles to find instrumentation, piping, process,
+          NDT, and API content from Oilandgasclub authors.
+        </p>
+      </header>
+    }
     <!-- Search and Filter (old blog layout) -->
     <div class="search-filter-section">
     <div class="row align-items-end">

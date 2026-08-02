@@ -79,7 +79,7 @@ export class MissionAndVisionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/mission-and-vision');
+    this.setCanonicalURL('https://oilandgasclub.com/mission-and-vision');
     this.titleService.setTitle('Mission & Vision - Oilandgasclub');
     this.metaService.addTags([
       {

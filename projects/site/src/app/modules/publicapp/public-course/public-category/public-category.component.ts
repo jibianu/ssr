@@ -1,10 +1,13 @@
 
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, combineLatest, of } from 'rxjs';
 import { map, switchMap, shareReplay, catchError, tap } from 'rxjs/operators';
 import { PublicAppService } from '../../publicapp.service';
 import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+import { SsrResponseStatusService } from 'src/app/core/services/ssr-response-status.service';
+import { normalizeCategorySlug, formatCategoryTitle } from 'src/app/core/helpers/category-slug.helper';
 import { environment } from 'src/environments/environment';
 
 interface CategoryCourseFeature {
@@ -51,6 +54,8 @@ export class PublicCategoryComponent {
 
   // ✅ FIX: Move inject() calls to constructor to prevent injector errors in SSR
   private readonly structuredDataService: StructuredDataService;
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly ssrStatus = inject(SsrResponseStatusService);
 
   constructor(
     private route: ActivatedRoute,
@@ -82,6 +87,20 @@ export class PublicCategoryComponent {
           ? resolvedCategory.apiSlug.trim()
           : normalizedSlug;
 
+        // Canonical URL enforcement: any variant (uppercase /category/Structural,
+        // alias /category/instrumentation, encoded spaces) answers ONE direct 301
+        // to /category/{canonical-slug} — never a duplicate 200.
+        const canonicalSlug = resolvedCategory.apiSlug || normalizedSlug;
+        if (canonicalSlug && rawCategoryParam && rawCategoryParam !== canonicalSlug) {
+          this.redirectToCanonicalCategory(canonicalSlug, currentPage);
+          return of({
+            courses: [],
+            totalItems: 0,
+            currentPage,
+            categoryName: resolvedCategory.displayName || 'Category'
+          });
+        }
+
         if (!normalizedSlug) {
           return of({
             courses: [],
@@ -91,14 +110,23 @@ export class PublicCategoryComponent {
           });
         }
 
+        const categoryKnown = Boolean(resolvedCategory.categoryId) || (categories || []).length === 0;
+
         // Use api/public/courses?categorySlug=... (same as Elearn) so backend filters by CategoryId
         return this.publicAppService.getPublicCoursesByCategory(categorySlugForApi, currentPage, this.itemsPerPage).pipe(
           map(response => {
             const courses: CategoryCourseItem[] = (response?.results || []).map((course: any) => this.mapCourse(course));
+            const totalItems = response?.totalNumberOfRecords ?? 0;
+            // Unknown category with no content: real 404 during SSR, never a thin 200
+            // (categoryKnown is true when the categories list itself failed to load —
+            // a transient API outage must not mark valid pages as 404).
+            if (!categoryKnown && totalItems === 0 && !isPlatformBrowser(this.platformId)) {
+              this.ssrStatus.setNotFound();
+            }
             const displayName = resolvedCategory.displayName || this.formatCategoryTitle(rawCategoryParam);
             return {
               courses,
-              totalItems: response?.totalNumberOfRecords ?? 0,
+              totalItems,
               currentPage,
               categoryName: displayName
             };
@@ -176,6 +204,23 @@ export class PublicCategoryComponent {
     return feature?.id != null ? String(feature.id) : String(index);
   }
 
+  /**
+   * Duplicate URL variant → one direct permanent redirect to the canonical
+   * category URL. SSR answers a real HTTP 301; the browser swaps the URL
+   * without a history entry. Content-changing ?page is preserved.
+   */
+  private redirectToCanonicalCategory(canonicalSlug: string, currentPage: number): void {
+    const pageQuery = currentPage > 1 ? `?page=${currentPage}` : '';
+    if (isPlatformBrowser(this.platformId)) {
+      void this.router.navigate(['/category', canonicalSlug], {
+        replaceUrl: true,
+        queryParams: currentPage > 1 ? { page: currentPage } : {}
+      });
+    } else {
+      this.ssrStatus.setRedirect(`/category/${encodeURIComponent(canonicalSlug)}${pageQuery}`, 301);
+    }
+  }
+
   private resolveCategoryName(
     rawParam: string,
     categories: any[]
@@ -186,33 +231,38 @@ export class PublicCategoryComponent {
       return { filterName: '', displayName: '' };
     }
 
-    const slugMatchesParam = (value: string | null | undefined): boolean => {
+    const candidateValuesOf = (category: any): unknown[] => [
+      category?.name,
+      category?.categoryName,
+      category?.slug,
+      category?.Slug,
+      category?.canonicalUrl,
+      category?.canonicalCategoryUrl
+    ];
+
+    const exactMatch = (value: unknown): boolean =>
+      value != null &&
+      String(value).trim() !== '' &&
+      this.normalizeCategorySlug(String(value)) === normalizedParamSlug;
+
+    const segmentMatch = (value: unknown): boolean => {
       if (value == null || String(value).trim() === '') {
         return false;
       }
-      const n = this.normalizeCategorySlug(String(value));
-      if (n === normalizedParamSlug) {
-        return true;
-      }
       // Short URL segment (e.g. "piping") vs long category slug — mirror backend segment match
       if (normalizedParamSlug.length >= 3) {
-        return n.split('-').some(seg => seg === normalizedParamSlug);
+        return this.normalizeCategorySlug(String(value))
+          .split('-')
+          .some(seg => seg === normalizedParamSlug);
       }
       return false;
     };
 
-    let matchingCategory = (categories || []).find((category: any) => {
-      const candidateValues = [
-        category?.name,
-        category?.categoryName,
-        category?.slug,
-        category?.Slug,
-        category?.canonicalUrl,
-        category?.canonicalCategoryUrl
-      ];
-
-      return candidateValues.some(value => slugMatchesParam(value));
-    });
+    // Exact slug match wins; the fuzzy segment fallback only runs when no
+    // category matches exactly (deterministic canonical target for aliases).
+    let matchingCategory =
+      (categories || []).find((category: any) => candidateValuesOf(category).some(exactMatch)) ??
+      (categories || []).find((category: any) => candidateValuesOf(category).some(segmentMatch));
 
     // Resolve by slug alias (e.g. bgas -> oil-and-gas) so display name matches backend filter
     if (!matchingCategory && PublicCategoryComponent.SLUG_ALIASES[normalizedParamSlug]) {
@@ -246,34 +296,13 @@ export class PublicCategoryComponent {
     };
   }
 
+  /** Delegates to the shared helper — single source of truth for category slugs. */
   private normalizeCategorySlug(value: string): string {
-    if (!value) {
-      return '';
-    }
-
-    const trimmed = decodeURIComponent(value)
-      .replace(/^\/+/, '')
-      .replace(/category\//i, '')
-      .trim()
-      .toLowerCase();
-
-    return trimmed
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    return normalizeCategorySlug(value);
   }
 
   private formatCategoryTitle(value: string): string {
-    if (!value) {
-      return '';
-    }
-
-    const words = this.normalizeCategorySlug(value)
-      .split('-')
-      .filter(Boolean);
-
-    return words
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    return formatCategoryTitle(value);
   }
 
   private normalizeCourseUrl(url: string | null | undefined): string {

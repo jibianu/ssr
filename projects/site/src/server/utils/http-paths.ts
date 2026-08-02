@@ -29,7 +29,10 @@ export function setSsrDiagnosticHeader(
 }
 
 export function createWarmCacheRequest(route: string): Request {
-  const port = process.env['PORT'] || '4200';
+  // Angular 20 SSR rejects localhost hosts (SSRF guard) and silently falls back
+  // to the CSR shell — which would poison the warm cache with meta-less HTML.
+  // Use the public host so warmed entries contain real SSR output.
+  const publicHost = (process.env['PUBLIC_HOST'] || 'oilandgasclub.com').trim();
   return ensureSafeRequest({
     method: 'GET',
     url: route,
@@ -37,8 +40,8 @@ export function createWarmCacheRequest(route: string): Request {
     originalUrl: route,
     query: {},
     headers: {
-      host: `localhost:${port}`,
-      'x-forwarded-proto': 'http',
+      host: publicHost,
+      'x-forwarded-proto': 'https',
     },
   });
 }

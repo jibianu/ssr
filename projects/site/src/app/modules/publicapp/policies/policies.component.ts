@@ -18,7 +18,7 @@ export class PoliciesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/policies');
+    this.setCanonicalURL('https://oilandgasclub.com/policies');
          this.titleService.setTitle('policies - Oil and Gas Club');
      this.metaService.addTags([
       { name: 'description', content: 'Explore the comprehensive policies of Oil and Gas Club, outlining the terms of use, privacy policy, and guidelines for a secure and professional learning experience.' },

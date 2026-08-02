@@ -81,7 +81,7 @@ export class BuildYourPortfolioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/build-your-portfolio');
+    this.setCanonicalURL('https://oilandgasclub.com/build-your-portfolio');
     this.titleService.setTitle('Build Your Portfolio - Oil and Gas Club');
     this.metaService.addTags([
       {

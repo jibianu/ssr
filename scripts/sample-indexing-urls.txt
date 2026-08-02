@@ -1,0 +1,13 @@
+# Sample GSC "Crawled - currently not indexed" URLs for oilandgasclub.com
+# One URL per line (CSV first-column also supported).
+https://oilandgasclub.com/stress-q-and-a
+https://www.blog.oilandgasclub.com/Primavera-Training
+https://oilandgasclub.com/caesar-software
+https://oilandgasclub.com/types-of-common-fittings
+https://oilandgasclub.com/non-destructive-testing
+https://oilandgasclub.com/mastering-process-design
+https://oilandgasclub.com/a-process-design-course-for-oil-and-gas-professionals
+https://oilandgasclub.com/flanges-and-types
+https://oilandgasclub.com/conversion-of-units
+https://oilandgasclub.com/responsibilities-of-piping-construction-engineers
+https://oilandgasclub.com/primavera-training

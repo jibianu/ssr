@@ -131,7 +131,7 @@ export class CoursesOfferedComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/courses-offered');
+    this.setCanonicalURL('https://oilandgasclub.com/courses-offered');
          this.titleService.setTitle('courses-offered - Oil and Gas Club');
      this.metaService.addTags([
       { name: 'description', content: 'Have questions about our courses or certifications? Contact Oilandgasclub today for support, inquiries, and partnership opportunities. We are here to help!' },

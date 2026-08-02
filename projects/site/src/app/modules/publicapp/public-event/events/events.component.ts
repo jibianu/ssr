@@ -6,6 +6,11 @@ import { PublicAppService } from '../../publicapp.service';
 import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 import { resolveEventStartTime } from 'src/app/core/helpers/event-timing.helper';
 import { resolveMediaCdnUrl } from 'src/app/core/helpers/assets-cdn.helper';
+import { MetadataService } from 'src/app/shared/service/meta.service';
+import { CanonicalService } from 'src/app/shared/service/canonical.service';
+import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+import { environment } from 'src/environments/environment';
+
 @Component({
     selector: 'app-events',
     templateUrl: './events.component.html',
@@ -29,6 +34,9 @@ export class EventsComponent implements OnInit, OnDestroy {
   constructor(
     private publicAppService: PublicAppService,
     private cdr: ChangeDetectorRef,
+    private metadataService: MetadataService,
+    private canonicalService: CanonicalService,
+    private structuredDataService: StructuredDataService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -55,6 +63,27 @@ export class EventsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const canonicalUrl = `${environment.seoUrl}events`.replace(/([^:]\/)\/+/g, '$1');
+    this.metadataService.updateMetadata({
+      title: 'Oil and Gas Engineering Workshops and Events | Oilandgasclub',
+      description:
+        'Find upcoming oil and gas engineering workshops, expert sessions, and recorded events hosted by Oilandgasclub.',
+      author: 'Oilandgasclub Team',
+      type: 'website',
+      image: 'https://oilandgasclub.com/assets/images/og-image.jpg',
+      imageWidth: 1200,
+      imageHeight: 630,
+      seoUrl: canonicalUrl,
+      category: 'Events, Workshops, Oil and Gas Training',
+      canonicalUrl,
+    });
+    this.canonicalService.setCanonicalURL(canonicalUrl);
+    this.structuredDataService.setBreadcrumbs([
+      { name: 'Home', url: 'https://oilandgasclub.com/' },
+      { name: 'Events', url: 'https://oilandgasclub.com/events' },
+    ]);
+    this.structuredDataService.setWebSite('Oilandgasclub', 'https://oilandgasclub.com');
+
     if (this.isBrowser && typeof document !== 'undefined') {
       this.visibilityChangeListener = () => {
         if (!document.hidden) {

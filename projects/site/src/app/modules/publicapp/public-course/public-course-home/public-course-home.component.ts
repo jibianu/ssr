@@ -9,6 +9,7 @@ import { BackendHealthService } from 'src/app/core/services/backend-health.servi
 import { environment } from 'src/environments/environment';
 import { buildElearnAuthUrl } from 'src/app/core/helpers/elearn-auth-url.helper';
 import { resolveCourseCheckoutUrl, resolveStudentCourseUrl } from 'src/app/core/helpers/course-checkout-url.helper';
+import { normalizeCategorySlug } from 'src/app/core/helpers/category-slug.helper';
 
 interface HomeCourseFeature {
   id?: string;
@@ -284,16 +285,9 @@ export class PublicCourseHomeComponent implements OnInit, OnDestroy {
     return categoryName.trim().toLowerCase();
   }
 
+  /** Shared canonical category slug (lowercase, hyphenated) — see category-slug.helper. */
   private normalizeCategorySlug(categoryName: string | null | undefined): string {
-    if (!categoryName) {
-      return '';
-    }
-
-    return categoryName
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    return normalizeCategorySlug(categoryName);
   }
 
   onImgError(event: Event): void {

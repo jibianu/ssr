@@ -81,7 +81,7 @@ export class WhyOilandgasclubComponent implements OnInit {
 
   ngOnInit(): void {
     // ✅ SEO: Set canonical URL
-    this.setCanonicalURL('https://www.oilandgasclub.com/why-oilandgasclub');
+    this.setCanonicalURL('https://oilandgasclub.com/why-oilandgasclub');
     
     // ✅ SEO: Set page title
     this.titleService.setTitle('Why Oilandgasclub.com - Your Path to Success in Oil and Gas Certifications');
@@ -98,16 +98,16 @@ export class WhyOilandgasclubComponent implements OnInit {
       { property: 'og:title', content: 'Why Oilandgasclub.com - Your Path to Success in Oil and Gas Certifications' },
       { property: 'og:description', content: 'Learn why Oilandgasclub.com is trusted by professionals for online learning in API, ASNT, and CSWIP certifications. Flexible, affordable, and career-focused courses.' },
       { property: 'og:author', content: 'Oilandgasclub Team' },
-      { property: 'og:image', content: 'https://www.oilandgasclub.com/images/logo.png' },
+      { property: 'og:image', content: 'https://oilandgasclub.com/images/logo.png' },
       { property: 'og:image:width', content: '600' },
       { property: 'og:image:height', content: '500' },
-      { property: 'og:url', content: 'https://www.oilandgasclub.com/why-oilandgasclub' },
+      { property: 'og:url', content: 'https://oilandgasclub.com/why-oilandgasclub' },
       
       // ✅ Article Meta Tags
       { property: 'article:published_time', content: '2021-09-01T06:18:55.5419129' },
       { property: 'article:modified_time', content: '2023-07-08T06:43:07.881401' },
       { property: 'article:tag', content: 'Oil and Gas Training, Professional Certifications, Online Learning, Career Development' },
-      { property: 'article:publisher', content: 'https://www.oilandgasclub.com' },
+      { property: 'article:publisher', content: 'https://oilandgasclub.com' },
       
       // ✅ Twitter Meta Tags
       { name: 'twitter:card', content: 'summary_large_image' },
@@ -115,7 +115,7 @@ export class WhyOilandgasclubComponent implements OnInit {
       { name: 'twitter:description', content: 'Learn why Oilandgasclub.com is trusted by professionals for online learning in API, ASNT, and CSWIP certifications. Flexible, affordable, and career-focused courses.' },
       { name: 'twitter:site', content: '@oilandgasclub' },
       { name: 'twitter:creator', content: '@Oilandgasclub' },
-      { name: 'twitter:url', content: 'https://www.oilandgasclub.com/why-oilandgasclub' },
+      { name: 'twitter:url', content: 'https://oilandgasclub.com/why-oilandgasclub' },
     ]);
   }
 

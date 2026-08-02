@@ -286,7 +286,7 @@ export class MembershipComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/membership');
+    this.setCanonicalURL('https://oilandgasclub.com/membership');
     this.titleService.setTitle('Membership - Oilandgasclub');
     this.metaService.addTags([
       {

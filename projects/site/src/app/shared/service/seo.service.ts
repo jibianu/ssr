@@ -4,6 +4,47 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+/**
+ * Route prefixes that must NEVER be indexed by search engines.
+ * Auth, payment, checkout, dashboards, profile and admin areas.
+ * Keep in sync with robots.txt and the nginx/Express noindex headers.
+ */
+const NOINDEX_PATH_PREFIXES: readonly string[] = [
+  '/login',
+  '/register',
+  '/auth',
+  '/forget-password',
+  '/fg-code',
+  '/change-password',
+  '/verification',
+  '/callback',
+  '/google-callback',
+  '/sso-callback',
+  '/checkout',
+  '/payment',
+  '/dashboard',
+  '/profile',
+  '/admin',
+  '/app',
+  '/company',
+  '/trainer',
+  '/student',
+  '/management',
+  '/affiliate',
+  '/elearn',
+  '/unauthorized',
+  '/user-unavailable',
+];
+
+/** True when the given path belongs to a private (never-indexed) area. */
+export function isNoIndexPath(path: string): boolean {
+  const p = (path.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '') || '/';
+  return NOINDEX_PATH_PREFIXES.some(
+    (prefix) => p === prefix || p.toLowerCase().startsWith(`${prefix.toLowerCase()}/`)
+  );
+}
 
 export interface SeoData {
   title?: string;
@@ -39,16 +80,19 @@ export interface RouteSeoData {
   providedIn: 'root'
 })
 export class SeoService {
+  /** Canonical site origin (no trailing slash), single source of truth: environment.seoUrl. */
+  private readonly baseUrl = (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/+$/, '');
+
   private readonly defaultSeoData: SeoData = {
     title: 'Oilandgasclub - Your Oil and Gas Learning Platform',
     description: 'Start learning today with Oilandgasclub.com. Unlimited access to oil and gas courses and resources.',
     author: 'Anush',
-    image: 'https://www.oilandgasclub.com/assets/images/og-image.jpg',
+    image: 'https://oilandgasclub.com/assets/images/og-image.jpg',
     type: 'website',
     siteName: 'Oilandgasclub',
     locale: 'en_US',
     robots: 'index, follow',
-    url: 'https://www.oilandgasclub.com'
+    url: 'https://oilandgasclub.com'
   };
 
   constructor(
@@ -58,28 +102,62 @@ export class SeoService {
     private activatedRoute: ActivatedRoute,
     @Inject(DOCUMENT) private document: Document
   ) {
+    this.defaultSeoData.url = this.baseUrl;
+    this.defaultSeoData.image = `${this.baseUrl}/assets/images/og-image.jpg`;
     this.initializeRouteBasedSeo();
   }
 
   /**
-   * Initialize automatic SEO updates based on route data
+   * Initialize automatic SEO updates based on route data.
+   * Runs on both server (SSR) and browser — Meta/Title/DOCUMENT are platform-agnostic.
    */
   private initializeRouteBasedSeo(): void {
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
-        map(() => this.activatedRoute),
-        map(route => {
-          while (route.firstChild) {
-            route = route.firstChild;
-          }
-          return route;
-        }),
-        switchMap(route => route.data)
+        map((event: NavigationEnd) => ({ url: event.urlAfterRedirects || event.url, route: this.deepestRoute() }))
       )
-      .subscribe((data: RouteSeoData) => {
-        this.updateFromRouteData(data);
+      .subscribe(({ url, route }) => {
+        if (isNoIndexPath(url)) {
+          this.applyPrivatePageSeo();
+          return;
+        }
+        route.data.subscribe((data: RouteSeoData) => {
+          this.updateFromRouteData(data);
+          this.ensureCanonicalForCurrentUrl(url, data);
+        }).unsubscribe();
       });
+  }
+
+  private deepestRoute(): ActivatedRoute {
+    let route = this.activatedRoute;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route;
+  }
+
+  /**
+   * Private pages (auth, checkout, payment, dashboards, profile, admin):
+   * noindex,nofollow — and no canonical or JSON-LD (those are index signals).
+   */
+  private applyPrivatePageSeo(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex,nofollow' });
+    this.removeCanonicalLink();
+    this.removeStructuredData();
+  }
+
+  /**
+   * Every indexable public page gets a self-referencing canonical
+   * unless the route declared an explicit one.
+   */
+  private ensureCanonicalForCurrentUrl(url: string, data: RouteSeoData): void {
+    const explicit = data?.seo?.canonicalUrl || data?.seoCanonicalUrl;
+    if (explicit) {
+      return; // updateFromRouteData already applied it
+    }
+    const path = (url.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '');
+    this.updateCanonicalUrl(path ? `${this.baseUrl}${path}` : this.baseUrl);
   }
 
   /**
@@ -199,35 +277,48 @@ export class SeoService {
   }
 
   /**
-   * Update canonical URL
+   * Update canonical URL — a real `<link rel="canonical">` element in <head>
+   * (a `<meta rel=canonical>` tag is invalid HTML and ignored by Google).
+   * Works during SSR because Angular's DOCUMENT is the server DOM adapter.
    */
   public updateCanonicalUrl(url: string): void {
-    // Remove existing canonical link
-    const existingCanonical = this.meta.getTag('rel="canonical"');
-    if (existingCanonical) {
-      this.meta.removeTagElement(existingCanonical);
-    }
+    this.removeCanonicalLink();
+    const link = this.document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    link.setAttribute('href', url);
+    this.document.head.appendChild(link);
+  }
 
-    // Add new canonical link
-    this.meta.addTag({ rel: 'canonical', href: url });
+  private removeCanonicalLink(): void {
+    // Clean up both the correct <link> form and any legacy <meta rel=canonical> tags.
+    this.document.head
+      .querySelectorAll('link[rel="canonical"], meta[rel="canonical"]')
+      .forEach((el) => el.remove());
   }
 
   /**
-   * Update structured data (JSON-LD)
+   * Update structured data (JSON-LD). Never emitted on private
+   * (noindex) pages — JSON-LD is an indexing signal.
    */
   public updateStructuredData(structuredData: any): void {
-    // Remove existing structured data
-    const existingScript = this.document.getElementById('structured-data');
-    if (existingScript) {
-      existingScript.remove();
+    if (isNoIndexPath(this.router.url || '/')) {
+      this.removeStructuredData();
+      return;
     }
 
-    // Add new structured data
+    this.removeStructuredData();
     const script = this.document.createElement('script');
     script.id = 'structured-data';
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify(structuredData, null, 0);
     this.document.head.appendChild(script);
+  }
+
+  private removeStructuredData(): void {
+    const existingScript = this.document.getElementById('structured-data');
+    if (existingScript) {
+      existingScript.remove();
+    }
   }
 
   /**
@@ -288,7 +379,7 @@ export class SeoService {
    * Generate SEO data for a specific route
    */
   public generateSeoData(route: string, data: Partial<SeoData>): SeoData {
-    const baseUrl = 'https://www.oilandgasclub.com';
+    const baseUrl = this.baseUrl;
     return {
       ...this.defaultSeoData,
       ...data,

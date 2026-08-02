@@ -5,6 +5,37 @@
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 30%);
 }
 
+.blog-breadcrumbs {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.blog-breadcrumbs a {
+  color: #0f4c81;
+  text-decoration: none;
+}
+
+.blog-hub-header {
+  margin-bottom: 1.75rem;
+  max-width: 46rem;
+}
+
+.blog-hub-title {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.75rem;
+  line-height: 1.25;
+}
+
+.blog-hub-intro {
+  margin: 0;
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
 .blog-page .container {
   max-width: 1200px;
   margin-left: auto;

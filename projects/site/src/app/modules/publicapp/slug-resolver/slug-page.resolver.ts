@@ -18,6 +18,8 @@ export interface SlugPageData {
   eventData?: unknown;
   blog?: unknown;
   notFound?: boolean;
+  /** Retired slug alias: issue one direct 301 to this canonical slug instead of rendering. */
+  redirectTo?: string;
 }
 
 export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<SlugPageData> => {
@@ -41,6 +43,15 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
   return slugSvc.resolve(slug).pipe(
     catchError(() => of(null)),
     switchMap((meta) => {
+      // Slug alias (renamed course): don't render content at the old URL —
+      // signal the component to answer one direct 301 to the canonical slug.
+      if (
+        meta?.redirectedFrom &&
+        meta.slug?.trim() &&
+        meta.slug.trim().toLowerCase() !== slug.trim().toLowerCase()
+      ) {
+        return of({ slug, type: 'course' as const, redirectTo: meta.slug.trim() });
+      }
       // Fallback: slug-resolver table may miss older slugs — probe blog/event/course in parallel.
       if (!meta) {
         return resolveSlugByParallelLookup(slug, blogSvc, admin, publicApp).pipe(

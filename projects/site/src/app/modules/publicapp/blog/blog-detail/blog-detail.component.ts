@@ -1,6 +1,6 @@
 import { Component, OnInit, OnChanges, OnDestroy, SimpleChanges, inject, signal, computed, Input, PLATFORM_ID, HostListener, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { BlogService, BlogDetailDto, LoopMarketingContentDto } from '../blog.service';
+import { BlogService, BlogDetailDto, BlogListItemDto, LoopMarketingContentDto } from '../blog.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SubscribePopupComponent } from '../subscribe-popup/subscribe-popup.component';
@@ -60,6 +60,8 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
   sidebarBottomPx = signal(0);
   /** Loop Marketing content for current blog category (same as original blog). */
   loopMarketingContent = signal<LoopMarketingContentDto | null>(null);
+  /** Same-category related posts — contextual inbound/outbound internal links. */
+  relatedPosts = signal<BlogListItemDto[]>([]);
   placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2MzAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjMwIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5CbG9nIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
 
   sanitizedContent = computed<SafeHtml>(() => {
@@ -205,6 +207,18 @@ export class BlogDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+    const relatedSlug = (data?.canonicalUrl || '').toString().replace(/^\/+/, '');
+    if (relatedSlug) {
+      this.blogService.getRelatedBlogs(relatedSlug, 5).subscribe({
+        next: (posts) => {
+          this.relatedPosts.set(posts || []);
+          this.cdr.markForCheck();
+        },
+        error: () => this.relatedPosts.set([]),
+      });
+    } else {
+      this.relatedPosts.set([]);
+    }
   }
 
   private reactionKey(kind: 'like' | 'bookmark', blogId: string): string {

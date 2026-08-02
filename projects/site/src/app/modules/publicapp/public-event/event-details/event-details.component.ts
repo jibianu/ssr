@@ -1788,7 +1788,7 @@ export class EventDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       endDate: this.event.endDate ? new Date(this.event.endDate).toISOString() : undefined,
       organizer: {
         name: 'Oilandgasclub',
-        url: 'https://www.oilandgasclub.com'
+        url: 'https://oilandgasclub.com'
       },
       ...(this.getEventPrice() && {
         offers: {

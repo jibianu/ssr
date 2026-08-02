@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 
@@ -38,13 +39,15 @@ const defaultMetadata: PageMetadata = {
     'Start learning today with Oilandgasclub.com. Unlimited access to oil and gas courses and resources.',
   author: 'Anush',
   type: 'website',
-  image: 'https://www.oilandgasclub.com/assets/images/og-image.jpg',
+  image: 'https://oilandgasclub.com/assets/images/og-image.jpg',
   imageWidth: 1200,
   imageHeight: 630,
   seoUrl: seoOrigin,
   site: 'oilandgasclub',
   domain: defaultPublicHost(),
-  robots: 'index, follow',
+  // The Elearn app is auth/checkout/payment/dashboards only — never indexable.
+  // Public, indexable pages are served by the SSR site app.
+  robots: 'noindex,nofollow',
 };
 
 @Injectable({
@@ -53,17 +56,18 @@ const defaultMetadata: PageMetadata = {
 export class MetadataService {
   constructor(
     private meta: Meta,
-    private title: Title
+    private title: Title,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   /**
-   * Update the page metadata and meta tags
+   * Update the page metadata and meta tags.
    * @param metadata Partial metadata to override defaults
-   * @param index Whether the page should be indexed by search engines
+   * @param index Ignored — every Elearn page is noindex,nofollow (auth/payment/dashboard app).
    */
   public updateMetadata(metadata: Partial<PageMetadata>, index: boolean = true): void {
     const mergedMetadata: PageMetadata = { ...defaultMetadata, ...metadata };
-    mergedMetadata.robots = index ? 'index, follow' : 'noindex';
+    mergedMetadata.robots = 'noindex,nofollow';
 
     this.updateTitle(mergedMetadata.title);
     this.updateMetaTags(mergedMetadata);
@@ -145,12 +149,15 @@ export class MetadataService {
     });
   }
 
+  /** Proper <link rel="canonical"> element (a <meta rel=canonical> is invalid and ignored). */
   public updateCanonicalUrl(url: string): void {
-    const existingCanonical = this.meta.getTag('rel="canonical"');
-    if (existingCanonical) {
-      this.meta.removeTagElement(existingCanonical);
-    }
+    this.document.head
+      .querySelectorAll('link[rel="canonical"], meta[rel="canonical"]')
+      .forEach((el) => el.remove());
 
-    this.meta.addTag({ rel: 'canonical', href: url });
+    const link = this.document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    link.setAttribute('href', url);
+    this.document.head.appendChild(link);
   }
 }

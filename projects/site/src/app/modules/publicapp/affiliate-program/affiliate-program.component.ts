@@ -132,7 +132,7 @@ export class AffiliateProgramComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/affiliate-program');
+    this.setCanonicalURL('https://oilandgasclub.com/affiliate-program');
          this.titleService.setTitle('Join the Oilandgasclub Affiliate Program - Earn Commissions on Online Courses');
      this.metaService.addTags([
       { name: 'description', content: "Promote Oilandgasclub's online courses and certifications. Join our affiliate program and earn commissions by referring learners in the oil and gas industry. Start today!" },

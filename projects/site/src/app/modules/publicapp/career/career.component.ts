@@ -73,7 +73,7 @@ export class CareerComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/career');
+    this.setCanonicalURL('https://oilandgasclub.com/career');
          this.titleService.setTitle('Careers at Oilandgasclub | Join Our Team and Grow with Us');
      this.metaService.addTags([
       { name: 'description', content: 'Explore exciting career opportunities in the oil and gas industry with Oil and Gas Club. Discover professional growth paths, industry insights, certifications, and resources to advance your career in the energy sector.' },

@@ -159,6 +159,29 @@ export class BlogService {
     );
   }
 
+  /** Same-category related posts for contextual internal linking. */
+  getRelatedBlogs(slug: string, take = 5): Observable<BlogListItemDto[]> {
+    const s = (slug ?? '').toString().trim().replace(/^\/+|\/+$/g, '');
+    if (!s) return of([]);
+    return this.http.get<any[]>(`${this.apiRoot}/${encodeURIComponent(s)}/related`, {
+      params: new HttpParams().set('take', String(take)),
+    }).pipe(
+      map((rows) =>
+        (Array.isArray(rows) ? rows : []).map((raw) => ({
+          id: String(raw?.id ?? raw?.Id ?? ''),
+          title: raw?.title ?? raw?.Title ?? '',
+          canonicalUrl: (raw?.canonicalUrl ?? raw?.CanonicalUrl ?? '').toString().replace(/^\/+/, ''),
+          metaDescription: raw?.metaDescription ?? raw?.MetaDescription ?? '',
+          titleImgUrl: raw?.titleImgUrl ?? raw?.TitleImgUrl,
+          showOnDashboard: !!(raw?.showOnDashboard ?? raw?.ShowOnDashboard),
+          createdOn: raw?.createdOn ?? raw?.CreatedOn ?? '',
+          updatedOn: raw?.updatedOn ?? raw?.UpdatedOn,
+        }))
+      ),
+      catchError(() => of([]))
+    );
+  }
+
   /** Get public author/trainer profile for "posts by author" header (display name, photo, bio, website). */
   getAuthorProfile(authorId: string): Observable<AuthorProfileDto | null> {
     if (!authorId?.trim()) return of(null);

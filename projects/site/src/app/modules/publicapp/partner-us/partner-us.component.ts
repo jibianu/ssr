@@ -76,7 +76,7 @@ export class PartnerUsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/partner-us');
+    this.setCanonicalURL('https://oilandgasclub.com/partner-us');
          this.titleService.setTitle('Partner with Us - Oilandgasclub | Empower Your Marketing Strategy');
      this.metaService.addTags([
       { name: 'description', content: 'Discover how partnering with Oilandgasclub can boost your reach and engagement. Become part of a global platform offering oil and gas training and certifications.' },

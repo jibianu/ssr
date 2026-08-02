@@ -53,9 +53,9 @@ export class ContactUsComponent implements OnInit {
       title: 'Contact Us - Oil and Gas Club',
       description:
         'Have questions about our courses or certifications? Contact Oilandgasclub today for support, inquiries, and partnership opportunities. We are here to help!',
-      seoUrl: 'https://www.oilandgasclub.com/contact-us',
+      seoUrl: 'https://oilandgasclub.com/contact-us',
     });
 
-    this.canonicalService.setCanonicalURL('https://www.oilandgasclub.com/contact-us');
+    this.canonicalService.setCanonicalURL('https://oilandgasclub.com/contact-us');
   }
 }

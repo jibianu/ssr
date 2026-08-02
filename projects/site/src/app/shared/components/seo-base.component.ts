@@ -42,7 +42,7 @@ export abstract class SeoBaseComponent implements OnInit, OnDestroy {
    */
   protected updateSeoWithRoute(seoData: Partial<SeoData>): void {
     const currentUrl = this.route.snapshot.url.join('/');
-    const fullUrl = currentUrl ? `https://www.oilandgasclub.com/${currentUrl}` : 'https://www.oilandgasclub.com';
+    const fullUrl = currentUrl ? `https://oilandgasclub.com/${currentUrl}` : 'https://oilandgasclub.com';
     
     this.seoService.updateSeoData({
       ...seoData,

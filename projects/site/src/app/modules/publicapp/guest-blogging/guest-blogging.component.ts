@@ -133,7 +133,7 @@ export class GuestBloggingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/guest-blogging');
+    this.setCanonicalURL('https://oilandgasclub.com/guest-blogging');
          this.titleService.setTitle('Guest Blog: Mastering Oil and Gas Certifications | Oilandgasclub');
      this.metaService.addTags([
       { name: 'description', content: 'Explore expert insights, tips, and strategies for mastering API, ASNT, CSWIP, and HTRI certifications in the oil and gas industry.' },

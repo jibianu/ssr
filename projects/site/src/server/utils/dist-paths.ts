@@ -1,6 +1,11 @@
 import { existsSync } from 'fs';
 import { join, resolve } from 'path';
 
+/** SSR builds emit `index.csr.html`; CSR-only builds emit `index.html`. Accept both. */
+function hasBrowserIndex(folder: string): boolean {
+  return existsSync(join(folder, 'index.html')) || existsSync(join(folder, 'index.csr.html'));
+}
+
 /**
  * Browser build must live next to the server bundle: `dist/site/server/../browser`.
  * Fallback: `cwd/dist/site/browser` (if `node` is started from repo `frontend/oilandgasclub`).
@@ -13,12 +18,12 @@ export function resolveBrowserDistFolder(serverEntryDir: string): string {
   }
 
   const nextToServer = resolve(serverEntryDir, '../browser');
-  if (existsSync(join(nextToServer, 'index.html'))) {
+  if (hasBrowserIndex(nextToServer)) {
     return nextToServer;
   }
 
   const cwdDist = resolve(process.cwd(), 'dist/site/browser');
-  if (existsSync(join(cwdDist, 'index.html'))) {
+  if (hasBrowserIndex(cwdDist)) {
     return cwdDist;
   }
 

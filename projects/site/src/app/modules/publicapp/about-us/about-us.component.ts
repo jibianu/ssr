@@ -31,7 +31,7 @@ export class AboutUsComponent implements OnInit {
 
   ngOnInit(): void {
     const canonicalUrl = `${environment.seoUrl}about-us`;
-    const fullUrl = `https://www.oilandgasclub.com/about-us`;
+    const fullUrl = `https://oilandgasclub.com/about-us`;
     
     // ✅ SSR: Use MetadataService for proper meta tag management
     this.metadataService.updateMetadata({
@@ -39,7 +39,7 @@ export class AboutUsComponent implements OnInit {
       description: 'Oilandgasclub is a leading online learning platform offering certifications and training programs for the oil and gas industry. Upskill with API, NDT, CSWIP, ASNT, and HTRI courses. Learn anytime, anywhere!',
       author: 'Oilandgasclub Team',
       type: 'website',
-      image: 'https://www.oilandgasclub.com/assets/images/about-us-banner.jpg',
+      image: 'https://oilandgasclub.com/assets/images/about-us-banner.jpg',
       imageWidth: 1200,
       imageHeight: 630,
       seoUrl: fullUrl,
@@ -54,8 +54,8 @@ export class AboutUsComponent implements OnInit {
     // ✅ SEO: Add structured data
     this.structuredDataService.setOrganization({
       name: 'Oilandgasclub',
-      url: 'https://www.oilandgasclub.com',
-      logo: 'https://www.oilandgasclub.com/assets/images/og-image.jpg',
+      url: 'https://oilandgasclub.com',
+      logo: 'https://oilandgasclub.com/assets/images/og-image.jpg',
       description: 'Leading online learning platform offering certifications and training programs for the oil and gas industry',
       sameAs: [
         'https://www.facebook.com/oilandgasclub',

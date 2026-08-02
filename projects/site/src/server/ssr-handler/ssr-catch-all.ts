@@ -5,7 +5,7 @@ import { join } from 'path';
 import type { CacheAdapter } from '../../server.cache.adapter';
 import type { CacheConfig } from '../../server.cache.config';
 import { performanceMonitor } from '../../server.performance';
-import { enrichPublicCoursePageIfMissingOg } from '../../server.seo-shell';
+import { enrichPublicCoursePageIfMissingOg, isEmptyAppRootHtml } from '../../server.seo-shell';
 import {
   getHtmlCacheControlHeader,
   getHtmlCacheKey,
@@ -30,6 +30,7 @@ import {
   resolveElearnSpaMountPath,
   sendElearnSpaIndex,
 } from './elearn-spa';
+import { applyNoIndexHeaderIfPrivate } from '../seo-policy';
 
 export interface SsrCatchAllDeps {
   angularApp: AngularNodeAppEngine;
@@ -51,6 +52,22 @@ function applyStreamHtmlHeaders(res: Response, requestPath: string, isProd: bool
   res.setHeader('Vary', 'Accept-Encoding, Cookie');
 }
 
+/**
+ * The Angular application builder emits `index.csr.html` (not `index.html`)
+ * when SSR is enabled. Missing this fallback made every CSR-shell request
+ * (dashboard/profile/checkout paths) return HTTP 500 in production —
+ * the exact "Server Error (5xx)" Google Search Console reports.
+ */
+function resolveBrowserIndexPath(browserDistFolder: string): string {
+  for (const name of ['index.html', 'index.csr.html']) {
+    const candidate = join(browserDistFolder, name);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return '';
+}
+
 async function sendBrowserCsrShell(
   res: Response,
   browserDistFolder: string,
@@ -58,9 +75,12 @@ async function sendBrowserCsrShell(
   req: Request,
   diag: 'csr-fallback'
 ): Promise<void> {
-  const indexPath = join(browserDistFolder, 'index.html');
-  if (!existsSync(indexPath)) {
-    res.status(500).type('text/plain').send('SSR unavailable and index.html missing');
+  const indexPath = resolveBrowserIndexPath(browserDistFolder);
+  if (!indexPath) {
+    // Deployment problem, not a permanent page failure: 503 tells crawlers to
+    // retry later — never a 500 that GSC records against the URL.
+    res.status(503).setHeader('Retry-After', '30');
+    res.type('text/plain').send('Service temporarily unavailable');
     return;
   }
   let html = readFileSync(indexPath, 'utf-8');
@@ -68,6 +88,9 @@ async function sendBrowserCsrShell(
   html = enriched;
   setNoStoreHtmlHeaders(res);
   setSsrDiagnosticHeader(res, diag);
+  // Private areas served as CSR shells (dashboard/admin/checkout/…) must carry a
+  // header-level noindex — crawlers may not execute the JS that sets the meta tag.
+  applyNoIndexHeaderIfPrivate(res, requestPath);
   res.status(200).type('text/html; charset=utf-8').send(html);
 }
 
@@ -131,21 +154,32 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
       performanceMonitor.markCacheEnd(markId);
 
       if (cached) {
-        const etag = cached.etag;
-        const ifNoneMatch = req.headers['if-none-match'];
-        if (ifNoneMatch === etag) {
-          res.status(304);
+        // Poisoned cache guard: never replay empty <app-root> shells to crawlers.
+        if (isEmptyAppRootHtml(cached.html)) {
+          console.warn(`[SSR] discarding empty cached HTML for ${requestPath}`);
+          try {
+            const del = htmlCache.del(cacheKey);
+            if (del instanceof Promise) void del.catch(() => undefined);
+          } catch {
+            /* best-effort */
+          }
+        } else {
+          const etag = cached.etag;
+          const ifNoneMatch = req.headers['if-none-match'];
+          if (ifNoneMatch === etag) {
+            res.status(304);
+            applyCachedHtmlHeaders(res, requestPath, isProd, etag);
+            setSsrDiagnosticHeader(res, 'cache');
+            res.end();
+            performanceMonitor.endMeasure(markId, true);
+            return;
+          }
           applyCachedHtmlHeaders(res, requestPath, isProd, etag);
           setSsrDiagnosticHeader(res, 'cache');
-          res.end();
+          res.status(200).type('text/html; charset=utf-8').send(cached.html);
           performanceMonitor.endMeasure(markId, true);
           return;
         }
-        applyCachedHtmlHeaders(res, requestPath, isProd, etag);
-        setSsrDiagnosticHeader(res, 'cache');
-        res.status(200).type('text/html; charset=utf-8').send(cached.html);
-        performanceMonitor.endMeasure(markId, true);
-        return;
       }
 
       performanceMonitor.markRenderStart(markId);
@@ -159,13 +193,16 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
         return;
       }
 
-      // Safety net for production SEO: if streamed SSR HTML misses OG tags,
-      // enrich it using existing course-shell enrichment logic before sending.
+      // Safety net for production SEO: if streamed SSR HTML misses OG tags OR
+      // left an empty <app-root> (meta-only shell → GSC "crawled not indexed"),
+      // enrich from the public API before sending/caching.
       try {
         const contentType = response.headers.get('content-type') || '';
         if (/text\/html/i.test(contentType) && typeof response.clone === 'function') {
           const html = await response.clone().text();
-          if (!/property\s*=\s*["']og:title["']/i.test(html)) {
+          const needsEnrich =
+            !/property\s*=\s*["']og:title["']/i.test(html) || isEmptyAppRootHtml(html);
+          if (needsEnrich) {
             const enriched = await enrichPublicCoursePageIfMissingOg(html, requestPath, req);
             if (enriched.injected && enriched.html !== html) {
               const headers = new Headers(response.headers);
@@ -183,13 +220,20 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
 
       applyStreamHtmlHeaders(res, requestPath, isProd);
 
-      if (mayCache && typeof response.clone === 'function') {
+      // Only cache successful renders with real body content. Caching an empty
+      // <app-root> shell (even with meta) creates permanent soft-200 pages for
+      // Google ("Crawled – currently not indexed"). Cache hits always send 200.
+      if (mayCache && response.status === 200 && typeof response.clone === 'function') {
         try {
           const clone = response.clone();
           const ttl = getHtmlCacheTtlSeconds(requestPath, cacheConfig.ttl);
           void clone
             .text()
             .then((html) => {
+              if (isEmptyAppRootHtml(html)) {
+                console.warn(`[SSR] skip cache for empty app-root: ${requestPath}`);
+                return;
+              }
               const etag = generateETag(html);
               const setResult = htmlCache.set(cacheKey, { html, etag }, ttl);
               if (setResult instanceof Promise) {
@@ -208,7 +252,10 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
       } catch (writeErr) {
         console.error('[SSR] writeResponseToNodeResponse failed:', writeErr);
         if (!res.headersSent) {
-          res.status(500).type('text/plain').send('SSR render failed');
+          // Transient render/stream failure — 503 tells crawlers to retry,
+          // 500 would be recorded as a Server Error against the URL.
+          res.status(503).setHeader('Retry-After', '10');
+          res.type('text/plain').send('Service temporarily unavailable');
         }
         performanceMonitor.endMeasure(markId, false);
         return;
@@ -228,7 +275,8 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
       } catch (fallbackErr) {
         console.error('[SSR] CSR fallback failed:', fallbackErr);
         if (!res.headersSent) {
-          res.status(500).type('text/plain').send('Internal Server Error');
+          res.status(503).setHeader('Retry-After', '10');
+          res.type('text/plain').send('Service temporarily unavailable');
         }
       }
       performanceMonitor.endMeasure(markId, false);
@@ -263,8 +311,7 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
         await sendBrowserCsrShell(res, browserDistFolder, path, req, 'csr-fallback');
         return;
       }
-      const indexPath = join(browserDistFolder, 'index.html');
-      if (existsSync(indexPath)) {
+      if (resolveBrowserIndexPath(browserDistFolder)) {
         await sendBrowserCsrShell(res, browserDistFolder, path, req, 'csr-fallback');
       } else {
         res.status(404).type('text/plain').send('Not Found');
@@ -302,7 +349,16 @@ export async function warmHtmlCache(deps: SsrCatchAllDeps): Promise<void> {
       if (!response || typeof response.clone !== 'function') {
         continue;
       }
+      // Never warm-cache error renders — cache hits are always served as 200.
+      if (response.status !== 200) {
+        console.warn(`⚠️  Skip warm cache for ${route}: status ${response.status}`);
+        continue;
+      }
       const html = await response.clone().text();
+      if (isEmptyAppRootHtml(html)) {
+        console.warn(`⚠️  Skip warm cache for ${route}: empty app-root`);
+        continue;
+      }
       const etag = generateETag(html);
       const cacheKey = getHtmlCacheKey(mockReq);
       const ttl = getHtmlCacheTtlSeconds(route, cacheConfig.ttl);

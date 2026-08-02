@@ -129,12 +129,46 @@ export function registerSeoBackendProxy(app: Express): void {
     return;
   }
 
+  // Keep the last successful response per path: if the API is briefly down,
+  // Google gets a stale-but-valid sitemap (200) instead of a 5xx it records
+  // as "sitemap could not be read".
+  const lastGood = new Map<string, { body: string; contentType?: string }>();
+
+  const sendServiceUnavailable = (res: Response): void => {
+    res.status(503).setHeader('Retry-After', '30');
+    res.type('text/plain').send('Service temporarily unavailable. Please retry.');
+  };
+
   const proxyGet =
     (path: string) =>
     async (_req: Request, res: Response): Promise<void> => {
       const target = `${origin}${path}`;
       try {
         const { status, body, contentType } = await requestBackend(target, 0);
+        if (status === 200) {
+          lastGood.set(path, { body, contentType });
+          if (contentType) {
+            res.setHeader('Content-Type', contentType);
+          }
+          res.status(200).send(body);
+          return;
+        }
+        // Upstream error: prefer serving the last known-good copy.
+        const stale = lastGood.get(path);
+        if (status >= 500 && stale) {
+          console.warn(`[SEO] Upstream ${status} for ${target} — serving stale copy`);
+          if (stale.contentType) {
+            res.setHeader('Content-Type', stale.contentType);
+          }
+          res.status(200).send(stale.body);
+          return;
+        }
+        if (status >= 500) {
+          console.error(`[SEO] Upstream ${status} for ${target} and no cached copy`);
+          sendServiceUnavailable(res);
+          return;
+        }
+        // Pass through non-5xx statuses (e.g. 404) as-is.
         if (contentType) {
           res.setHeader('Content-Type', contentType);
         }
@@ -142,15 +176,16 @@ export function registerSeoBackendProxy(app: Express): void {
       } catch (e) {
         const err = e instanceof Error ? e.message : String(e);
         console.error(`[SEO] Proxy failed for ${target}:`, err);
-        res
-          .status(502)
-          .type('text/plain')
-          .send(
-            `Bad gateway: could not reach API for SEO resource.\n` +
-              `Target: ${target}\n` +
-              `Reason: ${err}\n` +
-              `Ensure dotnet is running (e.g. https://127.0.0.1:52287/sitemap.xml) and SSR_API_URL matches.`
-          );
+        const stale = lastGood.get(path);
+        if (stale) {
+          if (stale.contentType) {
+            res.setHeader('Content-Type', stale.contentType);
+          }
+          res.status(200).send(stale.body);
+          return;
+        }
+        // No internal details in the body — they belong in the logs only.
+        sendServiceUnavailable(res);
       }
     };
 

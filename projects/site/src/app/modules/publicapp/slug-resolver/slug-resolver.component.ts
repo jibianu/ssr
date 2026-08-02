@@ -14,6 +14,7 @@ import { PublicEventModule } from '../public-event/public-event.module';
 import { appShellRedirectForSlug, isAppShellSlug } from 'src/app/core/helpers/app-shell-paths';
 import { resolveSlugByParallelLookup } from './slug-fallback.util';
 import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
+import { SsrResponseStatusService } from 'src/app/core/services/ssr-response-status.service';
 
 @Component({
   selector: 'app-slug-resolver',
@@ -32,12 +33,18 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   private blogService = inject(BlogService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private ssrStatus = inject(SsrResponseStatusService);
   private destroy$ = new Subject<void>();
 
   /** Avoid SSR navigating to /page-not-found when API is unreachable from Node — client will retry. */
   private navigateToNotFound(): void {
     if (isPlatformBrowser(this.platformId)) {
       void this.router.navigate(['/page-not-found'], { replaceUrl: true });
+    } else {
+      // SSR: answer with a real 404 instead of a soft-404 (HTTP 200).
+      // The browser still hydrates and retries the lookup, so a transient
+      // API hiccup during render never breaks the user experience.
+      this.ssrStatus.setNotFound();
     }
   }
 
@@ -106,6 +113,13 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
 
     this.resetForSlug(slug);
 
+    // Slug alias (renamed course), prefetched by slugPageResolver: one direct
+    // permanent redirect to the canonical slug — never render at the old URL.
+    if (slugPage?.redirectTo && slugPage.redirectTo.toLowerCase() !== slug.toLowerCase()) {
+      this.redirectToCanonicalSlug(slugPage.redirectTo);
+      return of(null);
+    }
+
     if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
       // SSR may fail to reach the API on hosted servers — retry live lookup in the browser.
       if (!isPlatformBrowser(this.platformId)) {
@@ -143,6 +157,18 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     return isPlatformBrowser(this.platformId);
   }
 
+  /**
+   * Retired slug alias → canonical slug. SSR answers a real HTTP 301 (single
+   * hop, crawler-friendly); the browser swaps the URL without a history entry.
+   */
+  private redirectToCanonicalSlug(canonicalSlug: string): void {
+    if (this.isBrowser) {
+      void this.router.navigate(['/', canonicalSlug], { replaceUrl: true, queryParamsHandling: 'preserve' });
+    } else {
+      this.ssrStatus.setRedirect(`/${encodeURIComponent(canonicalSlug)}`, 301);
+    }
+  }
+
   private resetForSlug(slug: string): void {
     this.slug.set(slug);
     this.loading.set(true);
@@ -170,6 +196,19 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
 
   private resolveSlugMeta(res: SlugResolverResponse | null): Observable<unknown> {
     if (res === undefined) {
+      return of(null);
+    }
+
+    // Slug alias (renamed course): one direct permanent redirect to the current
+    // canonical slug. SSR answers a real HTTP 301; the browser swaps the URL
+    // without adding a history entry. Loop guard: only when the slug differs.
+    if (
+      res &&
+      res.redirectedFrom &&
+      res.slug &&
+      res.slug.toLowerCase() !== this.slug().toLowerCase()
+    ) {
+      this.redirectToCanonicalSlug(res.slug);
       return of(null);
     }
     if (res === null) {

@@ -477,7 +477,7 @@ export class CorporateTrainingComponent implements OnInit, AfterViewInit, OnDest
       })
     );
 
-    const pageUrl = 'https://www.oilandgasclub.com/corporate-training';
+    const pageUrl = 'https://oilandgasclub.com/corporate-training';
     this.setCanonicalURL(pageUrl);
     this.titleService.setTitle(
       'Oilandgasclub — Enterprise LMS for Oil & Gas Workforce Training'
@@ -605,8 +605,8 @@ export class CorporateTrainingComponent implements OnInit, AfterViewInit, OnDest
   private injectPageSchema(pageUrl: string): void {
     this.structuredData.setOrganization({
       name: this.brandName,
-      url: 'https://www.oilandgasclub.com',
-      logo: 'https://www.oilandgasclub.com/assets/s3/oilandgas_club.svg',
+      url: 'https://oilandgasclub.com',
+      logo: 'https://oilandgasclub.com/assets/s3/oilandgas_club.svg',
       description:
         'Secure LMS training platform for oil & gas, EPC, refinery, and industrial organizations.'
     });
@@ -621,7 +621,7 @@ export class CorporateTrainingComponent implements OnInit, AfterViewInit, OnDest
       provider: {
         '@type': 'Organization',
         name: this.brandName,
-        url: 'https://www.oilandgasclub.com'
+        url: 'https://oilandgasclub.com'
       },
       areaServed: 'Worldwide',
       audience: {
@@ -649,7 +649,7 @@ export class CorporateTrainingComponent implements OnInit, AfterViewInit, OnDest
       provider: {
         '@type': 'Organization',
         name: this.brandName,
-        url: 'https://www.oilandgasclub.com'
+        url: 'https://oilandgasclub.com'
       }
     };
 

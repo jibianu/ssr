@@ -2,7 +2,7 @@ export const environment = {
   production: true,
   apiUrl: 'https://coursebackend.oilandgasclub.com/',
   /** Base URL of the site app (SSR). All public course URLs are /courses/:slug on the site. Redirect from old Elearn route uses this. */
-  publicCourseSiteUrl: 'https://www.oilandgasclub.com',
+  publicCourseSiteUrl: 'https://oilandgasclub.com',
   forcePublicCourseIframe: false,
   exploreOpenMarketingSiteInSameTab: false,
   oauthKey: '9001690783-2at0k49u0nkoe8qb3ucn8d76qv9ls073.apps.googleusercontent.com',

@@ -19,7 +19,7 @@ export class PrivacyPolicyComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/privacy-policy');
+    this.setCanonicalURL('https://oilandgasclub.com/privacy-policy');
          this.titleService.setTitle('privacy-policy - Oil and Gas Club');
      this.metaService.addTags([
       { name: 'description', content: 'Read the privacy policy of Oil and Gas Club, outlining how we collect, use, and protect your personal information. We are committed to safeguarding your privacy while providing excellent services in the oil and gas industry.' },

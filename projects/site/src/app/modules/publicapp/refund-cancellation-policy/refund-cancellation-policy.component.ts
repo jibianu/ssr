@@ -46,7 +46,7 @@ export class RefundCancellationPolicyComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/refund-cancellation-policy');
+    this.setCanonicalURL('https://oilandgasclub.com/refund-cancellation-policy');
          this.titleService.setTitle('refund-cancellation-policy - Oil and Gas Club');
      this.metaService.addTags([
       { name: 'description', content: "Read Oil and Gas Club's Refund and Cancellation Policy to understand the terms and conditions regarding cancellations, refunds, and support for our online courses and services. Ensure a smooth learning experience with clear policies for all users." },

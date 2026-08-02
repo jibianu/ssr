@@ -33,8 +33,8 @@ export class PurchaseHistoryComponent implements OnInit {
   readonly companyCin = 'U85500TN2025OPC185436';
   readonly companyTan = 'CHEO07226C';
   readonly companyGst = '33AAECO9137B1ZP';
-  readonly refundPolicyUrl = 'https://www.oilandgasclub.com/refund-cancellation-policy';
-  readonly sellerWebsite = 'https://www.oilandgasclub.com/';
+  readonly refundPolicyUrl = 'https://oilandgasclub.com/refund-cancellation-policy';
+  readonly sellerWebsite = 'https://oilandgasclub.com/';
   readonly companyLogoUrl =
     (environment as { logoUrl?: string }).logoUrl || 'assets/img/oilandgas_club.svg';
 

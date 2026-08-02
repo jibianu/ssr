@@ -26,6 +26,7 @@ import { registerSsrCatchAll, warmHtmlCache, type SsrCatchAllDeps } from './ssr-
 import { resolveBrowserDistFolder } from './utils/dist-paths';
 import { registerApiBackendProxy } from './api-backend-proxy';
 import { registerSeoBackendProxy } from './seo-backend-proxy';
+import { registerGoneUrls, registerTenantPortalNoIndex, registerLegacyBlogHostRedirect, registerWwwCanonicalRedirect } from './seo-policy';
 
 export interface CreateProductionServerOptions {
   /** Directory containing `server.mjs` (Angular SSR entry). Use `dirname(fileURLToPath(import.meta.url))` from `server.ts` only. */
@@ -50,10 +51,13 @@ export function createProductionServer(
   const browserDistFolder = resolveBrowserDistFolder(serverDistFolder);
   const elearnBrowserFolder = resolveElearnBrowserFolder(serverDistFolder);
 
-  const indexPath = join(browserDistFolder, 'index.html');
-  if (!existsSync(indexPath)) {
+  // SSR builds emit index.csr.html; CSR-only builds emit index.html.
+  const hasIndex =
+    existsSync(join(browserDistFolder, 'index.html')) ||
+    existsSync(join(browserDistFolder, 'index.csr.html'));
+  if (!hasIndex) {
     console.error(
-      `[SSR] index.html not found at ${indexPath}. ` +
+      `[SSR] index(.csr).html not found in ${browserDistFolder}. ` +
         `Run \`ng build site\` from frontend/oilandgasclub, or set BROWSER_DIST_FOLDER to your browser output. ` +
         `cwd=${process.cwd()} serverDist=${serverDistFolder}`
     );
@@ -97,8 +101,21 @@ export function createProductionServer(
   // --- Dev: proxy /api to Kestrel so Elearn can call same-origin /api on localhost:4200 ---
   registerApiBackendProxy(app, !isProd);
 
+  // --- SEO: company tenant portals ({sub}.oilandgasclub.com) are private apps —
+  // noindex every response + Disallow-all robots.txt (before the public SEO proxy) ---
+  registerTenantPortalNoIndex(app);
+
+  // --- SEO: legacy blog.* / www.blog.* → one-hop 301 to apex (lowercase path) ---
+  registerLegacyBlogHostRedirect(app);
+
+  // --- SEO: www.oilandgasclub.com → apex (one hop; safety net if nginx misses) ---
+  registerWwwCanonicalRedirect(app);
+
   // --- SEO: sitemap + robots from .NET (before static + SSR; Angular must not own these routes) ---
   registerSeoBackendProxy(app);
+
+  // --- SEO: permanently removed URLs answer 410 Gone (never 404/500) ---
+  registerGoneUrls(app);
 
   // --- Split dev: redirect remaining Elearn shell paths to ng serve ---
   app.use((req, res, next) => {
@@ -132,6 +149,13 @@ export function createProductionServer(
   );
 
   // --- Legacy redirects (SEO / bookmarks) ---
+  // Alternate spelling → the real route (only /forget-password serves 200).
+  app.get('/forgot-password', (req, res) => {
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, `/forget-password${query}`);
+  });
+
   app.get('/course/auth/:path', (req, res) => {
     const authPath = (req.params['path'] || 'login').toString().trim() || 'login';
     const queryIdx = req.originalUrl.indexOf('?');
@@ -174,6 +198,19 @@ export function createProductionServer(
     res.redirect(301, `/${encodeURIComponent(slug)}${query}`);
   });
 
+  // /courses/:slug → /:slug (Angular also navigates client-side; Express must 301
+  // so Google never sees a soft-200 homepage duplicate for this alias).
+  app.get(/^\/courses\/([^/?#]+)\/?$/, (req, res, next) => {
+    const segment = (req.params?.[0] || '').toString().trim();
+    if (!segment || /\.[a-z0-9]+$/i.test(segment)) {
+      next();
+      return;
+    }
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, `/${encodeURIComponent(segment)}${query}`);
+  });
+
   app.get(/^\/events\/([^/?#]+)\/?$/, (req, res, next) => {
     const path = req.path || '';
     const segment = (req.params?.[0] || '').toString();
@@ -189,6 +226,28 @@ export function createProductionServer(
     const queryIdx = req.originalUrl.indexOf('?');
     const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
     res.redirect(301, `/${encodeURIComponent(slug)}${query}`);
+  });
+
+  // --- Trailing-slash policy: canonical format has NO trailing slash ---
+  // /affiliate-program/ → 301 /affiliate-program (query preserved, one hop).
+  // Registered AFTER the legacy /course//events handlers above so e.g.
+  // /course/x/ still reaches its final target in a single 301.
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return next();
+    }
+    const path = req.path || '/';
+    if (path.length <= 1 || !path.endsWith('/')) {
+      return next();
+    }
+    // Never rewrite asset-like paths (contain a file extension).
+    if (/\.[a-z0-9]+\/$/i.test(path)) {
+      return next();
+    }
+    const stripped = path.replace(/\/+$/, '') || '/';
+    const queryIdx = req.originalUrl.indexOf('?');
+    const query = queryIdx >= 0 ? req.originalUrl.slice(queryIdx) : '';
+    res.redirect(301, stripped + query);
   });
 
   // --- Elearn SPA mounts (never SSR) ---
@@ -305,6 +364,18 @@ export function createProductionServer(
   };
 
   registerSsrCatchAll(app, ssrDeps);
+
+  // Final safety net: without this, `next(error)` reaches Express's default
+  // handler, which renders a raw 500 page (with a stack trace outside
+  // NODE_ENV=production). Log internals; send a clean 500 — reserved for
+  // genuinely unexpected failures only.
+  app.use((err: Error, _req: Request, res: Response, _next: (e?: unknown) => void) => {
+    console.error('[SSR] Unhandled server error:', err);
+    if (res.headersSent) {
+      return;
+    }
+    res.status(500).type('text/plain').send('Internal Server Error');
+  });
 
   const warmCache = () => warmHtmlCache(ssrDeps);
 

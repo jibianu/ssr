@@ -882,7 +882,9 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
       (courseDetails.canonicalUrl ?? courseDetails.slug ?? courseDetails.Slug ?? ''));
     const base = environment.seoUrl.replace(/\/?$/, '');
     const canonicalSlug = this.normalizeCanonicalSlugToken(canonicalUrl);
-    const fullUrl = canonicalSlug ? `${base}/course/${canonicalSlug}` : `${base}/course`;
+    // Public course pages live at /:slug — /course/:slug only 301-redirects there.
+    // A canonical pointing at a redirect is ignored by Google, so use the direct URL.
+    const fullUrl = canonicalSlug ? `${base}/${canonicalSlug}` : base;
 
     this.courseDetails = courseDetails;
     this.courseId = this.courseDetails.id ?? this.courseDetails.Id;
@@ -938,7 +940,7 @@ export class PublicCourseDetailsComponent implements OnInit, OnChanges, OnDestro
         image: this.image,
         provider: {
           name: 'Oilandgasclub',
-          url: 'https://www.oilandgasclub.com'
+          url: 'https://oilandgasclub.com'
         },
         educationalLevel: 'Professional',
         inLanguage: 'en',

@@ -344,21 +344,24 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
+  // Internal links must use the final canonical category URLs (lowercase,
+  // hyphenated, matching the real category names) — never rely on the
+  // uppercase/alias 301s for normal navigation.
   readonly categoryLinks: CategoryLink[] = [
-    { url: '/category/Process', title: 'Specialized Process Design Courses', description: 'Over 11 + course', class: 'cour-item1' },
-    { url: '/category/Piping', title: 'Software-Based Piping Design Courses', description: 'Over 15+ course', class: 'cour-item2' },
-    { url: '/category/NDT', title: 'NDT Method-Specific Courses', description: 'Over 20+ course', class: 'cour-item3' },
-    { url: '/category/Instrumentation', title: 'Industry-Specific Instrumentation Courses', description: 'Over 20+ course', class: 'cour-item4' },
-    { url: '/category/API%20Self%20Learning%20Courses', title: 'API Self Learning Courses', description: 'Over 20+ course', class: 'cour-item5' }
+    { url: '/category/process', title: 'Specialized Process Design Courses', description: 'Over 11 + course', class: 'cour-item1' },
+    { url: '/category/piping-design', title: 'Software-Based Piping Design Courses', description: 'Over 15+ course', class: 'cour-item2' },
+    { url: '/category/ndt', title: 'NDT Method-Specific Courses', description: 'Over 20+ course', class: 'cour-item3' },
+    { url: '/category/instrumentation-design', title: 'Industry-Specific Instrumentation Courses', description: 'Over 20+ course', class: 'cour-item4' },
+    { url: '/category/api', title: 'API Self Learning Courses', description: 'Over 20+ course', class: 'cour-item5' }
   ];
 
   /** Same categories as the lower “Browse by category” row where applicable (Welding → NDT). */
   readonly heroCategoryIcons: ReadonlyArray<HeroCategoryIcon> = [
-    { label: 'Welding', src: 'assets/welding-oilandgasclub.svg', categorySegment: 'NDT' },
-    { label: 'Process', src: 'assets/process-oilandgasclub.svg', categorySegment: 'Process' },
-    { label: 'Piping', src: 'assets/piping-oilandgasclub.svg', categorySegment: 'Piping' },
-    { label: 'Instrumentation', src: 'assets/instrumentation-oilandgasclub.svg', categorySegment: 'Instrumentation' },
-    { label: 'Structural', src: 'assets/structural-oilandgasclub.svg', categorySegment: 'Structural' }
+    { label: 'Welding', src: 'assets/welding-oilandgasclub.svg', categorySegment: 'ndt' },
+    { label: 'Process', src: 'assets/process-oilandgasclub.svg', categorySegment: 'process' },
+    { label: 'Piping', src: 'assets/piping-oilandgasclub.svg', categorySegment: 'piping-design' },
+    { label: 'Instrumentation', src: 'assets/instrumentation-oilandgasclub.svg', categorySegment: 'instrumentation-design' },
+    { label: 'Structural', src: 'assets/structural-oilandgasclub.svg', categorySegment: 'structural-design' }
   ];
 
   readonly heroStats: ReadonlyArray<string> = [
@@ -382,7 +385,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const canonicalUrl = environment.seoUrl;
-    const fullUrl = 'https://www.oilandgasclub.com';
+    const fullUrl = 'https://oilandgasclub.com';
 
     // ✅ SEO: Use MetadataService for proper meta tag management (SSR-compatible)
     this.metadataService.updateMetadata({
@@ -390,7 +393,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       description: 'Oilandgasclub.com – Empowering careers in the oil and gas industry with self-paced online courses. Advance your skills with expert-designed training programs, certification prep, and career-focused resources. Start learning today!',
       author: 'Oilandgasclub',
       type: 'website',
-      image: 'https://www.oilandgasclub.com/assets/images/og-image.jpg',
+      image: 'https://oilandgasclub.com/assets/images/og-image.jpg',
       imageWidth: 1200,
       imageHeight: 630,
       seoUrl: fullUrl,
@@ -402,8 +405,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     // ✅ SEO: Add Organization structured data (should be on homepage)
     this.structuredDataService.setOrganization({
       name: 'Oilandgasclub',
-      url: 'https://www.oilandgasclub.com',
-      logo: 'https://www.oilandgasclub.com/assets/images/og-image.jpg',
+      url: 'https://oilandgasclub.com',
+      logo: 'https://oilandgasclub.com/assets/images/og-image.jpg',
       description: 'Leading online learning platform offering certifications and training programs for the oil and gas industry',
       sameAs: [
         'https://www.facebook.com/oilandgasclub',
@@ -415,8 +418,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     // ✅ SEO: Add WebSite schema with search action
     this.structuredDataService.setWebSite(
       'Oilandgasclub',
-      'https://www.oilandgasclub.com',
-      'https://www.oilandgasclub.com/search?q={search_term_string}'
+      'https://oilandgasclub.com',
+      'https://oilandgasclub.com/search?q={search_term_string}'
     );
 
     // Keep homepage design/images static, but bind each card URL to an actual published course slug.

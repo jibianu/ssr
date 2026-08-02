@@ -14,6 +14,7 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { BackendHealthService } from './core/services/backend-health.service';
 import { GtmService } from './services/gtm.service';
+import { SeoService } from './shared/service/seo.service';
 
 @Component({
     selector: 'app-root',
@@ -38,6 +39,9 @@ export class AppComponent implements OnDestroy {
         private spinner: NgxSpinnerService,
         private backendHealthService: BackendHealthService,
         private gtmService: GtmService,
+        // Instantiated eagerly so route-driven title/description/canonical/robots
+        // handling is active for every entry URL (SSR + browser).
+        private seoService: SeoService,
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         this.setupNavigationInterceptor();

@@ -8,6 +8,10 @@ import { FixMojibakePipe } from '../../../../shared/pipes/fix-mojibake.pipe';
 import { FixMojibakeSafeHtmlPipe } from '../../../../shared/pipes/fix-mojibake-safe-html.pipe';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { MetadataService } from 'src/app/shared/service/meta.service';
+import { CanonicalService } from 'src/app/shared/service/canonical.service';
+import { StructuredDataService } from 'src/app/shared/service/structured-data.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-blog-list',
@@ -20,6 +24,9 @@ export class BlogListComponent implements OnInit, OnDestroy {
   private blogService = inject(BlogService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private metadataService = inject(MetadataService);
+  private canonicalService = inject(CanonicalService);
+  private structuredDataService = inject(StructuredDataService);
   private destroy$ = new Subject<void>();
 
   blogs = signal<BlogListItemDto[]>([]);
@@ -62,6 +69,26 @@ export class BlogListComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    const canonicalUrl = `${environment.seoUrl}blog`.replace(/([^:]\/)\/+/g, '$1');
+    this.metadataService.updateMetadata({
+      title: 'Oil and Gas Engineering Articles | Oilandgasclub',
+      description:
+        'Browse oil and gas engineering articles, industry insights, and practical learning resources from Oilandgasclub instructors and practitioners.',
+      author: 'Oilandgasclub Team',
+      type: 'website',
+      image: 'https://oilandgasclub.com/assets/images/og-image.jpg',
+      imageWidth: 1200,
+      imageHeight: 630,
+      seoUrl: canonicalUrl,
+      category: 'Blog, Articles, Oil and Gas Engineering',
+      canonicalUrl,
+    });
+    this.canonicalService.setCanonicalURL(canonicalUrl);
+    this.structuredDataService.setBreadcrumbs([
+      { name: 'Home', url: 'https://oilandgasclub.com/' },
+      { name: 'Articles', url: 'https://oilandgasclub.com/blog' },
+    ]);
+
     this.blogService.getCategories().subscribe(list => {
       this.categories.set((list || []).map(c => ({ id: c.id, name: c.name || '' })));
     });

@@ -17,7 +17,7 @@ export class TermsAndConditionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/terms-and-conditions');
+    this.setCanonicalURL('https://oilandgasclub.com/terms-and-conditions');
          this.titleService.setTitle('terms-and-conditions - Oil and Gas Club');
      this.metaService.addTags([
       { name: 'description', content: 'Read the terms and conditions of oilandgasclub.com to understand the rules, regulations, and policies governing the use of our platform, services, and offerings. Stay informed about your rights and responsibilities as a user.' },

@@ -107,7 +107,7 @@ export class InHouseSolutionsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setCanonicalURL('https://www.oilandgasclub.com/in-house-solutions');
+    this.setCanonicalURL('https://oilandgasclub.com/in-house-solutions');
     this.titleService.setTitle('In-house Solutions - Oilandgasclub');
     this.metaService.addTags([
       {

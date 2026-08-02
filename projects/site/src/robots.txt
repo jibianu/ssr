@@ -1,7 +1,44 @@
 User-agent: *
 Allow: /
 
-Disallow: /app
+# Private areas — never crawl (auth, payment, dashboards, admin).
+# `/path/` blocks subpages, `/path$` blocks the bare path without
+# blocking public slugs that share the prefix (e.g. /authentic-course).
+#
+# NOTE: /login, /register, /forget-password, /verification and
+# /change-password are intentionally NOT disallowed. They answer
+# noindex,nofollow (meta + X-Robots-Tag), and Google can only observe
+# that noindex if crawling is allowed. Blocking them keeps stale copies
+# indexed ("Duplicate without user-selected canonical").
+Disallow: /auth/
+Disallow: /auth$
+Disallow: /payment/
+Disallow: /payment$
+Disallow: /checkout/
+Disallow: /checkout$
+Disallow: /dashboard/
+Disallow: /dashboard$
+Disallow: /profile/
+Disallow: /profile$
+Disallow: /admin/
+Disallow: /admin$
+Disallow: /app/
+Disallow: /app$
+Disallow: /api/
+Disallow: /api$
+Disallow: /company/
+Disallow: /company$
+Disallow: /trainer/
+Disallow: /trainer$
+Disallow: /student/
+Disallow: /student$
+Disallow: /management/
+Disallow: /management$
+Disallow: /affiliate/
+Disallow: /affiliate$
+Disallow: /elearn/
+Disallow: /elearn$
+Disallow: /sso-callback
 Disallow: /course/payment
 Disallow: /course/checkout
 

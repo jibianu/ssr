@@ -519,7 +519,7 @@ export class BecomeOurTrainerComponent implements OnInit {
     }
     
     // ✅ SEO: Set canonical URL
-    this.setCanonicalURL('https://www.oilandgasclub.com/become-our-trainer');
+    this.setCanonicalURL('https://oilandgasclub.com/become-our-trainer');
     
     // ✅ SEO: Set page title
     this.titleService.setTitle('Become an Instructor | Teach Oil and Gas Courses Online - Oilandgasclub');
@@ -536,16 +536,16 @@ export class BecomeOurTrainerComponent implements OnInit {
       { property: 'og:title', content: 'Become an Instructor | Teach Oil and Gas Courses - Oilandgasclub' },
       { property: 'og:description', content: 'Join Oilandgasclub as an instructor and empower learners in the oil and gas industry with your knowledge. Build and deliver online courses globally.' },
       { property: 'og:author', content: 'Oilandgasclub Team' },
-      { property: 'og:image', content: 'https://www.oilandgasclub.com/assets/instructor-banner.jpg' },
+      { property: 'og:image', content: 'https://oilandgasclub.com/assets/instructor-banner.jpg' },
       { property: 'og:image:width', content: '600' },
       { property: 'og:image:height', content: '500' },
-      { property: 'og:url', content: 'https://www.oilandgasclub.com/become-instructor' },
+      { property: 'og:url', content: 'https://oilandgasclub.com/become-our-trainer' },
       
       // ✅ Article Meta Tags
       { property: 'article:published_time', content: '2021-09-01T06:18:55.5419129' },
       { property: 'article:modified_time', content: '2023-07-08T06:43:07.881401' },
       { property: 'article:tag', content: 'Instructor, Teach Online, Oil and Gas Training, Oilandgasclub, Online Courses, Professional Development, Certification Programs' },
-      { property: 'article:publisher', content: 'https://www.oilandgasclub.com' },
+      { property: 'article:publisher', content: 'https://oilandgasclub.com' },
       
       // ✅ Twitter Meta Tags
       { name: 'twitter:card', content: 'summary_large_image' },
@@ -557,7 +557,7 @@ export class BecomeOurTrainerComponent implements OnInit {
       { name: 'twitter:data2', content: 'Reach learners worldwide through Oilandgasclub.' },
       { name: 'twitter:site', content: '@oilandgasclub' },
       { name: 'twitter:creator', content: '@Oilandgasclub' },
-      { name: 'twitter:url', content: 'https://www.oilandgasclub.com/become-instructor' },
+      { name: 'twitter:url', content: 'https://oilandgasclub.com/become-our-trainer' },
     ]);
   }
   

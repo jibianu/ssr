@@ -226,6 +226,24 @@
         </aside>
     </div>
 
+    @if (relatedPosts().length) {
+      <section class="related-posts-section mt-4 mb-4" aria-label="Related articles">
+        <h2 class="h4 mb-3">Related articles</h2>
+        <ul class="related-posts-list list-unstyled row g-3">
+          @for (post of relatedPosts(); track post.id) {
+            <li class="col-md-6 col-lg-4">
+              <a class="related-post-card d-block text-decoration-none" [routerLink]="['/', post.canonicalUrl]">
+                <span class="related-post-card__title">{{ post.title }}</span>
+                @if (post.metaDescription) {
+                  <span class="related-post-card__excerpt text-muted d-block small">{{ post.metaDescription }}</span>
+                }
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
     <!-- Mobile sticky bottom actions -->
     <div class="blog-mobile-bottom-bar" aria-label="Blog actions">
       <button type="button" class="blog-mobile-bottom-bar__btn" (click)="toggleLike()" [class.is-active]="isLiked()" aria-label="Like">
