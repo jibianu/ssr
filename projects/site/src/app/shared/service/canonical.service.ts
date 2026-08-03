@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { getCanonicalOrigin } from '../../core/seo/canonical-origin';
 
 /**
  * Query parameters that never change page content — must not appear in
@@ -37,9 +38,9 @@ export class CanonicalService {
     return remaining ? `?${remaining}` : '';
   }
 
-  /** Marketing site origin without trailing slash (matches sitemap / Stripe PublicSiteUrl style). */
+  /** Marketing site origin without trailing slash (CANONICAL_ORIGIN / environment.seoUrl). */
   private getMarketingOrigin(): string {
-    return (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/+$/, '');
+    return getCanonicalOrigin(environment.seoUrl);
   }
 
   /**

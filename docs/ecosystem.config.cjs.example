@@ -1,0 +1,29 @@
+/**
+ * Example PM2 ecosystem for the Angular SSR site process.
+ * Copy to the server as ecosystem.config.cjs and adjust paths / instances.
+ *
+ *   pm2 start ecosystem.config.cjs
+ *   pm2 restart oilandgasclub-ssr --update-env
+ *   pm2 env <id>
+ */
+module.exports = {
+  apps: [
+    {
+      name: 'oilandgasclub-ssr',
+      script: 'dist/site/server/server.mjs',
+      cwd: '/var/www/oilandgasclub',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 4000,
+        // Marketing site — never www
+        CANONICAL_ORIGIN: 'https://oilandgasclub.com',
+        PUBLIC_SITE_URL: 'https://oilandgasclub.com',
+        // Public course API (SSR data fetching) — not the marketing origin
+        PUBLIC_API_URL: 'https://coursebackend.oilandgasclub.com/',
+        SSR_API_URL: 'https://coursebackend.oilandgasclub.com/',
+      },
+    },
+  ],
+};

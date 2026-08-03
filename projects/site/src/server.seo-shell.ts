@@ -102,12 +102,14 @@ function escapeHtmlText(s: string): string {
 
 function pageOriginAndUrl(req: Request, requestPath: string): { origin: string; canonical: string } {
   // Always emit the marketing canonical host — never www / http from the request Host.
-  // (If www somehow reaches SSR before redirect, meta must still self-reference apex.)
   void req;
-  const origin = 'https://oilandgasclub.com';
+  const origin =
+    (typeof process !== 'undefined' && process.env['CANONICAL_ORIGIN']
+      ? String(process.env['CANONICAL_ORIGIN']).replace(/\/+$/, '')
+      : 'https://oilandgasclub.com') || 'https://oilandgasclub.com';
   const pathOnly = (requestPath.startsWith('/') ? requestPath : `/${requestPath}`).replace(/\/+$/, '') || '/';
-  const canonical = `${origin}${pathOnly === '/' ? '' : pathOnly}`;
-  return { origin, canonical: pathOnly === '/' ? `${origin}/` : canonical };
+  const canonical = pathOnly === '/' ? `${origin}/` : `${origin}${pathOnly}`;
+  return { origin: origin.replace(/\/+$/, '') || 'https://oilandgasclub.com', canonical };
 }
 
 async function fetchPublicCourseBySlug(slug: string): Promise<Record<string, unknown> | null> {

@@ -72,7 +72,10 @@ $course-transition-slow: 300ms;
   border: 1px solid $border-color;
   box-shadow: $shadow;
   transition: transform $transition ease, box-shadow $transition ease, border-color $transition ease;
-  overflow: hidden;
+  // Do NOT use overflow:hidden here — it clips the bottom CTA corners/shadow
+  // and can hide the image when the card translates on hover.
+  overflow: visible;
+  isolation: isolate;
 
   @if $height != null {
     height: $height;
@@ -104,21 +107,35 @@ $course-transition-slow: 300ms;
 @mixin course-card-media($hover-scale: 1.05) {
   position: relative;
   display: block;
-  aspect-ratio: auto;
+  flex-shrink: 0;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   background: #f8fafc;
 
   img {
     width: 100%;
-    height: auto;
-    max-height: 240px;
-    object-fit: contain;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
     object-position: center;
-    transition: transform 220ms ease;
+    display: block;
+    // No hover scale by default — transform on NgOptimizedImage/img
+    // can make the image appear to vanish under overflow clipping.
+    transform: none;
   }
 
-  &:hover img {
-    transform: scale($hover-scale);
+  @if $hover-scale != null and $hover-scale != 1 and $hover-scale != 1.0 {
+    img {
+      transition: transform 220ms ease;
+    }
+
+    &:hover img {
+      transform: scale($hover-scale);
+    }
   }
 }
 
@@ -280,7 +297,10 @@ $course-transition-slow: 300ms;
   text-decoration: none;
   box-shadow: $shadow;
   transition: background $course-transition-fast ease, box-shadow $course-transition-fast ease;
-  white-space: nowrap;
+  white-space: normal;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 
   &:hover {
     background: $hover-background;

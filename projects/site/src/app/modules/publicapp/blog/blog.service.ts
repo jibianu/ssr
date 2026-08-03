@@ -176,6 +176,16 @@ export class BlogService {
           showOnDashboard: !!(raw?.showOnDashboard ?? raw?.ShowOnDashboard),
           createdOn: raw?.createdOn ?? raw?.CreatedOn ?? '',
           updatedOn: raw?.updatedOn ?? raw?.UpdatedOn,
+          category: raw?.category || raw?.Category
+            ? {
+                id: String(raw?.category?.id ?? raw?.Category?.Id ?? ''),
+                name: raw?.category?.name ?? raw?.Category?.Name ?? '',
+                appsName: raw?.category?.appsName ?? raw?.Category?.AppsName,
+              }
+            : undefined,
+          authorId: raw?.authorId ?? raw?.AuthorId,
+          authorName: raw?.authorName ?? raw?.AuthorName,
+          authorProfilePictureUrl: raw?.authorProfilePictureUrl ?? raw?.AuthorProfilePictureUrl,
         }))
       ),
       catchError(() => of([]))

@@ -82,6 +82,8 @@ const CASES = [
         { url: `https://www.oilandgasclub.com/events`, expect: 'redirect-to-200' },
         { url: `https://www.oilandgasclub.com/blog`, expect: 'redirect-to-200' },
         { url: `https://www.oilandgasclub.com/instrumentation-design-course`, expect: 'redirect-to-200' },
+        { url: `https://www.oilandgasclub.com/api-570-exam-questions-and-answers`, expect: 'redirect-to-200' },
+        { url: `https://www.oilandgasclub.com/sitemap.xml`, expect: 'redirect-to-200' },
         { url: `https://blog.oilandgasclub.com/`, expect: 'redirect-to-200' },
         { url: `https://www.blog.oilandgasclub.com/`, expect: 'redirect-to-200' },
         // Company tenant portal — must answer noindex (Case C: private application).
@@ -97,6 +99,7 @@ const CASES = [
   { url: `${BASE}/instrumentation-design-course/`, expect: 'redirect-to-200' },
   { url: `${BASE}/course/instrumentation-design-course`, expect: 'redirect-to-200' },
   { url: `${BASE}/courses/instrumentation-design-course`, expect: 'redirect-to-200' },
+  { url: `${BASE}/api-570-exam-questions-and-answers`, expect: 'direct-200' },
 ];
 
 async function fetchNoRedirect(url) {

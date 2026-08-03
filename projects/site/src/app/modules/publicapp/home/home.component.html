@@ -68,7 +68,14 @@
       @for (course of topCourses; track course.url) {
         <article class="home-card home-card--course">
           <div class="home-card__media">
-            <img [src]="course.image" [alt]="course.alt" loading="lazy" width="320" height="240" />
+            <img
+              [src]="course.image"
+              [alt]="course.alt"
+              loading="lazy"
+              width="320"
+              height="240"
+              data-pin-nopin="true"
+              decoding="async" />
             @if (course.badge) {
               <span class="home-card__badge">{{ course.badge }}</span>
             }
@@ -152,12 +159,17 @@
       @for (event of topEvents; track event.image) {
         <article class="home-card home-card--event">
           <div class="home-card__media">
-            <img [ngSrc]="event.image" [alt]="event.alt" width="320" height="240" loading="lazy" />
-            <span class="home-card__badge">Featured</span>
+            <img
+              [src]="event.image"
+              [alt]="event.alt"
+              width="320"
+              height="240"
+              loading="lazy"
+              data-pin-nopin="true"
+              decoding="async" />
           </div>
           <div class="home-card__body">
             <h3 class="home-card__title">{{ event.title }}</h3>
-            <p class="home-card__meta">{{ event.subtitle }}</p>
             <div class="home-card__copy" [innerHTML]="event.description | fixMojibakeSafeHtml"></div>
           </div>
           <footer class="home-card__footer">

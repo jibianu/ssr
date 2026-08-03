@@ -5,6 +5,7 @@ import { DOCUMENT } from '@angular/common';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { getCanonicalOrigin } from '../../core/seo/canonical-origin';
 
 /**
  * Route prefixes that must NEVER be indexed by search engines.
@@ -80,8 +81,8 @@ export interface RouteSeoData {
   providedIn: 'root'
 })
 export class SeoService {
-  /** Canonical site origin (no trailing slash), single source of truth: environment.seoUrl. */
-  private readonly baseUrl = (environment.seoUrl || 'https://oilandgasclub.com/').replace(/\/+$/, '');
+  /** Canonical site origin (no trailing slash): CANONICAL_ORIGIN / environment.seoUrl. */
+  private readonly baseUrl = getCanonicalOrigin(environment.seoUrl);
 
   private readonly defaultSeoData: SeoData = {
     title: 'Oilandgasclub - Your Oil and Gas Learning Platform',

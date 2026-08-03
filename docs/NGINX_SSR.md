@@ -59,7 +59,11 @@ If **Cache Everything** or aggressive page rules cache `text/html`, users can re
 
 ### 5. `www` vs apex
 
-`environment.seoUrl` should match the hostname users see (e.g. `https://www.oilandgasclub.com/` if the live site is `www`). Mismatches affect canonical/OG URLs only; they do not cause missing tags unless SSR is already bypassed.
+`environment.seoUrl` / `CANONICAL_ORIGIN` must be the **non-www** marketing origin:
+
+`https://oilandgasclub.com/`
+
+Never set seoUrl to `https://www.oilandgasclub.com/`. Www hosts must 301 to apex (nginx + Express safety net); canonical/OG/JSON-LD always emit apex.
 
 ### Quick check: response header
 

@@ -227,20 +227,63 @@
     </div>
 
     @if (relatedPosts().length) {
-      <section class="related-posts-section mt-4 mb-4" aria-label="Related articles">
-        <h2 class="h4 mb-3">Related articles</h2>
-        <ul class="related-posts-list list-unstyled row g-3">
+      <section class="related-posts-section" aria-label="Related articles">
+        <header class="related-posts-header">
+          <p class="related-posts-eyebrow">Keep reading</p>
+          <h2 class="related-posts-title">Related articles</h2>
+          <p class="related-posts-subtitle">
+            More oil and gas engineering articles from the same topic area.
+          </p>
+        </header>
+
+        <ul class="related-posts-grid">
           @for (post of relatedPosts(); track post.id) {
-            <li class="col-md-6 col-lg-4">
-              <a class="related-post-card d-block text-decoration-none" [routerLink]="['/', post.canonicalUrl]">
-                <span class="related-post-card__title">{{ post.title }}</span>
-                @if (post.metaDescription) {
-                  <span class="related-post-card__excerpt text-muted d-block small">{{ post.metaDescription }}</span>
-                }
+            <li class="related-posts-grid__item">
+              <a
+                class="related-post-card"
+                [routerLink]="['/', post.canonicalUrl]"
+                [attr.aria-label]="'Read article: ' + post.title">
+                <div class="related-post-card__media">
+                  <img
+                    [src]="post.titleImgUrl || placeholderImg"
+                    [alt]="post.title"
+                    loading="lazy"
+                    decoding="async"
+                    (error)="onImgError($event)" />
+                  @if (post.category?.name) {
+                    <span class="related-post-card__badge">{{ post.category!.name }}</span>
+                  }
+                </div>
+                <div class="related-post-card__body">
+                  <h3 class="related-post-card__title">{{ post.title | fixMojibake }}</h3>
+                  @if (post.metaDescription) {
+                    <p class="related-post-card__excerpt">{{ post.metaDescription | fixMojibake }}</p>
+                  }
+                  <div class="related-post-card__meta">
+                    @if (formatDate(post.createdOn)) {
+                      <time [attr.datetime]="post.createdOn">{{ formatDate(post.createdOn) }}</time>
+                    }
+                    <span class="related-post-card__cta">
+                      Read article
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
               </a>
             </li>
           }
         </ul>
+
+        <div class="related-posts-footer">
+          <a routerLink="/blog" class="related-posts-all-link">
+            Browse all articles
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
       </section>
     }
 
