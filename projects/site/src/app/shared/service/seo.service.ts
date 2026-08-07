@@ -119,15 +119,61 @@ export class SeoService {
         map((event: NavigationEnd) => ({ url: event.urlAfterRedirects || event.url, route: this.deepestRoute() }))
       )
       .subscribe(({ url, route }) => {
+        // Every navigation starts from a clean slate so a prior 404/noindex
+        // render cannot leak canonical/robots into the next SSR request.
+        this.clearStaleSeoTags();
+
         if (isNoIndexPath(url)) {
           this.applyPrivatePageSeo();
           return;
         }
+
+        const path = (url.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '') || '/';
+        if (path === '/page-not-found') {
+          this.applyNotFoundPageSeo();
+          return;
+        }
+
         route.data.subscribe((data: RouteSeoData) => {
+          const robots = (data?.seo?.robots || data?.seoRobots || '').toLowerCase();
+          if (robots.includes('noindex')) {
+            // Route-declared soft-404 / policy pages: noindex and NO canonical
+            // (never rewrite arbitrary URLs to /page-not-found as the canonical).
+            this.updateFromRouteData(data);
+            this.applyNotFoundPageSeo(false);
+            return;
+          }
+          // Public content default — never inherit noindex from a prior 404 render.
+          this.meta.updateTag({ name: 'robots', content: 'index, follow' });
           this.updateFromRouteData(data);
           this.ensureCanonicalForCurrentUrl(url, data);
         }).unsubscribe();
       });
+  }
+
+  /**
+   * Strip tags that survive between SSR renders / client navigations.
+   */
+  private clearStaleSeoTags(): void {
+    this.removeCanonicalLink();
+    this.removeStructuredData();
+  }
+
+  /**
+   * Genuine 404 (or the dedicated /page-not-found UI route):
+   * noindex — and deliberately NO canonical tag.
+   * Missing URLs must keep their request URL while returning HTTP 404;
+   * they must never canonicalize to /page-not-found.
+   *
+   * @param setTitle when true, also apply the default 404 title (route data may already have set it).
+   */
+  public applyNotFoundPageSeo(setTitle = true): void {
+    if (setTitle) {
+      this.title.setTitle('Page Not Found - Oilandgasclub');
+    }
+    this.meta.updateTag({ name: 'robots', content: 'noindex,nofollow' });
+    this.removeCanonicalLink();
+    this.removeStructuredData();
   }
 
   private deepestRoute(): ActivatedRoute {
@@ -153,12 +199,21 @@ export class SeoService {
    * unless the route declared an explicit one.
    */
   private ensureCanonicalForCurrentUrl(url: string, data: RouteSeoData): void {
+    const robots = (data?.seo?.robots || data?.seoRobots || '').toLowerCase();
+    if (robots.includes('noindex')) {
+      this.removeCanonicalLink();
+      return;
+    }
+    const path = (url.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '') || '/';
+    if (path === '/page-not-found') {
+      this.removeCanonicalLink();
+      return;
+    }
     const explicit = data?.seo?.canonicalUrl || data?.seoCanonicalUrl;
     if (explicit) {
       return; // updateFromRouteData already applied it
     }
-    const path = (url.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '');
-    this.updateCanonicalUrl(path ? `${this.baseUrl}${path}` : this.baseUrl);
+    this.updateCanonicalUrl(path === '/' ? this.baseUrl : `${this.baseUrl}${path}`);
   }
 
   /**
@@ -189,7 +244,7 @@ export class SeoService {
    */
   public updateSeoData(seoData: Partial<SeoData>): void {
     const mergedData = { ...this.defaultSeoData, ...seoData };
-    
+
     // Update title
     if (mergedData.title) {
       this.title.setTitle(mergedData.title);
@@ -198,14 +253,19 @@ export class SeoService {
     // Update meta tags
     this.updateMetaTags(mergedData);
 
-    // Update canonical URL
-    if (mergedData.canonicalUrl || mergedData.url) {
+    const robots = (mergedData.robots || '').toLowerCase();
+    // Never emit a canonical for noindex pages (404 / private).
+    if (robots.includes('noindex')) {
+      this.removeCanonicalLink();
+    } else if (mergedData.canonicalUrl || mergedData.url) {
       this.updateCanonicalUrl(mergedData.canonicalUrl || mergedData.url!);
     }
 
     // Update structured data
-    if (mergedData.structuredData) {
+    if (mergedData.structuredData && !robots.includes('noindex')) {
       this.updateStructuredData(mergedData.structuredData);
+    } else if (robots.includes('noindex')) {
+      this.removeStructuredData();
     }
   }
 

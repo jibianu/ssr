@@ -78,7 +78,7 @@ const routes: Routes = [
         title: 'Page Not Found - Oilandgasclub',
         description: 'The page you are looking for could not be found. Return to our homepage or browse our courses.',
         type: 'website',
-        robots: 'noindex, follow'
+        robots: 'noindex,nofollow'
       }
     } as RouteSeoData
   },
@@ -90,6 +90,7 @@ const routes: Routes = [
   {
     // Render the 404 component at the requested URL (no redirect) so SSR
     // answers unknown routes with HTTP 404 directly instead of a 302 + 200.
+    // Do NOT set a canonical — missing URLs must never point at /page-not-found.
     path: '**',
     component: PageNotFoundComponent,
     data: {
@@ -97,7 +98,7 @@ const routes: Routes = [
         title: 'Page Not Found - Oilandgasclub',
         description: 'The page you are looking for could not be found. Return to our homepage or browse our courses.',
         type: 'website',
-        robots: 'noindex, follow'
+        robots: 'noindex,nofollow'
       }
     } as RouteSeoData
   }

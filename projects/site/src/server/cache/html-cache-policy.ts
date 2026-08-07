@@ -1,6 +1,42 @@
 import type { Request } from 'express';
 import { ensureSafeRequest } from '../utils/request-safety';
 import { isStaticRoute as checkStaticRoute } from '../../server.cache.config';
+import { isEmptyAppRootHtml } from '../../server.seo-shell';
+
+/** Mirror of SeoService private prefixes — keep Node cache policy free of Angular DI imports. */
+const NOINDEX_PATH_PREFIXES: readonly string[] = [
+  '/login',
+  '/register',
+  '/auth',
+  '/forget-password',
+  '/fg-code',
+  '/change-password',
+  '/verification',
+  '/callback',
+  '/google-callback',
+  '/sso-callback',
+  '/checkout',
+  '/payment',
+  '/dashboard',
+  '/profile',
+  '/admin',
+  '/app',
+  '/company',
+  '/trainer',
+  '/student',
+  '/management',
+  '/affiliate',
+  '/elearn',
+  '/unauthorized',
+  '/user-unavailable',
+];
+
+function isPrivateNoIndexPath(path: string): boolean {
+  const p = (path.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '') || '/';
+  return NOINDEX_PATH_PREFIXES.some(
+    (prefix) => p === prefix || p.toLowerCase().startsWith(`${prefix.toLowerCase()}/`)
+  );
+}
 
 /**
  * Backend REST prefix only: `/api` or `/api/...`.
@@ -71,7 +107,53 @@ export function shouldCacheSsrHtml(req: Request, pathOnly: string): boolean {
   if (isForceCsrPath(p)) {
     return false;
   }
+  // Never cache the dedicated 404 UI route.
+  if ((p.replace(/\/+$/, '') || '/') === '/page-not-found') {
+    return false;
+  }
   return true;
+}
+
+/**
+ * Detect poisoned HTML that must never be stored or replayed for public URLs.
+ * Catches the GSC failure mode: valid article slug served with noindex +
+ * canonical → /page-not-found.
+ */
+export function isPoisonedIndexableHtml(html: string, requestPath: string): boolean {
+  if (!html || typeof html !== 'string') {
+    return true;
+  }
+  if (isEmptyAppRootHtml(html)) {
+    return true;
+  }
+
+  const path = (requestPath.split('?')[0].split('#')[0] || '/').replace(/\/+$/, '') || '/';
+  const privatePath = isPrivateNoIndexPath(path) || path === '/page-not-found';
+
+  const canonicalHref =
+    html.match(/<link[^>]+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1] ||
+    html.match(/<link[^>]+href=["']([^"']+)["'][^>]*rel=["']canonical["']/i)?.[1] ||
+    '';
+  if (/page-not-found/i.test(canonicalHref)) {
+    return true;
+  }
+
+  const robots =
+    html.match(/<meta[^>]+name=["']robots["'][^>]*content=["']([^"']+)["']/i)?.[1] ||
+    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*name=["']robots["']/i)?.[1] ||
+    '';
+  if (!privatePath && /noindex/i.test(robots)) {
+    return true;
+  }
+
+  // Indexable article/course/event slugs need an H1.
+  if (!privatePath && path !== '/' && !/^\/(blog|events|courses|about-us|contact-us)(\/|$)/i.test(path)) {
+    if (!/<h1\b/i.test(html)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**

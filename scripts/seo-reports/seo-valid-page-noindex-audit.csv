@@ -1,0 +1,21 @@
+URL,HTTP Status,API Exists,Published,Robots,Canonical,H1,SSR Body Size,PageNotFoundDetected,CacheStatus,Classification,Fix,PassFail
+https://oilandgasclub.com/worlds-largest-refineries,200,Y,Y,"index, follow",https://oilandgasclub.com/worlds-largest-refineries,World’s Largest Refineries,189249,N,cache,ok,,PASS
+https://oilandgasclub.com/stress-q-and-a,200,Y,Y,"index, follow",https://oilandgasclub.com/stress-q-and-a,Stress Q and A,142550,N,stream,ok,,PASS
+https://oilandgasclub.com/conversion-of-units,200,Y,Y,"index, follow",https://oilandgasclub.com/conversion-of-units,Conversion of Units,166376,N,stream,ok,,PASS
+https://oilandgasclub.com/caesar-software,200,Y,Y,"index, follow",https://oilandgasclub.com/caesar-software,What is Caesar II,179554,N,stream,ok,,PASS
+https://oilandgasclub.com/flanges-and-types,200,Y,Y,"index, follow",https://oilandgasclub.com/flanges-and-types,Flanges and types of flanges,186793,N,stream,ok,,PASS
+https://oilandgasclub.com/types-of-common-fittings,200,Y,Y,"index, follow",https://oilandgasclub.com/types-of-common-fittings,Types of Pipe Fittings and Components for Piping,241135,N,stream,ok,,PASS
+https://oilandgasclub.com/,200,,,"index, follow",https://oilandgasclub.com,"Master industry skills designed for oil and gas professionals. Upgrade your skills anytime, anywhere! Access 70+ courses",130035,N,cache,ok,,PASS
+https://oilandgasclub.com/non-destructive-testing,200,Y,Y,"index, follow",https://oilandgasclub.com/non-destructive-testing,Non Destructive Testing,315983,N,stream,ok,,PASS
+https://oilandgasclub.com/courses,200,N,N,"index, follow",https://oilandgasclub.com/courses,,226836,N,stream,ok,,PASS
+https://oilandgasclub.com/events,200,N,N,"index, follow",https://oilandgasclub.com/events,Oil and Gas Engineering Workshops and Events,80069,N,stream,ok,,PASS
+https://oilandgasclub.com/primavera-training,200,N,N,"index, follow",https://oilandgasclub.com/primavera-training,Primavera-Training,178361,N,stream,ok,,PASS
+https://oilandgasclub.com/blog,200,N,N,"index, follow",https://oilandgasclub.com/blog,Oil and Gas Engineering Articles,142261,N,stream,ok,,PASS
+https://oilandgasclub.com/category/coating-painting-cbt,200,,,"index, follow",https://oilandgasclub.com/category/coating-painting-cbt,coating painting CBT,75370,N,stream,ok,,PASS
+https://oilandgasclub.com/category/bgas,200,,,"index, follow",https://oilandgasclub.com/category/bgas,BGAS,73097,N,stream,ok,,PASS
+https://oilandgasclub.com/category/cswip-3-1-question-bank,200,,,"index, follow",https://oilandgasclub.com/category/cswip-3-1-question-bank,CSWIP 3.1 Question Bank,75523,N,stream,ok,,PASS
+https://oilandgasclub.com/category/equipment-design,200,,,"index, follow",https://oilandgasclub.com/category/equipment-design,Equipment design,73102,N,stream,ok,,PASS
+https://oilandgasclub.com/category/instrumentation-design,200,,,"index, follow",https://oilandgasclub.com/category/instrumentation-design,Instrumentation design,77788,N,stream,ok,,PASS
+https://oilandgasclub.com/category/piping-cbt,200,,,"index, follow",https://oilandgasclub.com/category/piping-cbt,Piping CBT,73024,N,stream,ok,,PASS
+https://oilandgasclub.com/category/api,200,,,"index, follow",https://oilandgasclub.com/category/api,API,110720,N,stream,ok,,PASS
+https://oilandgasclub.com/category/ndt,200,,,"index, follow",https://oilandgasclub.com/category/ndt,NDT,96906,N,stream,ok,,PASS

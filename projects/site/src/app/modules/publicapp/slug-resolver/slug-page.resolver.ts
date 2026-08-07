@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { ResolveFn } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { SlugResolverService } from './slug-resolver.service';
+import { SlugResolverService, SlugResolverResponse } from './slug-resolver.service';
 import { PublicAppService } from '../publicapp.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
 import { BlogService } from '../blog/blog.service';
@@ -18,8 +19,25 @@ export interface SlugPageData {
   eventData?: unknown;
   blog?: unknown;
   notFound?: boolean;
+  /**
+   * Transient API/network failure during SSR — NOT a permanent missing page.
+   * Must become HTTP 503 (not 404 / page-not-found SEO).
+   */
+  unavailable?: boolean;
   /** Retired slug alias: issue one direct 301 to this canonical slug instead of rendering. */
   redirectTo?: string;
+}
+
+function isHttpNotFound(err: unknown): boolean {
+  return err instanceof HttpErrorResponse && err.status === 404;
+}
+
+function unavailable(slug: string): SlugPageData {
+  return { slug, type: null, unavailable: true };
+}
+
+function missing(slug: string): SlugPageData {
+  return { slug, type: null, notFound: true };
 }
 
 export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<SlugPageData> => {
@@ -31,18 +49,29 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
   const blogSvc = inject(BlogService);
 
   if (!slug.trim()) {
-    return of({ slug: '', type: null, notFound: true });
+    return of(missing(''));
   }
 
   if (isAppShellSlug(slug)) {
-    return of({ slug, type: null, notFound: true });
+    return of(missing(slug));
   }
 
   // Resolve slug type first; only call GET page/course/course/{slug} for courses (or when metadata is unavailable).
   // Parallel course + meta caused a guaranteed 404 + noisy logs for every blog/event slug.
   return slugSvc.resolve(slug).pipe(
-    catchError(() => of(null)),
-    switchMap((meta) => {
+    catchError((err) => {
+      // Definitive miss → fall through to parallel lookup via null.
+      // Network/5xx must NOT become permanent 404 SEO.
+      if (isHttpNotFound(err)) {
+        return of(null as SlugResolverResponse | null);
+      }
+      return of(unavailable(slug));
+    }),
+    switchMap((metaOrFail) => {
+      if (metaOrFail && 'unavailable' in metaOrFail && (metaOrFail as SlugPageData).unavailable) {
+        return of(metaOrFail as SlugPageData);
+      }
+      const meta = metaOrFail as SlugResolverResponse | null;
       // Slug alias (renamed course): don't render content at the old URL —
       // signal the component to answer one direct 301 to the canonical slug.
       if (
@@ -57,7 +86,7 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
         return resolveSlugByParallelLookup(slug, blogSvc, admin, publicApp).pipe(
           map((match) => {
             if (!match) {
-              return { slug, type: null, notFound: true };
+              return missing(slug);
             }
             if (match.type === 'blog') {
               return { slug, type: 'blog' as const, blog: match.blog };
@@ -71,16 +100,14 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
             }
             return { slug, type: 'course' as const, course: match.course };
           }),
-          catchError(() => of({ slug, type: null, notFound: true }))
+          catchError((err) => of(isHttpNotFound(err) ? missing(slug) : unavailable(slug)))
         );
       }
       if (meta?.type === 'blog') {
         const blogSlug = (meta.slug || slug).trim();
         return blogSvc.getBlogBySlug(blogSlug).pipe(
-          map((b) =>
-            b ? { slug, type: 'blog' as const, blog: b } : { slug, type: null, notFound: true }
-          ),
-          catchError(() => of({ slug, type: null, notFound: true }))
+          map((b) => (b ? { slug, type: 'blog' as const, blog: b } : missing(slug))),
+          catchError((err) => of(isHttpNotFound(err) ? missing(slug) : unavailable(slug)))
         );
       }
       if (meta?.type === 'event') {
@@ -88,7 +115,7 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
         return admin.getEventByCanonicalURL(eventSlug).pipe(
           switchMap((event: { id?: string } | null) => {
             if (!event?.id) {
-              return of({ slug: eventSlug, type: null, notFound: true });
+              return of(missing(eventSlug));
             }
             return publicApp.getUpcomingEvents(event.id).pipe(
               map((upcoming: unknown[]) => ({
@@ -105,7 +132,7 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
               )
             );
           }),
-          catchError(() => of({ slug: eventSlug, type: null, notFound: true }))
+          catchError((err) => of(isHttpNotFound(err) ? missing(eventSlug) : unavailable(eventSlug)))
         );
       }
 
@@ -127,11 +154,9 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
           return publicApp.getCourseByCanonicalURL(courseSlugToFetch, { refresh: false });
         }),
         map((course) =>
-          course
-            ? { slug, type: 'course' as const, course }
-            : { slug, type: null, notFound: true }
+          course ? { slug, type: 'course' as const, course } : missing(slug)
         ),
-        catchError(() => of({ slug, type: null, notFound: true }))
+        catchError((err) => of(isHttpNotFound(err) ? missing(slug) : unavailable(slug)))
       );
     })
   );

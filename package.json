@@ -22,6 +22,7 @@
     "test:elearn": "ng test elearn",
     "seo:audit": "node scripts/seo-redirect-audit.mjs",
     "seo:validate-sitemap": "node scripts/validate-sitemap.mjs",
+    "seo:validate-indexable-pages": "node scripts/validate-indexable-pages.mjs",
     "seo:canonical-audit": "node scripts/seo-canonical-audit.mjs",
     "seo:indexing-audit": "node scripts/seo-indexing-audit.mjs --urls scripts/sample-indexing-urls.txt",
     "copy:site": "node scripts/copy-site.js",

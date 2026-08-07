@@ -11,6 +11,7 @@ import {
   getHtmlCacheKey,
   getHtmlCacheTtlSeconds,
   isForceCsrPath,
+  isPoisonedIndexableHtml,
   shouldCacheSsrHtml,
 } from '../cache/html-cache-policy';
 import { generateETag } from '../utils/etag';
@@ -154,9 +155,9 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
       performanceMonitor.markCacheEnd(markId);
 
       if (cached) {
-        // Poisoned cache guard: never replay empty <app-root> shells to crawlers.
-        if (isEmptyAppRootHtml(cached.html)) {
-          console.warn(`[SSR] discarding empty cached HTML for ${requestPath}`);
+        // Poisoned cache guard: never replay empty shells or 404 SEO on public URLs.
+        if (isEmptyAppRootHtml(cached.html) || isPoisonedIndexableHtml(cached.html, requestPath)) {
+          console.warn(`[SSR] discarding poisoned cached HTML for ${requestPath}`);
           try {
             const del = htmlCache.del(cacheKey);
             if (del instanceof Promise) void del.catch(() => undefined);
@@ -221,8 +222,7 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
       applyStreamHtmlHeaders(res, requestPath, isProd);
 
       // Only cache successful renders with real body content. Caching an empty
-      // <app-root> shell (even with meta) creates permanent soft-200 pages for
-      // Google ("Crawled – currently not indexed"). Cache hits always send 200.
+      // <app-root> shell or 404/noindex poison creates permanent soft-200 pages.
       if (mayCache && response.status === 200 && typeof response.clone === 'function') {
         try {
           const clone = response.clone();
@@ -230,8 +230,8 @@ export function registerSsrCatchAll(app: Express, deps: SsrCatchAllDeps): void {
           void clone
             .text()
             .then((html) => {
-              if (isEmptyAppRootHtml(html)) {
-                console.warn(`[SSR] skip cache for empty app-root: ${requestPath}`);
+              if (isEmptyAppRootHtml(html) || isPoisonedIndexableHtml(html, requestPath)) {
+                console.warn(`[SSR] skip cache for poisoned/empty HTML: ${requestPath}`);
                 return;
               }
               const etag = generateETag(html);
@@ -355,8 +355,8 @@ export async function warmHtmlCache(deps: SsrCatchAllDeps): Promise<void> {
         continue;
       }
       const html = await response.clone().text();
-      if (isEmptyAppRootHtml(html)) {
-        console.warn(`⚠️  Skip warm cache for ${route}: empty app-root`);
+      if (isEmptyAppRootHtml(html) || isPoisonedIndexableHtml(html, route)) {
+        console.warn(`⚠️  Skip warm cache for ${route}: empty/poisoned HTML`);
         continue;
       }
       const etag = generateETag(html);

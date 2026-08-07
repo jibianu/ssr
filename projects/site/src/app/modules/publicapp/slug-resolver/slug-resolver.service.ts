@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map, shareReplay } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, shareReplay, tap } from 'rxjs/operators';
 import { API_URL } from 'src/app/core/config/api-url.config';
 
 export interface SlugResolverResponse {
@@ -46,7 +46,18 @@ export class SlugResolverService {
           ? { type: t as SlugResolverResponse['type'], slug: s, redirectedFrom }
           : { type: t as SlugResolverResponse['type'], slug: s };
       }),
-      catchError(() => of(null)),
+      catchError((err: unknown) => {
+        // Definitive miss may be cached as null. Transient failures must NOT poison the cache
+        // or be treated as "article does not exist" (that caused noindex / page-not-found SEO).
+        if (err instanceof HttpErrorResponse && err.status === 404) {
+          return of(null);
+        }
+        this.resolveCache.delete(key);
+        return throwError(() => err);
+      }),
+      tap({
+        error: () => this.resolveCache.delete(key)
+      }),
       shareReplay({ bufferSize: 1, refCount: true })
     );
     while (this.resolveCache.size >= SlugResolverService.RESOLVE_CACHE_CAP) {

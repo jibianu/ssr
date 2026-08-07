@@ -29,6 +29,21 @@ export class SsrResponseStatusService {
   }
 
   /**
+   * Temporary SSR/API failure — crawlers must retry, never treat as a permanent 404.
+   * Sets Retry-After so Google/Bing know to come back.
+   */
+  setUnavailable(retryAfterSeconds = 10): void {
+    if (!this.responseInit) {
+      return;
+    }
+    this.responseInit.status = 503;
+    this.responseInit.statusText = 'Service Unavailable';
+    const headers = new Headers(this.responseInit.headers ?? undefined);
+    headers.set('Retry-After', String(Math.max(1, retryAfterSeconds)));
+    this.responseInit.headers = headers;
+  }
+
+  /**
    * Turns the server-rendered response into a permanent redirect (default 301).
    * Used for slug-alias migrations so the crawler gets ONE direct 301 instead
    * of a 200 page that navigates away client-side. No-op in the browser.

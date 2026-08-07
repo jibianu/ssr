@@ -214,6 +214,10 @@ async function checkStatusAndOptionalDeep(u, deep) {
       Object.assign(row, fail(u, `robots meta "${row.robots}"`));
       return;
     }
+    if (/page-not-found/i.test(row.canonical)) {
+      Object.assign(row, fail(u, `canonical points at page-not-found: ${row.canonical}`));
+      return;
+    }
     if (row.canonicalCount !== 1) {
       Object.assign(row, fail(u, `canonical count ${row.canonicalCount} (want 1)`));
       return;

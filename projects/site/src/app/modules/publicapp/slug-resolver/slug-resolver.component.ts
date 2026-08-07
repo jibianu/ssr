@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { takeUntil, switchMap, catchError, map, distinctUntilChanged, tap } from 'rxjs/operators';
 import { SlugResolverService, SlugResolverResponse } from './slug-resolver.service';
@@ -15,6 +16,7 @@ import { appShellRedirectForSlug, isAppShellSlug } from 'src/app/core/helpers/ap
 import { resolveSlugByParallelLookup } from './slug-fallback.util';
 import { normalizeEventCanonicalSlug } from 'src/app/core/helpers/event-canonical-slug.helper';
 import { SsrResponseStatusService } from 'src/app/core/services/ssr-response-status.service';
+import { SeoService } from 'src/app/shared/service/seo.service';
 
 @Component({
   selector: 'app-slug-resolver',
@@ -34,23 +36,41 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private ssrStatus = inject(SsrResponseStatusService);
+  private seo = inject(SeoService);
   private destroy$ = new Subject<void>();
 
-  /** Avoid SSR navigating to /page-not-found when API is unreachable from Node — client will retry. */
-  private navigateToNotFound(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      void this.router.navigate(['/page-not-found'], { replaceUrl: true });
-    } else {
-      // SSR: answer with a real 404 instead of a soft-404 (HTTP 200).
-      // The browser still hydrates and retries the lookup, so a transient
-      // API hiccup during render never breaks the user experience.
+  /**
+   * Genuine miss: keep the requested URL, answer HTTP 404, apply noindex.
+   * NEVER navigate to /page-not-found — that rewrote canonical to
+   * https://oilandgasclub.com/page-not-found and blocked indexing of valid
+   * articles when a transient miss raced ahead of the blog API.
+   */
+  private markGenuineNotFound(): void {
+    this.notFound.set(true);
+    this.unavailable.set(false);
+    this.seo.applyNotFoundPageSeo();
+    if (!isPlatformBrowser(this.platformId)) {
       this.ssrStatus.setNotFound();
     }
+  }
+
+  /** Transient API failure: HTTP 503 + Retry-After — never 404 / noindex / page-not-found. */
+  private markUnavailable(): void {
+    this.unavailable.set(true);
+    this.notFound.set(false);
+    if (!isPlatformBrowser(this.platformId)) {
+      this.ssrStatus.setUnavailable(10);
+    }
+  }
+
+  private isHttpNotFound(err: unknown): boolean {
+    return err instanceof HttpErrorResponse && err.status === 404;
   }
 
   resolved = signal<SlugResolverResponse | null>(null);
   loading = signal(true);
   notFound = signal(false);
+  unavailable = signal(false);
   type = signal<'course' | 'blog' | 'event' | null>(null);
   slug = signal('');
   course = signal<any>(null);
@@ -71,9 +91,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     ).subscribe((result) => {
       if (result === null) {
         this.loading.set(false);
-        if (this.notFound()) {
-          this.navigateToNotFound();
-        }
+        // Do not navigate away — SEO stays on the requested URL.
       } else if (this.type() === 'course' && result && typeof result === 'object') {
         this.course.set(result);
         this.loading.set(false);
@@ -88,7 +106,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   private loadSlugContent(rawSlug: string, slugPage?: SlugPageData): Observable<unknown> {
     const slug = this.publicAppService.normalizeSlugRouteParam(rawSlug) || rawSlug.trim();
     if (!slug) {
-      this.notFound.set(true);
+      this.markGenuineNotFound();
       return of(null);
     }
 
@@ -120,13 +138,19 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return of(null);
     }
 
-    if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
-      // SSR may fail to reach the API on hosted servers — retry live lookup in the browser.
+    if (slugPage?.unavailable && this.slugPageMatches(slugPage, slug)) {
       if (!isPlatformBrowser(this.platformId)) {
-        this.notFound.set(true);
+        this.markUnavailable();
         return of(null);
       }
-    } else if (slugPage?.type && !slugPage.notFound && this.slugPageMatches(slugPage, slug)) {
+      // Browser: retry live lookup below (SSR may have timed out).
+    } else if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
+      // SSR may fail to reach the API on hosted servers — retry live lookup in the browser.
+      if (!isPlatformBrowser(this.platformId)) {
+        this.markGenuineNotFound();
+        return of(null);
+      }
+    } else if (slugPage?.type && !slugPage.notFound && !slugPage.unavailable && this.slugPageMatches(slugPage, slug)) {
       this.applySlugPageData(slugPage);
       if (slugPage.type === 'course' && slugPage.course) {
         return of(slugPage.course);
@@ -142,8 +166,16 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
 
     return this.slugResolver.resolve(slug).pipe(
       switchMap((res) => this.resolveSlugMeta(res)),
+      catchError((err) => {
+        if (this.isHttpNotFound(err)) {
+          this.markGenuineNotFound();
+        } else {
+          this.markUnavailable();
+        }
+        return of(null);
+      }),
       tap((result) => {
-        if (result === null && this.notFound()) {
+        if (result === null && (this.notFound() || this.unavailable())) {
           return;
         }
         if (this.isBrowser && this.type() === 'course') {
@@ -173,6 +205,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     this.slug.set(slug);
     this.loading.set(true);
     this.notFound.set(false);
+    this.unavailable.set(false);
     this.resolved.set(null);
     this.course.set(null);
     this.eventData.set(null);
@@ -214,7 +247,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     if (res === null) {
       const fallbackSlug = this.slug();
       if (!fallbackSlug) {
-        this.notFound.set(true);
+        this.markGenuineNotFound();
         return of(null);
       }
       return resolveSlugByParallelLookup(
@@ -225,7 +258,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       ).pipe(
         switchMap((match) => {
           if (!match) {
-            this.notFound.set(true);
+            this.markGenuineNotFound();
             return of(null);
           }
           if (match.type === 'blog') {
@@ -248,8 +281,12 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
           this.course.set(match.course);
           return of(match.course);
         }),
-        catchError(() => {
-          this.notFound.set(true);
+        catchError((err) => {
+          if (this.isHttpNotFound(err)) {
+            this.markGenuineNotFound();
+          } else {
+            this.markUnavailable();
+          }
           return of(null);
         })
       );
@@ -263,8 +300,12 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         switchMap((basic) =>
           basic ? of(basic) : this.publicAppService.getCourseByCanonicalURL(res.slug, { refresh: false })
         ),
-        catchError(() => {
-          this.notFound.set(true);
+        catchError((err) => {
+          if (this.isHttpNotFound(err)) {
+            this.markGenuineNotFound();
+          } else {
+            this.markUnavailable();
+          }
           return of(null);
         })
       );
@@ -275,7 +316,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return this.adminService.getEventByCanonicalURL(eventSlug).pipe(
         switchMap((event: { id?: string } | null) => {
           if (!event?.id) {
-            this.notFound.set(true);
+            this.markGenuineNotFound();
             return of(null);
           }
           return this.publicAppService.getUpcomingEvents(event.id).pipe(
@@ -286,8 +327,12 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
             })
           );
         }),
-        catchError(() => {
-          this.notFound.set(true);
+        catchError((err) => {
+          if (this.isHttpNotFound(err)) {
+            this.markGenuineNotFound();
+          } else {
+            this.markUnavailable();
+          }
           return of(null);
         })
       );
@@ -297,14 +342,18 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return this.blogService.getBlogBySlug(res.slug).pipe(
         switchMap((blog) => {
           if (!blog) {
-            this.notFound.set(true);
+            this.markGenuineNotFound();
             return of(null);
           }
           this.blogPrefetch.set(blog);
           return of(true);
         }),
-        catchError(() => {
-          this.notFound.set(true);
+        catchError((err) => {
+          if (this.isHttpNotFound(err)) {
+            this.markGenuineNotFound();
+          } else {
+            this.markUnavailable();
+          }
           return of(null);
         })
       );
@@ -318,6 +367,7 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
     this.type.set(pre.type);
     this.loading.set(false);
     this.notFound.set(false);
+    this.unavailable.set(false);
     if (pre.type) {
       this.resolved.set({ type: pre.type, slug: pre.slug });
     }

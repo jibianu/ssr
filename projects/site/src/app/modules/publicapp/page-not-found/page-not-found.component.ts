@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { SsrResponseStatusService } from '../../../core/services/ssr-response-status.service';
+import { SeoService } from '../../../shared/service/seo.service';
 
 @Component({
     selector: 'app-page-not-found',
@@ -15,9 +16,12 @@ import { SsrResponseStatusService } from '../../../core/services/ssr-response-st
 })
 export class PageNotFoundComponent implements OnInit {
   private readonly ssrStatus = inject(SsrResponseStatusService);
+  private readonly seo = inject(SeoService);
 
   ngOnInit(): void {
     // SSR must answer unknown routes with a real 404, not a soft-404 (200).
     this.ssrStatus.setNotFound();
+    // No canonical — never advertise /page-not-found as the canonical for missing URLs.
+    this.seo.applyNotFoundPageSeo();
   }
 }

@@ -14,6 +14,10 @@
       }
     </div>
   </div>
+} @else if (unavailable()) {
+  <div class="container py-4" role="status">
+    <p class="text-muted">This page is temporarily unavailable. Please try again shortly.</p>
+  </div>
 } @else if (notFound()) {
   <div class="container py-4"><p class="text-muted">Page not found.</p></div>
 } @else if (type() === 'course' && course(); as c) {
