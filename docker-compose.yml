@@ -14,8 +14,9 @@ services:
     container_name: oilandgasclub_frontend
     environment:
       - PORT=4000
+      - CANONICAL_ORIGIN=https://oilandgasclub.com
       # Optional: backend base URL reachable FROM the container (fixes SSR API calls in Docker)
-      # - SSR_API_URL=https://coursebackend.oilandgasclub.com/
+      - SSR_API_URL=https://coursebackend.oilandgasclub.com/
     ports:
       - "${HOST_PORT:-4000}:4000"
     restart: unless-stopped
