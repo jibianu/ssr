@@ -1,8 +1,9 @@
-import { inject } from '@angular/core';
+import { inject, makeStateKey, TransferState, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { ResolveFn } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { SlugResolverService, SlugResolverResponse } from './slug-resolver.service';
 import { PublicAppService } from '../publicapp.service';
 import { AdminAppService } from '../../adminapp/adminapp.service';
@@ -40,6 +41,10 @@ function missing(slug: string): SlugPageData {
   return { slug, type: null, notFound: true };
 }
 
+function slugPageStateKey(slug: string) {
+  return makeStateKey<SlugPageData>(`ogc-slug-page:${slug.toLowerCase()}`);
+}
+
 export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<SlugPageData> => {
   const rawParam = route.parent?.paramMap.get('slug') ?? route.paramMap.get('slug') ?? '';
   const publicApp = inject(PublicAppService);
@@ -47,6 +52,8 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
   const slugSvc = inject(SlugResolverService);
   const admin = inject(AdminAppService);
   const blogSvc = inject(BlogService);
+  const transferState = inject(TransferState);
+  const platformId = inject(PLATFORM_ID);
 
   if (!slug.trim()) {
     return of(missing(''));
@@ -55,6 +62,27 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
   if (isAppShellSlug(slug)) {
     return of(missing(slug));
   }
+
+  // Prefer SSR-transferred payload on the client — avoids CORS/network Soft 404 after deploy
+  // when browser re-resolve cannot reach coursebackend.*.
+  const stateKey = slugPageStateKey(slug);
+  if (transferState.hasKey(stateKey)) {
+    const cached = transferState.get(stateKey, missing(slug));
+    transferState.remove(stateKey);
+    return of(cached);
+  }
+
+  const cacheSuccessfulPage = (data: SlugPageData): void => {
+    if (
+      isPlatformServer(platformId) &&
+      data?.type &&
+      !data.notFound &&
+      !data.unavailable &&
+      !data.redirectTo
+    ) {
+      transferState.set(stateKey, data);
+    }
+  };
 
   // Resolve slug type first; only call GET page/course/course/{slug} for courses (or when metadata is unavailable).
   // Parallel course + meta caused a guaranteed 404 + noisy logs for every blog/event slug.
@@ -158,6 +186,7 @@ export const slugPageResolver: ResolveFn<SlugPageData> = (route): Observable<Slu
         ),
         catchError((err) => of(isHttpNotFound(err) ? missing(slug) : unavailable(slug)))
       );
-    })
+    }),
+    tap((data) => cacheSuccessfulPage(data))
   );
 };

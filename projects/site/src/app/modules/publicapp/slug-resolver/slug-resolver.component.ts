@@ -58,13 +58,35 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
   private markUnavailable(): void {
     this.unavailable.set(true);
     this.notFound.set(false);
+    this.loading.set(false);
     if (!isPlatformBrowser(this.platformId)) {
       this.ssrStatus.setUnavailable(10);
     }
   }
 
+  /**
+   * Browser re-fetch (CORS / network) must NOT replace hydrated SSR article HTML —
+   * that thin error shell is what Google classifies as Soft 404 in live URL Inspection.
+   */
+  private markUnavailableIfNoContent(): void {
+    if (isPlatformBrowser(this.platformId) && this.hasRenderableContent()) {
+      this.loading.set(false);
+      this.unavailable.set(false);
+      return;
+    }
+    this.markUnavailable();
+  }
+
+  private hasRenderableContent(): boolean {
+    return !!(this.blogPrefetch() || this.course() || this.eventData() || this.type());
+  }
+
   private isHttpNotFound(err: unknown): boolean {
-    return err instanceof HttpErrorResponse && err.status === 404;
+    if (err instanceof HttpErrorResponse) {
+      return err.status === 404;
+    }
+    // ErrorInterceptor historically rethrew plain Error; keep 404 detection.
+    return err instanceof Error && /\b404\b|not found/i.test(err.message);
   }
 
   resolved = signal<SlugResolverResponse | null>(null);
@@ -129,8 +151,6 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.resetForSlug(slug);
-
     // Slug alias (renamed course), prefetched by slugPageResolver: one direct
     // permanent redirect to the canonical slug — never render at the old URL.
     if (slugPage?.redirectTo && slugPage.redirectTo.toLowerCase() !== slug.toLowerCase()) {
@@ -138,19 +158,9 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return of(null);
     }
 
-    if (slugPage?.unavailable && this.slugPageMatches(slugPage, slug)) {
-      if (!isPlatformBrowser(this.platformId)) {
-        this.markUnavailable();
-        return of(null);
-      }
-      // Browser: retry live lookup below (SSR may have timed out).
-    } else if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
-      // SSR may fail to reach the API on hosted servers — retry live lookup in the browser.
-      if (!isPlatformBrowser(this.platformId)) {
-        this.markGenuineNotFound();
-        return of(null);
-      }
-    } else if (slugPage?.type && !slugPage.notFound && !slugPage.unavailable && this.slugPageMatches(slugPage, slug)) {
+    // Apply successful SSR/resolver payload BEFORE any reset — blanking type/blog
+    // during hydration destroys article HTML and causes GSC Soft 404 screenshots.
+    if (slugPage?.type && !slugPage.notFound && !slugPage.unavailable && this.slugPageMatches(slugPage, slug)) {
       this.applySlugPageData(slugPage);
       if (slugPage.type === 'course' && slugPage.course) {
         return of(slugPage.course);
@@ -164,13 +174,36 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       // SSR prefetched type but no payload — resolve live below.
     }
 
+    if (slugPage?.unavailable && this.slugPageMatches(slugPage, slug)) {
+      if (!isPlatformBrowser(this.platformId)) {
+        this.markUnavailable();
+        return of(null);
+      }
+      // Browser: retry live lookup below (SSR may have timed out). Keep any
+      // already-hydrated content visible while retrying.
+      this.prepareLiveLookup(slug);
+    } else if (slugPage?.notFound && this.slugPageMatches(slugPage, slug)) {
+      // SSR may fail to reach the API on hosted servers — retry live lookup in the browser.
+      if (!isPlatformBrowser(this.platformId)) {
+        this.markGenuineNotFound();
+        return of(null);
+      }
+      this.prepareLiveLookup(slug);
+    } else {
+      this.prepareLiveLookup(slug);
+    }
+
     return this.slugResolver.resolve(slug).pipe(
       switchMap((res) => this.resolveSlugMeta(res)),
       catchError((err) => {
         if (this.isHttpNotFound(err)) {
-          this.markGenuineNotFound();
+          if (!this.hasRenderableContent()) {
+            this.markGenuineNotFound();
+          } else {
+            this.loading.set(false);
+          }
         } else {
-          this.markUnavailable();
+          this.markUnavailableIfNoContent();
         }
         return of(null);
       }),
@@ -183,6 +216,22 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  /**
+   * Soft reset for live lookup: only wipe UI when the slug changed or we have
+   * nothing to show yet. Same-slug browser retries keep SSR content mounted.
+   */
+  private prepareLiveLookup(slug: string): void {
+    const sameSlug =
+      this.normalizeSlugKey(this.slug()) === this.normalizeSlugKey(slug) && !!slug;
+    if (sameSlug && this.hasRenderableContent()) {
+      this.slug.set(slug);
+      this.notFound.set(false);
+      this.unavailable.set(false);
+      return;
+    }
+    this.resetForSlug(slug);
   }
 
   private get isBrowser(): boolean {
@@ -283,9 +332,13 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         }),
         catchError((err) => {
           if (this.isHttpNotFound(err)) {
-            this.markGenuineNotFound();
+            if (!this.hasRenderableContent()) {
+              this.markGenuineNotFound();
+            } else {
+              this.loading.set(false);
+            }
           } else {
-            this.markUnavailable();
+            this.markUnavailableIfNoContent();
           }
           return of(null);
         })
@@ -302,9 +355,13 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         ),
         catchError((err) => {
           if (this.isHttpNotFound(err)) {
-            this.markGenuineNotFound();
+            if (!this.hasRenderableContent()) {
+              this.markGenuineNotFound();
+            } else {
+              this.loading.set(false);
+            }
           } else {
-            this.markUnavailable();
+            this.markUnavailableIfNoContent();
           }
           return of(null);
         })
@@ -316,7 +373,11 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return this.adminService.getEventByCanonicalURL(eventSlug).pipe(
         switchMap((event: { id?: string } | null) => {
           if (!event?.id) {
-            this.markGenuineNotFound();
+            if (!this.hasRenderableContent()) {
+              this.markGenuineNotFound();
+            } else {
+              this.loading.set(false);
+            }
             return of(null);
           }
           return this.publicAppService.getUpcomingEvents(event.id).pipe(
@@ -329,9 +390,13 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         }),
         catchError((err) => {
           if (this.isHttpNotFound(err)) {
-            this.markGenuineNotFound();
+            if (!this.hasRenderableContent()) {
+              this.markGenuineNotFound();
+            } else {
+              this.loading.set(false);
+            }
           } else {
-            this.markUnavailable();
+            this.markUnavailableIfNoContent();
           }
           return of(null);
         })
@@ -342,7 +407,11 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
       return this.blogService.getBlogBySlug(res.slug).pipe(
         switchMap((blog) => {
           if (!blog) {
-            this.markGenuineNotFound();
+            if (!this.hasRenderableContent()) {
+              this.markGenuineNotFound();
+            } else {
+              this.loading.set(false);
+            }
             return of(null);
           }
           this.blogPrefetch.set(blog);
@@ -350,9 +419,13 @@ export class SlugResolverComponent implements OnInit, OnDestroy {
         }),
         catchError((err) => {
           if (this.isHttpNotFound(err)) {
-            this.markGenuineNotFound();
+            if (!this.hasRenderableContent()) {
+              this.markGenuineNotFound();
+            } else {
+              this.loading.set(false);
+            }
           } else {
-            this.markUnavailable();
+            this.markUnavailableIfNoContent();
           }
           return of(null);
         })

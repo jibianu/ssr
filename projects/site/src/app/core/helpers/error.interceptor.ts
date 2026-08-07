@@ -60,8 +60,8 @@ export class ErrorInterceptor implements HttpInterceptor {
                     this.toasterService.showError(errorMessage);
                 }
 
-                // ✅ SSR-friendly: throw an Error object, not a string
-                return throwError(() => new Error(errorMessage));
+                // Preserve HttpErrorResponse so resolvers can distinguish 404 vs network/CORS.
+                return throwError(() => error);
             })
         );
     }
@@ -86,14 +86,18 @@ export class ErrorInterceptor implements HttpInterceptor {
         // ✅ Don't show toaster for network errors on GET requests that are handled gracefully
         // Services like getCourses() already catch errors and return empty arrays
         if (isNetworkError && request.method === 'GET') {
-            // Check if this is a course/category listing request that handles errors gracefully
-            const isGracefulError = url.includes('/page/course') || 
-                                   url.includes('/page/category') ||
-                                   url.includes('/api/public/') ||
-                                   url.includes('/api/events');
-            
+            // Public SSR/hydration reads — CORS/network must not surface as user toasts
+            // (GSC live render screenshots those toasts as page content / Soft 404 noise).
+            const isGracefulError =
+                url.includes('/page/course') ||
+                url.includes('/page/category') ||
+                url.includes('/api/public/') ||
+                url.includes('/api/events') ||
+                url.includes('/api/blog') ||
+                url.includes('/api/slug-resolver') ||
+                url.includes('/api/event/');
+
             if (isGracefulError) {
-                // These endpoints handle errors gracefully, don't show toaster
                 return false;
             }
         }
