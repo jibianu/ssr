@@ -205,10 +205,36 @@ export class AdminAppService {
         });
     }
 
-    /** Admin: get all blogs (with author, word count). GET /api/admin/blog. Optional search for link builder. */
-    getAdminBlogs(pageNumber: number = 1, pageSize: number = 500, search?: string): Observable<{ pageNumber: number; pageSize: number; totalNumberOfRecords: number; results: any[] }> {
-        const params: Record<string, string> = { pageNumber: String(pageNumber), pageSize: String(pageSize) };
-        if (search != null && search.trim() !== '') params['search'] = search.trim();
+    /** Admin: get all blogs (with author, word count). GET /api/admin/blog */
+    getAdminBlogs(
+        pageNumber: number = 1,
+        pageSize: number = 10,
+        options?: {
+            search?: string;
+            categoryId?: string;
+            status?: number | null;
+            authorId?: string;
+            dateFrom?: string;
+            dateTo?: string;
+        }
+    ): Observable<{
+        pageNumber: number;
+        pageSize: number;
+        totalNumberOfRecords: number;
+        results: any[];
+        stats?: { total: number; published: number; drafts: number; unpublished: number };
+    }> {
+        const params: Record<string, string> = {
+            pageNumber: String(pageNumber),
+            pageSize: String(pageSize)
+        };
+        const search = options?.search?.trim();
+        if (search) params['search'] = search;
+        if (options?.categoryId) params['categoryId'] = options.categoryId;
+        if (options?.status != null && options.status !== undefined) params['status'] = String(options.status);
+        if (options?.authorId) params['authorId'] = options.authorId;
+        if (options?.dateFrom) params['dateFrom'] = options.dateFrom;
+        if (options?.dateTo) params['dateTo'] = options.dateTo;
         return this.http.get<any>(this.apiUrl + `api/admin/blog`, { params });
     }
     /** Admin: get blog categories for dropdown. GET /api/admin/blog/categories */

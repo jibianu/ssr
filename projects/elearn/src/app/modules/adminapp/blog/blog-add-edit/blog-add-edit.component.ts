@@ -87,7 +87,7 @@ export class BlogAddEditComponent implements OnInit, OnDestroy {
   /** Blog search for Link Builder internal links (same as pre-merge blog). */
   searchBlogsForLink = (query: string): Observable<any[]> => {
     if (!query || query.trim().length < 2) return of([]);
-    return this.appService.getAdminBlogs(1, 20, query.trim()).pipe(
+    return this.appService.getAdminBlogs(1, 20, { search: query.trim() }).pipe(
       map((res: any) => {
         const list = res?.results ?? res?.data ?? res?.items ?? res;
         return Array.isArray(list) ? list : [];
